@@ -17,7 +17,7 @@ export const EffectSchema = z
   })
   .strict();
 export const localAssets = ["/assets/workspace.svg"] as const;
-const href = z
+export const href = z
   .string()
   .max(2048)
   .refine((value) => {
@@ -36,7 +36,7 @@ const href = z
       return false;
     }
   }, "連結網址無效");
-const styleSchema = z
+export const styleSchema = z
   .object({
     gap: z.enum(["none", "small", "medium", "large"]).default("medium"),
     padding: z.enum(["none", "small", "medium", "large"]).default("medium"),
@@ -261,7 +261,18 @@ export function reconcilePage(
     if (old && JSON.stringify(old) === JSON.stringify(n)) return old;
     return n.children ? { ...n, children: n.children.map(share) } : n;
   };
-  return { ...next, sections: next.sections.map(share) };
+  return {
+    ...next,
+    metadata:
+      JSON.stringify(previous.metadata) === JSON.stringify(next.metadata)
+        ? previous.metadata
+        : next.metadata,
+    responsive:
+      JSON.stringify(previous.responsive) === JSON.stringify(next.responsive)
+        ? previous.responsive
+        : next.responsive,
+    sections: next.sections.map(share),
+  };
 }
 export function componentIdFromElement(element: Element): string | null {
   return (

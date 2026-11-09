@@ -9,3 +9,9 @@ PageSpec v1 是受控平面區塊合約，未來階層與資產擴充需版本�
 圖片初版限制內建資產，外部 HTTPS 連結限制兩個程式碼允許的主機。避免本輪引入資產上傳／遠端代理或額外資料外傳。
 預覽採同來源受控 React，不新增任意執行沙箱；任意 HTML／JS 仍禁止。固定 Fixture 與本機 JSON 載入皆明確標示，不接 AI。
 穩定 UUID + 結構共用 + 遞迴 memo 為後續依 ID Patch 留介面；本輪不建立 AI Orchestrator 或 Patch 引擎。
+
+
+2026-11-09（Phase 3）：不更動 PageSpec v2／CanvasSpec v1 合約；Patch 使用獨立版本 1 協定。新增 Session UUID 與單調 revision，Undo／Redo 不倒退 revision，避免 ABA 型舊 Patch 覆蓋。
+以 generic history 工具共用演算法、分離資料狀態，取代複製兩套 Undo／Redo。原子批次與全頁／範圍驗證是唯一提交路徑；可信 scope 為獨立參數，不由不可信 Patch 自行宣告。
+UI 僅實作 heading 與 Fade In，保留既有預覽連結操作與 Renderer。Diff 保證資料範圍，正常排版 reflow 不假稱為完全沒有視覺影響。
+Zod 4.6.7 的建置警告來自 v4/core/regexes.js:74 與 util.js:400 的說明註解內含 @__PURE__ 標記，被 Rollup 當成位置不合法的 annotation；真正呼叫上的 PURE 標記不同。未修改 node_modules、依賴版本或抑制警告，避免為非阻斷訊息引入轉譯補丁或套件風險。

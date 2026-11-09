@@ -259,3 +259,90 @@
 .rendered-page .page-heading {
   text-wrap: balance;
 }
+.preview-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.patch-panel {
+  flex-shrink: 0;
+  width: 272px;
+  border-left: var(--border);
+  background: var(--panel);
+  padding: var(--s3);
+  overflow: auto;
+}
+.patch-panel .field {
+  margin-top: 0;
+}
+.patch-panel .field textarea {
+  min-height: 120px;
+}
+.patch-panel select,
+.patch-panel input[type="number"] {
+  width: 100%;
+}
+.patch-panel .side-head {
+  margin-bottom: var(--s3);
+  gap: var(--s2);
+}
+.patch-panel input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
+.patch-diff {
+  margin-top: var(--s4);
+  border-top: var(--border);
+  padding-top: var(--s3);
+  overflow-wrap: anywhere;
+}
+.patch-diff > div {
+  margin-top: var(--s2);
+}
+.patch-diff ins {
+  text-decoration: none;
+  color: var(--accent);
+}
+.patch-diff del {
+  color: var(--muted);
+}
+.patch-notice {
+  margin-top: var(--s3);
+}
+.rendered-page[data-editable="true"] .page-heading {
+  cursor: pointer;
+}
+[data-page-selected="true"] {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+}
+@media (max-width: 1000px) {
+  .preview-body {
+    flex-direction: column;
+  }
+  .patch-panel {
+    width: 100%;
+    max-height: 40%;
+    border-left: 0;
+    border-top: var(--border);
+  }
+  .preview-tools {
+    gap: var(--s2);
+  }
+}
+.heading-picker {
+  max-width: 200px;
+}
+@media (max-width: 1000px) {
+  .patch-panel .field textarea {
+    min-height: 64px;
+  }
+  .patch-panel .field {
+    margin-bottom: var(--s2);
+  }
+  .patch-panel .side-head {
+    margin-bottom: var(--s2);
+  }
+}

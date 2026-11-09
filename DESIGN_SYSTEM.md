@@ -10,3 +10,8 @@ CSS :root 集中 Color、Typography、Spacing、Radius、Shadow、Border、Motio
 預覽共用既有 Color／Font／Border／Radius Token；新增 page-space（8/24/48px）、content（1120px）、narrow（720px）、heading（32–56px / 24–36px / 22px）及 body（16px、1.8 行高）。Heading 平衡換行，長內容可斷行，圖片維持比例。
 styles、gap、padding、align、width 只能選 Token；800px 以下預覽容器 Grid 單欄，手機框最大 375px。這是預覽容器斷點，不是只支援特定裝置。
 動畫短促、受控、不彈跳；所有六種效果遵守 reduced-motion。固定範例標示「範例預覽」，載入檔案標示「本機檔案預覽」，均明示未使用 AI。錯誤顯示具體原因與重新載入方式；圖片載入失敗提供重試。
+
+
+## Phase 3 局部編輯
+點選標題或使用標題選單選取；選中元素以既有綠色輪廓標示，不更改頁面內容。未選取時不常駐空白屬性面板，選取後沿用側欄與 field／primary Token。1000px 以下以可捲動下方面板編輯，維持預覽可見。
+文案使用「套用」「撤銷修改」「重做修改」「最近修改」。Diff 僅呈現實際前後值；不宣稱其他元素位置完全不變。現階段 UI 僅支援標題文字與淡入動畫，完整安全操作在 Engine 提供給後續功能，不展示未實作的 AI 控制。

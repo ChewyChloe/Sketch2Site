@@ -1,3 +1,4 @@
+import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
 export const Effect = z.enum(["hover-glow", "fade-in", "lift"]);
 export const Kind = z.enum(["text", "button", "card"]);
@@ -151,34 +152,12 @@ export function createNode(
     zIndex: 0,
   };
 }
-export type History = {
-  past: CanvasSpec[];
-  present: CanvasSpec;
-  future: CanvasSpec[];
-};
+export type History = import("./history").History<CanvasSpec>;
 export function commit(h: History, next: CanvasSpec): History {
   CanvasSchema.parse(next);
-  return JSON.stringify(next) === JSON.stringify(h.present)
-    ? h
-    : { past: [...h.past, h.present].slice(-80), present: next, future: [] };
+  return commitHistory(h, next);
 }
-export function undo(h: History): History {
-  return h.past.length
-    ? {
-        past: h.past.slice(0, -1),
-        present: h.past.at(-1)!,
-        future: [h.present, ...h.future],
-      }
-    : h;
-}
-export function redo(h: History): History {
-  return h.future.length
-    ? {
-        past: [...h.past, h.present].slice(-80),
-        present: h.future[0],
-        future: h.future.slice(1),
-      }
-    : h;
-}
+export const undo = undoHistory<CanvasSpec>;
+export const redo = redoHistory<CanvasSpec>;
 
 export { PageSchema } from "./pageSpec";

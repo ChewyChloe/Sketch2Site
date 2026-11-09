@@ -14,6 +14,7 @@ import {
   type PageNode,
   type PageSpec,
   effectIds,
+  componentIdFromElement,
 } from "./pageSpec";
 import "./preview.css";
 type Effect = PageNode["effects"][number];
@@ -216,8 +217,11 @@ class RenderBoundary extends Component<
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidUpdate(previous: Readonly<{children:ReactNode;resetKey:unknown}>) {
-    if(this.state.failed && previous.resetKey !== this.props.resetKey)this.setState({failed:false});
+  componentDidUpdate(
+    previous: Readonly<{ children: ReactNode; resetKey: unknown }>,
+  ) {
+    if (this.state.failed && previous.resetKey !== this.props.resetKey)
+      this.setState({ failed: false });
   }
   render() {
     return this.state.failed ? (
@@ -229,7 +233,16 @@ class RenderBoundary extends Component<
     );
   }
 }
-export function PageRenderer({ input }: { input: unknown }) {
+export function PageRenderer({
+  input,
+  selectedId,
+  onSelect,
+}: {
+  input: unknown;
+  selectedId?: string | null;
+  onSelect?: (id: string) => void;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const previous = useRef<PageSpec | undefined>(undefined);
   const result = useMemo(() => {
     const checked = validatePage(input);
@@ -243,6 +256,18 @@ export function PageRenderer({ input }: { input: unknown }) {
   useEffect(() => {
     if (result.ok) previous.current = result.page;
   }, [result]);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    root
+      .querySelectorAll("[data-page-selected]")
+      .forEach((el) => el.removeAttribute("data-page-selected"));
+    if (selectedId)
+      root.querySelectorAll("[data-page-id]").forEach((el) => {
+        if (el.getAttribute("data-page-id") === selectedId)
+          el.setAttribute("data-page-selected", "true");
+      });
+  }, [selectedId, result]);
   if (!result.ok)
     return (
       <p role="alert" className="preview-error">
@@ -253,6 +278,8 @@ export function PageRenderer({ input }: { input: unknown }) {
   return (
     <RenderBoundary resetKey={input}>
       <div
+        ref={rootRef}
+        data-editable={Boolean(onSelect)}
         className={
           "rendered-page typography-" +
           page.typography +
@@ -267,6 +294,10 @@ export function PageRenderer({ input }: { input: unknown }) {
           } as CSSProperties
         }
         onClick={(e) => {
+          if (onSelect) {
+            const id = componentIdFromElement(e.target as Element);
+            if (id) onSelect(id);
+          }
           const link = (e.target as Element).closest("a");
           const href = link?.getAttribute("href");
           if (href?.startsWith("#page-")) {
