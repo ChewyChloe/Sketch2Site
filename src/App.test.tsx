@@ -25,6 +25,9 @@ it("鍵盤可用的新增、內容編輯、刪除及還原", async () => {
     target: { value: "安全文字" },
   });
   expect(screen.getByTestId("canvas-node").textContent).toContain("安全文字");
+  fireEvent.change(screen.getByRole("spinbutton", {name:"X 位置"}), {target:{value:"2000"}});
+  expect(screen.getByRole("status").textContent).toContain("修改超出畫布範圍");
+  expect(screen.getByTestId("canvas-node").style.left).toBe("80px");
   fireEvent.keyDown(window, { key: "Delete" });
   expect(screen.queryByTestId("canvas-node")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "還原" }));

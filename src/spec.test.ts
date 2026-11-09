@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   blank,
   CanvasSchema,
-  PageSchema,
+  LegacyPageSchema as PageSchema,
   createNode,
   commit,
   undo,

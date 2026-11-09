@@ -419,3 +419,51 @@ small {
 .sidebar > input[type="search"] {
   width: 100%;
 }
+/* Keep workspace height tied to the actual wrapping toolbar, including narrow viewports. */
+#root {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.topbar,
+.footer {
+  flex-shrink: 0;
+}
+.workspace {
+  height: auto;
+  flex: 1;
+  min-height: 0;
+}
+.footer {
+  height: auto;
+  min-height: 42px;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+.toolbar-actions > [aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+@media (max-width: 600px) {
+  .brand h1 {
+    font-size: var(--text);
+  }
+  .topbar {
+    gap: var(--s2);
+  }
+  .toolbar-actions {
+    margin-left: 0;
+    gap: var(--s1);
+  }
+  .toolbar-actions button {
+    padding: 6px 8px;
+  }
+  .footer .status {
+    max-width: 100%;
+    white-space: normal;
+  }
+  .footer .shortcuts {
+    display: none;
+  }
+}

@@ -1,28 +1,41 @@
 # 狀態
 2026-11-09（Asia/Taipei）
+
 ## 功能
-- Phase 0 DONE：8 份規範文件、README、React/TS/Vite、版本 1 CanvasSpec/PageSpec、設計 Token、測試與環境範例。
-- Phase 1 DONE（本輪最小範圍）：文字／按鈕／卡片拖入、選取、移動、刪除、複製、內容／尺寸／座標編輯、動畫標記附加／移除、空白處選對象、Undo/Redo（80 次）、IndexedDB 儲存與恢復、縮放、鍵盤快捷鍵、搜尋、側欄收合與調寬。
-- 後續 MVP NOT STARTED：真正 AI 生成、PageSpec Renderer、矩形區域選取、局部 Patch、版本比較與匯出；沒有假按鈕。
-## 測試證據
-- PASS：npm ci --cache /workspace/.npm-cache --no-fund --no-audit，可從鎖檔重裝。
+- Phase 0 DONE；Phase 1 DONE（既定最小範圍），既有 3 項 E2E 本輪重跑通過。
+- Phase 2 DONE：PageSpec v2 元件樹、九種 Component Registry、六種動畫與受控參數、Flex/Grid 響應式、預覽桌面／手機框、本機 JSON 載入、錯誤恢復、內建圖片重試、DOM UUID 對應、結構共用與 memo。
+- 預覽保留獨立記憶體輸入，切換不改動草稿；重新整理回到範例。固定範例明示「範例預覽／未使用 AI」，不是草稿生成結果。
+- P3 NOT STARTED：依 ID 結構化 Patch。AI API、正式生成器、匯出、會員、部署皆 NOT STARTED；沒有新增套件或付費服務。
+
+## 測試
 - PASS：npm run typecheck。
-- PASS：npm test，2 檔案、7/7（6 Schema／歷史測試、1 React 操作測試）。
-- PASS：npm run test:e2e，Chromium 3/3。真正滑鼠拖入文字、移動、座標、動畫附加、Undo/Redo、刪除、重新整理恢復穩定 ID、惡意 HTML 顯示為文字、空白效果選對象、40% 縮放、960px 窗口、損毀草稿拒絕與停用儲存。
-- PASS：VITE_TEST_SECRET=SKETCH2SITE_TEST_SECRET_83f21c npm run build；npm run check:secrets，測試 canary 不在產物，無 source maps 或可辨識 API key。
-- PASS：npm audit --cache /workspace/.npm-cache，所有依賴 0 vulnerabilities（當次結果，不是永久保證）。
-- PASS：git diff --check。
-- PASS：實際檢視 1440×1000 空白／內容／屬性截圖、960×768 工作台截圖。修正空白提示過小、置中與搜尋寬度；面板內捲動，工作區無整頁水平溢出。自由草稿允許使用者元素互相重疊。
-- NOT TESTED：行動完整編輯器（不在範圍）、其他瀏覽器、儲存額度耗盡、多分頁衝突、正式部署標頭、未實作的 AI/API 防護。
-- 最終 FAIL：0。曾發現 Testing Library 的 exact 選項型別不適用、KeyboardEvent target 非 Element 時 closest 失敗、開發 CSP 阻擋 Vite React preamble；已修正後重跑通過。
-- build 有 Zod 套件 PURE 註解位置警告；Rollup 移除註解，build 成功。
-## Git 與環境
-分支 work。Phase 0 commit：61febf7。Phase 1 commit 為本文件所屬提交，使用 git log -1 查詢，避免自引用 SHA。
-未 push、merge 或部署。只修改 Sketch2Site。截圖在 test-results/（忽略檔）。
-雲端設定 install_script / start_skill 已儲存草稿，包含安裝、啟動與驗證。未發布，未驗證新任務還原；遠端仍是空儲存庫，本機提交不可視為已遠端備份，平台對 local-only commit 還原仍有限制。
-## 限制與恢復
-單一本機草稿、手動保存；未儲存離開會提醒。IndexedDB 載入錯誤時不覆寫既有資料。清除網站資料會刪除草稿；儲存不包含 Undo/Redo 歷史。拖曳只有桌面瀏覽器支援範圍，沒有手機參考框。
-目前不需要任何秘密、後端或付費服務。開發 CSP nonce 僅供 Vite 使用，正式部署必須自行配置安全標頭，詳見 SECURITY.md。
-恢復：閱讀 AGENTS.md，檢查 git status，npm ci --cache /workspace/.npm-cache，npm run dev。端對端測試前停止自己啟動的 5173 服務；npm run test:e2e 自行啟停 Vite。
-## 下一個任務
-P2：建立經 PageSpec 驗證的受控 React Renderer 及不合法輸出安全失敗測試；先不接 AI。
+- PASS：npm test，4 檔、33/33（原有 7 項 + PageSpec／Renderer 26 項，包含表格化測試）。
+- PASS：npm run test:e2e，9/9（預覽 6 項、草稿回歸 3 項）。
+- PASS：真實 Chromium 動畫物件、Hover Glow／Lift、Stagger Reveal、reduced-motion 無動畫、內頁 anchor 與外部新分頁連結、noopener、穩定 DOM ID、圖片成功／載入失敗重試。
+- PASS：未知元件、未知欄位、任意 CSS／事件欄位、非法 URL、未知／缺少資產、動畫參數、重複 ID、壞 anchor、舊版本、超量／深層／循環資料拒絕；HTML 內容僅作文字。不合法頁面不產生節點且能恢復。
+- PASS：未修改的分支保持引用；registry 存取計數證明修改標題不重新渲染無關段落。
+- PASS：在草稿的 X 位置輸入 2000 安全拒絕、顯示錯誤且維持原座標，修正延後 state updater 例外可能無法捕捉的舊問題。
+- PASS：VITE_TEST_SECRET=SKETCH2SITE_TEST_SECRET_83f21c npm run build；npm run check:secrets，無 canary、可辨識 API key 或 source maps。
+- PASS：npm audit --cache /workspace/.npm-cache，當次所有依賴 0 vulnerabilities。
+- PASS：1440／768／375px 實際瀏覽器窗口、375px 手機框，根頁面及預覽無水平溢出；保留工作區內捲動。人工檢視截圖，修正按鈕內距、標題換行、預覽工具列占用空間。
+- 最終 FAIL：0。曾抓到遞迴函式名稱使子節點繞過 memo、768px 單欄斷點與測試標題選擇器過廣；已修正並重跑。
+- build 仍有 Zod PURE 註解警告，Rollup 移除註解後成功建置。
+- NOT TESTED：Firefox／Safari、螢幕閱讀器完整稽核、正式環境安全標頭、200 節點效能壓力、行動裝置實機；無自動 AI／Patch／匯出測試，因功能尚未實作。
+
+## 核心檔案與證據
+src/pageSpec.ts、src/PageRenderer.tsx、src/Preview.tsx、src/pageFixtures.ts、src/preview.css、public/assets/workspace.svg；整合變更在 src/App.tsx、src/spec.ts、src/style.css。
+測試在 src/pageSpec.test.ts、src/PageRenderer.test.tsx、tests/preview.spec.ts；既有草稿安全拒絕回歸在 src/App.test.tsx。
+截圖在 test-results/preview-1440.png、preview-768.png、preview-375.png、preview-mobile-frame.png（忽略檔，可由 E2E 重建）。截圖時停用動畫以保留完整可見內容，動畫另用瀏覽器 API 和實際 hover 驗證。
+
+## Git
+分支 work；上一輪 f492cbd（Phase 1）、61febf7（Phase 0）。本輪 commit 是此文件所屬提交，可由 git log -1 查詢，避免自引用 SHA。
+只有 Sketch2Site 有變更；未 push、merge 或部署。提交僅在本機，尚無遠端備份。未宣稱環境已發布或新任務還原已驗證。
+
+## 限制／恢復
+Renderer 只支援 PageSpec v2；LegacyPageSchema 保留 v1 驗證，不進行隱式遷移。CanvasSpec v1 與 IndexedDB 格式不變。
+圖片僅限內建資產；外部連結僅限 learn.microsoft.com／example.com，詳見 SECURITY.md。外部連結 E2E 以攔截回應驗證，不宣稱真實遠端網站可用。
+預覽是同來源受控 React，不是任意程式執行沙箱。沒有 PageSpec 持久化、真正局部修改或版本比較；這些並非本輪成果。
+恢復：讀 AGENTS.md、檢查 git status；npm ci --cache /workspace/.npm-cache；npm run dev。E2E 自啟停 Vite，需先停止自己占用 5173 的服務。
+
+## 下一個最小任務
+P3：依元件 ID 的本機結構化 Patch 與範圍／差異測試；不接 AI。

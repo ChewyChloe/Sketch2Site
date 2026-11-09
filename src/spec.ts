@@ -80,7 +80,7 @@ const PageComponent = z
       .nullable(),
   })
   .strict();
-export const PageSchema = z
+export const LegacyPageSchema = z
   .object({
     schemaVersion: z.literal(1),
     metadata: z
@@ -180,3 +180,5 @@ export function redo(h: History): History {
       }
     : h;
 }
+
+export { PageSchema } from "./pageSpec";
