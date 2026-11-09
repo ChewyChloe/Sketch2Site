@@ -8,8 +8,13 @@ const server = createGenerationServer({
     : undefined,
   inputRate: config.enabled ? config.inputRate : undefined,
   outputRate: config.enabled ? config.outputRate : undefined,
+  cachedInputRate: config.enabled ? config.cachedInputRate : undefined,
+  maxCalls: config.maxCalls,
+  budgetUsd: config.budgetUsd,
   onUsage: (usage) =>
-    console.info(JSON.stringify({ event: "generation_usage", ...usage })),
+    console.info(
+      JSON.stringify({ event: "generation_usage", model: config.model, ...usage }),
+    ),
 });
 server.listen(8787, "127.0.0.1", () =>
   console.info("Sketch2Site generation API listening on loopback:8787"),

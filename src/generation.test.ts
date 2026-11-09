@@ -9,7 +9,19 @@ import {
 import { PageSchema } from "./pageSpec";
 import { indexNodes } from "./patch";
 import { blank } from "./spec";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 const fixtures = generationFixtures();
+it("locks all five evaluation inputs, IDs, relationships and animation counts before any paid run", () => {
+  const manifest = JSON.parse(readFileSync(new URL("../docs/generation-fixtures.json", import.meta.url), "utf8"));
+  expect(generationFixtures()).toEqual(fixtures);
+  expect(manifest).toHaveLength(5);
+  fixtures.forEach((canvas, i) => {
+    expect(createHash("sha256").update(JSON.stringify(canvas)).digest("hex")).toBe(manifest[i].sha256);
+    expect(canvas.nodes).toHaveLength(manifest[i].elements);
+    expect(canvas.nodes.reduce((n, node) => n + node.effects.length, 0)).toBe(manifest[i].animations);
+  });
+});
 it.each(fixtures.map((canvas, i) => ({ canvas, i })))(
   "preserves fixture $i IDs, exact content, asset, functions and effect targets",
   ({ canvas }) => {

@@ -359,6 +359,8 @@ export const UsageSchema = z
   .object({
     inputTokens: z.number().int().nonnegative(),
     outputTokens: z.number().int().nonnegative(),
+    cachedInputTokens: z.number().int().nonnegative().nullable().optional(),
+    reasoningTokens: z.number().int().nonnegative().nullable().optional(),
     latencyMs: z.number().nonnegative(),
     estimatedCostUsd: z.number().nonnegative(),
   })

@@ -1,0 +1,47 @@
+[
+  {
+    "fixtureId": "portfolio",
+    "name": "個人作品集",
+    "sha256": "a1384324ce1429b60e980cb47b822fc88f15059c878cfc366f7929ba67947283",
+    "elements": 6,
+    "animations": 0,
+    "inputTokenReservation": 14286,
+    "maxOutputTokens": 4096
+  },
+  {
+    "fixtureId": "event",
+    "name": "活動介紹",
+    "sha256": "88c74bb0cdfa5cd04626fce641f1af954252ecbe73972da790aa4ab296076999",
+    "elements": 4,
+    "animations": 0,
+    "inputTokenReservation": 13190,
+    "maxOutputTokens": 4096
+  },
+  {
+    "fixtureId": "product",
+    "name": "產品介紹",
+    "sha256": "d8446f9e282ecca654012ad2f61205b4bda4f8f6134cbbd31e5ba7871096257e",
+    "elements": 6,
+    "animations": 0,
+    "inputTokenReservation": 14244,
+    "maxOutputTokens": 4096
+  },
+  {
+    "fixtureId": "irregular",
+    "name": "不規則草稿",
+    "sha256": "c4f974b1e81d40b95c97a9fd9c284d3e4ae2a405f17af0dc99e22cef76c6edf9",
+    "elements": 5,
+    "animations": 0,
+    "inputTokenReservation": 13761,
+    "maxOutputTokens": 4096
+  },
+  {
+    "fixtureId": "animated",
+    "name": "動畫草稿",
+    "sha256": "7f8c9b946fd33d875393c0add25bb4eaa621d3555c43e245ea4ba6184db2bf69",
+    "elements": 5,
+    "animations": 6,
+    "inputTokenReservation": 13802,
+    "maxOutputTokens": 4096
+  }
+]

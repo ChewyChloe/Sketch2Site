@@ -8,14 +8,17 @@ import {
 import type { Layout } from "../../src/generation";
 import type { Intent, LayoutProvider } from "../../server/provider";
 export function generationFixtures(): CanvasSpec[] {
+  let fixtureIndex = 0;
   const build = (
     name: string,
     entries: [CanvasNode["type"], string, number, number, number?][],
   ) => {
     const page = blank();
     page.metadata.name = name;
-    page.nodes = entries.map(([type, content, x, y, width]) => ({
+    const fixtureId = ++fixtureIndex;
+    page.nodes = entries.map(([type, content, x, y, width], index) => ({
       ...createNode(type, x, y),
+      id: `00000000-0000-4000-8000-${String(fixtureId * 100 + index).padStart(12, "0")}`,
       content,
       ...(width ? { width } : {}),
     }));

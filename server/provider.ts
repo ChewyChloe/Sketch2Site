@@ -5,11 +5,36 @@ import {
   type prepareIntent,
 } from "../src/generation";
 export type Intent = ReturnType<typeof prepareIntent>;
-export type ProviderResult = {
-  layout: unknown;
+export type ProviderUsage = {
   inputTokens: number;
   outputTokens: number;
+  cachedInputTokens?: number | null;
+  reasoningTokens?: number | null;
 };
+export type ProviderResult = ProviderUsage & {
+  layout: unknown;
+};
+export class ProviderFailure extends GenerationError {
+  constructor(
+    code: ConstructorParameters<typeof GenerationError>[0],
+    public usage?: ProviderUsage,
+  ) {
+    super(code);
+  }
+}
+export function validUsage(usage: ProviderUsage) {
+  const integer = (n: number) => Number.isSafeInteger(n) && n >= 0;
+  return (
+    integer(usage.inputTokens) &&
+    integer(usage.outputTokens) &&
+    (usage.cachedInputTokens == null ||
+      (integer(usage.cachedInputTokens) &&
+        usage.cachedInputTokens <= usage.inputTokens)) &&
+    (usage.reasoningTokens == null ||
+      (integer(usage.reasoningTokens) &&
+        usage.reasoningTokens <= usage.outputTokens))
+  );
+}
 export interface LayoutProvider {
   generate(intent: Intent, signal: AbortSignal): Promise<ProviderResult>;
 }
@@ -27,6 +52,16 @@ export function providerInput(intent: Intent) {
     nodes: intent.nodes,
     candidateGroups: intent.candidateGroups,
   };
+}
+// Reservation heuristic, not a measured token count. No network or model invocation.
+export function inputTokenBound(intent: Intent) {
+  return (
+    Buffer.byteLength(
+      systemRules +
+        JSON.stringify(providerInput(intent)) +
+        JSON.stringify(layoutJSONSchema),
+    ) + 8192
+  );
 }
 export function openAIProvider(
   apiKey: string,
@@ -63,6 +98,18 @@ export function openAIProvider(
         },
         { signal },
       );
+      const usage: ProviderUsage | undefined = response.usage
+        ? {
+            inputTokens: response.usage.input_tokens,
+            outputTokens: response.usage.output_tokens,
+            cachedInputTokens:
+              response.usage.input_tokens_details?.cached_tokens ?? null,
+            reasoningTokens:
+              response.usage.output_tokens_details?.reasoning_tokens ?? null,
+          }
+        : undefined;
+      if (usage && !validUsage(usage))
+        throw new GenerationError("INVALID_OUTPUT");
       if (
         response.output.some(
           (item) =>
@@ -70,20 +117,19 @@ export function openAIProvider(
             item.content.some((c) => c.type === "refusal"),
         )
       )
-        throw new GenerationError("REFUSED");
+        throw new ProviderFailure("REFUSED", usage);
       if (response.status !== "completed" || !response.output_text)
-        throw new GenerationError("INCOMPLETE");
-      if (!response.usage) throw new GenerationError("INCOMPLETE");
+        throw new ProviderFailure("INCOMPLETE", usage);
+      if (!usage) throw new GenerationError("INCOMPLETE");
       let layout: unknown;
       try {
         layout = JSON.parse(response.output_text);
       } catch {
-        throw new GenerationError("INVALID_OUTPUT");
+        throw new ProviderFailure("INVALID_OUTPUT", usage);
       }
       return {
         layout,
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
+        ...usage,
       };
     },
   };

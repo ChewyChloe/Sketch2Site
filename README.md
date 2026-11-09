@@ -41,6 +41,9 @@ npm run dev
 npm run dev:api
 ```
 預設僅 loopback，前端 5173 代理到後端 8787。金鑰／核對費率／啟用旗標未設定時會顯示「AI 尚未設定」，不產生付費請求；原草稿與預覽照常使用。
-從 .env.example 建立不提交的 .env，只在後端安全填入金鑰；先核對官方當日模型與價格，再設定費率及 SKETCH_AI_PRICING_REVIEWED／SKETCH_AI_ENABLED。模型僅後端設定。官方價格文件目前在此環境 CONNECT 403；沒有寫入未核實的當日價格。不要將金鑰貼到聊天或 VITE_*。
+從 .env.example 建立不提交的 .env，只在後端安全填入金鑰；先核對官方當日模型、Responses／strict Schema、推理預設與價格，再設定三種費率及 SKETCH_AI_MODEL_REVIEWED／SKETCH_AI_PRICING_REVIEWED；取得明確付費授權後才設 SKETCH_AI_ENABLED。模型僅後端設定。官方價格文件目前在此環境 CONNECT 403；沒有寫入未核實的當日價格。不要將金鑰貼到聊天或 VITE_*。
 按鈕先設定合法連結，圖片目前只用內建示意素材。生成結果為候選，按「使用此版本」後才保存；返回草稿不會覆蓋已有頁面。輸入上限、用量及安全限制見 ARCHITECTURE.md／SECURITY.md。
 npm run test:e2e 會另外啟動 8788 的隔離 Mock API；不需真實金鑰、不會呼叫真實模型，畫面明示非 AI。真實 API 驗收必須另有明確付費測試授權，不包含在一般測試指令。
+
+
+Phase 5.1 預設 gpt-6-luna 是尚未完成官方核實的候選，並非已驗證可用的模型；不再啟用舊預設。保持 .env.example 的停用狀態，先閱讀 [生成驗收計畫](docs/GENERATION_EVALUATION.md)。使用者需自行確認 API Project 支出限制。授權一次時設定 SKETCH_AI_MAX_CALLS=1、SKETCH_AI_BUDGET_USD 不超過核准金額；上限 5 次／$0.25，不可重啟繞過。本機可用 `cp .env.example .env` 後自行以編輯器填入秘密，切勿把檔案內容列印或貼回聊天；環境設定只是配置，不代表付費授權。`npm run generation:preflight` 是不讀 .env、不連網的五份草稿指紋檢查。

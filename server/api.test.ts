@@ -6,8 +6,8 @@ import {
   mockLayout,
 } from "../tests/fixtures/generation";
 import { GenerationError } from "../src/generation";
-import { configFromEnv } from "./config";
-import { openAIProvider } from "./provider";
+import { configFromEnv, defaultModel } from "./config";
+import { openAIProvider, ProviderFailure } from "./provider";
 import { prepareIntent } from "../src/generation";
 const servers: ReturnType<typeof createGenerationServer>[] = [];
 afterEach(async () => {
@@ -172,8 +172,9 @@ it("OpenAI official SDK adapter uses strict output, no tools, no retry, store:fa
     calls: Record<string, unknown>[] = [];
   const provider = openAIProvider(
     "synthetic-server-key",
-    "gpt-4.1-mini-2025-04-14",
+    defaultModel,
     async (_input, init) => {
+      expect(String(_input)).toBe("https://api.openai.com/v1/responses");
       const body = JSON.parse(String(init?.body));
       calls.push(body);
       return new Response(
@@ -196,7 +197,9 @@ it("OpenAI official SDK adapter uses strict output, no tools, no retry, store:fa
               ],
             },
           ],
-          usage: { input_tokens: 500, output_tokens: 600, total_tokens: 1100 },
+          usage: { input_tokens: 500, output_tokens: 600, total_tokens: 1100,
+            input_tokens_details: { cached_tokens: 100 },
+            output_tokens_details: { reasoning_tokens: 50 } },
         }),
         { status: 200, headers: { "content-type": "application/json" } },
       );
@@ -204,8 +207,11 @@ it("OpenAI official SDK adapter uses strict output, no tools, no retry, store:fa
   );
   const result = await provider.generate(intent, new AbortController().signal);
   expect(result.layout).toEqual(mockLayout(intent));
+  expect(result.cachedInputTokens).toBe(100);
+  expect(result.reasoningTokens).toBe(50);
   expect(calls).toHaveLength(1);
-  expect(calls[0]).toMatchObject({ store: false, max_output_tokens: 4096 });
+  expect(calls[0]).toMatchObject({ model: "gpt-6-luna", store: false, max_output_tokens: 4096 });
+  expect(calls[0].reasoning).toBeUndefined(); // No unverified model-specific setting.
   expect(calls[0].tools).toBeUndefined();
   expect(JSON.stringify(calls[0])).not.toContain("synthetic-server-key");
   expect(calls[0].text).toMatchObject({
@@ -219,11 +225,30 @@ it("requires explicit price review, keeps model configuration server-side, and e
     SKETCH_AI_PRICING_REVIEWED: "true",
     SKETCH_AI_INPUT_USD_PER_MILLION: ".4",
     SKETCH_AI_OUTPUT_USD_PER_MILLION: "1.6",
+    SKETCH_AI_CACHED_INPUT_USD_PER_MILLION: ".1",
+    SKETCH_AI_MODEL_REVIEWED: "true",
+    SKETCH_AI_MAX_CALLS: "1",
+    SKETCH_AI_BUDGET_USD: ".1",
   };
   expect(configFromEnv(env).enabled).toBe(true);
   expect(
     configFromEnv({ ...env, SKETCH_AI_MODEL: "expensive-model" }).enabled,
   ).toBe(false);
+  for (const change of [
+    { SKETCH_AI_MODEL: "gpt-4.1-mini-2025-04-14" },
+    { SKETCH_AI_MODEL_REVIEWED: "false" },
+    { SKETCH_AI_MAX_CALLS: "6" },
+    { SKETCH_AI_MAX_CALLS: "1.5" },
+    { SKETCH_AI_MAX_CALLS: "0" },
+    { SKETCH_AI_BUDGET_USD: "" },
+    { SKETCH_AI_BUDGET_USD: ".26" },
+    { SKETCH_AI_BUDGET_USD: "Infinity" },
+    { SKETCH_AI_INPUT_USD_PER_MILLION: "NaN" },
+    { SKETCH_AI_CACHED_INPUT_USD_PER_MILLION: "" },
+    { SKETCH_AI_CACHED_INPUT_USD_PER_MILLION: "1" },
+  ]) expect(configFromEnv({ ...env, ...change }).enabled).toBe(false);
+  expect(configFromEnv({ ...env, SKETCH_AI_MODEL: "gpt-6.1-sol" }).enabled).toBe(true);
+  expect(configFromEnv({ ...env, SKETCH_AI_MAX_CALLS: undefined }).maxCalls).toBe(1);
   expect(
     configFromEnv({ ...env, SKETCH_AI_PRICING_REVIEWED: "false" }).enabled,
   ).toBe(false);
@@ -250,13 +275,43 @@ it("sanitizes arbitrary upstream errors instead of reflecting private paths or k
     code: "UNAVAILABLE",
   });
 });
+it("accounts cached/reasoning tokens without double billing output, including failed validation/refusal", async () => {
+  const usage = { inputTokens: 500, outputTokens: 600, cachedInputTokens: 100, reasoningTokens: 50 };
+  for (const outcome of ["PASS", "INVALID_OUTPUT", "REFUSED"] as const) {
+    const log = vi.fn();
+    const api = await setup({
+      inputRate: .4, cachedInputRate: .1, outputRate: 1.6, onUsage: log,
+      provider: { async generate(intent) {
+        if (outcome === "REFUSED") throw new ProviderFailure("REFUSED", usage);
+        return { ...usage, layout: outcome === "PASS" ? mockLayout(intent) : {} };
+      } },
+    });
+    const res = await api.post(request());
+    expect(res.status).toBe(outcome === "PASS" ? 200 : 502);
+    const entry = log.mock.calls[0][0];
+    expect(entry).toMatchObject({ ...usage, outcome });
+    expect(entry.estimatedCostUsd).toBeCloseTo((400 * .4 + 100 * .1 + 600 * 1.6) / 1e6);
+    expect(JSON.stringify(entry)).not.toContain("林的作品集");
+  }
+});
+it("rejects invalid usage and records unavailable usage as null on transport failure", async () => {
+  const invalid = await setup({ provider: { async generate(intent) {
+    return { layout: mockLayout(intent), inputTokens: 1, outputTokens: 1, cachedInputTokens: 2 };
+  } }, inputRate: .4, outputRate: 1.6 });
+  expect(await (await invalid.post(request())).json()).toEqual({ code: "INVALID_OUTPUT" });
+  const log = vi.fn();
+  const failed = await setup({ provider: { async generate() { throw Error("private"); } },
+    inputRate: .4, outputRate: 1.6, onUsage: log });
+  await failed.post(request());
+  expect(log.mock.calls[0][0]).toMatchObject({ inputTokens: null, cachedInputTokens: null, estimatedCostUsd: null });
+});
 it.each(["refusal", "incomplete", "rate-limit"] as const)(
   "official SDK adapter handles %s with one fake fetch and zero retries",
   async (variant) => {
     let calls = 0;
     const provider = openAIProvider(
       "synthetic-key",
-      "gpt-4.1-mini-2025-04-14",
+      defaultModel,
       async () => {
         calls++;
         if (variant === "rate-limit")
@@ -291,12 +346,15 @@ it.each(["refusal", "incomplete", "rate-limit"] as const)(
         );
       },
     );
-    await expect(
-      provider.generate(
+    const pending = provider.generate(
         prepareIntent(generationFixtures()[0]),
         new AbortController().signal,
-      ),
-    ).rejects.toBeTruthy();
+      );
+    if (variant === "rate-limit") await expect(pending).rejects.toBeTruthy();
+    else await expect(pending).rejects.toMatchObject({
+      code: variant === "refusal" ? "REFUSED" : "INCOMPLETE",
+      usage: { inputTokens: 5, outputTokens: 5, cachedInputTokens: null },
+    });
     expect(calls).toBe(1);
   },
 );

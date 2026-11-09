@@ -28,3 +28,8 @@ Zod 4.6.7 的建置警告來自 v4/core/regexes.js:74 與 util.js:400 的說明�
 CanvasSpec v1 採相容擴充明確 heading／image／選填 href 與效果列表，舊紀錄維持可讀；PageSpec v2／Renderer／Patch Engine 不重建或放寬。資產沿用既有白名單，不為此新建圖片服務。
 候選確認採原 savePage 交易 CAS，成功才替換正式 Session。透過原 saver 的唯讀 token 介面取得基準，不使用另一套存檔機制；失敗與過期保留有效版本。
 伺服器僅 loopback，採本機 session cookie + CSRF 與全程序限制，尚非公開服務認證。用量／成本只輸出最小數字，測試費率為合成測試資料，真實費用評估保留 NOT TESTED。沒有購買額度、開帳戶或真實付費呼叫。
+
+
+2026-11-09（Phase 5.1）：以 gpt-6-luna 作待核實候選，gpt-6.1-sol 只保留為另行授權選項，移除舊 gpt-4.1-mini 白名單。官方 SDK 型別列有名稱，但四個官方頁 CONNECT 403，不能把型別當作即時 API／Schema／推理／定價保證。因此新增 model review gate，未核對前停用，不猜測 reasoning.effort，不為更名升級已相容 SDK。
+授權預設一次：既有 limiter 改接後端可設定 1–5 次與必填且至多 $0.25 的預算，保留單次 $0.10／4096 output／30 秒／併發 1／零重試。旗標不是付費授權，先驗收第一份，失敗停止；不改帳務或付費試錯。
+保留原五份內容與凌亂幾何，只固定 UUID／anchor 並建立 SHA-256 manifest，避免正式評估輸入漂移。補記 cached／reasoning 與失敗用量，未知為 null；reasoning 不重複計費。正式品質分數不以 Mock 或假數字填滿；本輪真實呼叫 0、Phase 5.1 BLOCKED。

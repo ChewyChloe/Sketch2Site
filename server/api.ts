@@ -12,8 +12,13 @@ import {
   GenerationError,
   type GenerationCode,
 } from "../src/generation";
-import { layoutJSONSchema } from "../src/generation";
-import { systemRules, providerInput, type LayoutProvider } from "./provider";
+import {
+  inputTokenBound,
+  validUsage,
+  ProviderFailure,
+  type ProviderUsage,
+  type LayoutProvider,
+} from "./provider";
 const requestSchema = z
   .object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema })
   .strict();
@@ -21,12 +26,13 @@ type Options = {
   provider?: LayoutProvider;
   inputRate?: number;
   outputRate?: number;
+  cachedInputRate?: number;
   timeoutMs?: number;
   maxCalls?: number;
   maxPerMinute?: number;
   budgetUsd?: number;
   testMode?: boolean;
-  onUsage?: (usage: Record<string, number | string>) => void;
+  onUsage?: (usage: Record<string, number | string | null>) => void;
 };
 export function createGenerationServer(options: Options = {}) {
   const sessions = new Map<string, { csrf: string; expires: number }>(),
@@ -143,12 +149,7 @@ export function createGenerationServer(options: Options = {}) {
     while (arrivals[0] && arrivals[0] < now - 60000) arrivals.shift();
     // Reserve a conservative byte-based token bound plus schema/protocol overhead; failures consume reservations.
     const intent = prepareIntent(request.canvasSpec);
-    const inputBound =
-      Buffer.byteLength(
-        systemRules +
-          JSON.stringify(providerInput(intent)) +
-          JSON.stringify(layoutJSONSchema),
-      ) + 8192;
+    const inputBound = inputTokenBound(intent);
     const reserve =
       (inputBound * (options.inputRate ?? 2)) / 1e6 +
       (4096 * (options.outputRate ?? 8)) / 1e6;
@@ -167,6 +168,20 @@ export function createGenerationServer(options: Options = {}) {
     const started = Date.now(),
       controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let observedUsage: ProviderUsage | undefined;
+    const account = (usage: ProviderUsage) => {
+      const cached = usage.cachedInputTokens ?? 0;
+      return {
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        cachedInputTokens: usage.cachedInputTokens ?? null,
+        reasoningTokens: usage.reasoningTokens ?? null,
+        estimatedCostUsd:
+          ((usage.inputTokens - cached) * (options.inputRate ?? 2) +
+            cached * (options.cachedInputRate ?? options.inputRate ?? 2) +
+            usage.outputTokens * (options.outputRate ?? 8)) / 1e6,
+      };
+    };
     try {
       const task = Promise.resolve().then(() =>
         options.provider!.generate(intent, controller.signal),
@@ -184,25 +199,19 @@ export function createGenerationServer(options: Options = {}) {
           }, options.timeoutMs ?? 30000);
         }),
       ]);
-      const page = materialize(request.canvasSpec, result.layout);
+      if (validUsage(result)) observedUsage = result;
       if (
         result.outputTokens > 4096 ||
         result.inputTokens > inputBound ||
-        !Number.isSafeInteger(result.inputTokens) ||
-        result.inputTokens < 0 ||
-        !Number.isSafeInteger(result.outputTokens) ||
-        result.outputTokens < 0
+        !validUsage(result)
       )
         throw new GenerationError("INVALID_OUTPUT");
+      const page = materialize(request.canvasSpec, result.layout);
       const usage = {
-        inputTokens: result.inputTokens,
-        outputTokens: result.outputTokens,
+        ...account(result),
         latencyMs: Date.now() - started,
-        estimatedCostUsd:
-          (result.inputTokens * (options.inputRate ?? 2)) / 1e6 +
-          (result.outputTokens * (options.outputRate ?? 8)) / 1e6,
       };
-      options.onUsage?.({ requestId: request.requestId, ...usage });
+      options.onUsage?.({ requestId: request.requestId, outcome: "PASS", ...usage });
       json(res, 200, {
         requestId: request.requestId,
         page,
@@ -212,11 +221,26 @@ export function createGenerationServer(options: Options = {}) {
     } catch (error) {
       const code =
         error instanceof GenerationError ? error.code : "UNAVAILABLE";
+      if (
+        error instanceof ProviderFailure &&
+        error.usage &&
+        validUsage(error.usage)
+      )
+        observedUsage = error.usage;
       options.onUsage?.({
         requestId: request.requestId,
         latencyMs: Date.now() - started,
         outcome: code,
         reservedUsd: reserve,
+        ...(observedUsage
+          ? account(observedUsage)
+          : {
+              inputTokens: null,
+              outputTokens: null,
+              cachedInputTokens: null,
+              reasoningTokens: null,
+              estimatedCostUsd: null,
+            }),
       });
       failure(res, code === "TIMEOUT" ? 504 : 502, code);
     } finally {

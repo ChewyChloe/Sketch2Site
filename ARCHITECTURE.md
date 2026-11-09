@@ -86,9 +86,9 @@ prepareIntent 保留原 ID、內容、座標尺寸、層級、資產、連結、
 LayoutSchema 是 Provider 中間協定，不取代正式 PageSpec。輸出先驗證中間協定，再驗證完整 PageSpec、來源／內容／動畫保留；前端收到回應也驗證 PageSpec 與保留條件。不把模型輸出直接當 React props 或程式碼。
 
 ## Provider 與本機 API
-server/provider.ts 使用官方 OpenAI Node SDK 7.53.0、Responses API、strict JSON Schema、store:false、max_output_tokens:4096、maxRetries:0、30 秒 timeout，無 tools。預定低成本模型 gpt-4.1-mini-2025-04-14；僅後端可設定同家族 alias。SDK enum 與 fake transport 合約已確認；真實模型可用性／輸出品質 NOT TESTED。
+server/provider.ts 使用官方 OpenAI Node SDK 7.53.0、Responses API、strict JSON Schema、store:false、max_output_tokens:4096、maxRetries:0、30 秒 timeout，無 tools。Phase 5.1 將預設改為 gpt-6-luna 待核實候選，另允許另行授權的 gpt-6.1-sol；停用舊 gpt-4.1-mini 家族。SDK enum 與 fake transport 合約已確認；真實模型可用性／strict Schema 支援／推理預設／輸出品質 NOT TESTED。
 官方 SDK 來源：https://github.com/openai/openai-node （含 src/resources/shared.ts、Responses JSON Schema 型別）。官方模型／價格頁 https://developers.openai.com/api/docs/models/gpt-4.1-mini 、https://openai.com/api/pricing/ 在本環境遭 HTTP CONNECT 403，沒有宣稱已核對當日價格。
-必須在後端配置金鑰、SKETCH_AI_ENABLED=true、SKETCH_AI_PRICING_REVIEWED=true 及經核對費率才能啟用；缺少任一設定回傳 NOT_CONFIGURED。詳見 .env.example。費率不硬寫為當日官價，不使用昂貴模型 fallback。測試中的 0.4／1.6 是測試運算資料，不是當日價格承諾。
+必須在後端配置金鑰、SKETCH_AI_ENABLED=true、SKETCH_AI_MODEL_REVIEWED=true、SKETCH_AI_PRICING_REVIEWED=true、經核對一般／cached input／output 費率及明確的單輪預算才能啟用；缺少任一設定回傳 NOT_CONFIGURED。詳見 .env.example。費率不硬寫為當日官價，不使用昂貴模型 fallback。測試中的 0.4／1.6 是測試運算資料，不是當日價格承諾。
 server/api.ts 使用 Node 原生 HTTP，server/index.ts 僅監聽 127.0.0.1:8787。GET /api/generation/status 提供啟用狀態與 CSRF nonce、設定 HttpOnly SameSite=Strict 本機 session cookie；POST /api/generation 驗證 Host、loopback peer、固定前端 Origin、Fetch Metadata、cookie + CSRF、application/json、請求與內容限制。
 所有成本控制在後端：併發 1、3 次／分鐘、5 次／程序、4096 output tokens、30 秒逾時、相同 requestId 去重；預估保守預留上限 $0.10／請求、$0.25／程序。依 UTF-8 byte 上界 + schema／protocol margin 估計 input tokens，失敗也不退還不確定的預留額度。逾時先 abort，若 Provider 尚未真正 settle，維持 busy，不開放下一個並行呼叫。
 成功記錄 requestId、延遲、Provider 回報 Tokens 與設定費率的 estimatedCostUsd；失敗只記錄固定 outcome、延遲與預留估計。不是帳單或供應商硬額度；重新啟動程序會重設本機限制，公開服務前仍需真正身分驗證、持久預算及平台費用上限。
@@ -99,3 +99,10 @@ App 維護遞增 Canvas 版本（即使 Undo 回到同內容也視為新版本�
 src/CandidatePreview.tsx 只以既有 PageRenderer 顯示經驗證候選，可切桌面／手機或返回草稿；未確認不寫入正式頁面或 IndexedDB。Mock 顯示「測試生成（非 AI）」，正式呼叫才顯示生成候選。無假百分比或思考過程。
 確認時 usePagePersistence.acceptGeneration 再比對 target；停止舊 saver，使用同一 savePage/CAS/token 寫入 revision+1，新 Session 僅在交易成功後取代目前正式頁面；以既有 History 工具保留前一有效頁面與有界歷史，確認生成後仍可用原 Undo/Redo 還原／重做，重新載入才清空記憶體歷史。保存失敗保留候選與原正式 Session／資料；跨分頁 CAS 衝突要求重新載入，不能盲目覆寫。沒有建立新儲存系統或完整生成版本 UI。
 tests/generation-server.ts 與 tests/fixtures/generation.ts 僅供 Playwright 注入 Mock Provider，production index.ts 沒有 Mock 選項。測試以 8788 測試服務搭配隔離瀏覽器資料，不使用真實金鑰；正式後端維持 8787。
+
+
+## Phase 5.1：正式評估準備（BLOCKED）
+configFromEnv 保持 fail-closed。SKETCH_AI_MODEL_REVIEWED 代表已核對官方 ID、Responses／strict JSON 子集、reasoning 預設與 Project 權限，不是僅確認 SDK 型別。當次四個官方文件頁 CONNECT 403，所以仍不啟用；沒有新增猜測的 reasoning.effort 或昂貴 fallback。SDK 7.53.0 已列兩候選，不需升級依賴。
+SKETCH_AI_MAX_CALLS 預設 1，只允許 1–5；SKETCH_AI_BUDGET_USD 無預設，需正值且不超過 $0.25。server/index.ts 將兩值傳入既有後端 limiter，不另建付費端點或公開服務。既有單次 $0.10、輸出 4096、30 秒、併發 1、零重試不變。這些配置不構成付費授權；先驗收第一份，失敗停止，不能重啟繞過配額。
+Provider 保留已取得的 input／cached input／output／reasoning tokens；拒答、不完整或轉換失敗也以固定錯誤碼記錄數字。未知值為 null。估計費用以 uncached input × 一般價 + cached input × cache 價 + output × 輸出價；reasoning 包含在 output，不重複計價。預留仍使用全額一般輸入價，不先假設 cache 命中。
+五份測試保留原內容與位置，改為固定 UUID／anchor，SHA-256／元素／動畫數記於 docs/generation-fixtures.json。npm run generation:preflight 僅離線輸出 metadata／指紋／預留，不讀 .env、不呼叫模型。正式測試／評分計畫與阻礙見 docs/GENERATION_EVALUATION.md；本輪零真實呼叫。

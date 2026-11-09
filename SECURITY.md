@@ -54,3 +54,10 @@ API 與 Vite 預設 loopback；Host／peer／Origin／Fetch Metadata 驗證防�
 ### 候選隔離
 候選只在記憶體，經使用者確認才走原 IndexedDB CAS 提交；先檢查 Canvas version 與 PageSession/revision，交易成功前不替換正式 Session。失敗仍留候選與原資料；原生交易與其他分頁競爭由同一 CAS 保護。候選離頁會提示，但不保證強制關閉能保留未保存候選。
 Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或環境捷徑。所有 SDK tests 使用 fake fetch，所有 Browser tests 使用 Mock Provider；不可將其結果稱為真實 AI 設計品質。
+
+
+## Phase 5.1 付費驗收規則
+本輪指令明確不授權付費呼叫；環境中有 Key 或旗標為 true 也不構成授權。正式測試前須核對官方模型／結構化輸出／reasoning 設定／當日價格，列明請求次數、token 預留與金額，並確認使用者已檢查 API Project 支出限制，再取得明確授權。不得購買額度、修改帳務或開自動儲值。
+新增 model review gate；預設 Luna 僅為候選，Sol 不自動使用，舊模型不再允許啟用。SKETCH_AI_MAX_CALLS 預設 1，上限 5；SKETCH_AI_BUDGET_USD 必填且不超過 $0.25，不能超過核准金額。失敗也消耗呼叫與保守預留，不重試、不重啟繞過限制；第一份失敗停止正式測試。
+.env 只由後端 npm run dev:api 的 --env-file-if-exists 載入；由使用者自行安全編輯或環境秘密設定供應，不能貼入聊天、Issue、報告或 VITE_*。Project 支出控制未由使用者確認，本輪沒有讀取帳務或測試金鑰。
+新增 cached／reasoning 用量欄位與模型名稱僅作安全觀測，失敗時已知用量仍保留；未知 token／費用為 null，不記錄完整上游錯誤、原始輸出或草稿。離線 preflight 只處理專案公開 fixtures，不讀秘密、不連網。未改 Renderer／PageSpec 安全白名單或本機存取限制。
