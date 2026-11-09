@@ -1,0 +1,10 @@
+import {describe,it,expect} from 'vitest';
+import {blank,CanvasSchema,PageSchema,createNode,commit,undo,redo} from './spec';
+describe('資料與信任邊界',()=>{
+ it('接受完整草稿並保存穩定 ID 與座標',()=>{const s=blank();s.nodes=[createNode('text',42,56)];expect(CanvasSchema.parse(s).nodes[0]).toMatchObject({x:42,y:56,id:s.nodes[0].id});});
+ it('拒絕未知欄位與程式碼',()=>expect(CanvasSchema.safeParse({...blank(),script:'alert(1)'}).success).toBe(false));
+ it('拒絕超出邊界及重複 ID',()=>{const n=createNode('text',0,0);expect(CanvasSchema.safeParse({...blank(),nodes:[n,n]}).success).toBe(false);expect(CanvasSchema.safeParse({...blank(),nodes:[{...n,x:1440}]}).success).toBe(false);});
+ it('拒絕任意動畫與不支援階層',()=>{const n=createNode('text',0,0);for(const bad of [{...n,effects:['eval']},{...n,parentId:n.id}])expect(CanvasSchema.safeParse({...blank(),nodes:[bad]}).success).toBe(false);});
+ it('PageSpec 拒絕 javascript URL、事件欄位及原始 HTML 欄位',()=>{const base={schemaVersion:1,metadata:{title:'測試',language:'zh-Hant'},sections:[{id:crypto.randomUUID(),layout:'stack',components:[{id:crypto.randomUUID(),type:'button',content:'前往',effects:[],interaction:{label:'前往',href:'https://example.com'}}]}],typography:'sans',styles:'neutral',responsive:{mobileColumns:1,desktopColumns:2}};expect(PageSchema.safeParse(base).success).toBe(true);for(const href of ['javascript:alert(1)','data:text/html,test','//example.com'])expect(PageSchema.safeParse({...base,sections:[{...base.sections[0],components:[{...base.sections[0].components[0],interaction:{label:'x',href}}]}]}).success).toBe(false);expect(PageSchema.safeParse({...base,html:'<script>test</script>'}).success).toBe(false);expect(PageSchema.safeParse({...base,onclick:'alert(1)'}).success).toBe(false);});
+ it('Undo / Redo 保留原始 ID、內容且新修改清除未來',()=>{const start={past:[],present:blank(),future:[]};const next={...blank(),nodes:[createNode('card',20,30)]};const h=commit(start,next);expect(redo(undo(h)).present).toEqual(next);expect(commit(undo(h),{...blank(),metadata:{...blank().metadata,name:'新草稿'}}).future).toEqual([]);});
+});
