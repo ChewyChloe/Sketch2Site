@@ -6,7 +6,11 @@ async function scan(dir) {
     if (e.isDirectory()) await scan(p);
     else {
       const s = await readFile(p, "utf8");
-      if (s.includes(marker) || /sk-[A-Za-z0-9]{32,}/.test(s))
+      if (
+        s.includes("You are a responsive single-page layout planner") ||
+        s.includes(marker) ||
+        /sk-[A-Za-z0-9]{32,}/.test(s)
+      )
         throw Error("Secret detected in " + p);
       if (p.endsWith(".map")) throw Error("Unexpected source map");
     }

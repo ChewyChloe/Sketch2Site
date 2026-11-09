@@ -1,0 +1,302 @@
+import { afterEach, it, expect, vi } from "vitest";
+import { createGenerationServer } from "./api";
+import {
+  generationFixtures,
+  mockProvider,
+  mockLayout,
+} from "../tests/fixtures/generation";
+import { GenerationError } from "../src/generation";
+import { configFromEnv } from "./config";
+import { openAIProvider } from "./provider";
+import { prepareIntent } from "../src/generation";
+const servers: ReturnType<typeof createGenerationServer>[] = [];
+afterEach(async () => {
+  await Promise.all(
+    servers.splice(0).map(
+      (s) =>
+        new Promise<void>((resolve) => {
+          s.closeAllConnections();
+          s.close(() => resolve());
+        }),
+    ),
+  );
+});
+async function setup(
+  options: Parameters<typeof createGenerationServer>[0] = {
+    provider: mockProvider,
+    testMode: true,
+    inputRate: 0.4,
+    outputRate: 1.6,
+  },
+) {
+  const server = createGenerationServer(options);
+  servers.push(server);
+  await new Promise<void>((res) => server.listen(0, "127.0.0.1", res));
+  const port = (server.address() as { port: number }).port,
+    base = "http://127.0.0.1:" + port;
+  const status = await fetch(base + "/api/generation/status");
+  const info = await status.json();
+  const headers = {
+    Origin: "http://127.0.0.1:5173",
+    "Content-Type": "application/json",
+    Cookie: status.headers.get("set-cookie")!.split(";")[0],
+    "X-Sketch-CSRF": info.csrfToken,
+  };
+  const post = (body: unknown, extra: Record<string, string> = {}) =>
+    fetch(base + "/api/generation", {
+      method: "POST",
+      headers: { ...headers, ...extra },
+      body: JSON.stringify(body),
+    });
+  return { base, info, post };
+}
+const request = () => ({
+  requestId: crypto.randomUUID(),
+  canvasSpec: generationFixtures()[0],
+});
+it("runs the complete actual HTTP pipeline with only an injected Mock Provider", async () => {
+  const calls = vi.fn(mockProvider.generate),
+    api = await setup({
+      provider: { generate: calls },
+      testMode: true,
+      inputRate: 0.4,
+      outputRate: 1.6,
+    });
+  const body = request(),
+    response = await api.post(body),
+    data = await response.json();
+  expect(response.status).toBe(200);
+  expect(data.mode).toBe("mock");
+  expect(data.page.schemaVersion).toBe(2);
+  expect(data.requestId).toBe(body.requestId);
+  expect(calls).toHaveBeenCalledTimes(1);
+  expect(data.usage.estimatedCostUsd).toBeGreaterThan(0);
+  const duplicate = await api.post(body);
+  expect(duplicate.status).toBe(409);
+  expect(calls).toHaveBeenCalledTimes(1);
+});
+it("missing key/config is safe and never instantiates a paid call", async () => {
+  expect(configFromEnv({}).enabled).toBe(false);
+  expect(
+    configFromEnv({ SKETCH_AI_ENABLED: "true", SKETCH_AI_API_KEY: "test-only" })
+      .enabled,
+  ).toBe(false);
+  const api = await setup({});
+  expect(api.info.configured).toBe(false);
+  expect((await (await api.post(request())).json()).code).toBe(
+    "NOT_CONFIGURED",
+  );
+});
+it("enforces origin, CSRF, content-type, size and schema on the backend", async () => {
+  const api = await setup();
+  for (const headers of [
+    { Origin: "https://evil.example" },
+    { "X-Sketch-CSRF": "wrong" },
+    { "X-Sketch-CSRF": "é".repeat(64) },
+    { Cookie: "" },
+  ] as Record<string, string>[])
+    expect((await api.post(request(), headers)).status).toBe(403);
+  expect(
+    (await api.post(request(), { "Content-Type": "text/plain" })).status,
+  ).toBe(413);
+  expect(
+    (await api.post({ ...request(), padding: "x".repeat(33000) })).status,
+  ).toBe(413);
+  expect(
+    (await api.post({ ...request(), canvasSpec: { script: "eval" } })).status,
+  ).toBe(400);
+});
+it("applies concurrency and timeout limits even if a provider ignores cancellation", async () => {
+  let release!: (v: Awaited<ReturnType<typeof mockProvider.generate>>) => void;
+  const api = await setup({
+    provider: {
+      generate: () =>
+        new Promise((res) => {
+          release = res;
+        }),
+    },
+    timeoutMs: 30,
+    inputRate: 0.4,
+    outputRate: 1.6,
+  });
+  const first = api.post(request());
+  await vi.waitFor(() => expect(release).toBeTypeOf("function"));
+  expect((await (await api.post(request())).json()).code).toBe("BUSY");
+  expect((await (await first).json()).code).toBe("TIMEOUT");
+  expect((await (await api.post(request())).json()).code).toBe("BUSY");
+  release({ layout: {}, inputTokens: 0, outputTokens: 0 });
+});
+it("reserves process call/budget limits without retries or private draft logs", async () => {
+  const log = vi.fn(),
+    call = vi.fn(mockProvider.generate);
+  const api = await setup({
+    provider: { generate: call },
+    maxCalls: 1,
+    inputRate: 0.4,
+    outputRate: 1.6,
+    onUsage: log,
+  });
+  await api.post(request());
+  expect((await (await api.post(request())).json()).code).toBe("LIMIT");
+  expect(call).toHaveBeenCalledTimes(1);
+  expect(JSON.stringify(log.mock.calls)).not.toContain("林的作品集");
+  const noBudget = await setup({ provider: mockProvider, budgetUsd: 0 });
+  expect((await (await noBudget.post(request())).json()).code).toBe("LIMIT");
+});
+it.each(["REFUSED", "INCOMPLETE", "INVALID_OUTPUT"] as const)(
+  "handles %s without exposing upstream errors or accepting bad output",
+  async (code) => {
+    const api = await setup({
+      provider: {
+        async generate() {
+          if (code === "INVALID_OUTPUT")
+            return {
+              layout: { script: "evil" },
+              inputTokens: 1,
+              outputTokens: 1,
+            };
+          throw new GenerationError(code);
+        },
+      },
+      inputRate: 0.4,
+      outputRate: 1.6,
+    });
+    const result = await (await api.post(request())).json();
+    expect(result).toEqual({ code });
+    expect(result.page).toBeUndefined();
+  },
+);
+it("OpenAI official SDK adapter uses strict output, no tools, no retry, store:false; fake transport only", async () => {
+  const canvas = generationFixtures()[0],
+    intent = prepareIntent(canvas),
+    calls: Record<string, unknown>[] = [];
+  const provider = openAIProvider(
+    "synthetic-server-key",
+    "gpt-4.1-mini-2025-04-14",
+    async (_input, init) => {
+      const body = JSON.parse(String(init?.body));
+      calls.push(body);
+      return new Response(
+        JSON.stringify({
+          id: "resp_test",
+          object: "response",
+          status: "completed",
+          output: [
+            {
+              type: "message",
+              id: "msg_test",
+              role: "assistant",
+              status: "completed",
+              content: [
+                {
+                  type: "output_text",
+                  text: JSON.stringify(mockLayout(intent)),
+                  annotations: [],
+                },
+              ],
+            },
+          ],
+          usage: { input_tokens: 500, output_tokens: 600, total_tokens: 1100 },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    },
+  );
+  const result = await provider.generate(intent, new AbortController().signal);
+  expect(result.layout).toEqual(mockLayout(intent));
+  expect(calls).toHaveLength(1);
+  expect(calls[0]).toMatchObject({ store: false, max_output_tokens: 4096 });
+  expect(calls[0].tools).toBeUndefined();
+  expect(JSON.stringify(calls[0])).not.toContain("synthetic-server-key");
+  expect(calls[0].text).toMatchObject({
+    format: { type: "json_schema", strict: true },
+  });
+});
+it("requires explicit price review, keeps model configuration server-side, and enforces minute limits", async () => {
+  const env = {
+    SKETCH_AI_ENABLED: "true",
+    SKETCH_AI_API_KEY: "synthetic-key",
+    SKETCH_AI_PRICING_REVIEWED: "true",
+    SKETCH_AI_INPUT_USD_PER_MILLION: ".4",
+    SKETCH_AI_OUTPUT_USD_PER_MILLION: "1.6",
+  };
+  expect(configFromEnv(env).enabled).toBe(true);
+  expect(
+    configFromEnv({ ...env, SKETCH_AI_MODEL: "expensive-model" }).enabled,
+  ).toBe(false);
+  expect(
+    configFromEnv({ ...env, SKETCH_AI_PRICING_REVIEWED: "false" }).enabled,
+  ).toBe(false);
+  const api = await setup({
+    provider: mockProvider,
+    maxPerMinute: 1,
+    inputRate: 0.4,
+    outputRate: 1.6,
+  });
+  await api.post(request());
+  expect((await (await api.post(request())).json()).code).toBe("LIMIT");
+});
+it("sanitizes arbitrary upstream errors instead of reflecting private paths or keys", async () => {
+  const api = await setup({
+    provider: {
+      async generate() {
+        throw Error("synthetic-key /private/service/config");
+      },
+    },
+    inputRate: 0.4,
+    outputRate: 1.6,
+  });
+  expect(await (await api.post(request())).json()).toEqual({
+    code: "UNAVAILABLE",
+  });
+});
+it.each(["refusal", "incomplete", "rate-limit"] as const)(
+  "official SDK adapter handles %s with one fake fetch and zero retries",
+  async (variant) => {
+    let calls = 0;
+    const provider = openAIProvider(
+      "synthetic-key",
+      "gpt-4.1-mini-2025-04-14",
+      async () => {
+        calls++;
+        if (variant === "rate-limit")
+          return new Response(
+            JSON.stringify({
+              error: {
+                message: "synthetic upstream failure",
+                type: "rate_limit_error",
+              },
+            }),
+            { status: 429, headers: { "content-type": "application/json" } },
+          );
+        return new Response(
+          JSON.stringify({
+            id: "resp_test",
+            object: "response",
+            status: variant === "incomplete" ? "incomplete" : "completed",
+            output:
+              variant === "refusal"
+                ? [
+                    {
+                      type: "message",
+                      id: "msg_test",
+                      role: "assistant",
+                      content: [{ type: "refusal", refusal: "declined" }],
+                    },
+                  ]
+                : [],
+            usage: { input_tokens: 5, output_tokens: 5 },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      },
+    );
+    await expect(
+      provider.generate(
+        prepareIntent(generationFixtures()[0]),
+        new AbortController().signal,
+      ),
+    ).rejects.toBeTruthy();
+    expect(calls).toBe(1);
+  },
+);

@@ -11,22 +11,49 @@ import {
   type History,
 } from "./spec";
 import { loadDraft, saveDraft } from "./storage";
-import Preview from "./Preview";
-const labels = { text: "文字", button: "按鈕", card: "卡片" };
+import Preview, { type PreviewHandle } from "./Preview";
+import CandidatePreview from "./CandidatePreview";
+import { requestGeneration } from "./generationClient";
+import { GenerationError, type GenerationResponse } from "./generation";
+const labels = {
+  text: "文字",
+  button: "按鈕",
+  card: "卡片",
+  heading: "標題",
+  image: "圖片",
+};
 const effects = {
   "hover-glow": "Hover Glow",
   "fade-in": "Fade In",
   lift: "Hover Lift",
+  "slide-up": "Slide Up",
+  "scale-in": "Scale In",
+  "hover-lift": "Hover Lift",
+  "stagger-reveal": "Stagger Reveal",
 };
 type Effect = keyof typeof effects;
 const dragType = "application/x-sketch2site";
 export default function App() {
+  const previewRef = useRef<PreviewHandle>(null);
+  const canvasVersion = useRef(0),
+    canvasHead = useRef<CanvasSpec | null>(null);
+  const [generating, setGenerating] = useState(false),
+    [accepting, setAccepting] = useState(false);
+  const generationRun = useRef(0),
+    abortRef = useRef<AbortController | null>(null);
+  const [candidate, setCandidate] = useState<{
+    result: GenerationResponse;
+    canvasVersion: number;
+    target: { sessionId: string; revision: number };
+  } | null>(null);
+  const [generationError, setGenerationError] = useState("");
   const [mode, setMode] = useState<"draft" | "preview">("draft");
   const [history, setHistory] = useState<History>({
     past: [],
     present: blank(),
     future: [],
   });
+  const [linkDraft, setLinkDraft] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [ready, setReady] = useState(false),
     [busy, setBusy] = useState(false),
@@ -54,6 +81,89 @@ export default function App() {
   const spec = history.present,
     node = spec.nodes.find((n) => n.id === selected),
     dirty = JSON.stringify(spec) !== saved;
+  if (canvasHead.current !== spec) {
+    canvasVersion.current++;
+    canvasHead.current = spec;
+  }
+  useEffect(
+    () => () => {
+      generationRun.current++;
+      abortRef.current?.abort();
+    },
+    [],
+  );
+  async function generate() {
+    if (generating || abortRef.current || !ready || loadError) return;
+    const target = previewRef.current?.target();
+    if (!target) {
+      setGenerationError("請先完成目前頁面的保存或重新載入預覽。");
+      return;
+    }
+    const version = canvasVersion.current,
+      run = ++generationRun.current,
+      controller = new AbortController();
+    abortRef.current = controller;
+    setGenerating(true);
+    setGenerationError("");
+    try {
+      const result = await requestGeneration(spec, controller.signal);
+      const latest = previewRef.current?.target();
+      if (
+        run !== generationRun.current ||
+        version !== canvasVersion.current ||
+        !latest ||
+        latest.sessionId !== target.sessionId ||
+        latest.revision !== target.revision
+      )
+        throw new GenerationError("STALE");
+      report(
+        result.mode === "mock"
+          ? "測試生成完成，未呼叫 AI。"
+          : "草稿已送至 OpenAI，候選尚未儲存。",
+      );
+      setCandidate({ result, canvasVersion: version, target });
+      setMode("preview");
+    } catch (e) {
+      if (run === generationRun.current)
+        setGenerationError(
+          e instanceof GenerationError ? e.message : "生成失敗，原版本已保留。",
+        );
+    } finally {
+      if (run === generationRun.current) {
+        setGenerating(false);
+        abortRef.current = null;
+      }
+    }
+  }
+  async function acceptCandidate() {
+    if (!candidate || candidate.canvasVersion !== canvasVersion.current) return;
+    setAccepting(true);
+    setGenerationError("");
+    try {
+      const result = await previewRef.current!.accept(
+        candidate.result.page,
+        candidate.target,
+      );
+      if (result.ok) setCandidate(null);
+      else
+        setGenerationError((result.error ?? "儲存失敗") + " 候選結果仍保留。");
+    } finally {
+      setAccepting(false);
+    }
+  }
+  useEffect(() => {
+    setLinkDraft(node?.href ?? "");
+  }, [node?.id, node?.href]);
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (candidate) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [candidate]);
   const report = (s: string, bad = false) => {
     setMessage(s);
     setError(bad);
@@ -68,7 +178,7 @@ export default function App() {
       setSelected(null);
       setMoving(null);
       drag.current = null;
-      report("草稿已就緒 · 資料僅保存在此瀏覽器");
+      report("草稿已就緒 · 本機草稿；生成時傳送至 OpenAI");
     } catch {
       setLoadError(true);
       report("無法讀取草稿。請允許網站儲存資料後，按「重新載入」重試。", true);
@@ -83,12 +193,14 @@ export default function App() {
     try {
       CanvasSchema.parse(next);
       setHistory((h) => commit(h, next));
+      return true;
     } catch {
       report("修改超出畫布範圍或資料限制，請調整後重試。", true);
+      return false;
     }
   };
   function patch(id: string, attrs: Partial<CanvasNode>) {
-    change({
+    return change({
       ...state.current.present,
       nodes: state.current.present.nodes.map((n) =>
         n.id === id ? { ...n, ...attrs } : n,
@@ -322,16 +434,31 @@ export default function App() {
         <div className="toolbar-actions">
           <button
             aria-pressed={mode === "draft"}
-            onClick={() => setMode("draft")}
+            disabled={accepting}
+            onClick={() => {
+              setCandidate(null);
+              setMode("draft");
+            }}
           >
             草稿
           </button>
           <button
             aria-pressed={mode === "preview"}
+            disabled={accepting}
             onClick={() => setMode("preview")}
           >
             預覽
           </button>
+          {mode === "draft" && (
+            <button
+              className="primary"
+              disabled={disabled || generating || !spec.nodes.length}
+              title="生成時會將這份草稿的內容與布局傳送至 OpenAI"
+              onClick={() => void generate()}
+            >
+              {generating ? "生成中…" : "生成網站"}
+            </button>
+          )}
           {mode === "draft" && (
             <>
               <button
@@ -371,13 +498,36 @@ export default function App() {
           )}
         </div>
       </header>
+      {generationError && (
+        <p role="alert" className="generation-notice">
+          {generationError}
+        </p>
+      )}
+      {generating && (
+        <p className="generation-notice" role="status">
+          正在生成，可繼續編輯；變更草稿後需重新生成。
+        </p>
+      )}
       <div className="workspace">
         <div
           className="preview-host"
-          style={{ display: mode === "preview" ? "flex" : "none" }}
+          style={{
+            display: mode === "preview" && !candidate ? "flex" : "none",
+          }}
         >
-          <Preview />
+          <Preview ref={previewRef} />
         </div>
+        {mode === "preview" && candidate && (
+          <CandidatePreview
+            candidate={candidate.result}
+            stale={candidate.canvasVersion !== canvasVersion.current}
+            onAccept={acceptCandidate}
+            onBack={() => {
+              setCandidate(null);
+              setMode("draft");
+            }}
+          />
+        )}
         {mode === "draft" && (
           <>
             <main className="studio" aria-label="草稿工作區">
@@ -485,7 +635,15 @@ export default function App() {
                               {Math.round(n.y)}
                             </span>
                           )}
-                          {n.content}
+                          {n.type === "image" ? (
+                            <img
+                              src={n.assetId!}
+                              alt={n.content}
+                              draggable={false}
+                            />
+                          ) : (
+                            n.content
+                          )}
                           <span className="effect-tags">
                             {n.effects.map((f) => (
                               <span key={f}>{effects[f]}</span>
@@ -598,7 +756,15 @@ export default function App() {
                             aria-label={"新增" + labels[t]}
                           >
                             <span className="glyph" aria-hidden="true">
-                              {{ text: "T", button: "↗", card: "▤" }[t]}
+                              {
+                                {
+                                  text: "T",
+                                  button: "↗",
+                                  card: "▤",
+                                  heading: "H",
+                                  image: "▧",
+                                }[t]
+                              }
                             </span>
                             <span>
                               <strong>{labels[t]}</strong>
@@ -608,6 +774,8 @@ export default function App() {
                                     text: "標題、段落與說明",
                                     button: "網站的行動入口",
                                     card: "相關內容的集合",
+                                    heading: "頁面的主要標題",
+                                    image: "使用內建示意素材",
                                   }[t]
                                 }
                               </small>
@@ -618,7 +786,11 @@ export default function App() {
                     <h2>動畫效果</h2>
                     <p className="note">拖到元件上附加，草稿僅顯示標記。</p>
                     <div className="library">
-                      {(Object.keys(effects) as Effect[])
+                      {(
+                        Object.keys(effects).filter(
+                          (f) => f !== "hover-lift",
+                        ) as Effect[]
+                      )
                         .filter((f) =>
                           effects[f]
                             .toLowerCase()
@@ -654,6 +826,10 @@ export default function App() {
                                     "hover-glow": "游標移入時柔光",
                                     "fade-in": "進入畫面時淡入",
                                     lift: "游標移入時上浮",
+                                    "hover-lift": "游標移入時上浮",
+                                    "slide-up": "進入畫面時上移",
+                                    "scale-in": "進入畫面時縮放",
+                                    "stagger-reveal": "子元素依序出現",
                                   }[f]
                                 }
                               </small>
@@ -676,6 +852,29 @@ export default function App() {
                         }
                       />
                     </label>
+                    {node.type === "button" && (
+                      <label className="field">
+                        按鈕連結
+                        <input
+                          aria-label="按鈕連結"
+                          placeholder="尚未設定連結"
+                          value={linkDraft}
+                          onChange={(e) => setLinkDraft(e.target.value)}
+                          onBlur={() => {
+                            if (!patch(node.id, { href: linkDraft || null })) {
+                              setLinkDraft(node.href ?? "");
+                              report("連結無效，原連結未變更。", true);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                          }}
+                        />
+                        <small>
+                          支援文件、example.com 或頁面中的元素連結。
+                        </small>
+                      </label>
+                    )}
                     <div className="pair">
                       {(["x", "y", "width", "height"] as const).map((k) => (
                         <label className="field" key={k}>

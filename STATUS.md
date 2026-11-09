@@ -1,57 +1,69 @@
 # 狀態
-2026-11-09（Asia/Taipei）
+2026-11-09（UTC）
 
 ## 功能
-- Phase 0／1／2／3 DONE，原有 Patch Engine／Renderer 合約未重寫，舊測試保留。
-- Phase 4 DONE：PageSpec 本機自動保存、Schema 驗證、交易 CAS、序列化／最新快照合併、失敗保留記憶體內容與重試、衝突重新載入、新 Session 繼承 revision／清空歷史。
-- DONE：損毀及不支援版本停止 Renderer／自動保存，原紀錄不被刪除或覆蓋；確認後在單一交易中原樣備份再以明示範例重新開始。
-- DONE：保存狀態與 Canvas 草稿分開；未完成交易不顯示已儲存，離開未保存頁面會提示。有效頁面的範例／檔案替換需確認。
-- NOT STARTED：AI API／Layout Generation、自然語言修改、雲端同步、會員、匯出、正式部署。本輪到此停止，下一正式階段優先開始 AI 生成主流程，不增加非必要底層功能。
+- Phase 0–4 DONE；沿用 CanvasSpec、PageSpec v2、Renderer、Patch、History、IndexedDB 與 Session／Revision CAS。
+- Phase 5 PARTIAL：生成管線與 Mock 驗收 DONE；真實 Provider 相容性、當日價格與生成品質 NOT TESTED。
+- DONE：Canvas 輸入驗證、空間關係提示、OpenAI Adapter、嚴格結構化布局、受控 PageSpec 轉換、逐一保留來源 ID／文字／圖片／連結／動畫、候選預覽與明確確認保存。
+- DONE：生成中可繼續編輯；草稿版本或頁面 Session 改變時拒絕過期結果。確認前不保存，交易失敗保留候選與舊正式頁面；成功後沿用 Undo／Redo。
+- DONE：缺少設定安全失敗；草稿、本機預覽不依賴 API。正式服務沒有 Mock 切換開關，只有測試程序注入 Mock。
+- BLOCKED：實際環境沒有 API Key，亦沒有付費測試授權。官方價格／模型文件當次網路 CONNECT 403；不得宣稱目前價格與線上模型已驗證。
+- NOT STARTED：AI 自然語言局部修改、匯出、帳號、雲端同步、公開部署。到此停止，不啟動下一階段。
+
+## 資料流程與核心檔案
+CanvasSpec → prepareIntent → Provider → LayoutSchema → materialize → PageSpec v2／來源保留檢查 → 候選 PageRenderer → 使用者確認 → 原有 Session／Revision／IndexedDB 保存。
+- src/generation.ts：輸入、結構化輸出、受控轉換及保留檢查。模型只選布局與來源 ID，不提供文案、URL、資產或程式碼。
+- server/provider.ts：官方 openai SDK 7.53.0；Responses API，嚴格 JSON Schema，無工具、store:false、零自動重試。預設後端模型 gpt-4.1-mini-2025-04-14；真實可用性 NOT TESTED。
+- server/api.ts、server/config.ts、server/index.ts：本機端點、環境設定與伺服器限制。
+- src/generationClient.ts、src/CandidatePreview.tsx、src/App.tsx：生成、候選、桌面／手機與確認操作。
+- src/usePagePersistence.ts、src/pageSaver.ts、src/Preview.tsx：沿用交易 CAS，拒絕過期結果與保留保存失敗候選。
+- src/spec.ts：Canvas v1 相容擴充標題、內建圖片、按鈕連結及既有動畫；PageSpec v2 安全限制未放寬。
+- src/generation.test.ts、server/api.test.ts、tests/generation.spec.ts、tests/fixtures/generation.ts：五種草稿、Mock HTTP／SDK 與瀏覽器驗收。
 
 ## 測試
-- PASS：npm run typecheck。
-- PASS：npm test，8 檔、88/88（舊 65 項 + 新儲存／佇列 23 項）。
-- PASS：npm run test:e2e，19/19（舊 12 項 + 本機保存 7 項）。
-- PASS：有效 PageRecord 保存／載入、不存在紀錄不自動寫 Fixture、DB v1→v2 升級保留 Canvas、損毀／缺欄位／版本／負值或小數 revision／UUID／元件／動畫／URL 拒絕且原值保留。
-- PASS：CAS 拒絕舊 revision／writer token，即使晚到快照宣稱較高 revision；同基準並行交易只允許一個成功。單筆進行中／合併最新快照，commit 前無 saved 狀態，舊 Session 關閉後不執行排隊寫入或更新 UI。
-- PASS：新 Session 正常 Patch、舊 Session Patch 拒絕、revision 繼承、Undo／Redo 不跨載入；原有 scope、不可變更新、Diff、歷史與草稿隔離回歸仍通過。
-- PASS：損毀資料確認前不覆寫，確認後原子備份／替換；備份 QuotaExceededError 時原資料不變。拒絕覆蓋已被其他分頁修復的有效紀錄。
-- PASS：Chromium 實際修改標題／動畫、自動保存、刷新恢復、兩分頁過期寫入拒絕及重新載入後繼續編輯；原有 Canvas 保存 ID 與資料維持不變。
-- PASS：以真實 IndexedDB 交易鎖延後提交，狀態維持「儲存中」，連續修改最後恢復最新值。QuotaExceededError／權限拒絕以原生 API 受控注入驗證，失敗時內容仍在畫面且重試可保存。
-- PASS：真正關閉 Chromium 程序，再以同一隔離 persistent profile 重新啟動，頁面及動畫設定恢復，Undo／Redo 從空歷史開始。另測試同 context 關閉頁籤後重新開啟。
-- PASS：VITE_TEST_SECRET=SKETCH2SITE_TEST_SECRET_83f21c npm run build；npm run check:secrets，無 canary、可辨識 API key 或 source maps。
-- PASS：npm audit --cache /workspace/.npm-cache，當次所有依賴 0 vulnerabilities。僅新增 fake-indexeddb devDependency，沒有新增執行時套件。
-- PASS：git diff --check。
-- 最終 FAIL：0。初次新 mock 的函式簽章只宣告一參數，讀取預期 token 的測試型別失敗；已修正並重跑。
-- build 仍有已定位的 Zod 4.6.7 PURE 說明註解警告，未抑制、未改第三方套件，建置成功。
-- NOT TESTED：Firefox／Safari／實機、完整無障礙稽核、真實耗盡磁碟、瀏覽器儲存驅逐、強制崩潰當下未完成交易、最大頁面效能壓力、正式後端認證／授權／AI 成本保護。
+| 驗證 | 結果 |
+| --- | --- |
+| npm run typecheck | PASS |
+| npm test | PASS：10 檔，112/112 |
+| npm run test:e2e（Chromium） | PASS：29/29，含原有 19 項 |
+| npm run build（後端與 VITE 測試 canary） | PASS |
+| npm run check:secrets | PASS：Bundle 無測試秘密、系統 Prompt 或 source maps |
+| npm audit --cache /workspace/.npm-cache | PASS：0 vulnerabilities |
+| git diff --check | PASS |
+| 實際 dev:api 無金鑰 loopback 啟動／status | PASS：configured=false，未呼叫模型 |
+| 真實模型、五份草稿生成品質與實際計費 | NOT TESTED |
 
-## UI 與截圖
-- 保留既有中性色、綠色強調色與預覽／側欄。新增細保存狀態列，固定狀態文字寬度減少跳動，錯誤時自然換行。
-- 檢查真實 Chromium 的恢復、儲存失敗、衝突、損毀畫面，以及既有 1440／768／375px 操作；沒有整頁水平溢出，窄視窗保留工作區／面板內捲動。
-- 截圖：test-results/page-restored.png、page-save-failure.png、page-conflict.png、page-corrupt.png；既有 patch-375.png 等亦由本輪重建。均為忽略檔，可透過 E2E 重建。
-- 本輪儲存測試與截圖使用 reduced motion，避免進場動畫尚未完成造成偏淡畫面；既有 Phase 2 測試仍驗證實際動畫播放，未關閉產品動畫。
+Mock 驗證涵蓋不合法輸入／輸出、缺失／重複 ID、文字與動畫遺失、虛構內容、未知元件、惡意 URL、Prompt Injection 字串、拒答／不完整輸出、CSRF／Origin／Content-Type／Body 限制、重複請求、併發、逾時、費用預留、呼叫上限、安全錯誤、草稿變動、舊 Session、確認後保存、保存失敗保留候選、Undo／Redo。SDK 測試使用注入的假 fetch，沒有外部請求。
+最終 FAIL：0。Build 仍有既有 Zod PURE 註解警告，未抑制，建置成功。
+NOT TESTED：Firefox／Safari／實機、完整無障礙與大規模效能稽核、正式公開環境認證與分散式成本控制。
 
-## 核心檔案
-- src/storage.ts：共用 sketch2site DB v2 開啟與新增 Object Stores，保留 drafts/current。
-- src/pageStorage.ts：PageRecordSchema、loadPage、savePage 交易 CAS、確認後 restartDamagedPage 原子備份。
-- src/pageSaver.ts：單筆進行中／最新待存快照、提交狀態、錯誤暫停與重試、關閉舊佇列。
-- src/usePagePersistence.ts：Preview 的單一 Session 狀態、重新載入／generation fence／保存整合。
-- src/Preview.tsx、src/preview.css：最小狀態與復原操作；未修改 Patch Engine。
-- src/pageStorage.test.ts、src/pageSaver.test.ts、tests/page-persistence.spec.ts；舊測試僅依 DB 版本、非同步載入與確認行為調整，未刪除驗收。
+## UI／截圖
+沿用中性色、單一綠色強調色與畫布優先工作台。新增精簡生成狀態、候選確認、圖片與按鈕連結編輯；明示資料生成時傳送 OpenAI。Mock 預覽標示「測試生成（非 AI）」，不冒充真實生成。
+Chromium 實際操作五種草稿的生成／預覽／返回／確認，於 1440、768、375px 檢查無整頁及預覽水平溢出。截圖審查曾修正獨立圖片過寬；現有動畫測試保留播放與 reduced motion 驗證。這些結果不代表真實模型或正式商業設計品質合格。
+
+| 草稿 | Mock 流程／保留檢查 | 真實 AI 品質 | 截圖前綴 |
+| --- | --- | --- | --- |
+| 個人作品集 | PASS | NOT TESTED | test-results/generation-mock-0 |
+| 活動介紹 | PASS | NOT TESTED | test-results/generation-mock-1 |
+| 產品介紹 | PASS | NOT TESTED | test-results/generation-mock-2 |
+| 不規則草稿 | PASS | NOT TESTED | test-results/generation-mock-3 |
+| 多動畫草稿 | PASS | NOT TESTED | test-results/generation-mock-4 |
+
+每列有 .png（1440px）、-768.png、-375.png，共 15 張；均為忽略檔，可透過 E2E 重建。測試截圖使用 reduced motion 以便讀取完整內容，產品動畫未關閉。
+
+## 資安、成本與限制
+- 金鑰只讀後端環境，不傳給模型或前端；.env.example 無秘密。啟用需 Key、SKETCH_AI_ENABLED=true、已審閱的非零價格與 SKETCH_AI_PRICING_REVIEWED=true。
+- API 預設只綁 127.0.0.1:8787。檢查 loopback／Host／Origin／Fetch Metadata、HttpOnly SameSite Cookie 與 CSRF nonce；只允許 JSON。這不是公開服務身分認證，不得直接公開。
+- 上限：32KB Body、40 元素、12000 字元、4096 輸出 Tokens、30 秒、併發 1、每分鐘 3 次、每程序 5 次；無自動重試。每次保守預留估算費用最多 $0.10，每程序 $0.25；逾時仍保留併發槽直到 Provider 結束，模糊失敗不退預留。
+- 費用是依設定價格與保守 token 假設的程序內估算，不是供應商帳單保證；重啟重設，非跨程序配額。公開部署另需認證、持久配額與實際帳務控制。
+- 模型只能輸出布局選擇；私人文字當資料處理，無 Shell／檔案／秘密／搜尋工具。轉換後重新驗證完整 PageSpec，沒有任意 HTML／CSS／JS。
+- 現階段圖片只支援既有內建 SVG；按鈕必須有合法且明確的連結。只支援已定義 typography／layout 約束；不支援動畫或群組意圖明確拒絕，不偷偷替換。
+- 真實 API 請求 0；Tokens／延遲／實際費用 NOT TESTED。沒有購買額度、建立付費帳號或啟用訂閱。Mock 用量與測試價格僅作測試運算。
+- 原有本機資料限制仍適用：瀏覽器清理會刪除草稿與頁面，沒有雲端備援；強制離開可能遺失未提交候選，離開提示不等於保存。
 
 ## Git 與恢復
-分支 work。上次 commit 72c35840882ad0b420616e81f04b5a0db6d1f763；本輪 commit 為此文件所屬提交，git log -1 可查。
-僅修改 Sketch2Site，未 push、merge、部署或啟用付費服務。提交僅在本機，未宣稱已有遠端備份、環境發布或新任務還原驗證。
-恢復：讀 AGENTS.md、檢查 git status；npm ci --cache /workspace/.npm-cache；npm run dev。E2E 自啟停 Vite，需先停止自己占用 5173 的服務。
+分支 work，起點 ce0d50f8e290d75c9ae8134682300cbabbdffba2。本輪 SHA 為此文件所屬提交，可用 git log -1 查詢。
+僅修改 Sketch2Site；未 push、merge、release 或部署。依 README 安裝套件並分別啟動 dev:api 與 dev；沒有設定時仍可用草稿及本機預覽。E2E 自行啟動隔離 Mock API 與 Vite，不需要 Key。
 
-## 限制與資料語意
-目前一份本機專案 projectId=local-project。儲存封套 schemaVersion=1，內部 PageSpec v2。資料皆可由使用者透過開發者工具檢視及修改；未加密，不代表身分認證或伺服器授權。
-一般重新載入建立新 sessionId、保留 revision，歷史不跨 Session。損毀資料明確確認重新開始才建立新內容分支 UUID／revision 0，並保留原始備份。
-沒有紀錄才顯示未儲存 Fixture；已保存頁面優先恢復，不以 Fixture 自動覆蓋。清除網站資料／瀏覽器清理會刪除頁面、草稿及備份；沒有雲端備援，恢復保證僅及最後成功提交版本。
-衝突不自動同步或合併；使用者選擇重新載入時必須確認捨棄未保存修改。備份在 pageBackups，僅供開發者工具診斷／手動復原，本輪不新增管理 UI。
-儲存失敗保留記憶體內容；強制關閉仍可能遺失尚未提交的修改。狀態與 CAS 不是跨使用者權限機制。
-Diff 的局部保證針對資料，不保證其他元素像素位置不變；圖片／連結白名單與 Renderer 信任邊界維持不變。
-
-## 下一個正式階段
-P5 NOT STARTED：CanvasSpec → AI Layout Generation → PageSpec → Renderer。優先做後端生成路徑及必要安全／成本控制，不延伸其他底層功能；本輪不啟動。
+## 下一個最小任務
+安全設定可用 Key、確認當日官方模型／價格與網路後，取得明確小額付費測試授權，再對上述五份草稿各執行一次受控真實生成，記錄內容／布局／動畫／手機品質、完整截圖與實際用量。不自動進入下一階段。

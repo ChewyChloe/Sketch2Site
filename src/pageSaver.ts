@@ -54,6 +54,9 @@ export function createPageSaver(
     running = false;
   }
   return {
+    token(): Token {
+      return baseline ? { ...baseline } : null;
+    },
     enqueue(session: PageSession) {
       if (closed) return;
       let record: PageRecord;

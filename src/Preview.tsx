@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useImperativeHandle,
+  type Ref,
+} from "react";
 import { demoPage } from "./pageFixtures";
 import { usePagePersistence } from "./usePagePersistence";
 import { PageRenderer } from "./PageRenderer";
@@ -17,9 +23,29 @@ function valueLabel(value: unknown): string {
     return String(value.duration) + " 毫秒";
   return String(value);
 }
-export default function Preview() {
+export type PreviewHandle = {
+  target(): { sessionId: string; revision: number } | null;
+  accept(
+    page: import("./pageSpec").PageSpec,
+    target: { sessionId: string; revision: number },
+  ): Promise<{ ok: boolean; error?: string }>;
+};
+export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   const persistence = usePagePersistence();
   const { session, current, update, ready, loadError, status } = persistence;
+  useImperativeHandle(ref, () => ({
+    target: persistence.generationTarget,
+    accept: async (page, target) => {
+      const result = await persistence.acceptGeneration(page, target);
+      if (result.ok) {
+        setSource("本機頁面");
+        setSelected(null);
+        setError("");
+        setNotice("");
+      }
+      return result;
+    },
+  }));
   const [source, setSource] = useState("範例預覽"),
     [error, setError] = useState(""),
     [device, setDevice] = useState<"desktop" | "mobile">("desktop"),
@@ -163,7 +189,7 @@ export default function Preview() {
       <div className="preview-tools">
         <div>
           <strong>{source}</strong>
-          <small>未使用 AI</small>
+          <small>{source === "範例預覽" ? "固定範例" : "本機預覽"}</small>
           {!node && !error && ready && !loadError && (
             <select
               className="heading-picker"

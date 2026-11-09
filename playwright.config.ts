@@ -10,10 +10,17 @@ export default defineConfig({
       args: ["--no-sandbox"],
     },
   },
-  webServer: {
-    command: "npm run dev -- --host 127.0.0.1",
-    url: "http://127.0.0.1:5173",
-    reuseExistingServer: false,
-  },
+  webServer: [
+    {
+      command: "npx tsx tests/generation-server.ts",
+      url: "http://127.0.0.1:8788/api/generation/status",
+      reuseExistingServer: false,
+    },
+    {
+      command: "SKETCH_API_PORT=8788 npm run dev -- --host 127.0.0.1",
+      url: "http://127.0.0.1:5173",
+      reuseExistingServer: false,
+    },
+  ],
   reporter: "list",
 });

@@ -21,3 +21,10 @@ Zod 4.6.7 的建置警告來自 v4/core/regexes.js:74 與 util.js:400 的說明�
 使用單一進行中寫入 + 最新快照合併及 transaction CAS；不使用時間戳排序、不使用 last-write-wins，也不加入大型狀態管理套件。revision 繼承已保存值，新開啟工作階段使用新 UUID，Undo/Redo 不持久化。
 不存在紀錄才顯示未儲存範例，損毀紀錄不做推測遷移。確認後原子保存原始資料備份再重新開始；不增加備份管理或自動合併 UI。備份保留在本機，清除網站資料仍會遺失。
 新增 fake-indexeddb 僅作儲存交易單元測試；Chromium E2E 另外驗證實際交易、雙分頁及真正關閉／重新啟動瀏覽器程序。下一正式階段直接進入 CanvasSpec → AI Layout Generation → PageSpec → Renderer，本輪不啟用模型。
+
+
+2026-11-09（Phase 5）：選單一 OpenAI Responses Adapter，官方 SDK 7.53.0，預定 gpt-4.1-mini-2025-04-14。SDK 型別／fake transport 已確認，但當日官方價格／模型頁 CONNECT 403，未宣稱 live 相容／品質已驗證；無金鑰、啟用旗標、核對費率就停用，不自動切昂貴模型。
+模型只輸出簡化布局協定，原文、素材、連結與動畫由程式依 source ID 還原。以拒絕遺漏／重複／不相符資料取代自動修復／額外模型評分，控制成本並避免編造內容。
+CanvasSpec v1 採相容擴充明確 heading／image／選填 href 與效果列表，舊紀錄維持可讀；PageSpec v2／Renderer／Patch Engine 不重建或放寬。資產沿用既有白名單，不為此新建圖片服務。
+候選確認採原 savePage 交易 CAS，成功才替換正式 Session。透過原 saver 的唯讀 token 介面取得基準，不使用另一套存檔機制；失敗與過期保留有效版本。
+伺服器僅 loopback，採本機 session cookie + CSRF 與全程序限制，尚非公開服務認證。用量／成本只輸出最小數字，測試費率為合成測試資料，真實費用評估保留 NOT TESTED。沒有購買額度、開帳戶或真實付費呼叫。

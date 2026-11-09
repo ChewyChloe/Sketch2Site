@@ -1,6 +1,6 @@
 # 安全邊界
-本輪沒有後端、付費 API 或憑證。資料留在瀏覽器 IndexedDB，CanvasSpec 手動儲存、PageSpec 自動保存；清除網站資料會刪除草稿，同來源其他程式可讀取。無雲端備份、多分頁衝突合併或帳號隔離。
-所有資料含本機讀取皆經 strict Zod Schema，限制節點／文字／數字／動畫／欄位，拒絕重複 ID、超界位置、不支援階層。React 文字插值，不使用 innerHTML、eval 或模型執行；URL 合約僅允許 HTTPS 或本頁 anchor。外部圖片與網路資產尚未開放；Phase 2 的連結限制見下方。
+Phase 5 新增本機生成後端與可選付費 Provider Adapter；目前沒有配置金鑰或啟用真實 API。資料留在瀏覽器 IndexedDB，CanvasSpec 手動儲存、PageSpec 自動保存；清除網站資料會刪除草稿，同來源其他程式可讀取。無雲端備份、多分頁衝突合併或帳號隔離。
+所有資料含本機讀取皆經 strict Zod Schema，限制節點／文字／數字／動畫／欄位，拒絕重複 ID、超界位置、不支援階層。React 文字插值，不使用 innerHTML、eval 或模型執行；URL 合約僅允許 HTTPS 或本頁 anchor。只有使用者明確按「生成網站」且後端已啟用時，必要結構化草稿才傳至 OpenAI；不傳整個專案或其他本機紀錄。外部圖片與網路資產尚未開放；Phase 2 的連結限制見下方。
 PageSpec v2 透過 strict 驗證及受控 Registry 渲染；不得執行任意 JS、Shell、安裝套件或讀取伺服器檔案。
 秘密不得放入 VITE_* 或前端回應；.env 忽略、.env.example 無金鑰；production 不產生 source map。check:secrets 使用測試 canary 掃描 build，但不取代完整秘密稽核。
 開發伺服器提供 CSP、nosniff、Referrer-Policy；正式部署須自行在主機設定相同 CSP（移除開發 ws）及 HSTS、frame-ancestors，未設定不得聲稱正式部署完成。inline style 為畫布位置所需，開發用 Vite React preamble 使用固定的 dev-only nonce（不可作為 production 安全機制）；正式主機必須使用 script-src self、移除固定 nonce。
@@ -26,7 +26,7 @@ Patch 一律視為不可信。外層／payload／參數均 strict；最多 20 �
 整批只在全部成功後發布一個新狀態。失敗保持原參照、revision、歷史與預覽；沒有秘密、環境變數、系統設定或 Registry 可寫入欄位。
 sessionId + 單調 revision 防止過期操作，包括 Undo／Redo 後重用舊版本及跨載入 Session 重播。這是本機一致性控制，不是身分認證；未來後端必須另驗證使用者資源權限與可信 scope，AI 不得繞過此流程。
 Phase 3 的記憶體 PageSpec 在 Phase 4 增加本機持久化；CanvasSpec 的 IndexedDB store 與撤銷狀態仍完全獨立。Diff 的範圍保證針對資料，非像素：合法文字或 gap 修改仍可能造成流式排版位移。
-錯誤回傳固定分類／文案，不把內部堆疊、原始 Payload、路徑或任意例外訊息放進 UI。未建立雲端 API，跨使用者授權、認證與付費成本保護仍 NOT TESTED。
+錯誤回傳固定分類／文案，不把內部堆疊、原始 Payload、路徑或任意例外訊息放進 UI。未建立雲端 API；Phase 5 本機安全限制見下方，跨使用者授權與正式公開部署仍 NOT TESTED。
 
 
 ## Phase 4 IndexedDB 信任邊界
@@ -35,5 +35,22 @@ IndexedDB 是使用者瀏覽器內、同來源的儲存空間，使用者可透�
 sessionId 是本機編輯生命週期識別；revision 是遞增的資料版本；writerSessionId + revision 是原子交易的樂觀鎖 token。它們不是登入憑證、不能證明使用者權限，也不防止本機擁有者自行竄改合法紀錄。
 保存前在同一筆交易驗證現有資料及預期 token，拒絕舊版本與其他分頁的 stale writes。交易完成前不得顯示「已儲存」；舊佇列／載入回呼經 generation fence 與 CAS 保護，關閉 Session 不代表已取消所有原生交易。
 損毀／舊版本紀錄停用 Renderer 與自動寫入，不自動清除。確認重新開始才原子備份原始值並替換，備份仍是不可信資料，禁止直接執行／渲染。配額或中斷時回滾，無法備份就不替換原始資料。
-不將本機內容上傳、置入 URL、列印完整 Console 或嵌入憑證。錯誤使用固定分類與文案，不回傳原始資料或內部路徑。
+本機保存模組不將內容上傳、置入 URL、列印完整 Console 或嵌入憑證。Phase 5 的明確生成操作僅傳必要草稿資料，其他紀錄不傳。錯誤使用固定分類與文案，不回傳原始資料或內部路徑。
 本輪測試使用 fake-indexeddb（僅 devDependency）及隔離的 Chromium contexts／臨時 persistent profile；QuotaExceededError、AbortError、權限拒絕使用受控注入，不刻意耗盡真實磁碟或變更使用者瀏覽器設定。
+
+
+## Phase 5 Provider／生成 API 邊界
+SKETCH_AI_API_KEY（可沿用後端 OPENAI_API_KEY）僅後端環境使用，.env 忽略，禁止 VITE_*。SDK 固定 https://api.openai.com/v1，logLevel:off、不載入其他服務金鑰；金鑰不放入 Prompt、PageSpec、HTTP 回應、IndexedDB 或前端建置。check:secrets 亦檢查內部系統 Prompt 標記未進入瀏覽器產物。
+API 只回傳 requestId、驗證後 PageSpec、最小 usage、live/mock 模式；錯誤只傳固定 code。拒絕／逾時／不完整／不合法輸出都保留原資料，不回傳上游 error stack、原始輸出或私密設定。伺服器只記錄用量數字與 UUID，不記錄草稿／Prompt／金鑰。
+Canvas 文字是 user JSON 資料，與 developer 系統規則分開；模型沒有檔案、Shell、工具、資料庫或 URL 抓取能力。真正防護是模型從未獲取秘密、只接受受控布局協定，以及獨立 PageSpec／來源／內容／效果檢查，不能只靠 Prompt 裡的禁止文字。
+模型不能自行新增內容或事實：中間協定沒有文案／URL／asset 欄位，來源逐字由程式還原。未知 ID、額外合成內容／元素／動畫、錯誤來源類型、非法資產／URL 都拒絕；不得刪除使用者節點以通過驗證。不聲稱能判斷使用者自己提供的事實真偽。
+
+### 本機防濫用與成本
+API 與 Vite 預設 loopback；Host／peer／Origin／Fetch Metadata 驗證防跨站與 DNS rebinding；POST 另需同一個 HttpOnly SameSite=Strict cookie 與 CSRF nonce。這是本機 browser capability，一般本機程序／主機擁有者仍可呼叫，不是會員身分認證；CORS 不是認證。
+請求 32768 bytes、元素 40、總內容 12000 字元、Canvas 平面深度、各欄位長度與完整 Schema 都在後端限制。固定輸出 4096 tokens、30 秒 timeout、0 retries、1 併發、3/min、5/process，requestId 去重。逾時未 settle 的 Provider 不釋放併發鎖。
+成本是依經營者核對費率的保守預留估算：每請求至多 $0.10、每程序 $0.25，失敗不退還不確定預留額度。不是供應商帳單保證，程序重啟會重設；正式公開前必須另設真正認證、授權、持久預算與供應商費用上限。本輪沒有公開部署。
+價格頁 CONNECT 403、金鑰缺失且沒有真實付費測試授權，因此預設保持停用；不繞過網路政策。未來真實使用需允許 api.openai.com，以及可讀官方模型／價格文件的目的地主機；在環境設定安全提供金鑰，不能在聊天中貼值。
+
+### 候選隔離
+候選只在記憶體，經使用者確認才走原 IndexedDB CAS 提交；先檢查 Canvas version 與 PageSession/revision，交易成功前不替換正式 Session。失敗仍留候選與原資料；原生交易與其他分頁競爭由同一 CAS 保護。候選離頁會提示，但不保證強制關閉能保留未保存候選。
+Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或環境捷徑。所有 SDK tests 使用 fake fetch，所有 Browser tests 使用 Mock Provider；不可將其結果稱為真實 AI 設計品質。

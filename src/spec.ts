@@ -1,7 +1,16 @@
 import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
-export const Effect = z.enum(["hover-glow", "fade-in", "lift"]);
-export const Kind = z.enum(["text", "button", "card"]);
+import { href, localAssets } from "./pageSpec";
+export const Effect = z.enum([
+  "hover-glow",
+  "fade-in",
+  "lift",
+  "slide-up",
+  "scale-in",
+  "hover-lift",
+  "stagger-reveal",
+]);
+export const Kind = z.enum(["text", "button", "card", "heading", "image"]);
 export const NodeSchema = z
   .object({
     id: z.string().uuid(),
@@ -13,10 +22,15 @@ export const NodeSchema = z
     content: z.string().max(2000),
     effects: z
       .array(Effect)
-      .max(3)
-      .refine((a) => new Set(a).size === a.length),
+      .max(6)
+      .refine(
+        (a) =>
+          new Set(a.map((e) => (e === "lift" ? "hover-lift" : e))).size ===
+          a.length,
+      ),
     parentId: z.string().uuid().nullable(),
-    assetId: z.null(),
+    assetId: z.enum(localAssets).nullable(),
+    href: href.nullable().optional(),
     zIndex: z.number().int().min(0).max(100),
   })
   .strict();
@@ -44,7 +58,16 @@ export const CanvasSchema = z
         n.y + n.height > v.metadata.height
       )
         ctx.addIssue({ code: "custom", message: "Out of bounds" });
-      // Phase 1 supports flat nodes only.
+      if (
+        (n.type === "image" && !n.assetId) ||
+        (n.type !== "image" && n.assetId !== null)
+      )
+        ctx.addIssue({ code: "custom", message: "Invalid asset" });
+      if (n.type !== "button" && n.href != null)
+        ctx.addIssue({ code: "custom", message: "Unexpected link" });
+      if (n.href?.startsWith("#") && !ids.has(n.href.slice(1)))
+        ctx.addIssue({ code: "custom", message: "Unknown link target" });
+      // The editor still supports flat nodes only.
       if (n.parentId !== null)
         ctx.addIssue({
           code: "custom",
@@ -132,8 +155,14 @@ export function createNode(
   x: number,
   y: number,
 ): CanvasNode {
-  const width = type === "card" ? 280 : 200,
-    height = type === "card" ? 180 : 64;
+  const width =
+      type === "heading"
+        ? 400
+        : type === "card" || type === "image"
+          ? 280
+          : 200,
+    height =
+      type === "heading" ? 96 : type === "card" || type === "image" ? 180 : 64;
   return {
     id: crypto.randomUUID(),
     type,
@@ -145,10 +174,13 @@ export function createNode(
       text: "在這裡寫下想法",
       button: "了解更多",
       card: "卡片標題\n補充內容與說明",
+      heading: "網站標題",
+      image: "內建圖片示意",
     }[type],
     effects: [],
     parentId: null,
-    assetId: null,
+    assetId: type === "image" ? localAssets[0] : null,
+    ...(type === "button" ? { href: null } : {}),
     zIndex: 0,
   };
 }

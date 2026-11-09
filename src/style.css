@@ -467,3 +467,21 @@ small {
     display: none;
   }
 }
+.node.image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.node.heading {
+  font-size: 32px;
+  font-weight: 600;
+}
+.generation-notice {
+  padding: var(--s2) var(--s4);
+  margin: 0;
+  background: var(--panel);
+  border-bottom: var(--border);
+  color: var(--muted);
+  flex-shrink: 0;
+}

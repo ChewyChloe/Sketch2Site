@@ -27,7 +27,7 @@ src/PageRenderer.tsx 內 componentRegistry 僅映射受控語意標籤與 CSS �
 App 保持 CanvasSpec、選取與歷史；Preview 持有獨立且驗證過的 PageSpec Session 與尺寸，不回寫草稿。切換保留預覽輸入；Phase 4 重新整理會恢復已保存的頁面，沒有紀錄時才顯示未儲存範例。預覽隱藏草稿編輯工具與側欄，並停用草稿鍵盤操作。
 src/Preview.tsx 提供桌面／375px 手機框（窄視窗自動縮至可用寬度）、載入本機 JSON、還原範例與重播。頁面以 container queries 而非 host viewport 決定布局；內容採 Flex/Grid，沒有以 Canvas 座標排列成品。
 src/pageFixtures.ts 是涵蓋九種元件與六種效果的固定測試範例，不是生成器。public/assets/workspace.svg 為內建示意資產。
-無 AI、後端、雲端儲存、憑證、匯出或正式部署。
+Phase 5 新增本機生成後端與 OpenAI Adapter；仍無雲端儲存、匯出或正式部署。
 
 ## 開發
 npm ci --cache /workspace/.npm-cache；npm run dev；npm run typecheck；npm test；npm run test:e2e；npm run build；npm run check:secrets。
@@ -75,3 +75,27 @@ writerSessionId 是前一次寫入者的相容性 token，不是獨占鎖或使�
 pageBackups 可由瀏覽器開發者工具診斷與手動復原，不直接渲染備份內容。本輪沒有備份管理 UI 或自動遷移。
 重新開始是明確的新內容分支，使用新 UUID／revision 0，舊 token 因 writer 不符而失效；一般重新載入不重置 revision。有效頁面若被範例或檔案取代，需確認，並繼續更高 revision。
 儲存失敗不移除記憶體中的頁面；狀態列顯示儲存中／已儲存／尚未儲存／失敗／衝突與必要操作。尚未提交時離開會提示；不承諾瀏覽器強制結束能保留未完成寫入。
+
+
+## Phase 5 生成引擎
+src/generation.ts 提供 prepareIntent、受控 LayoutSchema、materialize、verifyPreservation 與回應 DTO；沿用 CanvasSchema／PageSchema v2、Component／Animation Registry，沒有第二個 Renderer。
+CanvasSpec v1 的相容擴充：heading、image、受控內建資產路徑、button.href（可缺少或 null）及六種動畫。legacy lift 明確映射 hover-lift，不偷偷替換未知動畫；canonical 重複效果拒絕。圖片仍只支援既有內建示意 SVG，沒有私人圖片上傳／遠端資產抓取。生成前按鈕必須有明確合法連結，Stagger Reveal 目前只允許 Card（具有子元素）。
+生成輸入上限 40 元素、合計 12000 字元、HTTP body 32768 bytes；較大的草稿仍可編輯／保存，但生成需縮小。支援 constraints: typography:sans/serif、layout:stack/grid，其餘限制或矛盾組合明確拒絕，不假稱理解任意自然語言限制。
+prepareIntent 保留原 ID、內容、座標尺寸、層級、資產、連結、動畫及畫布資訊；計算正規化座標、最近三個元素的距離／同列線索，100px 水平帶作候選分組，不直接決定成品布局。傳模型時省略重複的完整 Canvas 副本。
+模型只決定 sections 的 Stack／Grid、columns、gap、來源 ID、heading/paragraph 呈現及少數 Token；不能回傳文案、URL、圖片、事件、HTML、CSS 或程式。Converter 從原始來源逐字恢復內容、功能、素材與指定動畫，建立 wrapper UUID，保留來源 ID；Card 內容放在其唯一受控 Paragraph 子節點。未知／遺漏／重複來源、錯誤類型／限制／額外內容／動畫／資產皆拒絕。
+LayoutSchema 是 Provider 中間協定，不取代正式 PageSpec。輸出先驗證中間協定，再驗證完整 PageSpec、來源／內容／動畫保留；前端收到回應也驗證 PageSpec 與保留條件。不把模型輸出直接當 React props 或程式碼。
+
+## Provider 與本機 API
+server/provider.ts 使用官方 OpenAI Node SDK 7.53.0、Responses API、strict JSON Schema、store:false、max_output_tokens:4096、maxRetries:0、30 秒 timeout，無 tools。預定低成本模型 gpt-4.1-mini-2025-04-14；僅後端可設定同家族 alias。SDK enum 與 fake transport 合約已確認；真實模型可用性／輸出品質 NOT TESTED。
+官方 SDK 來源：https://github.com/openai/openai-node （含 src/resources/shared.ts、Responses JSON Schema 型別）。官方模型／價格頁 https://developers.openai.com/api/docs/models/gpt-4.1-mini 、https://openai.com/api/pricing/ 在本環境遭 HTTP CONNECT 403，沒有宣稱已核對當日價格。
+必須在後端配置金鑰、SKETCH_AI_ENABLED=true、SKETCH_AI_PRICING_REVIEWED=true 及經核對費率才能啟用；缺少任一設定回傳 NOT_CONFIGURED。詳見 .env.example。費率不硬寫為當日官價，不使用昂貴模型 fallback。測試中的 0.4／1.6 是測試運算資料，不是當日價格承諾。
+server/api.ts 使用 Node 原生 HTTP，server/index.ts 僅監聽 127.0.0.1:8787。GET /api/generation/status 提供啟用狀態與 CSRF nonce、設定 HttpOnly SameSite=Strict 本機 session cookie；POST /api/generation 驗證 Host、loopback peer、固定前端 Origin、Fetch Metadata、cookie + CSRF、application/json、請求與內容限制。
+所有成本控制在後端：併發 1、3 次／分鐘、5 次／程序、4096 output tokens、30 秒逾時、相同 requestId 去重；預估保守預留上限 $0.10／請求、$0.25／程序。依 UTF-8 byte 上界 + schema／protocol margin 估計 input tokens，失敗也不退還不確定的預留額度。逾時先 abort，若 Provider 尚未真正 settle，維持 busy，不開放下一個並行呼叫。
+成功記錄 requestId、延遲、Provider 回報 Tokens 與設定費率的 estimatedCostUsd；失敗只記錄固定 outcome、延遲與預留估計。不是帳單或供應商硬額度；重新啟動程序會重設本機限制，公開服務前仍需真正身分驗證、持久預算及平台費用上限。
+Vite 前端及 API 預設均 loopback，以 /api/generation proxy 同來源連線；不提供公開部署。npm run dev 啟動前端，另一終端 npm run dev:api 啟動後端。NODE_USE_ENV_PROXY=1 保留雲端代理／CA 行為，不關閉 TLS 驗證。
+
+## 候選及提交
+App 維護遞增 Canvas 版本（即使 Undo 回到同內容也視為新版本），生成開始保存 Canvas version + 目前 PageSession/revision。生成中可繼續編輯；結果完成時重新比對，過期即拒絕，不混充最新草稿。
+src/CandidatePreview.tsx 只以既有 PageRenderer 顯示經驗證候選，可切桌面／手機或返回草稿；未確認不寫入正式頁面或 IndexedDB。Mock 顯示「測試生成（非 AI）」，正式呼叫才顯示生成候選。無假百分比或思考過程。
+確認時 usePagePersistence.acceptGeneration 再比對 target；停止舊 saver，使用同一 savePage/CAS/token 寫入 revision+1，新 Session 僅在交易成功後取代目前正式頁面；以既有 History 工具保留前一有效頁面與有界歷史，確認生成後仍可用原 Undo/Redo 還原／重做，重新載入才清空記憶體歷史。保存失敗保留候選與原正式 Session／資料；跨分頁 CAS 衝突要求重新載入，不能盲目覆寫。沒有建立新儲存系統或完整生成版本 UI。
+tests/generation-server.ts 與 tests/fixtures/generation.ts 僅供 Playwright 注入 Mock Provider，production index.ts 沒有 Mock 選項。測試以 8788 測試服務搭配隔離瀏覽器資料，不使用真實金鑰；正式後端維持 8787。
