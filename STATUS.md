@@ -2,45 +2,56 @@
 2026-11-09（Asia/Taipei）
 
 ## 功能
-- Phase 0／1／2 DONE；本輪完整重跑舊有測試。
-- Phase 3 DONE：純 TypeScript Patch Engine、6 種操作、獨立可信 ID scope、嚴格驗證、原子批次、完整 PageSpec 再驗證、資料範圍 Diff、結構共用與 Session／revision。
-- DONE：共用 generic History<T>，PageSpec／CanvasSpec 分離實例；頁面修改 Undo／Redo、分支重做清除、失敗／無實質變更不建立版本。
-- DONE：點選或鍵盤選單選取標題、修改文字、附加／移除淡入與設定時長、「套用」、最近差異、撤銷／重做。屬性面板只在選取後出現，未重做既有視覺方向。
-- NOT STARTED：AI API／聊天／自然語言修改、任意樹編排、PageSpec 長期保存、矩形框選、匯出、會員、正式部署。固定範例仍清楚標示，沒有宣稱 AI 已完成局部修改。
+- Phase 0／1／2／3 DONE，原有 Patch Engine／Renderer 合約未重寫，舊測試保留。
+- Phase 4 DONE：PageSpec 本機自動保存、Schema 驗證、交易 CAS、序列化／最新快照合併、失敗保留記憶體內容與重試、衝突重新載入、新 Session 繼承 revision／清空歷史。
+- DONE：損毀及不支援版本停止 Renderer／自動保存，原紀錄不被刪除或覆蓋；確認後在單一交易中原樣備份再以明示範例重新開始。
+- DONE：保存狀態與 Canvas 草稿分開；未完成交易不顯示已儲存，離開未保存頁面會提示。有效頁面的範例／檔案替換需確認。
+- NOT STARTED：AI API／Layout Generation、自然語言修改、雲端同步、會員、匯出、正式部署。本輪到此停止，下一正式階段優先開始 AI 生成主流程，不增加非必要底層功能。
 
-## 測試與安全證據
+## 測試
 - PASS：npm run typecheck。
-- PASS：npm test，6 檔、65/65（舊 33 項 + Patch Engine 31 項 + Preview 整合 1 項）。
-- PASS：npm run test:e2e，12/12（新 Patch 3 項 + 舊預覽 6 項 + 草稿 3 項）。
-- PASS：指定文字／合法 Token／類型對應屬性／動畫附加更新移除、原始資料不變、未修改分支及 metadata／responsive 保留參照。
-- PASS：非法 Schema／操作／屬性／URL／資產／效果／數值／文字標記拒絕；不存在／重複 ID、超量／深層／循環 Payload、prototype-pollution 鍵與過期版本安全拒絕。
-- PASS：獨立可信 scope 拒絕混入其他合法 target；驗證 Diff 拒絕未指定的兄弟／父層、全頁與樹／效果順序變化。
-- PASS：多項批次單一歷史提交，任一步失敗無部分結果；Undo／Redo 使用單調 revision，舊 Patch 不因回到舊畫面而有效；新分支清除 redo，無實質修改保留 Session。
-- PASS：Chromium 以 ID 選取、標題／淡入套用、顯示前後值、其他段落不變、Undo／Redo、非法動畫參數與網頁標記安全失敗、空操作、新分支、返回草稿後原 ID／文字／Undo 狀態不變。
-- PASS：1440×1000、768×1000、375×1000 實際操作與截圖檢查；無整頁水平溢出。窄視窗改下方面板、調整文字欄位高度，保留預覽及面板內捲動。
-- PASS：VITE_TEST_SECRET=SKETCH2SITE_TEST_SECRET_83f21c npm run build；npm run check:secrets。無 canary、可辨識 API key 或 source maps。
-- PASS：npm audit --cache /workspace/.npm-cache，當次所有依賴 0 vulnerabilities；沒有新增或更新依賴。
-- 最終 FAIL：0；測試曾使用 Testing Library 不支援的 exact role 選項，修正後 typecheck／測試通過，未刪除測試。
-- Zod 警告已確認：4.6.7 的 v4/core/regexes.js:74、util.js:400 說明註解中的 @__PURE__ 字串觸發 Rollup annotation 警告。真正函式呼叫上的標記仍存在，Rollup 移除不合法註解後 build 成功。未修改第三方套件或抑制警告，詳見 DECISIONS.md。
-- NOT TESTED：Firefox／Safari、實機、完整無障礙稽核、最大批次效能壓力、正式部署標頭、後端認證／跨使用者授權／AI 成本保護（後端未實作）。
+- PASS：npm test，8 檔、88/88（舊 65 項 + 新儲存／佇列 23 項）。
+- PASS：npm run test:e2e，19/19（舊 12 項 + 本機保存 7 項）。
+- PASS：有效 PageRecord 保存／載入、不存在紀錄不自動寫 Fixture、DB v1→v2 升級保留 Canvas、損毀／缺欄位／版本／負值或小數 revision／UUID／元件／動畫／URL 拒絕且原值保留。
+- PASS：CAS 拒絕舊 revision／writer token，即使晚到快照宣稱較高 revision；同基準並行交易只允許一個成功。單筆進行中／合併最新快照，commit 前無 saved 狀態，舊 Session 關閉後不執行排隊寫入或更新 UI。
+- PASS：新 Session 正常 Patch、舊 Session Patch 拒絕、revision 繼承、Undo／Redo 不跨載入；原有 scope、不可變更新、Diff、歷史與草稿隔離回歸仍通過。
+- PASS：損毀資料確認前不覆寫，確認後原子備份／替換；備份 QuotaExceededError 時原資料不變。拒絕覆蓋已被其他分頁修復的有效紀錄。
+- PASS：Chromium 實際修改標題／動畫、自動保存、刷新恢復、兩分頁過期寫入拒絕及重新載入後繼續編輯；原有 Canvas 保存 ID 與資料維持不變。
+- PASS：以真實 IndexedDB 交易鎖延後提交，狀態維持「儲存中」，連續修改最後恢復最新值。QuotaExceededError／權限拒絕以原生 API 受控注入驗證，失敗時內容仍在畫面且重試可保存。
+- PASS：真正關閉 Chromium 程序，再以同一隔離 persistent profile 重新啟動，頁面及動畫設定恢復，Undo／Redo 從空歷史開始。另測試同 context 關閉頁籤後重新開啟。
+- PASS：VITE_TEST_SECRET=SKETCH2SITE_TEST_SECRET_83f21c npm run build；npm run check:secrets，無 canary、可辨識 API key 或 source maps。
+- PASS：npm audit --cache /workspace/.npm-cache，當次所有依賴 0 vulnerabilities。僅新增 fake-indexeddb devDependency，沒有新增執行時套件。
+- PASS：git diff --check。
+- 最終 FAIL：0。初次新 mock 的函式簽章只宣告一參數，讀取預期 token 的測試型別失敗；已修正並重跑。
+- build 仍有已定位的 Zod 4.6.7 PURE 說明註解警告，未抑制、未改第三方套件，建置成功。
+- NOT TESTED：Firefox／Safari／實機、完整無障礙稽核、真實耗盡磁碟、瀏覽器儲存驅逐、強制崩潰當下未完成交易、最大頁面效能壓力、正式後端認證／授權／AI 成本保護。
 
-## 核心檔案與截圖
-- src/patch.ts：Schema、批次套用、Diff、scope、Session 與歷史包裝。
-- src/history.ts：共用不可變歷史；src/spec.ts 保留原 Canvas API。
-- src/Preview.tsx、src/PageRenderer.tsx、src/preview.css：最小選取／修改／差異 UI，Renderer 保留完整驗證。
-- src/pageSpec.ts：沿用 v2，結構共用另保留 metadata／responsive 引用；未變更 Schema 合約。
-- 測試：src/patch.test.ts、src/Preview.test.tsx、tests/patch.spec.ts；既有測試均保留。
-- test-results/patch-desktop.png、patch-768.png、patch-375.png。截圖為本輪 E2E 產出（忽略檔，可重建），以 reduced motion 保持可見；舊動畫測試仍驗證實際播放。
+## UI 與截圖
+- 保留既有中性色、綠色強調色與預覽／側欄。新增細保存狀態列，固定狀態文字寬度減少跳動，錯誤時自然換行。
+- 檢查真實 Chromium 的恢復、儲存失敗、衝突、損毀畫面，以及既有 1440／768／375px 操作；沒有整頁水平溢出，窄視窗保留工作區／面板內捲動。
+- 截圖：test-results/page-restored.png、page-save-failure.png、page-conflict.png、page-corrupt.png；既有 patch-375.png 等亦由本輪重建。均為忽略檔，可透過 E2E 重建。
+- 本輪儲存測試與截圖使用 reduced motion，避免進場動畫尚未完成造成偏淡畫面；既有 Phase 2 測試仍驗證實際動畫播放，未關閉產品動畫。
+
+## 核心檔案
+- src/storage.ts：共用 sketch2site DB v2 開啟與新增 Object Stores，保留 drafts/current。
+- src/pageStorage.ts：PageRecordSchema、loadPage、savePage 交易 CAS、確認後 restartDamagedPage 原子備份。
+- src/pageSaver.ts：單筆進行中／最新待存快照、提交狀態、錯誤暫停與重試、關閉舊佇列。
+- src/usePagePersistence.ts：Preview 的單一 Session 狀態、重新載入／generation fence／保存整合。
+- src/Preview.tsx、src/preview.css：最小狀態與復原操作；未修改 Patch Engine。
+- src/pageStorage.test.ts、src/pageSaver.test.ts、tests/page-persistence.spec.ts；舊測試僅依 DB 版本、非同步載入與確認行為調整，未刪除驗收。
 
 ## Git 與恢復
-分支 work。上次 commit e08cea15d04f348db2d3f34eb63de3a781d50b30；本輪 commit 為此文件所屬提交，可用 git log -1 查詢。
-僅修改 Sketch2Site；未 push、merge、部署或啟用付費服務。提交僅在本機，未宣稱已有遠端備份、發布環境或新任務還原驗證。
+分支 work。上次 commit 72c35840882ad0b420616e81f04b5a0db6d1f763；本輪 commit 為此文件所屬提交，git log -1 可查。
+僅修改 Sketch2Site，未 push、merge、部署或啟用付費服務。提交僅在本機，未宣稱已有遠端備份、環境發布或新任務還原驗證。
 恢復：讀 AGENTS.md、檢查 git status；npm ci --cache /workspace/.npm-cache；npm run dev。E2E 自啟停 Vite，需先停止自己占用 5173 的服務。
 
-## 已知限制
-UI 僅編輯 heading 文字與 Fade In；Engine 的其他安全操作已測試，但未新增各類型完整屬性 UI。頁面歷史只留記憶體；重整回到範例。
-Diff／affectsOtherComponents 保證資料範圍，不保證其他元素的像素位置完全不變；正常文字高度或 gap 變更會 reflow。跨元件資料修改必須先明示額外 ID／欄位與可信授權範圍，本輪不自動重排。
-Patch 的純文字限制不取代 Renderer 的輸出安全；載入 PageSpec 中的 HTML 字串仍為純文字。圖片及連結白名單、同來源受控渲染的限制維持 Phase 2 規範。
+## 限制與資料語意
+目前一份本機專案 projectId=local-project。儲存封套 schemaVersion=1，內部 PageSpec v2。資料皆可由使用者透過開發者工具檢視及修改；未加密，不代表身分認證或伺服器授權。
+一般重新載入建立新 sessionId、保留 revision，歷史不跨 Session。損毀資料明確確認重新開始才建立新內容分支 UUID／revision 0，並保留原始備份。
+沒有紀錄才顯示未儲存 Fixture；已保存頁面優先恢復，不以 Fixture 自動覆蓋。清除網站資料／瀏覽器清理會刪除頁面、草稿及備份；沒有雲端備援，恢復保證僅及最後成功提交版本。
+衝突不自動同步或合併；使用者選擇重新載入時必須確認捨棄未保存修改。備份在 pageBackups，僅供開發者工具診斷／手動復原，本輪不新增管理 UI。
+儲存失敗保留記憶體內容；強制關閉仍可能遺失尚未提交的修改。狀態與 CAS 不是跨使用者權限機制。
+Diff 的局部保證針對資料，不保證其他元素像素位置不變；圖片／連結白名單與 Renderer 信任邊界維持不變。
 
-## 下一個最小任務
-P4：PageSpec 與必要版本資訊的本機保存／重新載入，驗證損毀資料及舊 Session Patch 拒絕；不接 AI。
+## 下一個正式階段
+P5 NOT STARTED：CanvasSpec → AI Layout Generation → PageSpec → Renderer。優先做後端生成路徑及必要安全／成本控制，不延伸其他底層功能；本輪不啟動。

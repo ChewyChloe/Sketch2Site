@@ -346,3 +346,20 @@
     margin-bottom: var(--s2);
   }
 }
+.page-save-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  padding: var(--s2) var(--s4);
+  border-bottom: var(--border);
+  background: var(--panel);
+  font-size: 13px;
+}
+.page-save-bar [data-testid="page-save-status"] {
+  min-width: 112px;
+  color: var(--muted);
+}
+.page-save-bar button {
+  padding: 4px 8px;
+}

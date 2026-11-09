@@ -15,3 +15,9 @@ PageSpec v1 是受控平面區塊合約，未來階層與資產擴充需版本�
 以 generic history 工具共用演算法、分離資料狀態，取代複製兩套 Undo／Redo。原子批次與全頁／範圍驗證是唯一提交路徑；可信 scope 為獨立參數，不由不可信 Patch 自行宣告。
 UI 僅實作 heading 與 Fade In，保留既有預覽連結操作與 Renderer。Diff 保證資料範圍，正常排版 reflow 不假稱為完全沒有視覺影響。
 Zod 4.6.7 的建置警告來自 v4/core/regexes.js:74 與 util.js:400 的說明註解內含 @__PURE__ 標記，被 Rollup 當成位置不合法的 annotation；真正呼叫上的 PURE 標記不同。未修改 node_modules、依賴版本或抑制警告，避免為非阻斷訊息引入轉譯補丁或套件風險。
+
+
+2026-11-09（Phase 4）：沿用同一 IndexedDB，升級 DB v2 新增 pages／pageBackups，不改 CanvasSpec、PageSpec 或 Patch Engine 合約。只有一份現有本機專案，固定 projectId，不提前加入多專案／雲端同步。
+使用單一進行中寫入 + 最新快照合併及 transaction CAS；不使用時間戳排序、不使用 last-write-wins，也不加入大型狀態管理套件。revision 繼承已保存值，新開啟工作階段使用新 UUID，Undo/Redo 不持久化。
+不存在紀錄才顯示未儲存範例，損毀紀錄不做推測遷移。確認後原子保存原始資料備份再重新開始；不增加備份管理或自動合併 UI。備份保留在本機，清除網站資料仍會遺失。
+新增 fake-indexeddb 僅作儲存交易單元測試；Chromium E2E 另外驗證實際交易、雙分頁及真正關閉／重新啟動瀏覽器程序。下一正式階段直接進入 CanvasSpec → AI Layout Generation → PageSpec → Renderer，本輪不啟用模型。

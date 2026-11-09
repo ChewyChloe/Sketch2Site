@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { demoPage } from "./pageFixtures";
+import { usePagePersistence } from "./usePagePersistence";
 import { PageRenderer } from "./PageRenderer";
 import { validatePage } from "./pageSpec";
-import {
-  applyPatchBatch,
-  createPageSession,
-  indexNodes,
-  travelPage,
-  type Change,
-} from "./patch";
+import { applyPatchBatch, indexNodes, travelPage, type Change } from "./patch";
 function changeLabel(c: Change) {
   return c.property === "content"
     ? "文字"
@@ -23,9 +18,8 @@ function valueLabel(value: unknown): string {
   return String(value);
 }
 export default function Preview() {
-  const [session, setSession] = useState(() => createPageSession(demoPage));
-  const current = useRef(session);
-  current.current = session;
+  const persistence = usePagePersistence();
+  const { session, current, update, ready, loadError, status } = persistence;
   const [source, setSource] = useState("範例預覽"),
     [error, setError] = useState(""),
     [device, setDevice] = useState<"desktop" | "mobile">("desktop"),
@@ -39,6 +33,9 @@ export default function Preview() {
     [patchError, setPatchError] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null),
     loadSequence = useRef(0);
+  useEffect(() => {
+    if (ready) setSource(persistence.restored ? "本機頁面" : "範例預覽");
+  }, [ready, persistence.restored]);
   const page = session.history.present,
     nodes = indexNodes(page),
     node = selected ? nodes.get(selected) : undefined;
@@ -52,26 +49,31 @@ export default function Preview() {
     setDuration(String(effect?.duration ?? 450));
     setEditRevision(session.revision);
   }, [selected, session]);
-  const update = (next: typeof session) => {
-    current.current = next;
-    setSession(next);
-  };
   function install(input: unknown) {
     const checked = validatePage(input);
-    setSelected(null);
-    setNotice("");
     if (!checked.ok) {
       setError(checked.error);
-      return;
+      return false;
     }
-    update(createPageSession(checked.page));
+    if (
+      (persistence.isDirty() ||
+        status.kind === "saved" ||
+        session.revision > 0) &&
+      !window.confirm("取代目前頁面並自動儲存？")
+    )
+      return false;
+    persistence.replace(checked.page);
+    setSelected(null);
+    setNotice("");
     setError("");
     setReplay((n) => n + 1);
+    return true;
   }
   async function load(file: File | undefined) {
     if (!file) return;
     const sequence = ++loadSequence.current;
-    setSource("本機檔案預覽");
+    const startedSession = current.current.sessionId,
+      startedRevision = current.current.revision;
     if (file.size > 200000) {
       setError("預覽失敗：檔案超過 200 KB。請縮小檔案後重試。");
       return;
@@ -79,13 +81,21 @@ export default function Preview() {
     try {
       const parsed: unknown = JSON.parse(await file.text());
       if (sequence !== loadSequence.current) return;
-      install(parsed);
+      if (
+        startedSession !== current.current.sessionId ||
+        startedRevision !== current.current.revision
+      ) {
+        setError("頁面已更新，請重新載入檔案。");
+        return;
+      }
+      if (install(parsed)) setSource("本機檔案預覽");
     } catch {
       if (sequence !== loadSequence.current) return;
       setError("預覽失敗：檔案格式無效。請修正檔案後重試。");
     }
   }
   function select(id: string) {
+    if (!ready || loadError) return;
     if (
       indexNodes(current.current.history.present).get(id)?.type === "heading"
     ) {
@@ -94,7 +104,7 @@ export default function Preview() {
     }
   }
   function apply() {
-    if (!node) return;
+    if (!node || !ready || loadError) return;
     const patches: unknown[] = [
       { operation: "set-text", targetId: node.id, payload: { content: text } },
     ];
@@ -143,6 +153,7 @@ export default function Preview() {
     );
   }
   function travel(direction: "undo" | "redo") {
+    if (!ready || loadError) return;
     update(travelPage(current.current, direction));
     setPatchError(false);
     setNotice(direction === "undo" ? "已撤銷修改。" : "已重做修改。");
@@ -153,7 +164,7 @@ export default function Preview() {
         <div>
           <strong>{source}</strong>
           <small>未使用 AI</small>
-          {!node && !error && (
+          {!node && !error && ready && !loadError && (
             <select
               className="heading-picker"
               aria-label="選取標題"
@@ -188,24 +199,44 @@ export default function Preview() {
             手機
           </button>
           <button
-            disabled={Boolean(error) || !session.history.past.length}
+            disabled={
+              !ready ||
+              Boolean(loadError) ||
+              Boolean(error) ||
+              !session.history.past.length
+            }
             onClick={() => travel("undo")}
           >
             撤銷修改
           </button>
           <button
-            disabled={Boolean(error) || !session.history.future.length}
+            disabled={
+              !ready ||
+              Boolean(loadError) ||
+              Boolean(error) ||
+              !session.history.future.length
+            }
             onClick={() => travel("redo")}
           >
             重做修改
           </button>
-          <button onClick={() => setReplay((n) => n + 1)}>重播動畫</button>
-          <button onClick={() => fileRef.current?.click()}>載入頁面</button>
           <button
+            disabled={!ready || Boolean(loadError)}
+            onClick={() => setReplay((n) => n + 1)}
+          >
+            重播動畫
+          </button>
+          <button
+            disabled={!ready || Boolean(loadError)}
+            onClick={() => fileRef.current?.click()}
+          >
+            載入頁面
+          </button>
+          <button
+            disabled={!ready || Boolean(loadError)}
             onClick={() => {
               loadSequence.current++;
-              setSource("範例預覽");
-              install(demoPage);
+              if (install(demoPage)) setSource("範例預覽");
             }}
           >
             還原範例
@@ -223,13 +254,82 @@ export default function Preview() {
           />
         </div>
       </div>
+      <div className="page-save-bar" aria-live="polite">
+        <span data-testid="page-save-status">
+          {!ready
+            ? "正在載入頁面"
+            : loadError
+              ? "載入失敗"
+              : status.kind === "saved"
+                ? "已儲存"
+                : status.kind === "saving"
+                  ? "儲存中"
+                  : status.kind === "failed"
+                    ? "儲存失敗"
+                    : status.kind === "conflict"
+                      ? "版本衝突"
+                      : "尚未儲存"}
+        </span>
+        {ready && !loadError && status.error && (
+          <span>{status.error.message}</span>
+        )}
+        {ready && !loadError && status.kind === "failed" && (
+          <button onClick={() => persistence.retry()}>重試儲存</button>
+        )}
+        <button
+          disabled={!ready}
+          onClick={() => {
+            if (
+              persistence.isDirty() &&
+              !window.confirm("重新載入會捨棄本頁尚未儲存的修改，是否繼續？")
+            )
+              return;
+            loadSequence.current++;
+            setError("");
+            setSelected(null);
+            setNotice("");
+            void persistence.read();
+          }}
+        >
+          重新載入頁面
+        </button>
+        {ready &&
+          loadError &&
+          ["CORRUPT", "UNSUPPORTED"].includes(loadError.code) && (
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "將保留原始紀錄備份，並以範例重新開始，是否繼續？",
+                  )
+                ) {
+                  loadSequence.current++;
+                  setError("");
+                  setSelected(null);
+                  void persistence.restart();
+                }
+              }}
+            >
+              以範例重新開始
+            </button>
+          )}
+      </div>
       <div className="preview-body">
         <div className="preview-scroll">
           <div
             className={"preview-frame " + device}
             data-testid="preview-frame"
           >
-            {error ? (
+            {!ready ? (
+              <p className="preview-error">正在載入頁面…</p>
+            ) : loadError ? (
+              <p role="alert" className="preview-error">
+                {loadError.message}{" "}
+                {["CORRUPT", "UNSUPPORTED"].includes(loadError.code)
+                  ? "請重試載入，或確認後重新開始。"
+                  : "請檢查瀏覽器儲存權限後重試。"}
+              </p>
+            ) : error ? (
               <p role="alert" className="preview-error">
                 {error}
               </p>
@@ -243,7 +343,7 @@ export default function Preview() {
             )}
           </div>
         </div>
-        {!error && node && (
+        {ready && !loadError && !error && node && (
           <aside className="patch-panel" aria-label="頁面元素編輯">
             <label className="field">
               選取標題

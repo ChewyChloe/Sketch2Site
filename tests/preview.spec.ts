@@ -1,5 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import { demoPage } from "../src/pageFixtures";
+test.beforeEach(async ({ page }) => {
+  page.on("dialog", (dialog) => {
+    if (dialog.message() === "取代目前頁面並自動儲存？") void dialog.accept();
+    else void dialog.dismiss();
+  });
+});
 async function openPreview(page: Page) {
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
@@ -9,13 +15,11 @@ async function openPreview(page: Page) {
   ).toBeVisible();
 }
 async function upload(page: Page, data: unknown) {
-  await page
-    .getByLabel("載入頁面檔案")
-    .setInputFiles({
-      name: "page.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(data)),
-    });
+  await page.getByLabel("載入頁面檔案").setInputFiles({
+    name: "page.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(data)),
+  });
 }
 test("預覽互動、動畫、草稿隔離與恢復", async ({ page, context }) => {
   const errors: string[] = [];
@@ -177,21 +181,17 @@ test("Reduced Motion 與不可信檔案", async ({ page }) => {
     page.locator(".rendered-page").getByRole("heading", { level: 1 }),
   ).toContainText("<img");
   await expect(page.locator("img[src=x]")).toHaveCount(0);
-  await page
-    .getByLabel("載入頁面檔案")
-    .setInputFiles({
-      name: "broken.json",
-      mimeType: "application/json",
-      buffer: Buffer.from("{invalid"),
-    });
+  await page.getByLabel("載入頁面檔案").setInputFiles({
+    name: "broken.json",
+    mimeType: "application/json",
+    buffer: Buffer.from("{invalid"),
+  });
   await expect(page.getByRole("alert")).toContainText("檔案格式無效");
-  await page
-    .getByLabel("載入頁面檔案")
-    .setInputFiles({
-      name: "large.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(" ".repeat(200001)),
-    });
+  await page.getByLabel("載入頁面檔案").setInputFiles({
+    name: "large.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(" ".repeat(200001)),
+  });
   await expect(page.getByRole("alert")).toContainText("超過 200 KB");
   await page.getByRole("button", { name: "還原範例" }).click();
   await expect(

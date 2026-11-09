@@ -1,11 +1,26 @@
 import { CanvasSchema, type CanvasSpec } from "./spec";
-async function database(): Promise<IDBDatabase> {
+export async function database(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const r = indexedDB.open("sketch2site", 1);
-    r.onupgradeneeded = () => r.result.createObjectStore("drafts");
-    r.onsuccess = () => resolve(r.result);
+    const r = indexedDB.open("sketch2site", 2);
+    r.onupgradeneeded = () => {
+      for (const name of ["drafts", "pages", "pageBackups"])
+        if (!r.result.objectStoreNames.contains(name))
+          r.result.createObjectStore(name);
+    };
+    let blocked = false;
+    r.onsuccess = () => {
+      if (blocked) {
+        r.result.close();
+        return;
+      }
+      r.result.onversionchange = () => r.result.close();
+      resolve(r.result);
+    };
     r.onerror = () => reject(r.error);
-    r.onblocked = () => reject(new Error("請關閉其他工作台分頁後重試"));
+    r.onblocked = () => {
+      blocked = true;
+      reject(new Error("請關閉其他工作台分頁後重試"));
+    };
   });
 }
 export async function saveDraft(value: CanvasSpec) {

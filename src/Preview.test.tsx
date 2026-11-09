@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import "fake-indexeddb/auto";
 import { it, expect, afterEach } from "vitest";
 import {
   render,
@@ -16,7 +17,9 @@ it("selects an ID, applies a patch through the form and safely rejects invalid t
   const target = Array.from(indexNodes(demoPage).values()).find(
     (n) => n.type === "heading",
   )!;
-  fireEvent.click(screen.getByRole("heading", { name: target.content! }));
+  fireEvent.click(
+    await screen.findByRole("heading", { name: target.content! }),
+  );
   await waitFor(() =>
     expect(
       (screen.getByLabelText("標題文字") as HTMLTextAreaElement).value,

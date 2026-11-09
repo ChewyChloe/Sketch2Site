@@ -2,7 +2,7 @@
 React 19 + TypeScript + Vite；Zod 4；IndexedDB；Vitest、Testing Library、Playwright。Node 24 LTS、npm lockfile，安裝使用 npm ci。原生 Pointer Events／HTML Drag and Drop，CSS Tokens 取代 Tailwind。Phase 2 以 Web Animations API + IntersectionObserver 與受控 CSS 實作動畫，不新增 Motion 或重複套件。
 
 ## 草稿與成品合約
-src/spec.ts 保留 CanvasSpec v1、歷史與 LegacyPageSchema（原 PageSpec v1）。CanvasSpec 的儲存、ID、座標格式不變；src/storage.ts 僅處理 IndexedDB，Undo/Redo 上限 80 次，移動在放開時提交一次。
+src/spec.ts 保留 CanvasSpec v1、歷史與 LegacyPageSchema（原 PageSpec v1）。CanvasSpec 的儲存、ID、座標格式不變；src/storage.ts 共用 IndexedDB 開啟／草稿存取，Undo/Redo 上限 80 次，移動在放開時提交一次。
 
 src/pageSpec.ts 提供新 PageSpec v2：metadata、sections 元件樹、typography、styles、responsive。節點有 UUID、type、受控 style、effects 與各類型特有欄位。
 - Section、Container、Card、Stack：children。
@@ -24,7 +24,7 @@ src/PageRenderer.tsx 內 componentRegistry 僅映射受控語意標籤與 CSS �
 所有節點保留 data-page-id、data-page-type、DOM id=page-UUID；componentIdFromElement 將任意內部 DOM 對應最近的節點。reconcilePage 使用穩定 ID 與內容比較，共用未修改分支；遞迴 RenderNode 使用 React.memo，修改路徑的祖先會更新，未變動子元件跳過渲染（有 registry 存取計數測試）。Phase 3 已加入 Patch 引擎；矩形框選尚未實作。
 
 ## 工作台整合
-App 保持 CanvasSpec、選取與歷史；Preview 持有獨立且驗證過的 PageSpec Session 與尺寸，不回寫草稿。切換保留預覽輸入，重新整理則回到固定範例；PageSpec 本輪不持久化。預覽隱藏草稿編輯工具與側欄，並停用草稿鍵盤操作。
+App 保持 CanvasSpec、選取與歷史；Preview 持有獨立且驗證過的 PageSpec Session 與尺寸，不回寫草稿。切換保留預覽輸入；Phase 4 重新整理會恢復已保存的頁面，沒有紀錄時才顯示未儲存範例。預覽隱藏草稿編輯工具與側欄，並停用草稿鍵盤操作。
 src/Preview.tsx 提供桌面／375px 手機框（窄視窗自動縮至可用寬度）、載入本機 JSON、還原範例與重播。頁面以 container queries 而非 host viewport 決定布局；內容採 Flex/Grid，沒有以 Canvas 座標排列成品。
 src/pageFixtures.ts 是涵蓋九種元件與六種效果的固定測試範例，不是生成器。public/assets/workspace.svg 為內建示意資產。
 無 AI、後端、雲端儲存、憑證、匯出或正式部署。
@@ -51,4 +51,27 @@ Renderer 根節點以 event delegation 取得 data-page-id，Preview 僅允許�
 
 ## 父層與視覺影響原則
 目前 scope 保證資料範圍，不保證其他元素的像素位置不變；文字高度、字級與 gap 可導致正常流式 reflow。UI 因此稱「其他元素資料未變更」。
-未來若修改要變更父層或其他元件資料，必須事先列出額外 ID／欄位與原因，取得該次操作的明確授權，擴大可信 scope，再以整批驗證／單次歷史套用；不可由 AI 或 Engine 自行推測擴張。不在本輪實作跨元件重排、AI Orchestrator、矩形選取或長期頁面儲存。
+未來若修改要變更父層或其他元件資料，必須事先列出額外 ID／欄位與原因，取得該次操作的明確授權，擴大可信 scope，再以整批驗證／單次歷史套用；不可由 AI 或 Engine 自行推測擴張。不在本輪實作跨元件重排、AI Orchestrator、矩形選取；本機頁面儲存另見 Phase 4。
+
+
+## Phase 4：本機頁面保存
+共用 sketch2site IndexedDB，由版本 1 升級到 2，只新增 pages、pageBackups Object Stores，保留 drafts/current 不變。現有工作台只有一份本機專案，PageSpec 使用固定 projectId=local-project；未新增多專案管理。
+pages 的 key 為 projectId，紀錄欄位為 projectId、schemaVersion:1（儲存封套版本）、pageSpec（PageSpec v2）、revision（非負安全整數）、writerSessionId（UUID）、updatedAt（ISO UTC）。不儲存 Undo/Redo、Diff、檔名、Prompt、憑證或其他秘密。
+src/pageStorage.ts 在保存與讀取時驗證 strict PageRecordSchema，包含完整 PageSchema。不存在的 key 回傳 null，null／缺欄位／不支援版本／非法頁面回傳固定錯誤；沒有猜測性欄位遷移。
+
+### 保存流程與一致性
+src/usePagePersistence.ts 接管 Preview 原有單一 Session state，沒有增加第二套頁面狀態管理。載入完成前不顯示 Fixture／Renderer，也不接受修改；沒有紀錄時只顯示未儲存範例，不自動寫入。
+成功的 Patch、Undo/Redo、明確載入／替換頁面會排入 src/pageSaver.ts：每個工作階段最多一筆進行中的寫入與一筆最新待存快照，連續修改合併，較舊 revision 不再入列。無長時間 debounce，也不逐鍵寫入。
+savePage(snapshot, expectedToken) 在同一個 readwrite transaction 中讀取現有紀錄、驗證、比對 expectedToken 的 revision 與 writerSessionId，再寫入更高 revision。沒有紀錄必須搭配 null token。transaction.oncomplete 才確認成功及推進 token，request.onsuccess 不是保存成功。
+同基準的兩個分頁只會有一個寫入成功；另一個停止保存、保留記憶體修改並提示重新載入，不自動合併或改用最後寫入者勝出。成功快照若仍有新版排隊，不顯示舊版的「已儲存」。失敗保留最新待存內容，使用者可重試；衝突不提供盲目覆寫重試。
+
+### Session／revision
+每次載入已保存頁面都產生新 sessionId，revision 繼承保存值，歷史從當前快照開始，Undo/Redo 不跨開啟工作階段。下一次修改繼續 revision+1，仍通過 Phase 3 的 session／revision Patch 檢查。
+writerSessionId 是前一次寫入者的相容性 token，不是獨占鎖或使用者認證。新分頁只是讀取不會搶占其他分頁。舊 Session 的晚到寫入仍必須比對舊 token，不能覆蓋已由新 Session 提交的資料，即使它自己宣稱更高 revision。
+載入／重新開始／卸載會關閉舊佇列，generation fence 丟棄過期的載入與回呼；已進行的原生交易不假裝可以跨分頁取消，而由 CAS 保護。外部檔案讀取也核對 load sequence、Session 與 revision，避免讀檔期間的舊結果取代新編輯。
+
+### 損毀資料及失敗
+損毀／不支援版本不進入 Renderer、不自動覆蓋／刪除，禁用修改。可重試載入；確認「以範例重新開始」後，在 pages + pageBackups 的單一交易中保存完整原始值與 archivedAt，再建立明確標示的範例紀錄。備份或替換任一步失敗整筆回滾；若其他分頁已修復為有效紀錄，重新開始操作拒絕覆寫。
+pageBackups 可由瀏覽器開發者工具診斷與手動復原，不直接渲染備份內容。本輪沒有備份管理 UI 或自動遷移。
+重新開始是明確的新內容分支，使用新 UUID／revision 0，舊 token 因 writer 不符而失效；一般重新載入不重置 revision。有效頁面若被範例或檔案取代，需確認，並繼續更高 revision。
+儲存失敗不移除記憶體中的頁面；狀態列顯示儲存中／已儲存／尚未儲存／失敗／衝突與必要操作。尚未提交時離開會提示；不承諾瀏覽器強制結束能保留未完成寫入。

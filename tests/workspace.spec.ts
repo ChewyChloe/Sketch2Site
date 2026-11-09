@@ -129,7 +129,7 @@ test("不合法 IndexedDB 草稿安全失敗、不覆寫資料", async ({ page }
   await ready(page);
   await page.evaluate(async () => {
     await new Promise<void>((resolve, reject) => {
-      const r = indexedDB.open("sketch2site", 1);
+      const r = indexedDB.open("sketch2site", 2);
       r.onsuccess = () => {
         const db = r.result;
         const t = db.transaction("drafts", "readwrite");
