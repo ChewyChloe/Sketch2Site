@@ -1,4 +1,43 @@
-import { CanvasSchema, type CanvasSpec } from './spec';
-async function database():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const r=indexedDB.open('sketch2site',1);r.onupgradeneeded=()=>r.result.createObjectStore('drafts');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(new Error('請關閉其他工作台分頁後重試'));});}
-export async function saveDraft(value:CanvasSpec){const parsed=CanvasSchema.parse(value);const db=await database();try{await new Promise<void>((resolve,reject)=>{const t=db.transaction('drafts','readwrite');t.objectStore('drafts').put(parsed,'current');t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}finally{db.close();}}
-export async function loadDraft():Promise<CanvasSpec|null>{const db=await database();try{return await new Promise((resolve,reject)=>{const r=db.transaction('drafts').objectStore('drafts').get('current');r.onsuccess=()=>{try{resolve(r.result?CanvasSchema.parse(r.result):null);}catch(e){reject(e);}};r.onerror=()=>reject(r.error);});}finally{db.close();}}
+import { CanvasSchema, type CanvasSpec } from "./spec";
+async function database(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const r = indexedDB.open("sketch2site", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("drafts");
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+    r.onblocked = () => reject(new Error("請關閉其他工作台分頁後重試"));
+  });
+}
+export async function saveDraft(value: CanvasSpec) {
+  const parsed = CanvasSchema.parse(value);
+  const db = await database();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const t = db.transaction("drafts", "readwrite");
+      t.objectStore("drafts").put(parsed, "current");
+      t.oncomplete = () => resolve();
+      t.onerror = () => reject(t.error);
+      t.onabort = () => reject(t.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+export async function loadDraft(): Promise<CanvasSpec | null> {
+  const db = await database();
+  try {
+    return await new Promise((resolve, reject) => {
+      const r = db.transaction("drafts").objectStore("drafts").get("current");
+      r.onsuccess = () => {
+        try {
+          resolve(r.result ? CanvasSchema.parse(r.result) : null);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      r.onerror = () => reject(r.error);
+    });
+  } finally {
+    db.close();
+  }
+}
