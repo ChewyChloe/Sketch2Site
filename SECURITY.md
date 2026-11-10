@@ -1,5 +1,5 @@
 # 安全邊界
-Phase 5 新增本機生成後端與可選付費 Provider Adapter；目前沒有配置金鑰或啟用真實 API。資料留在瀏覽器 IndexedDB，CanvasSpec 手動儲存、PageSpec 自動保存；清除網站資料會刪除草稿，同來源其他程式可讀取。無雲端備份、多分頁衝突合併或帳號隔離。
+Phase 5 新增本機生成後端與可選付費 Provider Adapter；金鑰可由後端秘密配置，真實 API 仍未啟用。資料留在瀏覽器 IndexedDB，CanvasSpec 手動儲存、PageSpec 自動保存；清除網站資料會刪除草稿，同來源其他程式可讀取。無雲端備份、多分頁衝突合併或帳號隔離。
 所有資料含本機讀取皆經 strict Zod Schema，限制節點／文字／數字／動畫／欄位，拒絕重複 ID、超界位置、不支援階層。React 文字插值，不使用 innerHTML、eval 或模型執行；URL 合約僅允許 HTTPS 或本頁 anchor。只有使用者明確按「生成網站」且後端已啟用時，必要結構化草稿才傳至 OpenAI；不傳整個專案或其他本機紀錄。外部圖片與網路資產尚未開放；Phase 2 的連結限制見下方。
 PageSpec v2 透過 strict 驗證及受控 Registry 渲染；不得執行任意 JS、Shell、安裝套件或讀取伺服器檔案。
 秘密不得放入 VITE_* 或前端回應；.env 忽略、.env.example 無金鑰；production 不產生 source map。check:secrets 使用測試 canary 掃描 build，但不取代完整秘密稽核。
@@ -61,3 +61,8 @@ Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或�
 新增 model review gate；預設 Luna 僅為候選，Sol 不自動使用，舊模型不再允許啟用。SKETCH_AI_MAX_CALLS 預設 1，上限 5；SKETCH_AI_BUDGET_USD 必填且不超過 $0.25，不能超過核准金額。失敗也消耗呼叫與保守預留，不重試、不重啟繞過限制；第一份失敗停止正式測試。
 .env 只由後端 npm run dev:api 的 --env-file-if-exists 載入；由使用者自行安全編輯或環境秘密設定供應，不能貼入聊天、Issue、報告或 VITE_*。Project 支出控制未由使用者確認，本輪沒有讀取帳務或測試金鑰。
 新增 cached／reasoning 用量欄位與模型名稱僅作安全觀測，失敗時已知用量仍保留；未知 token／費用為 null，不記錄完整上游錯誤、原始輸出或草稿。離線 preflight 只處理專案公開 fixtures，不讀秘密、不連網。未改 Renderer／PageSpec 安全白名單或本機存取限制。
+
+## Phase 6：選取／註記／拖放邊界
+選取 UUID、工具模式與 Annotation 都只在可信預覽控制層記憶體中；不加入 PageSpec、CanvasSpec、IndexedDB紀錄、正式 Renderer 或任何匯出內容，不發網路請求。註記最多80筆／每筆2000點，只包含局部座標、尺寸、比例與Session／Revision，不包含金鑰、URL、使用者資訊、螢幕絕對座標或原始DOM。沒有註記匯入／外傳／AI解析；SVG points 只來自受控指標座標，不接受SVG／HTML／CSS字串。
+外部拖曳資料視為不可信，只讀專用MIME內的六個Preset ID，重新確認目標存在、動畫相容性與重複狀態，最後仍經既有 strict Patch／全頁Schema驗證。drop目標授權由可信事件與目前元件索引提供，不從Payload推定scope。更換動畫是單一原子批次，失敗不改頁面／歷史；stagger-reveal在無子元件上由Schema拒絕，無動態程式／事件注入。
+本輪所有測試僅使用本機Fixtures及Mock Provider；測試程序移除OPENAI_API_KEY／SKETCH_AI_API_KEY並停用正式AI旗標，新E2E攔截外部HTTPS並斷言沒有生成POST。未啟動正式server/index.ts，沒有付費模型、外部AI／圖像生成呼叫或帳務變更。秘密環境已存在不代表啟用或授權。既有Session／Revision／CAS／reduced-motion均保留。

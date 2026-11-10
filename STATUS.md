@@ -1,5 +1,7 @@
 # 狀態
-2026-11-09（UTC）
+2026-11-10（Asia/Taipei）
+
+目前工作：Phase 6；最新完成項與驗收見文末 Phase 6 區段。Phase 5 真實付費生成仍 NOT TESTED，不視為本輪阻礙。
 
 ## 功能
 - Phase 0–4 DONE；保留 Canvas／PageSpec 保存、Patch、Undo／Redo、Session／Revision 與交易 CAS。
@@ -72,3 +74,29 @@ server/config.ts／index.ts（候選、gate、授權上限配置）；server/pro
 - 未更動產品程式、UI／Renderer／Schema／Fixtures，未購買額度、變更帳務、Push、Merge 或部署。下一個最小任務：使用者確認 Project 帳務與支出限制，並另行授權上述最多一次 portfolio 付費生成；失敗即停，不第二次呼叫。
 
 本次 Recovery 驗證：typecheck PASS；Vitest 10檔115/115 PASS；Chromium Mock／回歸29/29 PASS；build PASS（既有 Zod PURE 註解警告）；check:secrets PASS；generation:preflight 五份指紋 PASS；git diff --check PASS。僅更新這三份文件；本地提交 SHA 以 git log -1 查詢。真實生成及其桌面／手機 UI 品質仍 NOT TESTED。
+
+## Phase 6（2026-11-10，Asia/Taipei）
+
+功能 DONE：單擊所有受控元件、完全包含矩形框選／多選摘要、穩定ID、空白／Esc取消、100／75／50%預覽縮放；獨立畫筆與結構化座標、撤銷／清除；局部文字／標題層級／對齊；六Preset動畫拖放、可放置回饋、拒絕重複／不相容、時長／更換／移除、原子Patch與Undo/Redo。保存沿用原Session／Revision／IndexedDB CAS，Canvas與註記歷史分離。未新增依賴或改UI風格。
+
+### 驗證
+- PASS：typecheck；npm test 與 npm run test（同一Vitest套件，11檔117/117）；build；check:secrets；npm audit（0 vulnerabilities）；git diff --check。
+- PASS：Chromium完整回歸35/35（約1.1分鐘）。新增6項E2E，舊29項保留；包含固定Fixture與Mock生成／候選確認／持久化／CAS／失敗回復，不能當成真實AI結果。
+- NOT TESTED：npm run check（package.json沒有check script，已實際執行並回報Missing script；typecheck／build／check:secrets各自驗證）。Firefox／Safari／實機觸控與完整無障礙稽核未測。
+- 新增單元：縮放／偏移座標、雙向框選邊界、完全包含而非相交、stagger葉節點／非法效果／scope拒絕及原子歷史。
+- 新E2E：單選UUID、框選／多選、空白／Esc、三種縮放、畫筆與清除可撤銷、捲動座標、註記與正式頁面／草稿隔離、重載恢復、合法拖放／重複與不相容拒絕、更換移除、Undo/Redo、真實Web Animations播放／reduced-motion取消，以及1440／768／375px無頁面水平溢出。
+- build保留既有Zod PURE註解警告，不影響成功；沒有修改或升級套件。check:secrets沒有發現可辨識Key、系統Prompt或source maps。
+
+### Chromium視覺檢查
+截圖均為本機固定測試範例（非AI），未手動美化。路徑test-results/phase6-{1440,768,375}.png為選取／屬性操作；phase6-pen-{1440,768,375}.png為畫筆；另有phase6-marquee.png、phase6-multi-75.png與phase6-animations.png。此目錄忽略於Git，可重跑E2E重建。
+已人工檢視桌面、窄視窗與手機截圖：綠色外框貼合實際元件盒模型；畫筆在獨立圖層，工具列不浮蓋內容；桌面側欄維持272px、未選取時讓出空間；768／375px側欄改為下方捲動，按鈕維持文流，未見新增水平溢出、文字截斷或元素重疊。早期CSS zoom造成文字度量變化，已改固定布局寬度+transform；早期窄窗浮動套用按鈕曾遮擋欄位，已移除浮動並以實際捲動驗收。
+
+具體限制／後續可改善：
+1. 375px工具列仍需換行，下方屬性區需捲動才能依次看文字、對齊及套用；這是桌面優先編輯器，沒有宣稱手機完整編輯已最佳化。
+2. 框選只採完全包含；大卡片與其子項可能一起選入，多選僅識別，沒有批次屬性修改。規則已在桌面工具列及架構文件說明。
+3. 註記綁定版面快照，文字修改、尺寸／版面變化會隱藏舊註記並提示；重載會清空。未做跨版面重新錨定或保存，不把舊筆跡錯貼到新位置。
+
+### 安全、Git與停止點
+本輪付費模型／外部AI／圖像生成呼叫完全為0，費用0；沒有再次查詢模型列表或使用正式Provider。測試程序移除兩個Key變數、停用AI旗標，新E2E拒絕外部HTTPS並斷言無生成POST；所有真實付費生成仍NOT TESTED。未開啟自然語言修改、匯出、登入、雲端服務或其他階段。
+起點6262be372a7e3a609bdb21c14f5d6e8a41537958，工作分支work。GitHub備份未確認：本對話先前遠端heads查詢為空，目前無遠端追蹤分支，原始碼由recovery bundle恢復；本輪提交僅在本地，未Push，環境遺失可能遺失本輪變更。沒有Push／Merge／部署。測試通過後建立本地commit，SHA以git log -1取得。
+下一個最小任務：使用者驗收Phase6的選取、筆跡與動畫操作；本輪完成後停止，等待後續指示。

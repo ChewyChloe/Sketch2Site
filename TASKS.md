@@ -25,3 +25,10 @@
 - 未更動產品程式、UI／Renderer／Schema／Fixtures，未購買額度、變更帳務、Push、Merge 或部署。下一個最小任務：使用者確認 Project 帳務與支出限制，並另行授權上述最多一次 portfolio 付費生成；失敗即停，不第二次呼叫。
 
 本次 Recovery 驗證：typecheck PASS；Vitest 10檔115/115 PASS；Chromium Mock／回歸29/29 PASS；build PASS（既有 Zod PURE 註解警告）；check:secrets PASS；generation:preflight 五份指紋 PASS；git diff --check PASS。僅更新這三份文件；本地提交 SHA 以 git log -1 查詢。真實生成及其桌面／手機 UI 品質仍 NOT TESTED。
+
+## Phase 6（2026-11-10，Asia/Taipei）
+- DONE：沿用原Renderer／Patch／保存流程，實作單擊與完全包含矩形框選、多選摘要、穩定UUID、空白／Esc取消、三模式與固定布局縮放。
+- DONE：獨立SVG畫筆、Annotation v1結構、清除／撤銷、80筆／2000點限制、版本／尺寸綁定與過期提示，不寫入正式資料或外傳。
+- DONE：精簡文字／標題層級／對齊編輯、六Preset拖放與可放置回饋、相容性／重複拒絕、參數時長、更換／移除、原子Patch及Undo/Redo／既有CAS保存。
+- 驗證結果與截圖見STATUS.md。本輪未執行真實AI生成；Phase5付費品質仍NOT TESTED。
+- 下一個最小任務：由使用者驗收Phase6操作與截圖；停止，不自行開始AI自然語言編輯或其他階段。

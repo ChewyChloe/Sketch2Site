@@ -106,3 +106,16 @@ configFromEnv 保持 fail-closed。SKETCH_AI_MODEL_REVIEWED 代表已核對官�
 SKETCH_AI_MAX_CALLS 預設 1，只允許 1–5；SKETCH_AI_BUDGET_USD 無預設，需正值且不超過 $0.25。server/index.ts 將兩值傳入既有後端 limiter，不另建付費端點或公開服務。既有單次 $0.10、輸出 4096、30 秒、併發 1、零重試不變。這些配置不構成付費授權；先驗收第一份，失敗停止，不能重啟繞過配額。
 Provider 保留已取得的 input／cached input／output／reasoning tokens；拒答、不完整或轉換失敗也以固定錯誤碼記錄數字。未知值為 null。估計費用以 uncached input × 一般價 + cached input × cache 價 + output × 輸出價；reasoning 包含在 output，不重複計價。預留仍使用全額一般輸入價，不先假設 cache 命中。
 五份測試保留原內容與位置，改為固定 UUID／anchor，SHA-256／元素／動畫數記於 docs/generation-fixtures.json。npm run generation:preflight 僅離線輸出 metadata／指紋／預留，不讀 .env、不呼叫模型。正式測試／評分計畫與阻礙見 docs/GENERATION_EVALUATION.md；本輪零真實呼叫。
+
+## Phase 6：視覺編輯
+Preview 延伸同一 usePagePersistence／PageSession、PageRenderer、Patch Engine；不讀取或寫入 CanvasSpec，不建立第二套 Renderer 或 Patch。候選仍需先經既有確認／CAS 保存，才進入正式預覽編輯。
+
+選取狀態為記憶體中的穩定 UUID 陣列；單擊以 componentIdFromElement 找最近的元件，矩形從空白／Section、Container、Stack、Grid 的空間開始，採「完全包含」規則，只納入 Heading、Paragraph、Button、Image、Card。容器可單擊選取；框選可同時辨識 Card 與其完全包含的子元件。多選只顯示摘要，單選才可修改。空白點擊及 Esc 清除選取，Esc 另回瀏覽模式。Resize／scroll／縮放以 DOMRect 對應 local CSS pixels，選取外框沿用元件自身 outline，不依賴 DOM 順序。
+
+VisualSurface 為可信編輯控制層，包住原 PageRenderer；原生 Pointer Events 處理框選／筆跡，SVG 僅畫編輯圖層。Preview 用固定布局寬度 + CSS transform 縮放，外層佔位同步比例，避免 CSS zoom 改變字型排版。工具為 browse／select／pen，選取與畫筆模式攔截內容連結；瀏覽恢復原互動。
+
+Annotation v1：coordinateSpace=preview-css-pixels、id、sessionId、revision、geometry{width,height,scaleX,scaleY}、points[{x,y}]、bounds{x,y,width,height}。座標原點為預覽左上角，不保存螢幕位置、網址或其他瀏覽器資料。上限80筆、每筆2000點，與 PageSpec 完全分離；共用 generic history 實作註記撤銷／清除（清除可撤銷）。只保留本次記憶體，重新載入／更換 Session 清空。版本或排版尺寸不同時隱藏並提示，避免把舊筆跡錯貼到新布局；純縮放維持定位，未實作跨版面自動重新錨定或註記持久化。
+
+屬性表單僅提供文字（標題／正文／按鈕）、標題level、對齊及動畫，沒有任意字級／字重／CSS 或自然語言送出。所有修改以目前 Session／Revision 與獨立可信單一 target scope 進入 applyPatchBatch；既有全頁驗證、Diff、Undo/Redo、saver／CAS 皆保留。
+
+動畫效果庫從既有 animationRegistry 取六個 Preset，以專用 MIME 的 effectId 拖放；以穩定 ID 找目標，綠色虛線表示可放置，紅色表示不相容或重複。attach／update／remove 皆走同一 Engine；更換以 remove+attach 原子批次提交，一次 Undo 還原。effectCompatible 與 PageSchema 一致拒絕無子元件的 stagger-reveal，其他進場／hover組合沿用原 Registry 合成規則，拒絕重複效果。重播仍使用原 Renderer／Web Animations 與 reduced-motion。

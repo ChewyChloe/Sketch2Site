@@ -18,7 +18,7 @@ test("依 ID 選取、套用、Diff、撤銷重做、非法修改與草稿隔離
   const other = page.locator(".rendered-page .page-paragraph").first(),
     otherText = await other.textContent();
   await heading.click();
-  await expect(page.getByLabel("選取標題")).toHaveValue(id!);
+  await expect(page.getByLabel("選取元件")).toHaveValue(id!);
   await expect(heading).toHaveAttribute("data-page-selected", "true");
   await page.getByLabel("標題文字").fill("我的作品集");
   await page.getByLabel("淡入動畫", { exact: true }).check();

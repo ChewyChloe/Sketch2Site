@@ -67,6 +67,12 @@ export type PageNode = {
   columns?: 1 | 2 | 3;
   children?: PageNode[];
 };
+export function effectCompatible(
+  node: PageNode,
+  effectId: (typeof effectIds)[number],
+) {
+  return effectId !== "stagger-reveal" || Boolean(node.children?.length);
+}
 const common = {
   id: z.string().uuid(),
   style: styleSchema.default({
@@ -206,6 +212,12 @@ const PageObject = z
       if (ids.has(n.id))
         ctx.addIssue({ code: "custom", message: "元件 ID 重複" });
       ids.add(n.id);
+      if (n.effects.some((e) => !effectCompatible(n, e.effectId)))
+        ctx.addIssue({
+          code: "custom",
+          path: ["effects"],
+          message: "依序顯示需要子元件",
+        });
       if (n.href?.startsWith("#")) links.push(n.href.slice(1));
       n.children?.forEach((c) => walk(c, depth + 1));
     };
