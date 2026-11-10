@@ -82,6 +82,7 @@ export function openAIProvider(
         {
           model,
           store: false,
+          reasoning: { effort: "low" },
           max_output_tokens: 4096,
           input: [
             { role: "developer", content: systemRules },

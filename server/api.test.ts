@@ -211,7 +211,7 @@ it("OpenAI official SDK adapter uses strict output, no tools, no retry, store:fa
   expect(result.reasoningTokens).toBe(50);
   expect(calls).toHaveLength(1);
   expect(calls[0]).toMatchObject({ model: "gpt-6-luna", store: false, max_output_tokens: 4096 });
-  expect(calls[0].reasoning).toBeUndefined(); // No unverified model-specific setting.
+  expect(calls[0].reasoning).toEqual({ effort: "low" });
   expect(calls[0].tools).toBeUndefined();
   expect(JSON.stringify(calls[0])).not.toContain("synthetic-server-key");
   expect(calls[0].text).toMatchObject({
