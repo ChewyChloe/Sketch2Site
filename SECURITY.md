@@ -66,3 +66,8 @@ Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或�
 選取 UUID、工具模式與 Annotation 都只在可信預覽控制層記憶體中；不加入 PageSpec、CanvasSpec、IndexedDB紀錄、正式 Renderer 或任何匯出內容，不發網路請求。註記最多80筆／每筆2000點，只包含局部座標、尺寸、比例與Session／Revision，不包含金鑰、URL、使用者資訊、螢幕絕對座標或原始DOM。沒有註記匯入／外傳／AI解析；SVG points 只來自受控指標座標，不接受SVG／HTML／CSS字串。
 外部拖曳資料視為不可信，只讀專用MIME內的六個Preset ID，重新確認目標存在、動畫相容性與重複狀態，最後仍經既有 strict Patch／全頁Schema驗證。drop目標授權由可信事件與目前元件索引提供，不從Payload推定scope。更換動畫是單一原子批次，失敗不改頁面／歷史；stagger-reveal在無子元件上由Schema拒絕，無動態程式／事件注入。
 本輪所有測試僅使用本機Fixtures及Mock Provider；測試程序移除OPENAI_API_KEY／SKETCH_AI_API_KEY並停用正式AI旗標，新E2E攔截外部HTTPS並斷言沒有生成POST。未啟動正式server/index.ts，沒有付費模型、外部AI／圖像生成呼叫或帳務變更。秘密環境已存在不代表啟用或授權。既有Session／Revision／CAS／reduced-motion均保留。
+
+## Phase 6.1：UI整理的安全邊界
+沒有修改Provider、後端啟用條件、秘密讀取、Patch／PageSpec驗證、Session／Revision或CAS。portal僅移動既有前端控制與保存狀態，不傳遞任何秘密。選單／SVG圖示不接受任意HTML、事件程式或CSS字串。
+動畫素材示意僅由程式內固定內容與既有六Preset建立，仍通過PageSchema與原Renderer；不接受外部SVG或動畫程式。示意與實際草稿／頁面隔離，不保存，不傳外部。草稿仍只附加標記，預覽修改仍經既有Patch；相容性提示與實際拖放拒絕一致。
+本輪測試程序移除兩個Key變數並停用AI旗標，後端僅啟動既有Mock測試服務；新增跨尺寸E2E拒絕外部HTTPS並斷言沒有生成POST。所有付費／外部AI／圖像生成呼叫為0。不是以UI隱藏取代後端安全檢查。

@@ -1,3 +1,12 @@
+import {
+  pageAction,
+  viewAction,
+  openPanel,
+  editSelection,
+  addFade,
+  setFadeDuration,
+  cancelSelection,
+} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
 import { demoPage } from "../src/pageFixtures";
 test.beforeEach(async ({ page }) => {
@@ -31,7 +40,7 @@ test("預覽互動、動畫、草稿隔離與恢復", async ({ page, context }) 
   await page.getByRole("button", { name: "預覽", exact: true }).click();
   await expect(page.getByText("範例預覽", { exact: true })).toBeVisible();
   // Replay, then inspect live browser Animation objects rather than only class names.
-  await page.getByRole("button", { name: "重播動畫" }).click();
+  await viewAction(page, "重播動畫");
   await expect
     .poll(() =>
       page
@@ -97,7 +106,7 @@ test("預覽互動、動畫、草稿隔離與恢復", async ({ page, context }) 
   });
   await expect(page.getByRole("alert")).toContainText("預覽失敗");
   await expect(page.locator("[data-page-id]")).toHaveCount(0);
-  await page.getByRole("button", { name: "還原範例" }).click();
+  await pageAction(page, "還原範例");
   await expect(heading).toBeVisible();
   await page.keyboard.press("Delete");
   await page.keyboard.press("Control+z");
@@ -137,7 +146,7 @@ for (const width of [1440, 768, 375]) {
       fullPage: true,
     });
     if (width === 1440) {
-      await page.getByRole("button", { name: "手機", exact: true }).click();
+      await viewAction(page, "手機");
       await expect(page.getByTestId("preview-frame")).toHaveCSS(
         "width",
         "375px",
@@ -157,7 +166,7 @@ for (const width of [1440, 768, 375]) {
 test("Reduced Motion 與不可信檔案", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openPreview(page);
-  await page.getByRole("button", { name: "重播動畫" }).click();
+  await viewAction(page, "重播動畫");
   expect(
     await page
       .locator(".rendered-page")
@@ -193,7 +202,7 @@ test("Reduced Motion 與不可信檔案", async ({ page }) => {
     buffer: Buffer.from(" ".repeat(200001)),
   });
   await expect(page.getByRole("alert")).toContainText("超過 200 KB");
-  await page.getByRole("button", { name: "還原範例" }).click();
+  await pageAction(page, "還原範例");
   await expect(
     page.locator(".rendered-page").getByRole("heading", { level: 1 }),
   ).toBeVisible();

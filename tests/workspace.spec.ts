@@ -41,6 +41,7 @@ test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ pag
   await expect(nodes.first()).toHaveCSS("left", "300px");
   await page.getByRole("button", { name: "重做", exact: true }).click();
   await expect(nodes.first()).toHaveCSS("left", "400px");
+  await page.getByRole("tab", { name: "動畫", exact: true }).click();
   await drag(
     page,
     page.getByRole("button", { name: "Hover Glow", exact: false }),
@@ -48,6 +49,7 @@ test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ pag
     { x: 30, y: 20 },
   );
   await expect(nodes.first()).toContainText("Hover Glow");
+  await page.getByRole("tab", { name: "元件", exact: true }).click();
   await page.getByRole("button", { name: "新增按鈕", exact: true }).click();
   await page.getByRole("button", { name: "新增卡片", exact: true }).click();
   await expect(nodes).toHaveCount(3);
@@ -56,7 +58,10 @@ test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ pag
     .getByRole("textbox", { name: "元素內容" })
     .fill('<img src=x onerror="window.pwned=true">');
   await expect(nodes.last()).toContainText("<img");
-  await page.screenshot({path:"test-results/properties-desktop.png",fullPage:true});
+  await page.screenshot({
+    path: "test-results/properties-desktop.png",
+    fullPage: true,
+  });
   expect(
     await page.evaluate(
       () => document.querySelectorAll("[data-node-id] img").length,
@@ -88,6 +93,7 @@ test("空白處動畫需選對象、縮放座標與窄視窗", async ({ page }) 
     fullPage: true,
   });
   await page.getByRole("button", { name: "新增按鈕", exact: true }).click();
+  await page.getByRole("tab", { name: "動畫", exact: true }).click();
   await drag(
     page,
     page.getByRole("button", { name: "Fade In", exact: false }),
@@ -100,7 +106,19 @@ test("空白處動畫需選對象、縮放座標與窄視窗", async ({ page }) 
   await page.getByLabel("動畫附加對象").selectOption({ index: 1 });
   await page.getByRole("button", { name: "附加標記", exact: true }).click();
   await expect(page.getByTestId("canvas-node")).toContainText("Fade In");
+  await drag(
+    page,
+    page.locator('.sidebar [data-effect-id="stagger-reveal"]'),
+    page.getByTestId("canvas-node"),
+    { x: 20, y: 20 },
+  );
+  await expect(page.getByRole("status")).toContainText("依序顯示僅適用於卡片");
+  await expect(page.getByTestId("canvas-node")).not.toContainText(
+    "Stagger Reveal",
+  );
+
   await page.getByLabel("畫布縮放").selectOption("0.4");
+  await page.getByRole("tab", { name: "元件", exact: true }).click();
   await drag(
     page,
     page.getByRole("button", { name: "新增卡片", exact: true }),
@@ -111,10 +129,12 @@ test("空白處動畫需選對象、縮放座標與窄視窗", async ({ page }) 
     "left",
     "500px",
   );
+  await expect(page.locator(".sidebar")).not.toHaveClass(/dragging-effect/);
   await page.getByRole("button", { name: "收合側欄" }).click();
   await expect(page.getByRole("complementary")).toHaveCount(0);
   await page.getByRole("button", { name: "展開側欄" }).click();
   await page.setViewportSize({ width: 960, height: 768 });
+
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

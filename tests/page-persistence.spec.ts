@@ -1,3 +1,12 @@
+import {
+  pageAction,
+  viewAction,
+  openPanel,
+  editSelection,
+  addFade,
+  setFadeDuration,
+  cancelSelection,
+} from "./helpers/workbench";
 import { test, expect, chromium, type Page } from "@playwright/test";
 const key = "local-project";
 test.beforeEach(async ({ page }) => {
@@ -10,10 +19,11 @@ async function open(page: Page) {
 }
 async function edit(page: Page, text: string, fade?: number) {
   await page.locator(".rendered-page h1").click();
+  await editSelection(page);
   await page.getByLabel("標題文字").fill(text);
   if (fade) {
-    await page.getByLabel("淡入動畫", { exact: true }).check();
-    await page.getByLabel("動畫時長（毫秒）").fill(String(fade));
+    await addFade(page);
+    await setFadeDuration(page, String(fade));
   }
   await page.getByRole("button", { name: "套用", exact: true }).click();
 }
@@ -71,7 +81,7 @@ test("自動保存、刷新、新 Session 歷史、範例取消與 Canvas 隔離
   expect(second.revision).toBe(first.revision + 1);
   expect(second.writerSessionId).not.toBe(first.writerSessionId);
   page.once("dialog", (d) => d.dismiss());
-  await page.getByRole("button", { name: "還原範例" }).click();
+  await pageAction(page, "還原範例");
   await expect(page.locator(".rendered-page h1")).toHaveText("新工作階段修改");
   expect(await disk(page)).toEqual(second);
   await page.getByRole("button", { name: "草稿", exact: true }).click();
@@ -122,7 +132,7 @@ test("交易未完成不顯示已儲存；連續修改合併保存最新版本",
       true;
   });
   await saved(page);
-  expect((await disk(page)).revision).toBe(2);
+  expect((await disk(page)).revision).toBe(3); // Text A, attach preset, then text B + duration.
   await page.reload();
   await page.getByRole("button", { name: "預覽", exact: true }).click();
   await expect(page.locator(".rendered-page h1")).toHaveText("連續修改 B");
@@ -175,7 +185,7 @@ test("兩個分頁拒絕過期寫入，重新載入才恢復編輯基準", async
   await edit(page, "共同基準");
   await saved(page);
   const other = await context.newPage();
-  await other.emulateMedia({reducedMotion:"reduce"});
+  await other.emulateMedia({ reducedMotion: "reduce" });
   await open(other);
   await edit(page, "第一分頁的新版本");
   await saved(page);
@@ -191,9 +201,7 @@ test("兩個分頁拒絕過期寫入，重新載入才恢復編輯基準", async
     fullPage: true,
   });
   other.once("dialog", (d) => d.accept());
-  await other
-    .getByRole("button", { name: "重新載入頁面", exact: true })
-    .click();
+  await pageAction(other, "重新載入頁面");
   await expect(other.locator(".rendered-page h1")).toHaveText(
     "第一分頁的新版本",
   );

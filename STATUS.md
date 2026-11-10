@@ -1,7 +1,7 @@
 # 狀態
 2026-11-10（Asia/Taipei）
 
-目前工作：Phase 6；最新完成項與驗收見文末 Phase 6 區段。Phase 5 真實付費生成仍 NOT TESTED，不視為本輪阻礙。
+目前工作：Phase 6.1。Phase 6 功能完成但工作台 UI/UX 未通過使用者驗收；本輪修整與最新驗證見文末。Phase 5 真實付費生成仍 NOT TESTED，本輪不執行。
 
 ## 功能
 - Phase 0–4 DONE；保留 Canvas／PageSpec 保存、Patch、Undo／Redo、Session／Revision 與交易 CAS。
@@ -100,3 +100,35 @@ server/config.ts／index.ts（候選、gate、授權上限配置）；server/pro
 本輪付費模型／外部AI／圖像生成呼叫完全為0，費用0；沒有再次查詢模型列表或使用正式Provider。測試程序移除兩個Key變數、停用AI旗標，新E2E拒絕外部HTTPS並斷言無生成POST；所有真實付費生成仍NOT TESTED。未開啟自然語言修改、匯出、登入、雲端服務或其他階段。
 起點6262be372a7e3a609bdb21c14f5d6e8a41537958，工作分支work。GitHub備份未確認：本對話先前遠端heads查詢為空，目前無遠端追蹤分支，原始碼由recovery bundle恢復；本輪提交僅在本地，未Push，環境遺失可能遺失本輪變更。沒有Push／Merge／部署。測試通過後建立本地commit，SHA以git log -1取得。
 下一個最小任務：使用者驗收Phase6的選取、筆跡與動畫操作；本輪完成後停止，等待後續指示。
+
+## Phase 6.1（2026-11-10，Asia/Taipei）
+
+工程修整 DONE；UI/UX產品級人工驗收 PARTIAL，等待使用者檢視新截圖與實際操作。完整比較與限制見[PHASE61_UI_REVIEW.md](docs/PHASE61_UI_REVIEW.md)。不以沒有溢出或E2E通過代替設計品質驗收。
+
+### 本輪改變
+- 主要應用列56px（手機52px）＋單一48px情境工具列；保存狀態只保留一次，預覽不再顯示草稿footer；載入／還原／重新載入及檢視／重播分別集中至具名選單。
+- 元件、動畫、屬性共用右側面板；取消重複元件下拉，清單以穩定ID選取。768／375px預設收合，選取不自動覆蓋畫布，面板可關閉；草稿也採窄版收合。
+- 共用六Preset動畫素材格、SVG識別／拖曳把手、原Renderer小型預覽、已附加／不相容文字及拖放目標回饋。草稿只附加標記，Preview仍走Patch。
+- 屬性保留常用欄位、已附加動畫與單一套用；移除重複淡入checkbox；修改紀錄預設收合且顯示中文。切換素材分頁不丟失暫存文字；文字與時長可同批Patch。
+- 空白草稿提示改依可視寬度與既有縮放計算，避免手機上說明落在水平捲動範圍外；未改草稿尺寸或拖曳座標。
+- 實測修正：drop後拖曳狀態殘留使960px側欄越界；現在drop／dragend／取消清除且工作區限制越界，測試同時驗證狀態與寬度。JSdom測試明確等待恢復Session effects後互動，尺寸量測對缺省CSS內距採0，避免非瀏覽器環境的NaN。
+
+### 可視空間（相同Fixture、100%縮放、視窗高1000px）
+| 寬度 | 舊選取狀態可視寬×高 | 新選取狀態可視寬×高 | 面積增加 |
+| --- | --- | --- | --- |
+| 1440 | 1120×656.2 | 1104×848 | 27.4% |
+| 768 | 752×389.5 | 752×880 | 125.9% |
+| 375 | 359×314.8 | 359×884 | 180.9% |
+
+窄版舊選取自動開下方面板，新版預設不開；公平對照的「兩版皆關閉面板」高度另見報告（768：659.8→880；375：535.3→884）。窄版面板開啟時未遮擋寬度為440／47px，不將背景畫布當成完全可視。原始DOM量測記於docs/phase61-before.json及docs/phase61-after.json。
+
+### 驗證與截圖
+- PASS：typecheck；Vitest12檔119/119；build；check:secrets；npm audit（0 vulnerabilities）。無新增或升級依賴；既有Zod PURE註解警告仍存在，未抑制。
+- PASS：Chromium全套38/38（約1.2分鐘）；最後空白草稿提示寬度調整後，相關6/6流程再驗證通過。保留35項舊回歸並新增3個跨尺寸完整流程；含真實native拖放與釋放前目標回饋、實際動畫縮圖播放／reduced-motion、屬性／註記／Undo/Redo／保存重載、Mock候選及CAS失敗回復。
+- 新增單元涵蓋選單執行／外部點擊／Esc與焦點、六Preset／相容性／drag payload及示意ID；原Preview整合測試新增素材分頁切換保留暫存文字的斷言。舊測試只改為新選單／分頁路徑與實際操作的版本數，未刪除失敗情境。
+- 原始Chromium截圖：test-results/phase61-{1440,768,375}.png；動畫面板phase61-animations-*、實際拖曳phase61-drag-*、圈註phase61-pen-*、草稿phase61-draft-*。全部為固定本機Fixture（非AI），沒有後製；此目錄忽略於Git，可由E2E重建。Phase6原始圖另複製為phase6-before-*供比較。
+- NOT TESTED／待人工驗收：Firefox／Safari／實機觸控、軟體鍵盤、完整讀屏／鍵盤稽核、初次使用者對圖示及素材的辨識、操作手感與長時間舒適度。375px側欄開啟仍覆蓋大部分預覽，須明確關閉後檢視整頁，不宣稱完整手機編輯最佳化。
+
+### 安全、Git及停止點
+所有付費模型／外部AI／圖像生成呼叫0、費用0。沒有更動Provider／後端設定，測試使用Mock並移除Key環境變數；跨尺寸新流程拒絕外部HTTPS並斷言沒有生成POST。PageSpec Schema、Patch Engine、Renderer、Registry、Session／Revision、Canvas及IndexedDB CAS合約未重寫。
+起點ac3d5de681b3a78a7cc88961894457ee633c0032，分支work。本輪通過測試後建立本地commit，SHA以git log -1查詢；沒有Push／Merge／部署。GitHub備份仍未確認，新增變更只在本機。完成Phase6.1後停止，下一項最小任務是使用者人工驗收此版工作台，不進入Phase7。

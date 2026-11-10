@@ -119,3 +119,10 @@ Annotation v1：coordinateSpace=preview-css-pixels、id、sessionId、revision�
 屬性表單僅提供文字（標題／正文／按鈕）、標題level、對齊及動畫，沒有任意字級／字重／CSS 或自然語言送出。所有修改以目前 Session／Revision 與獨立可信單一 target scope 進入 applyPatchBatch；既有全頁驗證、Diff、Undo/Redo、saver／CAS 皆保留。
 
 動畫效果庫從既有 animationRegistry 取六個 Preset，以專用 MIME 的 effectId 拖放；以穩定 ID 找目標，綠色虛線表示可放置，紅色表示不相容或重複。attach／update／remove 皆走同一 Engine；更換以 remove+attach 原子批次提交，一次 Undo 還原。effectCompatible 與 PageSchema 一致拒絕無子元件的 stagger-reveal，其他進場／hover組合沿用原 Registry 合成規則，拒絕重複效果。重播仍使用原 Renderer／Web Animations 與 reduced-motion。
+
+## Phase 6.1：工作台呈現整理
+保留既有Canvas、PageSpec、Renderer、Animation Registry、Patch、History與IndexedDB CAS。App與Preview只重排控制項：Preview透過React portal將頁面來源／保存狀態／次要選單放入App應用列，沒有新增後端、狀態儲存或付費呼叫。Preview仍持續掛載，模式切換不丟失Session／Revision。
+WorkbenchMenu為原生details選單，處理外部點擊、Esc與操作後關閉。WorkbenchIcon只含程式碼內固定SVG路徑。AnimationLibrary由草稿與預覽共用，僅列既有六個Registry Preset；小型示意使用可信、記憶體內的PageSpec與原PageRenderer，懸停／聚焦才附加效果，不另建動畫系統，示意ID與正式頁面分離且不持久化。
+共用工具區的呈現分頁不改動資料合約。預覽元件清單使用穩定ID；窄視窗預設關閉，開啟時明確提供關閉按鈕，原Canvas／PageSpec編輯器各自保持原資料狀態。拖放開始時收退窄側欄、drop／dragend／取消時清除視覺狀態，防止拖曳結束後側欄仍越界。
+屬性輸入暫存保留於Preview；切換素材分頁或附加動畫不丟棄尚未套用的文字。來源欄位真的改變、Undo／Redo或更換選取時以有效資料同步；文字／對齊／標題層級與已附加效果的時長，由單一套用建立既有原子Patch批次。附加、替換、移除仍是各自明確操作，均沿原Session／Revision／trusted scope驗證；沒有擴大scope或直接寫入PageSpec。測試對應更新為新選單路徑與真實操作次數，未移除原回歸情境。
+workbench.css僅為編輯器chrome配置，沿用既有Design Tokens，於Renderer樣式之後載入；成品PageSpec的樣式Token與Renderer合約未變。量測與驗收報告見docs/PHASE61_UI_REVIEW.md。

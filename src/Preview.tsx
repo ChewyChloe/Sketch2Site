@@ -1,3 +1,7 @@
+import { createPortal } from "react-dom";
+import { WorkbenchMenu } from "./WorkbenchMenu";
+import { WorkbenchIcon } from "./WorkbenchIcon";
+import { AnimationLibrary } from "./AnimationLibrary";
 import {
   useEffect,
   useRef,
@@ -8,7 +12,6 @@ import {
 import { demoPage } from "./pageFixtures";
 import { usePagePersistence } from "./usePagePersistence";
 import { VisualSurface, type VisualMode } from "./VisualSurface";
-import { animationRegistry } from "./PageRenderer";
 import { commitHistory, undoHistory, type History } from "./history";
 import {
   effectLabels,
@@ -21,16 +24,34 @@ import { PageRenderer } from "./PageRenderer";
 import { validatePage } from "./pageSpec";
 import { applyPatchBatch, indexNodes, travelPage, type Change } from "./patch";
 function changeLabel(c: Change) {
-  return c.property === "content"
-    ? "文字"
-    : c.property.startsWith("effects.")
-      ? "動畫"
-      : "屬性";
+  return c.property === "style.align"
+    ? "對齊"
+    : c.property === "level"
+      ? "標題層級"
+      : c.property === "content"
+        ? "文字"
+        : c.property.startsWith("effects.")
+          ? "動畫"
+          : "屬性";
 }
 function valueLabel(value: unknown): string {
   if (value === undefined) return "未設定";
   if (value && typeof value === "object" && "duration" in value)
     return String(value.duration) + " 毫秒";
+  if (Array.isArray(value))
+    return (
+      value
+        .map((v) => effectLabels[v as keyof typeof effectLabels] ?? String(v))
+        .join("、") || "未設定"
+    );
+  if (typeof value === "string")
+    return (
+      (
+        { start: "靠左", center: "置中", end: "靠右" } as Record<string, string>
+      )[value] ??
+      effectLabels[value as keyof typeof effectLabels] ??
+      value
+    );
   return String(value);
 }
 export type PreviewHandle = {
@@ -64,6 +85,33 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   const selected = selectedIds.length === 1 ? selectedIds[0] : null;
   function setSelected(id: string | null) {
     setSelectedIds(id ? [id] : []);
+    if (id && (!compact || panelOpen)) {
+      setPanelTab("properties");
+      setPanelOpen(true);
+    }
+  }
+  const [compact, setCompact] = useState(() => window.innerWidth <= 1000);
+  const [panelOpen, setPanelOpen] = useState(() => window.innerWidth > 1000);
+  const [panelTab, setPanelTab] = useState<
+    "elements" | "animations" | "properties"
+  >("elements");
+  const panelButton = useRef<HTMLButtonElement>(null);
+  const [headerTarget, setHeaderTarget] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setHeaderTarget(document.getElementById("preview-app-actions"));
+    const resize = () => {
+      const small = window.innerWidth <= 1000;
+      setCompact((previous) => {
+        if (previous !== small) setPanelOpen(!small);
+        return small;
+      });
+    };
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+  function closePanel() {
+    setPanelOpen(false);
+    panelButton.current?.focus();
   }
   const [mode, setMode] = useState<VisualMode>("browse");
   const [draggedEffect, setDraggedEffect] = useState<string | null>(null);
@@ -76,8 +124,6 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   const [align, setAlign] = useState<PageNode["style"]["align"]>("start");
   const [level, setLevel] = useState("1");
   const [text, setText] = useState(""),
-    [fade, setFade] = useState(false),
-    [duration, setDuration] = useState("450"),
     [editRevision, setEditRevision] = useState(0);
   const [notice, setNotice] = useState(""),
     [patchError, setPatchError] = useState(false);
@@ -102,8 +148,8 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         Math.max(
           1,
           el.clientWidth -
-            parseFloat(style.paddingLeft) -
-            parseFloat(style.paddingRight),
+            (parseFloat(style.paddingLeft) || 0) -
+            (parseFloat(style.paddingRight) || 0),
         ),
       );
     };
@@ -121,18 +167,45 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   const page = session.history.present,
     nodes = indexNodes(page),
     node = selected ? nodes.get(selected) : undefined;
+  const [effectDurations, setEffectDurations] = useState<
+    Record<string, string>
+  >({});
+  const effectSource = useRef<{
+    id: string | null;
+    values: Record<string, number>;
+  }>({ id: null, values: {} });
   useEffect(() => {
-    const n = selected
-      ? indexNodes(session.history.present).get(selected)
-      : undefined;
-    setText(n?.content ?? "");
-    setAlign(n?.style.align ?? "start");
-    setLevel(String(n?.level ?? 1));
-    const effect = n?.effects.find((e) => e.effectId === "fade-in");
-    setFade(Boolean(effect));
-    setDuration(String(effect?.duration ?? 450));
+    setText(node?.content ?? "");
+    setAlign(node?.style.align ?? "start");
+    setLevel(String(node?.level ?? 1));
+  }, [
+    selected,
+    session.sessionId,
+    node?.content,
+    node?.style.align,
+    node?.level,
+  ]);
+  useEffect(() => {
     setEditRevision(session.revision);
-  }, [selected, session]);
+  }, [session.sessionId, session.revision]);
+  useEffect(() => {
+    const previous = effectSource.current;
+    const effects = node?.effects ?? [];
+    setEffectDurations((pending) =>
+      Object.fromEntries(
+        effects.map((e) => [
+          e.effectId,
+          previous.id === selected && previous.values[e.effectId] === e.duration
+            ? (pending[e.effectId] ?? String(e.duration))
+            : String(e.duration),
+        ]),
+      ),
+    );
+    effectSource.current = {
+      id: selected,
+      values: Object.fromEntries(effects.map((e) => [e.effectId, e.duration])),
+    };
+  }, [selected, node?.effects]);
   function install(input: unknown) {
     const checked = validatePage(input);
     if (!checked.ok) {
@@ -184,7 +257,8 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   }, [session.sessionId]);
   useEffect(() => {
     const escape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && !e.defaultPrevented) {
+        setPanelOpen(false);
         setSelectedIds([]);
         setMode("browse");
         setNotice("");
@@ -225,9 +299,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
       return;
     }
     update(result.state);
-    setNotice(
-      result.changed ? "已套用，其他元素資料未變更。" : "沒有需要套用的變更。",
-    );
+    setNotice(result.changed ? "已套用。" : "沒有需要套用的變更。");
     return result.ok;
   }
   function attach(id: string, value: string) {
@@ -243,7 +315,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
       setNotice("依序顯示僅適用於有子元件的容器。");
       return;
     }
-    setSelected(id);
+    setSelectedIds([id]);
     patch(
       [{ operation: "attach-effect", targetId: id, payload: { effectId } }],
       id,
@@ -266,30 +338,18 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         targetId: node.id,
         payload: { property: "level", value: Number(level) },
       });
-    const previous = node.effects.find((e) => e.effectId === "fade-in");
-    if (fade)
-      patches.push(
-        previous
-          ? {
-              operation: "update-effect",
-              targetId: node.id,
-              payload: {
-                effectId: "fade-in",
-                parameters: { duration: Number(duration) },
-              },
-            }
-          : {
-              operation: "attach-effect",
-              targetId: node.id,
-              payload: { effectId: "fade-in", duration: Number(duration) },
-            },
-      );
-    else if (previous)
-      patches.push({
-        operation: "remove-effect",
-        targetId: node.id,
-        payload: { effectId: "fade-in" },
-      });
+    for (const effect of node.effects) {
+      const value = Number(effectDurations[effect.effectId] ?? effect.duration);
+      if (value !== effect.duration)
+        patches.push({
+          operation: "update-effect",
+          targetId: node.id,
+          payload: {
+            effectId: effect.effectId,
+            parameters: { duration: value },
+          },
+        });
+    }
     patch(patches, node.id, editRevision);
   }
 
@@ -299,188 +359,16 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
     setPatchError(false);
     setNotice(direction === "undo" ? "已撤銷修改。" : "已重做修改。");
   }
-  return (
-    <main className="preview-workspace" aria-label="網頁預覽">
-      <div className="preview-tools">
-        <div>
-          <strong>{source}</strong>
-          <small>{source === "範例預覽" ? "固定範例" : "本機預覽"}</small>
-          {!error && ready && !loadError && (
-            <select
-              className="heading-picker"
-              aria-label="選取元件"
-              value={selected ?? ""}
-              onChange={(e) => {
-                setSelected(e.target.value || null);
-                setNotice("");
-              }}
-            >
-              <option value="">選取元件</option>
-              {Array.from(nodes.values()).map((n) => (
-                <option key={n.id} value={n.id}>
-                  {n.content?.slice(0, 32) || nodeLabels[n.type]}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-        <div className="preview-actions">
-          <button
-            aria-pressed={device === "desktop"}
-            onClick={() => setDevice("desktop")}
-          >
-            桌面
-          </button>
-          <button
-            aria-pressed={device === "mobile"}
-            onClick={() => setDevice("mobile")}
-          >
-            手機
-          </button>
-          <button
-            disabled={
-              !ready ||
-              Boolean(loadError) ||
-              Boolean(error) ||
-              !session.history.past.length
-            }
-            onClick={() => travel("undo")}
-          >
-            撤銷修改
-          </button>
-          <button
-            disabled={
-              !ready ||
-              Boolean(loadError) ||
-              Boolean(error) ||
-              !session.history.future.length
-            }
-            onClick={() => travel("redo")}
-          >
-            重做修改
-          </button>
-          <button
-            disabled={!ready || Boolean(loadError)}
-            onClick={() => setReplay((n) => n + 1)}
-          >
-            重播動畫
-          </button>
-          <button
-            disabled={!ready || Boolean(loadError)}
-            onClick={() => fileRef.current?.click()}
-          >
-            載入頁面
-          </button>
-          <button
-            disabled={!ready || Boolean(loadError)}
-            onClick={() => {
-              loadSequence.current++;
-              if (install(demoPage)) setSource("範例預覽");
-            }}
-          >
-            還原範例
-          </button>
-          <input
-            hidden
-            ref={fileRef}
-            type="file"
-            accept=".json,application/json"
-            aria-label="載入頁面檔案"
-            onChange={(e) => {
-              void load(e.target.files?.[0]);
-              e.target.value = "";
-            }}
-          />
-        </div>
-      </div>
-      <div className="visual-tools" aria-label="視覺編輯工具">
-        <div className="mode-switch" role="group" aria-label="預覽工具模式">
-          {(
-            [
-              ["browse", "瀏覽"],
-              ["select", "選取"],
-              ["pen", "畫筆"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              aria-pressed={mode === value}
-              disabled={!ready || Boolean(loadError) || Boolean(error)}
-              onClick={() => setMode(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <label>
-          縮放{" "}
-          <select
-            aria-label="預覽縮放"
-            value={zoom}
-            onChange={(e) => setZoom(e.target.value)}
-          >
-            <option value="1">100%</option>
-            <option value="0.75">75%</option>
-            <option value="0.5">50%</option>
-          </select>
-        </label>
-        {mode === "select" && <small>拖曳空白處，完全框住元件</small>}
-        {mode === "pen" && (
-          <>
-            <button
-              disabled={!annotations.past.length}
-              onClick={() => setAnnotations(undoHistory)}
-            >
-              撤銷註記
-            </button>
-            <button
-              disabled={!annotations.present.length}
-              onClick={() => setAnnotations((h) => commitHistory(h, []))}
-            >
-              清除註記
-            </button>
-            <small>僅保留於本次預覽 · {annotations.present.length}/80 筆</small>
-          </>
-        )}
-        <details className="effect-library">
-          <summary>動畫效果庫</summary>
-          <div role="group" aria-label="預覽動畫效果庫">
-            {(
-              Object.keys(animationRegistry) as (typeof effectIds)[number][]
-            ).map((id) => (
-              <button
-                key={id}
-                draggable
-                data-effect-id={id}
-                onDragEnd={() => setDraggedEffect(null)}
-                onDragStart={(e) => {
-                  setDraggedEffect(id);
-                  e.dataTransfer.setData(effectMime, id);
-                  e.dataTransfer.effectAllowed = "copy";
-                }}
-                onClick={() => {
-                  if (selected) attach(selected, id);
-                  else {
-                    setPatchError(false);
-                    setNotice("請先選取一個元件，或將動畫拖至目標。");
-                  }
-                }}
-              >
-                {effectLabels[id]}
-              </button>
-            ))}
-          </div>
-        </details>
-      </div>
-      {notice && (
-        <p
-          className={patchError ? "visual-notice error" : "visual-notice"}
-          role={patchError ? "alert" : "status"}
-        >
-          {notice}
-        </p>
-      )}
-      <div className="page-save-bar" aria-live="polite">
+
+  const pageActions = (
+    <>
+      <span className="preview-source">{source}</span>
+      <span
+        className="page-status"
+        data-save-state={loadError ? "failed" : status.kind}
+        title={status.kind === "saved" ? "已儲存" : "本機頁面保存狀態"}
+        aria-live="polite"
+      >
         <span data-testid="page-save-status">
           {!ready
             ? "正在載入頁面"
@@ -496,12 +384,23 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                       ? "版本衝突"
                       : "尚未儲存"}
         </span>
-        {ready && !loadError && status.error && (
-          <span>{status.error.message}</span>
-        )}
-        {ready && !loadError && status.kind === "failed" && (
-          <button onClick={() => persistence.retry()}>重試儲存</button>
-        )}
+      </span>
+      <WorkbenchMenu label="頁面">
+        <button
+          disabled={!ready || Boolean(loadError)}
+          onClick={() => fileRef.current?.click()}
+        >
+          載入頁面
+        </button>
+        <button
+          disabled={!ready || Boolean(loadError)}
+          onClick={() => {
+            loadSequence.current++;
+            if (install(demoPage)) setSource("範例預覽");
+          }}
+        >
+          還原範例
+        </button>
         <button
           disabled={!ready}
           onClick={() => {
@@ -519,27 +418,191 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         >
           重新載入頁面
         </button>
-        {ready &&
-          loadError &&
-          ["CORRUPT", "UNSUPPORTED"].includes(loadError.code) && (
+      </WorkbenchMenu>
+    </>
+  );
+  return (
+    <main className="preview-workspace" aria-label="網頁預覽">
+      {headerTarget ? (
+        createPortal(pageActions, headerTarget)
+      ) : (
+        <div className="preview-local-actions">{pageActions}</div>
+      )}
+      <input
+        hidden
+        ref={fileRef}
+        type="file"
+        accept=".json,application/json"
+        aria-label="載入頁面檔案"
+        onChange={(e) => {
+          void load(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+
+      <div className="visual-tools" aria-label="視覺編輯工具">
+        <div className="mode-switch" role="group" aria-label="預覽工具模式">
+          {(
+            [
+              ["browse", "瀏覽"],
+              ["select", "選取"],
+              ["pen", "畫筆"],
+            ] as const
+          ).map(([value, label]) => (
             <button
-              onClick={() => {
-                if (
-                  window.confirm(
-                    "將保留原始紀錄備份，並以範例重新開始，是否繼續？",
-                  )
-                ) {
-                  loadSequence.current++;
-                  setError("");
-                  setSelected(null);
-                  void persistence.restart();
-                }
-              }}
+              key={value}
+              className="mode-button"
+              aria-label={label}
+              title={label}
+              aria-pressed={mode === value}
+              disabled={!ready || Boolean(loadError) || Boolean(error)}
+              onClick={() => setMode(value)}
             >
-              以範例重新開始
+              <WorkbenchIcon name={value} />
+              <span>{label}</span>
             </button>
+          ))}
+        </div>
+        <div className="history-tools">
+          {mode === "pen" ? (
+            <>
+              <button
+                aria-label="撤銷註記"
+                title="撤銷註記"
+                disabled={!annotations.past.length}
+                onClick={() => setAnnotations(undoHistory)}
+              >
+                <WorkbenchIcon name="undo" />
+              </button>
+              <button
+                aria-label="清除註記"
+                title="清除註記"
+                disabled={!annotations.present.length}
+                onClick={() => setAnnotations((h) => commitHistory(h, []))}
+              >
+                <WorkbenchIcon name="clear" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                aria-label="撤銷修改"
+                title="撤銷修改"
+                disabled={
+                  !ready ||
+                  Boolean(loadError) ||
+                  Boolean(error) ||
+                  !session.history.past.length
+                }
+                onClick={() => travel("undo")}
+              >
+                <WorkbenchIcon name="undo" />
+              </button>
+              <button
+                aria-label="重做修改"
+                title="重做修改"
+                disabled={
+                  !ready ||
+                  Boolean(loadError) ||
+                  Boolean(error) ||
+                  !session.history.future.length
+                }
+                onClick={() => travel("redo")}
+              >
+                <WorkbenchIcon name="redo" />
+              </button>
+            </>
           )}
+        </div>
+        <select
+          aria-label="預覽縮放"
+          value={zoom}
+          onChange={(e) => setZoom(e.target.value)}
+        >
+          <option value="1">100%</option>
+          <option value="0.75">75%</option>
+          <option value="0.5">50%</option>
+        </select>
+        <WorkbenchMenu label="檢視">
+          <div className="device-controls">
+            <button
+              aria-pressed={device === "desktop"}
+              onClick={() => setDevice("desktop")}
+            >
+              桌面
+            </button>
+            <button
+              aria-pressed={device === "mobile"}
+              onClick={() => setDevice("mobile")}
+            >
+              手機
+            </button>
+          </div>
+          <button
+            disabled={!ready || Boolean(loadError)}
+            onClick={() => setReplay((n) => n + 1)}
+          >
+            重播動畫
+          </button>
+        </WorkbenchMenu>
+        <span className="canvas-context">
+          {mode === "pen"
+            ? `註記 ${annotations.present.length}/80`
+            : mode === "select"
+              ? "完全包含框選"
+              : device === "mobile"
+                ? "手機預覽"
+                : "桌面預覽"}
+        </span>
+        <button
+          className="panel-toggle"
+          ref={panelButton}
+          aria-expanded={panelOpen}
+          aria-controls="preview-inspector"
+          onClick={() => setPanelOpen(!panelOpen)}
+        >
+          工具
+        </button>
       </div>
+      {ready && !loadError && status.error && (
+        <div className="persistence-problem" role="alert">
+          <span>{status.error.message}</span>
+          {status.kind === "failed" && (
+            <button onClick={() => persistence.retry()}>重試儲存</button>
+          )}
+        </div>
+      )}
+      {ready &&
+        loadError &&
+        ["CORRUPT", "UNSUPPORTED"].includes(loadError.code) && (
+          <button
+            className="recovery-action"
+            onClick={() => {
+              if (
+                window.confirm(
+                  "將保留原始紀錄備份，並以範例重新開始，是否繼續？",
+                )
+              ) {
+                loadSequence.current++;
+                setError("");
+                setSelected(null);
+                void persistence.restart();
+              }
+            }}
+          >
+            以範例重新開始
+          </button>
+        )}
+      {notice && (
+        <p
+          className={
+            patchError ? "workbench-feedback error" : "workbench-feedback"
+          }
+          role={patchError ? "alert" : "status"}
+        >
+          {notice}
+        </p>
+      )}
       <div className="preview-body">
         <div
           ref={scrollRef}
@@ -588,10 +651,21 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                   mode={mode}
                   selected={selectedIds}
                   onSelect={(ids) => {
-                    setSelectedIds(ids.filter((id) => nodes.has(id)));
+                    const valid = ids.filter((id) => nodes.has(id));
+                    if (valid.length === 1) setSelected(valid[0]);
+                    else {
+                      setSelectedIds(valid);
+                      if (!compact && valid.length) {
+                        setPanelOpen(true);
+                        setPanelTab("properties");
+                      }
+                    }
                     setNotice("");
                   }}
-                  onDropEffect={attach}
+                  onDropEffect={(id, effect) => {
+                    setDraggedEffect(null);
+                    attach(id, effect);
+                  }}
                   dragging={Boolean(draggedEffect)}
                   canDrop={(id) => {
                     const n = nodes.get(id);
@@ -631,227 +705,329 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
             </div>
           </div>
         </div>
-        {ready && !loadError && !error && selectedIds.length > 1 && (
-          <aside className="patch-panel" aria-label="選取摘要">
-            <div className="side-head">
-              <h2>已選取 {selectedIds.length} 個元件</h2>
-              <button onClick={() => setSelectedIds([])}>取消選取</button>
-            </div>
-            <p className="note">請單選一個元件以編輯屬性。</p>
-            <ul className="selection-summary">
-              {selectedIds.map((id) => (
-                <li key={id}>
-                  <button onClick={() => setSelected(id)}>
-                    {nodes.get(id)?.content?.slice(0, 24) ||
-                      (nodes.get(id)
-                        ? nodeLabels[nodes.get(id)!.type]
-                        : "元件")}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        )}
-        {ready && !loadError && !error && node && (
-          <aside
-            key={selected}
-            className="patch-panel"
-            aria-label="頁面元素編輯"
+        <aside
+          id="preview-inspector"
+          hidden={!panelOpen}
+          className={
+            "preview-inspector" + (draggedEffect ? " dragging-effect" : "")
+          }
+          aria-label="設計工具"
+        >
+          <div className="inspector-heading">
+            <strong>設計工具</strong>
+            <button aria-label="關閉工具面板" onClick={closePanel}>
+              關閉
+            </button>
+          </div>
+          <div
+            className="inspector-tabs"
+            role="tablist"
+            aria-label="預覽工具分類"
           >
-            <>
-              <div className="side-head">
-                <h2>{node.type === "heading" ? "編輯標題" : "編輯元件"}</h2>
-                <button onClick={() => setSelected(null)}>取消選取</button>
-              </div>
-              <form
-                noValidate
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  apply();
-                }}
+            {(
+              [
+                ["elements", "元件"],
+                ["animations", "動畫"],
+                ["properties", "屬性"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                role="tab"
+                aria-selected={panelTab === value}
+                onClick={() => setPanelTab(value)}
               >
-                {["heading", "paragraph", "button"].includes(node.type) && (
-                  <label className="field">
-                    {node.type === "heading" ? "標題文字" : "文字"}
-                    <textarea
-                      aria-label={node.type === "heading" ? "標題文字" : "文字"}
-                      value={text}
-                      maxLength={
-                        node.type === "button"
-                          ? 120
-                          : node.type === "paragraph"
-                            ? 4000
-                            : 2000
-                      }
-                      onChange={(e) => setText(e.target.value)}
-                    />
-                  </label>
-                )}
-                {node.type === "heading" && (
-                  <label className="field">
-                    標題層級
-                    <select
-                      aria-label="標題層級"
-                      value={level}
-                      onChange={(e) => setLevel(e.target.value)}
-                    >
-                      <option value="1">主標題 · 大</option>
-                      <option value="2">章節標題 · 中</option>
-                      <option value="3">小標題</option>
-                    </select>
-                  </label>
-                )}
-                <label className="field">
-                  對齊
-                  <select
-                    aria-label="元素對齊"
-                    value={align}
-                    onChange={(e) => setAlign(e.target.value as typeof align)}
-                  >
-                    <option value="start">靠左</option>
-                    <option value="center">置中</option>
-                    <option value="end">靠右</option>
-                  </select>
-                </label>
-                <label className="effect-row">
-                  <span>淡入動畫</span>
-                  <input
-                    type="checkbox"
-                    checked={fade}
-                    onChange={(e) => setFade(e.target.checked)}
-                  />
-                </label>
-                {fade && (
-                  <label className="field">
-                    動畫時長（毫秒）
-                    <input
-                      aria-label="動畫時長（毫秒）"
-                      type="number"
-                      min={120}
-                      max={1200}
-                      step={10}
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                    />
-                  </label>
-                )}
-                <button className="primary" type="submit">
-                  套用
-                </button>
-              </form>
-              {session.diff?.changes.some((c) => c.targetId === node.id) && (
-                <div className="patch-diff">
-                  <h2>最近修改</h2>
-                  {session.diff.changes
-                    .filter((c) => c.targetId === node.id)
-                    .map((c) => (
-                      <div key={c.property}>
-                        <small>{changeLabel(c)}</small>
-                        <p>
-                          <del>{valueLabel(c.before)}</del> →{" "}
-                          <ins>{valueLabel(c.after)}</ins>
-                        </p>
-                      </div>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div
+            className="inspector-content"
+            key={panelTab + (panelTab === "properties" ? selected : "")}
+          >
+            {panelTab === "elements" && (
+              <section className="element-browser">
+                <h2>頁面元件</h2>
+                <ul>
+                  {[...nodes.values()].map((n) => (
+                    <li key={n.id}>
+                      <button
+                        data-component-id={n.id}
+                        aria-pressed={selectedIds.includes(n.id)}
+                        onClick={() => setSelected(n.id)}
+                      >
+                        <small>{nodeLabels[n.type]}</small>
+                        <span>
+                          {n.content?.slice(0, 36) || nodeLabels[n.type]}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {panelTab === "animations" && (
+              <AnimationLibrary
+                selectedLabel={
+                  node
+                    ? node.content?.slice(0, 18) || nodeLabels[node.type]
+                    : undefined
+                }
+                compatibility={(id) =>
+                  !node
+                    ? null
+                    : !effectCompatible(node, id)
+                      ? "僅適用於容器"
+                      : node.effects.some((e) => e.effectId === id)
+                        ? "已附加"
+                        : null
+                }
+                onChoose={(id) => {
+                  if (selected) attach(selected, id);
+                  else {
+                    setPatchError(false);
+                    setNotice("請先選取元件，或將動畫拖至目標。");
+                  }
+                }}
+                onDragStart={(id, data) => {
+                  setDraggedEffect(id);
+                  data.setData(effectMime, id);
+                  data.effectAllowed = "copy";
+                }}
+                onDragEnd={() => setDraggedEffect(null)}
+              />
+            )}
+            {panelTab === "animations" && node && (
+              <button
+                className="edit-selection"
+                onClick={() => setPanelTab("properties")}
+              >
+                編輯屬性
+              </button>
+            )}
+            {panelTab === "properties" && !selectedIds.length && (
+              <p className="panel-empty">點選預覽上的元件以編輯屬性。</p>
+            )}
+            {panelTab === "properties" &&
+              ready &&
+              !loadError &&
+              !error &&
+              selectedIds.length > 1 && (
+                <section className="patch-panel" aria-label="選取摘要">
+                  <div className="side-head">
+                    <h2>已選取 {selectedIds.length} 個元件</h2>
+                    <button onClick={() => setSelectedIds([])}>取消選取</button>
+                  </div>
+                  <p className="note">請單選一個元件以編輯屬性。</p>
+                  <ul className="selection-summary">
+                    {selectedIds.map((id) => (
+                      <li key={id}>
+                        <button onClick={() => setSelected(id)}>
+                          {nodes.get(id)?.content?.slice(0, 24) ||
+                            (nodes.get(id)
+                              ? nodeLabels[nodes.get(id)!.type]
+                              : "元件")}
+                        </button>
+                      </li>
                     ))}
-                </div>
+                  </ul>
+                </section>
               )}
-            </>
-            <div className="effect-editor">
-              <h2>已附加動畫</h2>
-              {!node.effects.length && (
-                <p className="note">從動畫效果庫拖入，或單擊效果套用。</p>
-              )}
-              {node.effects.map((effect) => (
-                <div className="effect-edit-row" key={effect.effectId}>
-                  <label className="field">
-                    {effectLabels[effect.effectId]}
-                    <select
-                      aria-label={"更換" + effectLabels[effect.effectId]}
-                      value={effect.effectId}
-                      onChange={(e) => {
-                        const effectId = e.target
-                          .value as (typeof effectIds)[number];
-                        if (!effectCompatible(node, effectId)) {
-                          setPatchError(true);
-                          setNotice("依序顯示僅適用於有子元件的容器。");
-                          return;
-                        }
-                        patch(
-                          [
-                            {
-                              operation: "remove-effect",
-                              targetId: node.id,
-                              payload: { effectId: effect.effectId },
-                            },
-                            {
-                              operation: "attach-effect",
-                              targetId: node.id,
-                              payload: { ...effect, effectId },
-                            },
-                          ],
-                          node.id,
-                        );
+            {panelTab === "properties" &&
+              ready &&
+              !loadError &&
+              !error &&
+              node && (
+                <section
+                  key={selected}
+                  className="patch-panel"
+                  aria-label="頁面元素編輯"
+                >
+                  <>
+                    <div className="side-head">
+                      <h2>
+                        {node.type === "heading" ? "編輯標題" : "編輯元件"}
+                      </h2>
+                      <button onClick={() => setSelected(null)}>
+                        取消選取
+                      </button>
+                    </div>
+                    <form
+                      id="properties-form"
+                      noValidate
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        apply();
                       }}
                     >
-                      {effectIds.map((id) => (
-                        <option key={id} value={id}>
-                          {effectLabels[id]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  {effect.effectId !== "fade-in" && (
-                    <label className="field">
-                      時長（毫秒）
-                      <input
-                        key={session.revision}
-                        aria-label={effectLabels[effect.effectId] + "時長"}
-                        type="number"
-                        min={120}
-                        max={1200}
-                        defaultValue={effect.duration}
-                        onBlur={(e) => {
-                          if (Number(e.target.value) !== effect.duration)
+                      {["heading", "paragraph", "button"].includes(
+                        node.type,
+                      ) && (
+                        <label className="field">
+                          {node.type === "heading" ? "標題文字" : "文字"}
+                          <textarea
+                            aria-label={
+                              node.type === "heading" ? "標題文字" : "文字"
+                            }
+                            value={text}
+                            maxLength={
+                              node.type === "button"
+                                ? 120
+                                : node.type === "paragraph"
+                                  ? 4000
+                                  : 2000
+                            }
+                            onChange={(e) => setText(e.target.value)}
+                          />
+                        </label>
+                      )}
+                      {node.type === "heading" && (
+                        <label className="field">
+                          標題層級
+                          <select
+                            aria-label="標題層級"
+                            value={level}
+                            onChange={(e) => setLevel(e.target.value)}
+                          >
+                            <option value="1">主標題 · 大</option>
+                            <option value="2">章節標題 · 中</option>
+                            <option value="3">小標題</option>
+                          </select>
+                        </label>
+                      )}
+                      <label className="field">
+                        對齊
+                        <select
+                          aria-label="元素對齊"
+                          value={align}
+                          onChange={(e) =>
+                            setAlign(e.target.value as typeof align)
+                          }
+                        >
+                          <option value="start">靠左</option>
+                          <option value="center">置中</option>
+                          <option value="end">靠右</option>
+                        </select>
+                      </label>
+                    </form>
+                  </>
+                  <div className="effect-editor">
+                    <h2>已附加動畫</h2>
+                    {!node.effects.length && (
+                      <p className="note">從動畫效果庫拖入，或單擊效果套用。</p>
+                    )}
+                    {node.effects.map((effect) => (
+                      <div className="effect-edit-row" key={effect.effectId}>
+                        <label className="field">
+                          {effectLabels[effect.effectId]}
+                          <select
+                            aria-label={"更換" + effectLabels[effect.effectId]}
+                            value={effect.effectId}
+                            onChange={(e) => {
+                              const effectId = e.target
+                                .value as (typeof effectIds)[number];
+                              if (!effectCompatible(node, effectId)) {
+                                setPatchError(true);
+                                setNotice("依序顯示僅適用於有子元件的容器。");
+                                return;
+                              }
+                              patch(
+                                [
+                                  {
+                                    operation: "remove-effect",
+                                    targetId: node.id,
+                                    payload: { effectId: effect.effectId },
+                                  },
+                                  {
+                                    operation: "attach-effect",
+                                    targetId: node.id,
+                                    payload: { ...effect, effectId },
+                                  },
+                                ],
+                                node.id,
+                              );
+                            }}
+                          >
+                            {effectIds.map((id) => (
+                              <option key={id} value={id}>
+                                {effectLabels[id]}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        {
+                          <label className="field">
+                            時長（毫秒）
+                            <input
+                              aria-label={
+                                effect.effectId === "fade-in"
+                                  ? "動畫時長（毫秒）"
+                                  : effectLabels[effect.effectId] + "時長"
+                              }
+                              type="number"
+                              min={120}
+                              max={1200}
+                              value={
+                                effectDurations[effect.effectId] ??
+                                String(effect.duration)
+                              }
+                              onChange={(e) =>
+                                setEffectDurations((values) => ({
+                                  ...values,
+                                  [effect.effectId]: e.target.value,
+                                }))
+                              }
+                            />
+                          </label>
+                        }
+                        <button
+                          onClick={() =>
                             patch(
                               [
                                 {
-                                  operation: "update-effect",
+                                  operation: "remove-effect",
                                   targetId: node.id,
-                                  payload: {
-                                    effectId: effect.effectId,
-                                    parameters: {
-                                      duration: Number(e.target.value),
-                                    },
-                                  },
+                                  payload: { effectId: effect.effectId },
                                 },
                               ],
                               node.id,
-                            );
-                        }}
-                      />
-                    </label>
-                  )}
+                            )
+                          }
+                        >
+                          移除{effectLabels[effect.effectId]}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                   <button
-                    onClick={() =>
-                      patch(
-                        [
-                          {
-                            operation: "remove-effect",
-                            targetId: node.id,
-                            payload: { effectId: effect.effectId },
-                          },
-                        ],
-                        node.id,
-                      )
-                    }
+                    className="primary inspector-apply"
+                    type="submit"
+                    form="properties-form"
                   >
-                    移除{effectLabels[effect.effectId]}
+                    套用
                   </button>
-                </div>
-              ))}
-            </div>
-          </aside>
-        )}
+                  {session.diff?.changes.some(
+                    (c) => c.targetId === node.id,
+                  ) && (
+                    <details className="patch-diff">
+                      <summary>最近修改</summary>
+                      {session.diff.changes
+                        .filter((c) => c.targetId === node.id)
+                        .map((c) => (
+                          <div key={c.property}>
+                            <small>{changeLabel(c)}</small>
+                            <p>
+                              <del>{valueLabel(c.before)}</del> →{" "}
+                              <ins>{valueLabel(c.after)}</ins>
+                            </p>
+                          </div>
+                        ))}
+                    </details>
+                  )}
+                </section>
+              )}
+          </div>
+        </aside>
       </div>
     </main>
   );

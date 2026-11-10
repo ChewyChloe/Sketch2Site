@@ -1,3 +1,12 @@
+import {
+  pageAction,
+  viewAction,
+  openPanel,
+  editSelection,
+  addFade,
+  setFadeDuration,
+  cancelSelection,
+} from "./helpers/workbench";
 import { test, expect, type Page, type Route } from "@playwright/test";
 import { generationFixtures, mockLayout } from "./fixtures/generation";
 import { materialize, prepareIntent } from "../src/generation";
@@ -94,7 +103,7 @@ for (const [index, canvas] of fixtures.entries()) {
       });
       for (const width of [768, 375]) {
         await page.setViewportSize({ width, height: 1000 });
-        await page.getByRole("button", { name: "手機", exact: true }).click();
+        await viewAction(page, "手機");
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,
@@ -200,7 +209,7 @@ test("生成期間重新載入 Page Session 使結果過期", async ({ page }) =
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
   await arrived;
   await page.getByRole("button", { name: "預覽", exact: true }).click();
-  await page.getByRole("button", { name: "重新載入頁面", exact: true }).click();
+  await pageAction(page, "重新載入頁面");
   await expect(page.getByTestId("page-save-status")).toHaveText("尚未儲存");
   await fulfillMock(captured);
   await expect(page.getByRole("alert")).toContainText("草稿或頁面已更新");
@@ -226,6 +235,7 @@ test("候選保存失敗仍保留候選，最後有效頁面不變，可重試�
   // Save an existing valid page first, then generate a different candidate.
   await page.getByRole("button", { name: "預覽", exact: true }).click();
   await page.locator(".rendered-page h1").click();
+  await editSelection(page);
   await page.getByLabel("標題文字").fill("原有效版本");
   await page.getByRole("button", { name: "套用", exact: true }).click();
   await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");

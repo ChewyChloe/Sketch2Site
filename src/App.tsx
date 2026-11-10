@@ -1,3 +1,5 @@
+import { AnimationLibrary } from "./AnimationLibrary";
+import { WorkbenchMenu } from "./WorkbenchMenu";
 import { useEffect, useRef, useState } from "react";
 import {
   blank,
@@ -64,8 +66,25 @@ export default function App() {
     [scale, setScale] = useState(0.6),
     [tab, setTab] = useState("library"),
     [search, setSearch] = useState("");
-  const [panel, setPanel] = useState(true),
+  const [panel, setPanel] = useState(() => window.innerWidth > 1000),
     [panelWidth, setPanelWidth] = useState(304);
+  const [draftDragging, setDraftDragging] = useState(false);
+  useEffect(() => {
+    const end = () => setDraftDragging(false);
+    const cancel = (e: KeyboardEvent) => {
+      if (e.key === "Escape") end();
+    };
+    window.addEventListener("drop", end, true);
+    window.addEventListener("dragend", end, true);
+    window.addEventListener("blur", end);
+    window.addEventListener("keydown", cancel);
+    return () => {
+      window.removeEventListener("drop", end, true);
+      window.removeEventListener("dragend", end, true);
+      window.removeEventListener("blur", end);
+      window.removeEventListener("keydown", cancel);
+    };
+  }, []);
   const [pending, setPending] = useState<Effect | null>(null),
     [target, setTarget] = useState("");
   const [moving, setMoving] = useState<CanvasNode | null>(null);
@@ -178,7 +197,7 @@ export default function App() {
       setSelected(null);
       setMoving(null);
       drag.current = null;
-      report("草稿已就緒 · 本機草稿；生成時傳送至 OpenAI");
+      report("草稿已就緒");
     } catch {
       setLoadError(true);
       report("無法讀取草稿。請允許網站儲存資料後，按「重新載入」重試。", true);
@@ -217,6 +236,10 @@ export default function App() {
   function attach(effect: Effect, id: string) {
     const n = state.current.present.nodes.find((n) => n.id === id);
     if (!n) return;
+    if (effect === "stagger-reveal" && n.type !== "card") {
+      report("依序顯示僅適用於卡片。", true);
+      return;
+    }
     if (n.effects.includes(effect)) {
       report("此元素已有該動畫標記");
       return;
@@ -340,6 +363,7 @@ export default function App() {
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
   function drop(e: React.DragEvent) {
+    setDraftDragging(false);
     e.preventDefault();
     if (!ready || loadError) return;
     try {
@@ -410,7 +434,7 @@ export default function App() {
   const disabled = !ready || loadError;
   return (
     <>
-      <header className="topbar">
+      <header className={"topbar " + mode}>
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">
             S
@@ -430,6 +454,11 @@ export default function App() {
                 metadata: { ...spec.metadata, name: e.target.value },
               });
           }}
+        />
+        <div
+          id="preview-app-actions"
+          className="preview-app-actions"
+          hidden={mode !== "preview" || Boolean(candidate)}
         />
         <div className="toolbar-actions">
           <button
@@ -462,38 +491,27 @@ export default function App() {
           {mode === "draft" && (
             <>
               <button
-                disabled={disabled || !history.past.length}
-                onClick={() => setHistory(undo)}
-              >
-                還原
-              </button>
-              <button
-                disabled={disabled || !history.future.length}
-                onClick={() => setHistory(redo)}
-              >
-                重做
-              </button>
-              <button
                 disabled={busy || !ready || loadError}
                 onClick={() => void save()}
-                className="primary"
               >
                 {busy ? "儲存中…" : "儲存草稿"}
               </button>
-              <button
-                disabled={!ready}
-                onClick={() => {
-                  if (
-                    !dirty ||
-                    window.confirm(
-                      "尚有未儲存的修改，重新載入會捨棄這些修改。是否繼續？",
+              <WorkbenchMenu label="草稿選單">
+                <button
+                  disabled={!ready}
+                  onClick={() => {
+                    if (
+                      !dirty ||
+                      window.confirm(
+                        "尚有未儲存的修改，重新載入會捨棄這些修改。是否繼續？",
+                      )
                     )
-                  )
-                    void restore();
-                }}
-              >
-                重新載入
-              </button>
+                      void restore();
+                  }}
+                >
+                  重新載入
+                </button>
+              </WorkbenchMenu>
             </>
           )}
         </div>
@@ -537,6 +555,18 @@ export default function App() {
                   <small>1440 × 1200</small>
                 </div>
                 <div>
+                  <button
+                    disabled={disabled || !history.past.length}
+                    onClick={() => setHistory(undo)}
+                  >
+                    還原
+                  </button>
+                  <button
+                    disabled={disabled || !history.future.length}
+                    onClick={() => setHistory(redo)}
+                  >
+                    重做
+                  </button>
                   <label>
                     縮放{" "}
                     <select
@@ -559,7 +589,10 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <div className="canvas-scroll">
+              <div
+                className="canvas-scroll"
+                style={{ "--draft-scale": scale } as React.CSSProperties}
+              >
                 <div
                   className="canvas-wrap"
                   style={{ width: 1440 * scale, height: 1200 * scale }}
@@ -658,12 +691,21 @@ export default function App() {
             </main>
             {panel && (
               <aside
-                className="sidebar"
+                className={
+                  "sidebar" + (draftDragging ? " dragging-effect" : "")
+                }
                 style={{ width: panelWidth }}
                 aria-label="元件與屬性"
               >
                 <div className="side-head">
                   <h2>設計工具</h2>
+                  <button
+                    className="draft-panel-close"
+                    aria-label="關閉草稿工具"
+                    onClick={() => setPanel(false)}
+                  >
+                    關閉
+                  </button>
                   <small>{spec.nodes.length} / 100 元件</small>
                 </div>
                 <div className="tabs" role="tablist" aria-label="工具分類">
@@ -672,14 +714,22 @@ export default function App() {
                     aria-selected={tab === "library"}
                     onClick={() => setTab("library")}
                   >
-                    元件與動畫
+                    元件
                   </button>
                   <button
                     role="tab"
+                    aria-selected={tab === "animations"}
+                    onClick={() => setTab("animations")}
+                  >
+                    動畫
+                  </button>
+                  <button
+                    role="tab"
+                    aria-label="編輯元素"
                     aria-selected={tab === "properties"}
                     onClick={() => setTab("properties")}
                   >
-                    編輯元素
+                    屬性
                   </button>
                 </div>
                 {pending && (
@@ -706,15 +756,21 @@ export default function App() {
                     <button onClick={() => setPending(null)}>取消</button>
                   </div>
                 )}
-                {tab === "library" ? (
+                {(tab === "library" || tab === "animations") && (
                   <>
                     <input
                       type="search"
                       aria-label="搜尋元件與動畫"
-                      placeholder="搜尋元件、動畫…"
+                      placeholder={
+                        tab === "animations" ? "搜尋動畫…" : "搜尋元件…"
+                      }
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                     />
+                  </>
+                )}
+                {tab === "library" ? (
+                  <>
                     {search &&
                       !Object.values(labels).some((t) => t.includes(search)) &&
                       !Object.keys(labels).some((t) =>
@@ -740,12 +796,14 @@ export default function App() {
                             key={t}
                             draggable={!disabled}
                             disabled={disabled || spec.nodes.length >= 100}
-                            onDragStart={(e) =>
+                            onDragEnd={() => setDraftDragging(false)}
+                            onDragStart={(e) => {
+                              setDraftDragging(true);
                               e.dataTransfer.setData(
                                 dragType,
                                 JSON.stringify({ type: "component", value: t }),
-                              )
-                            }
+                              );
+                            }}
                             onClick={() =>
                               add(
                                 t,
@@ -783,61 +841,44 @@ export default function App() {
                           </button>
                         ))}
                     </div>
-                    <h2>動畫效果</h2>
-                    <p className="note">拖到元件上附加，草稿僅顯示標記。</p>
-                    <div className="library">
-                      {(
-                        Object.keys(effects).filter(
-                          (f) => f !== "hover-lift",
-                        ) as Effect[]
-                      )
-                        .filter((f) =>
-                          effects[f]
-                            .toLowerCase()
-                            .includes(search.toLowerCase()),
-                        )
-                        .map((f) => (
-                          <button
-                            key={f}
-                            disabled={disabled}
-                            draggable={!disabled}
-                            onDragStart={(e) =>
-                              e.dataTransfer.setData(
-                                dragType,
-                                JSON.stringify({ type: "effect", value: f }),
-                              )
-                            }
-                            onClick={() => {
-                              if (node) attach(f, node.id);
-                              else {
-                                setPending(f);
-                                setTarget("");
-                              }
-                            }}
-                          >
-                            <span className="glyph" aria-hidden="true">
-                              ✧
-                            </span>
-                            <span>
-                              <strong>{effects[f]}</strong>
-                              <small>
-                                {
-                                  {
-                                    "hover-glow": "游標移入時柔光",
-                                    "fade-in": "進入畫面時淡入",
-                                    lift: "游標移入時上浮",
-                                    "hover-lift": "游標移入時上浮",
-                                    "slide-up": "進入畫面時上移",
-                                    "scale-in": "進入畫面時縮放",
-                                    "stagger-reveal": "子元素依序出現",
-                                  }[f]
-                                }
-                              </small>
-                            </span>
-                          </button>
-                        ))}
-                    </div>
                   </>
+                ) : tab === "animations" ? (
+                  <AnimationLibrary
+                    draft
+                    filter={search}
+                    disabled={disabled}
+                    selectedLabel={node ? labels[node.type] : undefined}
+                    compatibility={(id) =>
+                      node?.effects.some(
+                        (e) => (e === "lift" ? "hover-lift" : e) === id,
+                      )
+                        ? "已附加標記"
+                        : id === "stagger-reveal" &&
+                            node &&
+                            node.type !== "card"
+                          ? "僅適用於卡片"
+                          : null
+                    }
+                    onChoose={(id) => {
+                      const effect = id === "hover-lift" ? "lift" : id;
+                      if (node) attach(effect, node.id);
+                      else {
+                        setPending(effect);
+                        setTarget("");
+                      }
+                    }}
+                    onDragEnd={() => setDraftDragging(false)}
+                    onDragStart={(id, data) => {
+                      setDraftDragging(true);
+                      data.setData(
+                        dragType,
+                        JSON.stringify({
+                          type: "effect",
+                          value: id === "hover-lift" ? "lift" : id,
+                        }),
+                      );
+                    }}
+                  />
                 ) : node ? (
                   <>
                     <h2>{labels[node.type]}</h2>
@@ -953,17 +994,21 @@ export default function App() {
           </>
         )}
       </div>
-      <footer className="footer">
-        <span role="status" className={"status" + (error ? " error" : "")}>
-          {message}
-        </span>
-        <span>{dirty ? "尚未儲存" : "已儲存於本機"}</span>
-        {mode === "draft" && (
-          <span className="shortcuts">
-            ⌘ / Ctrl Z 還原 · Delete 刪除 · 方向鍵微調
+      {mode === "draft" && (
+        <footer className="footer">
+          <span role="status" className={"status" + (error ? " error" : "")}>
+            {dirty && !message.includes("儲存")
+              ? message + " · 尚未儲存"
+              : message}
           </span>
-        )}
-      </footer>
+
+          {mode === "draft" && (
+            <span className="shortcuts">
+              ⌘ / Ctrl Z 還原 · Delete 刪除 · 方向鍵微調
+            </span>
+          )}
+        </footer>
+      )}
     </>
   );
 }

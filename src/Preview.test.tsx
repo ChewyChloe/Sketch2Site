@@ -7,6 +7,7 @@ import {
   fireEvent,
   waitFor,
   cleanup,
+  act,
 } from "@testing-library/react";
 import Preview from "./Preview";
 import { demoPage } from "./pageFixtures";
@@ -17,9 +18,9 @@ it("selects an ID, applies a patch through the form and safely rejects invalid t
   const target = Array.from(indexNodes(demoPage).values()).find(
     (n) => n.type === "heading",
   )!;
-  fireEvent.click(
-    await screen.findByRole("heading", { name: target.content! }),
-  );
+  const heading = await screen.findByRole("heading", { name: target.content! });
+  await act(async () => {}); // Flush restored-session effects before the first interaction.
+  fireEvent.click(heading);
   await waitFor(() =>
     expect(
       (screen.getByLabelText("標題文字") as HTMLTextAreaElement).value,
@@ -33,9 +34,15 @@ it("selects an ID, applies a patch through the form and safely rejects invalid t
   fireEvent.change(screen.getByLabelText("標題文字"), {
     target: { value: "我的作品集" },
   });
+  fireEvent.click(screen.getByRole("tab", { name: "動畫" }));
+  fireEvent.click(screen.getByRole("button", { name: "淡入" }));
+  fireEvent.click(screen.getByRole("tab", { name: "屬性" }));
+  expect((screen.getByLabelText("標題文字") as HTMLTextAreaElement).value).toBe(
+    "我的作品集",
+  );
   fireEvent.click(screen.getByRole("button", { name: "套用" }));
   expect(screen.getByRole("heading", { name: "我的作品集" })).toBeTruthy();
-  expect(screen.getByText("已套用，其他元素資料未變更。")).toBeTruthy();
+  expect(screen.getByText("已套用。")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "撤銷修改" }));
   expect(screen.getByRole("heading", { name: target.content! })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "重做修改" }));

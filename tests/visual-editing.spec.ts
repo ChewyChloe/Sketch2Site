@@ -1,36 +1,14 @@
+import {
+  pageAction,
+  viewAction,
+  openPanel,
+  editSelection,
+  addFade,
+  setFadeDuration,
+  cancelSelection,
+} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
-import { PageSchema } from "../src/pageSpec";
-const id = (n: number) =>
-  `60000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-const fixture = PageSchema.parse({
-  schemaVersion: 2,
-  metadata: { title: "視覺編輯測試範例（非 AI）", language: "zh-Hant" },
-  typography: "sans",
-  styles: "neutral",
-  responsive: { mobileColumns: 1, desktopColumns: 2 },
-  sections: [
-    {
-      id: id(1),
-      type: "section",
-      children: [
-        { id: id(2), type: "heading", content: "我的設計作品", level: 1 },
-        {
-          id: id(3),
-          type: "paragraph",
-          content: "用清楚的設計，說明每一個作品。",
-        },
-        {
-          id: id(4),
-          type: "card",
-          children: [
-            { id: id(5), type: "paragraph", content: "專案介紹與成果" },
-          ],
-        },
-        { id: id(6), type: "button", content: "查看作品", href: "#" + id(4) },
-      ],
-    },
-  ],
-});
+import { id, fixture } from "./fixtures/workbench";
 async function record(page: Page, store = "pages", key = "local-project") {
   return page.evaluate(
     ({ store, key }) =>
@@ -65,16 +43,20 @@ async function setup(page: Page) {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  if (
+    !(await page
+      .getByRole("button", { name: "新增文字", exact: true })
+      .isVisible())
+  )
+    await page.getByRole("button", { name: "展開側欄", exact: true }).click();
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
   await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
   await page.getByRole("button", { name: "預覽", exact: true }).click();
-  await page
-    .getByLabel("載入頁面檔案")
-    .setInputFiles({
-      name: "visual-mock.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(fixture)),
-    });
+  await page.getByLabel("載入頁面檔案").setInputFiles({
+    name: "visual-mock.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(fixture)),
+  });
   await expect(page.locator(".rendered-page h1")).toHaveText("我的設計作品");
   await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
   return external;
@@ -111,8 +93,14 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
   await page.getByRole("button", { name: "選取", exact: true }).click();
   await node(page, 2).click();
   await expect(node(page, 2)).toHaveAttribute("data-page-selected", "true");
-  await expect(page.getByLabel("選取元件")).toHaveValue(id(2));
+  await openPanel(page, "元件");
+  await expect(page.locator(`[data-component-id="${id(2)}"]`)).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await editSelection(page);
   await page.getByLabel("元素對齊").selectOption("center");
+  await editSelection(page);
   await page.getByLabel("標題文字").fill("清楚呈現我的作品");
   await page.getByRole("button", { name: "套用", exact: true }).click();
   await expect(node(page, 2)).toHaveClass(/align-center/);
@@ -120,6 +108,7 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
   await page.getByRole("button", { name: "撤銷修改" }).click();
   await expect(node(page, 2)).toHaveText("我的設計作品");
   await page.getByRole("button", { name: "重做修改" }).click();
+  await editSelection(page);
   await page.getByLabel("標題文字").fill('<img src=x onerror="alert(1)">');
   await page.getByRole("button", { name: "套用", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("修改格式或數值無效");
@@ -127,9 +116,9 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
   await expect(page.locator("[data-page-selected]")).toHaveCount(0);
   for (const zoom of ["1", "0.75", "0.5"]) {
     await marquee(page, zoom);
-    await expect(
-      page.getByRole("complementary", { name: "選取摘要" }),
-    ).toContainText("已選取 2 個元件");
+    await expect(page.getByRole("region", { name: "選取摘要" })).toContainText(
+      "已選取 2 個元件",
+    );
     await expect(node(page, 2)).toHaveAttribute("data-page-selected", "true");
     await expect(node(page, 3)).toHaveAttribute("data-page-selected", "true");
     if (zoom === "0.75")
@@ -203,7 +192,7 @@ test("畫筆、撤銷清除、縮放與瀏覽互動；註記不進入 PageSpec",
 });
 test("動畫拖放、相容性、替換移除、Undo/Redo 與實際播放", async ({ page }) => {
   const external = await setup(page);
-  await page.locator(".effect-library summary").click();
+  await openPanel(page, "動畫");
   await page.locator('[data-effect-id="slide-up"]').dragTo(node(page, 2));
   await expect(node(page, 2)).toHaveAttribute("data-effects", "slide-up");
   await page.locator('[data-effect-id="slide-up"]').dragTo(node(page, 2));
@@ -215,10 +204,12 @@ test("動畫拖放、相容性、替換移除、Undo/Redo 與實際播放", asyn
   await page.locator('[data-effect-id="stagger-reveal"]').dragTo(node(page, 2));
   await expect(page.getByRole("alert")).toContainText("僅適用於有子元件");
   await expect(node(page, 2)).toHaveAttribute("data-effects", "slide-up");
+  await editSelection(page);
   await page.getByLabel("更換向上滑入").selectOption("scale-in");
   await expect(node(page, 2)).toHaveAttribute("data-effects", "scale-in");
   await page.getByRole("button", { name: "移除縮放進入", exact: true }).click();
   await expect(node(page, 2)).toHaveAttribute("data-effects", "");
+  await openPanel(page, "動畫");
   await page
     .locator('[data-effect-id="stagger-reveal"]')
     .dragTo(node(page, 4), { targetPosition: { x: 3, y: 3 } });
@@ -228,7 +219,7 @@ test("動畫拖放、相容性、替換移除、Undo/Redo 與實際播放", asyn
     fullPage: true,
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.getByRole("button", { name: "重播動畫", exact: true }).click();
+  await viewAction(page, "重播動畫");
   await expect
     .poll(() => node(page, 5).evaluate((el) => el.getAnimations().length))
     .toBeGreaterThan(0);
@@ -244,6 +235,7 @@ for (const width of [1440, 768, 375])
     const external = await setup(page);
     await page.getByRole("button", { name: "選取", exact: true }).click();
     await node(page, 2).click();
+    await editSelection(page);
     await page
       .getByRole("button", { name: "套用", exact: true })
       .scrollIntoViewIfNeeded();
@@ -261,6 +253,9 @@ for (const width of [1440, 768, 375])
       ),
     ).toBe(true);
     await page.getByRole("button", { name: "取消選取", exact: true }).click();
+    await page
+      .getByRole("button", { name: "關閉工具面板", exact: true })
+      .click();
     await page.getByRole("button", { name: "畫筆", exact: true }).click();
     const box = (await node(page, 2).boundingBox())!;
     await page.mouse.move(box.x + 10, box.y + 10);

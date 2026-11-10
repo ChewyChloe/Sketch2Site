@@ -1,0 +1,56 @@
+[
+  {
+    "width": 1440,
+    "height": 1000,
+    "state": "selected",
+    "top": 253.796875,
+    "canvasWidth": 1120,
+    "canvasHeight": 656.203125,
+    "appBar": 76,
+    "horizontalOverflow": false
+  },
+  {
+    "width": 1440,
+    "height": 1000,
+    "state": "closed",
+    "top": 253.796875,
+    "canvasWidth": 1392,
+    "canvasHeight": 656.203125
+  },
+  {
+    "width": 768,
+    "height": 1000,
+    "state": "selected",
+    "top": 282.1875,
+    "canvasWidth": 752,
+    "canvasHeight": 389.5,
+    "appBar": 76,
+    "horizontalOverflow": false
+  },
+  {
+    "width": 768,
+    "height": 1000,
+    "state": "closed",
+    "top": 282.1875,
+    "canvasWidth": 752,
+    "canvasHeight": 659.8125
+  },
+  {
+    "width": 375,
+    "height": 1000,
+    "state": "selected",
+    "top": 406.75,
+    "canvasWidth": 359,
+    "canvasHeight": 314.75,
+    "appBar": 109.78125,
+    "horizontalOverflow": false
+  },
+  {
+    "width": 375,
+    "height": 1000,
+    "state": "closed",
+    "top": 406.75,
+    "canvasWidth": 359,
+    "canvasHeight": 535.25
+  }
+]
