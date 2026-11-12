@@ -66,3 +66,7 @@
 - DONE工程／PARTIAL人工美感驗收：Notion克制美感與Hallmark app-scope restyle，保留功能；新三尺寸原生操作、前後原圖與Hallmark render檢查，詳見docs/WORKBENCH_DESIGN_REVIEW.md。
 
 - PASS收尾：130單元／整合、66全套E2E、Typecheck／Build／秘密掃描；原圖／比較頁與Hallmark render JSON保留。工程完成後GitHub正常Push與bundle核對，不宣稱人工美感已驗收。
+
+## 自有Motion Spec Library（新附件，2026-11-12）
+- IN PROGRESS：先完成12個原創結構化規格，整併6個舊效果並保留舊資料安全相容，再依序完成展示／高複雜度效果；僅有通過Renderer、Patch、預覽、匯出與測試者標記DONE。
+- 本輪附件明確禁止Push，覆蓋先前Push授權；不Merge／部署／付費模型。

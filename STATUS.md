@@ -176,3 +176,6 @@ DONE工程：元件庫由框線卡片改清單與SVG圖示、工具與導覽去�
 Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38個spacing位置有明確例外、1個表單一致性Finish已回答；不是無條件全規則通過。App無新增依賴；tmp Puppeteer僅驗證工具。完整回歸與最新Commit／Push以本輪最後紀錄為準。
 
 本輪最終驗證PASS：Vitest130/130、Chromium66/66、Typecheck、Build、check:secrets、git diff --check；既有Zod註解警告保留。Hallmark實際render 0 FAIL、0 WARN、38個明確spacing例外、F7回答，未隱瞞例外。前後原圖／比較頁／JSON在/workspace/backups/design-polish-20261112/。工程DONE、主觀設計驗收PARTIAL、真實付費AI仍NOT TESTED；沒有付費呼叫、Merge或部署。本地提交後正常Push至既有work並核對SHA，更新bundle與恢復驗證。
+
+## 最新工作：自有Motion Spec Library IN PROGRESS
+起點7e6aa6fd96ace1b1b6eb329677d4a9fa9b2a6f8e，工作區原先乾淨。已讀新附件、現有文件及Registry／Patch／Renderer；參考網站僅市場概念，不再讀取或複製。已建立12種原創公開參數規格及後端單獨生成指引；ANIMATION_SPECS.md由Registry離線產生。前6個的新規格適配仍PARTIAL、後6個NOT STARTED，未冒充可用功能。接續做版本化參數／既有管線整合，不在單一效果完成時停等。最新附件禁止Push，覆蓋先前授權；只做本地提交，付費API0。
