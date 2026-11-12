@@ -81,3 +81,6 @@ Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或�
 ### 示範、匯出與秘密驗證
 本機demo不能隱式代替失敗的模型輸出，不能接觸API Key，也不能直接跳過PageSpec／內容保留／動畫對應驗證。展示資料皆為可辨識的虛構範例。前端candidate的demo型別不擴張後端API合約。正式AI入口仍由既有後端旗標、CSRF、用量／預算與零重試限制控制；本輪絕不啟用或測試真實模型。
 React ZIP只包含固定可信模板、原Renderer純Runtime、嚴格Schema及引用素材；不可由標題／模型內容生成檔名或插入HTML腳本。ZIP路徑、大小及CRC32驗證由獨立Python解碼測試，真正隔離npm ci與build，再以Chromium驗證執行時不連線編輯器／外部。前端dist掃描不包含內部Prompt、可辨識API金鑰或source map；Git備份先掃描歷史，禁止.env／憑證進bundle。掃描PASS僅代表所執行檢查未發現問題，不宣稱完全安全。
+
+### 未套用與匯入失敗的資料保留
+未套用文字／屬性不因選取、Esc、Undo／Redo或重載而靜默消失；明確捨棄才清除，不以自動保存繞過驗證。候選生成／接受與匯出不能略過未套用狀態。匯入驗證失敗僅回報固定安全訊息，原已驗證PageSpec／Renderer／暫存欄位保留，無不可信資料落入Renderer或IndexedDB。後端CSRF、金鑰、用量、Session與Revision規則沒有放寬。

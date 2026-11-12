@@ -137,3 +137,8 @@ IndexedDB v3 新增 assets store，既有 draft/pages CAS不變。PNG/JPEG 經�
 ### 免費示範流程與展示資料
 `src/demoFixtures.ts` 共用五份穩定ID草稿（原生成測試直接重用，指紋與內容未另造一套）。UI提供作品集／活動／不規則／多動畫四份重複載入，替換未保存草稿前確認、一次Undo可復原。`src/demo.ts` 是顯式本機確定性排版：使用既有prepareIntent → Layout → materialize → preservation／PageSpec驗證 → CandidatePreview → 既有acceptGeneration/CAS；不發fetch，不作Provider失敗fallback，也不聲稱AI品質。候選mode=demo只存在前端型別，後端Response schema仍只容許mock/live，沒有新API Provider。
 示範候選使用真實的本機執行耗時、零模型tokens／費用。草稿／預覽的圖片更改仍用同一History／Patch Engine。圖片處理完成前若草稿物件已變更，拒絕套用過時結果；素材保留以供重新選取。PageSpec替換沿用Revision／Session拒絕過時操作。沒有第二套Renderer、動畫或保存管線。
+
+### 品質修整：未套用屬性與失敗保留（2026-11-12）
+Preview的屬性暫存仍只存在記憶體，不新增PageSpec欄位或保存管線。以目前穩定元件ID、文字／對齊／標題層級／動畫時長與已提交值比較，辨識未套用狀態。切換單選／框選、取消選取／Esc、Undo/Redo需先明確同意捨棄；取消保持原欄位。關閉工具不丟失暫存，beforeunload保護瀏覽器重載。提供顯式捨棄，不自動把未驗證輸入寫入頁面。
+未套用時保留既有單一保存狀態位置，顯示「尚未套用」；匯出與候選生成目標暫不可用，避免將舊頁面錯當作新輸入結果。套用仍僅通過原Patch Engine／Session／Revision及CAS。有效頁面檔案替換沿用一次確認，過時讀取檢查不變。
+無效／超大／JSON失敗的匯入改為非破壞性錯誤通知：保留目前已驗證Renderer、選取和屬性暫存；不再清空可用畫面或停用後續安全編輯。僅validated PageSpec能到persistence.replace，並非將無效輸入作fallback渲染。

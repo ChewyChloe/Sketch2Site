@@ -1,7 +1,7 @@
 # 狀態
 2026-11-12（Asia/Taipei）
 
-目前工作：自主免費MVP工程 DONE；最終UI/UX人工驗收 PARTIAL。本次使用者完整附件覆蓋舊階段停止點，並於本輪追加授權適時Push至GitHub；不Merge／Force Push／部署，不使用付費API。以下先列目前結論，後續舊Phase紀錄只供歷史參考。
+目前工作：免費MVP與資料保護修整 DONE；使用者明確否決目前美感，工作台視覺品質仍 PARTIAL，正在依Notion克制美感與Hallmark設計技能重新修整。本次使用者完整附件覆蓋舊階段停止點，並於本輪追加授權適時Push至GitHub；不Merge／Force Push／部署，不使用付費API。以下先列目前結論，後續舊Phase紀錄只供歷史參考。
 
 - DONE：獨立React+TypeScript ZIP匯出（同一Renderer／Registry、固定安全模板、引用圖片、可隔離安裝與建置）。
 - DONE：PNG／JPEG安全本機匯入、替換、保存與匯出；IndexedDB v3、規格化PNG、SHA256、容量／數量限制、物件URL回收、過時匯入拒絕。未上傳圖片。
@@ -165,3 +165,8 @@ GitHub遠端備份尚待核對；安全掃描Git歷史後建立/workspace/backup
 
 ### 自主循環B：本機圖片 DONE
 PNG/JPEG匯入及替換，IndexedDB v3無損升級、10張／20MiB上限、SHA256內容指紋、metadata去除、object URL生命週期、缺失／損毀安全拒絕。PageSpec圖片經既有Patch／Revision保存，匯出包含本機PNG。PASS：typecheck、124單元；新增2個Chromium素材流程＋1個隔離npm ci/Build匯出流程，3/3。原檔名不進spec／ZIP，假PNG被拒絕；圖片重載、Mock候選、alt修改、動畫Undo/Redo及ZIP驗證通過。付費API 0。接續離線示範與兩輪UI審查。
+
+## 持續品質修整檢查點（2026-11-12）
+DONE：未套用屬性保護、明確捨棄／狀態、取消切換／Esc／Undo／重載保留輸入、實際beforeunload取消、匯出／候選目標保護；無效匯入保留已驗證頁面及輸入；375px工具改為55%高度下方區與45%獨立預覽port（375×405），套用列持續可見；Ctrl／⌘+S在草稿輸入欄可用且保留原生文字Undo/Delete。
+PASS：130單元／整合、Typecheck、Build、check:secrets、全套Chromium63/63（1.9分鐘）、npm audit0已知漏洞、git diff --check。含舊流程全部保留與9個新增E2E；安全測試改斷言無效輸入不改原頁面HTML及無onclick，未放寬Schema。API呼叫0。原始圖及量測另保存/workspace/backups/quality-20261112/。
+使用者追加要求：像嚴格使用者逐步驗證，改善真正美感與直覺，參考Notion（不複製布局）與https://github.com/nutlope/hallmark。Hallmark README／LICENSE（MIT）已讀，接續讀SKILL並開始視覺修整；工程通過不等於美感通過。不得停在此檢查點或宣稱完美，不付費生成、不Merge／部署；使用者先前已明確允許正常Push。

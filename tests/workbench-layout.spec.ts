@@ -44,6 +44,26 @@ async function metrics(page: Page, state: string) {
       unoccludedWidth: overlap
         ? Math.max(0, box.left - r.left - parseFloat(css.paddingLeft))
         : width,
+      unoccludedArea: overlap
+        ? Math.max(
+            0,
+            r.width * r.height -
+              Math.max(
+                0,
+                Math.min(r.right, box.right) - Math.max(r.left, box.left),
+              ) *
+                Math.max(
+                  0,
+                  Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top),
+                ),
+          )
+        : r.width * r.height,
+      fullWidthVisibleHeight:
+        overlap && box.top > r.top
+          ? Math.min(r.height, box.top - r.top)
+          : overlap
+            ? 0
+            : r.height,
       controlsOverflow: controls.some((e) => {
         const b = e.getBoundingClientRect();
         return b.left < 0 || b.right > innerWidth + 0.5;

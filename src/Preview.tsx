@@ -66,36 +66,60 @@ export type PreviewHandle = {
   ): Promise<{ ok: boolean; error?: string }>;
 };
 export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
+  const pendingEdits = useRef(false);
+  const resetProperties = useRef<() => void>(() => {});
+  const selectionHead = useRef<string[]>([]);
+  function confirmDiscard() {
+    if (!pendingEdits.current) return true;
+    if (!window.confirm("修改尚未套用。捨棄並繼續？")) return false;
+    resetProperties.current();
+    pendingEdits.current = false;
+    return true;
+  }
   const imageInput = useRef<HTMLInputElement>(null);
   const [importingImage, setImportingImage] = useState(false);
   const localImages = useAssetRefs();
   const persistence = usePagePersistence();
   const { session, current, update, ready, loadError, status } = persistence;
   useImperativeHandle(ref, () => ({
-    target: persistence.generationTarget,
+    target: () =>
+      pendingEdits.current ? null : persistence.generationTarget(),
     accept: async (page, target) => {
+      if (pendingEdits.current)
+        return { ok: false, error: "請先套用或捨棄屬性修改。" };
       const result = await persistence.acceptGeneration(page, target);
       if (result.ok) {
         setSource("本機頁面");
         setSelected(null);
-        setError("");
         setNotice("");
       }
       return result;
     },
   }));
   const [source, setSource] = useState("範例預覽"),
-    [error, setError] = useState(""),
     [device, setDevice] = useState<"desktop" | "mobile">("desktop"),
     [replay, setReplay] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, publishSelection] = useState<string[]>([]);
+  selectionHead.current = selectedIds;
+  function setSelectedIds(ids: string[]) {
+    if (
+      ids.length === selectionHead.current.length &&
+      ids.every((id, i) => id === selectionHead.current[i])
+    )
+      return true;
+    if (!confirmDiscard()) return false;
+    selectionHead.current = ids;
+    publishSelection(ids);
+    return true;
+  }
   const selected = selectedIds.length === 1 ? selectedIds[0] : null;
   function setSelected(id: string | null) {
-    setSelectedIds(id ? [id] : []);
+    if (!setSelectedIds(id ? [id] : [])) return false;
     if (id && (!compact || panelOpen)) {
       setPanelTab("properties");
       setPanelOpen(true);
     }
+    return true;
   }
   const [compact, setCompact] = useState(() => window.innerWidth <= 1000);
   const [panelOpen, setPanelOpen] = useState(() => window.innerWidth > 1000);
@@ -214,23 +238,67 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
       values: Object.fromEntries(effects.map((e) => [e.effectId, e.duration])),
     };
   }, [selected, node?.effects]);
+  const pendingProperties = Boolean(
+    node &&
+      effectSource.current.id === selected &&
+      (text !== (node.content ?? "") ||
+        align !== node.style.align ||
+        level !== String(node.level ?? 1) ||
+        node.effects.some(
+          (effect) =>
+            (effectDurations[effect.effectId] ?? String(effect.duration)) !==
+            String(effect.duration),
+        )),
+  );
+  pendingEdits.current = pendingProperties;
+  resetProperties.current = () => {
+    setText(node?.content ?? "");
+    setAlign(node?.style.align ?? "start");
+    setLevel(String(node?.level ?? 1));
+    setEffectDurations(
+      Object.fromEntries(
+        (node?.effects ?? []).map((effect) => [
+          effect.effectId,
+          String(effect.duration),
+        ]),
+      ),
+    );
+    setPatchError(false);
+    setNotice("");
+  };
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (pendingEdits.current) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, []);
+  function reportLoadError(message: string) {
+    setPatchError(true);
+    setNotice(message + " 原頁面與未套用修改已保留。");
+  }
   function install(input: unknown) {
     const checked = validatePage(input);
     if (!checked.ok) {
-      setError(checked.error);
+      reportLoadError(checked.error);
       return false;
     }
     if (
-      (persistence.isDirty() ||
+      (pendingEdits.current ||
+        persistence.isDirty() ||
         status.kind === "saved" ||
         session.revision > 0) &&
       !window.confirm("取代目前頁面並自動儲存？")
     )
       return false;
+    resetProperties.current();
+    pendingEdits.current = false;
     persistence.replace(checked.page);
     setSelected(null);
     setNotice("");
-    setError("");
     setReplay((n) => n + 1);
     return true;
   }
@@ -240,7 +308,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
     const startedSession = current.current.sessionId,
       startedRevision = current.current.revision;
     if (file.size > 200000) {
-      setError("預覽失敗：檔案超過 200 KB。請縮小檔案後重試。");
+      reportLoadError("預覽失敗：檔案超過 200 KB。請縮小檔案後重試。");
       return;
     }
     try {
@@ -250,26 +318,27 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         startedSession !== current.current.sessionId ||
         startedRevision !== current.current.revision
       ) {
-        setError("頁面已更新，請重新載入檔案。");
+        reportLoadError("頁面已更新，請重新載入檔案。");
         return;
       }
       if (install(parsed)) setSource("本機檔案預覽");
     } catch {
       if (sequence !== loadSequence.current) return;
-      setError("預覽失敗：檔案格式無效。請修正檔案後重試。");
+      reportLoadError("預覽失敗：檔案格式無效。請修正檔案後重試。");
     }
   }
   useEffect(() => {
-    setSelectedIds([]);
+    selectionHead.current = [];
+    publishSelection([]);
     setAnnotations({ past: [], present: [], future: [] });
   }, [session.sessionId]);
   useEffect(() => {
     const escape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !e.defaultPrevented) {
+        if (!setSelectedIds([])) return;
         const inspector = document.getElementById("preview-inspector");
         if (inspector && !inspector.hidden) panelButton.current?.focus();
         setPanelOpen(false);
-        setSelectedIds([]);
         setMode("browse");
         setNotice("");
       }
@@ -284,7 +353,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
       !indexNodes(current.current.history.present).has(id)
     )
       return;
-    setSelected(id);
+    if (!setSelected(id)) return;
     setNotice("");
   }
   function patch(
@@ -292,7 +361,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
     targetId: string,
     baseRevision = current.current.revision,
   ) {
-    if (!ready || loadError || error) return;
+    if (!ready || loadError) return;
     const result = applyPatchBatch(
       current.current,
       {
@@ -325,7 +394,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
       setNotice("依序顯示僅適用於有子元件的容器。");
       return;
     }
-    setSelectedIds([id]);
+    if (!setSelectedIds([id])) return;
     patch(
       [{ operation: "attach-effect", targetId: id, payload: { effectId } }],
       id,
@@ -389,7 +458,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   }
 
   function travel(direction: "undo" | "redo") {
-    if (!ready || loadError) return;
+    if (!ready || loadError || !confirmDiscard()) return;
     update(travelPage(current.current, direction));
     setPatchError(false);
     setNotice(direction === "undo" ? "已撤銷修改。" : "已重做修改。");
@@ -400,8 +469,16 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
       <span className="preview-source">{source}</span>
       <span
         className="page-status"
-        data-save-state={loadError ? "failed" : status.kind}
-        title={status.kind === "saved" ? "已儲存" : "本機頁面保存狀態"}
+        data-save-state={
+          loadError ? "failed" : pendingProperties ? "dirty" : status.kind
+        }
+        title={
+          pendingProperties
+            ? "屬性修改尚未套用"
+            : status.kind === "saved"
+              ? "已儲存"
+              : "本機頁面保存狀態"
+        }
         aria-live="polite"
       >
         <span data-testid="page-save-status">
@@ -409,20 +486,25 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
             ? "正在載入頁面"
             : loadError
               ? "載入失敗"
-              : status.kind === "saved"
-                ? "已儲存"
-                : status.kind === "saving"
-                  ? "儲存中"
-                  : status.kind === "failed"
-                    ? "儲存失敗"
-                    : status.kind === "conflict"
-                      ? "版本衝突"
-                      : "尚未儲存"}
+              : pendingProperties
+                ? "尚未套用"
+                : status.kind === "saved"
+                  ? "已儲存"
+                  : status.kind === "saving"
+                    ? "儲存中"
+                    : status.kind === "failed"
+                      ? "儲存失敗"
+                      : status.kind === "conflict"
+                        ? "版本衝突"
+                        : "尚未儲存"}
         </span>
       </span>
       <WorkbenchMenu label="頁面">
         <button
-          disabled={exporting || !ready || Boolean(loadError) || Boolean(error)}
+          disabled={
+            pendingProperties || exporting || !ready || Boolean(loadError)
+          }
+          title={pendingProperties ? "請先套用或捨棄屬性修改" : undefined}
           onClick={async () => {
             setExporting(true);
             try {
@@ -458,12 +540,13 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
           disabled={!ready}
           onClick={() => {
             if (
-              persistence.isDirty() &&
+              (pendingEdits.current || persistence.isDirty()) &&
               !window.confirm("重新載入會捨棄本頁尚未儲存的修改，是否繼續？")
             )
               return;
+            resetProperties.current();
+            pendingEdits.current = false;
             loadSequence.current++;
-            setError("");
             setSelected(null);
             setNotice("");
             void persistence.read();
@@ -519,7 +602,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
               aria-label={label}
               title={label}
               aria-pressed={mode === value}
-              disabled={!ready || Boolean(loadError) || Boolean(error)}
+              disabled={!ready || Boolean(loadError)}
               onClick={() => setMode(value)}
             >
               <WorkbenchIcon name={value} />
@@ -553,10 +636,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                 aria-label="撤銷修改"
                 title="撤銷修改"
                 disabled={
-                  !ready ||
-                  Boolean(loadError) ||
-                  Boolean(error) ||
-                  !session.history.past.length
+                  !ready || Boolean(loadError) || !session.history.past.length
                 }
                 onClick={() => travel("undo")}
               >
@@ -566,10 +646,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                 aria-label="重做修改"
                 title="重做修改"
                 disabled={
-                  !ready ||
-                  Boolean(loadError) ||
-                  Boolean(error) ||
-                  !session.history.future.length
+                  !ready || Boolean(loadError) || !session.history.future.length
                 }
                 onClick={() => travel("redo")}
               >
@@ -648,7 +725,6 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                 )
               ) {
                 loadSequence.current++;
-                setError("");
                 setSelected(null);
                 void persistence.restart();
               }
@@ -706,19 +782,16 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                     ? "請重試載入，或確認後重新開始。"
                     : "請檢查瀏覽器儲存權限後重試。"}
                 </p>
-              ) : error ? (
-                <p role="alert" className="preview-error">
-                  {error}
-                </p>
               ) : (
                 <VisualSurface
                   mode={mode}
                   selected={selectedIds}
                   onSelect={(ids) => {
                     const valid = ids.filter((id) => nodes.has(id));
-                    if (valid.length === 1) setSelected(valid[0]);
-                    else {
-                      setSelectedIds(valid);
+                    if (valid.length === 1) {
+                      if (!setSelected(valid[0])) return;
+                    } else {
+                      if (!setSelectedIds(valid)) return;
                       if (!compact && valid.length) {
                         setPanelOpen(true);
                         setPanelTab("properties");
@@ -877,7 +950,6 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
             {panelTab === "properties" &&
               ready &&
               !loadError &&
-              !error &&
               selectedIds.length > 1 && (
                 <section className="patch-panel" aria-label="選取摘要">
                   <div className="side-head">
@@ -899,224 +971,163 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                   </ul>
                 </section>
               )}
-            {panelTab === "properties" &&
-              ready &&
-              !loadError &&
-              !error &&
-              node && (
-                <section
-                  key={selected}
-                  className="patch-panel"
-                  aria-label="頁面元素編輯"
-                >
-                  <>
-                    <div className="side-head">
-                      <h2>
-                        {node.type === "heading" ? "編輯標題" : "編輯元件"}
-                      </h2>
-                      <button onClick={() => setSelected(null)}>
-                        取消選取
-                      </button>
-                    </div>
-                    <form
-                      id="properties-form"
-                      noValidate
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        apply();
-                      }}
-                    >
-                      {["heading", "paragraph", "button"].includes(
-                        node.type,
-                      ) && (
-                        <label className="field">
-                          {node.type === "heading" ? "標題文字" : "文字"}
-                          <textarea
-                            aria-label={
-                              node.type === "heading" ? "標題文字" : "文字"
-                            }
-                            value={text}
-                            maxLength={
-                              node.type === "button"
-                                ? 120
-                                : node.type === "paragraph"
-                                  ? 4000
-                                  : 2000
-                            }
-                            onChange={(e) => setText(e.target.value)}
-                          />
-                        </label>
-                      )}
-                      {node.type === "heading" && (
-                        <label className="field">
-                          標題層級
-                          <select
-                            aria-label="標題層級"
-                            value={level}
-                            onChange={(e) => setLevel(e.target.value)}
-                          >
-                            <option value="1">主標題 · 大</option>
-                            <option value="2">章節標題 · 中</option>
-                            <option value="3">小標題</option>
-                          </select>
-                        </label>
-                      )}
+            {panelTab === "properties" && ready && !loadError && node && (
+              <section
+                key={selected}
+                className="patch-panel"
+                aria-label="頁面元素編輯"
+              >
+                <>
+                  <div className="side-head">
+                    <h2>{node.type === "heading" ? "編輯標題" : "編輯元件"}</h2>
+                    <button onClick={() => setSelected(null)}>取消選取</button>
+                  </div>
+                  <form
+                    id="properties-form"
+                    noValidate
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      apply();
+                    }}
+                  >
+                    {["heading", "paragraph", "button"].includes(node.type) && (
                       <label className="field">
-                        對齊
-                        <select
-                          aria-label="元素對齊"
-                          value={align}
-                          onChange={(e) =>
-                            setAlign(e.target.value as typeof align)
+                        {node.type === "heading" ? "標題文字" : "文字"}
+                        <textarea
+                          aria-label={
+                            node.type === "heading" ? "標題文字" : "文字"
                           }
+                          value={text}
+                          maxLength={
+                            node.type === "button"
+                              ? 120
+                              : node.type === "paragraph"
+                                ? 4000
+                                : 2000
+                          }
+                          onChange={(e) => setText(e.target.value)}
+                        />
+                      </label>
+                    )}
+                    {node.type === "heading" && (
+                      <label className="field">
+                        標題層級
+                        <select
+                          aria-label="標題層級"
+                          value={level}
+                          onChange={(e) => setLevel(e.target.value)}
                         >
-                          <option value="start">靠左</option>
-                          <option value="center">置中</option>
-                          <option value="end">靠右</option>
+                          <option value="1">主標題 · 大</option>
+                          <option value="2">章節標題 · 中</option>
+                          <option value="3">小標題</option>
                         </select>
                       </label>
-                    </form>
-                  </>
-                  {node.type === "image" && (
-                    <div className="image-controls">
-                      <label className="field">
-                        圖片素材
-                        <select
-                          aria-label="頁面圖片素材"
-                          value={node.src}
-                          onChange={(e) =>
+                    )}
+                    <label className="field">
+                      對齊
+                      <select
+                        aria-label="元素對齊"
+                        value={align}
+                        onChange={(e) =>
+                          setAlign(e.target.value as typeof align)
+                        }
+                      >
+                        <option value="start">靠左</option>
+                        <option value="center">置中</option>
+                        <option value="end">靠右</option>
+                      </select>
+                    </label>
+                  </form>
+                </>
+                {node.type === "image" && (
+                  <div className="image-controls">
+                    <label className="field">
+                      圖片素材
+                      <select
+                        aria-label="頁面圖片素材"
+                        value={node.src}
+                        onChange={(e) =>
+                          patch(
+                            [
+                              {
+                                operation: "set-property",
+                                targetId: node.id,
+                                payload: {
+                                  property: "src",
+                                  value: e.target.value,
+                                },
+                              },
+                            ],
+                            node.id,
+                          )
+                        }
+                      >
+                        <option value="/assets/workspace.svg">
+                          內建示意圖
+                        </option>
+                        {localImages.map((ref, index) => (
+                          <option key={ref} value={ref}>
+                            本機圖片 {index + 1}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      disabled={importingImage}
+                      onClick={() => imageInput.current?.click()}
+                    >
+                      {importingImage ? "正在匯入圖片…" : "替換圖片"}
+                    </button>
+                    <label className="field">
+                      圖片說明
+                      <input
+                        aria-label="圖片說明"
+                        key={node.alt}
+                        maxLength={200}
+                        defaultValue={node.alt}
+                        onBlur={(e) => {
+                          if (e.target.value !== node.alt)
                             patch(
                               [
                                 {
                                   operation: "set-property",
                                   targetId: node.id,
                                   payload: {
-                                    property: "src",
+                                    property: "alt",
                                     value: e.target.value,
                                   },
                                 },
                               ],
                               node.id,
-                            )
-                          }
-                        >
-                          <option value="/assets/workspace.svg">
-                            內建示意圖
-                          </option>
-                          {localImages.map((ref, index) => (
-                            <option key={ref} value={ref}>
-                              本機圖片 {index + 1}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <button
-                        disabled={importingImage}
-                        onClick={() => imageInput.current?.click()}
-                      >
-                        {importingImage ? "正在匯入圖片…" : "替換圖片"}
-                      </button>
-                      <label className="field">
-                        圖片說明
-                        <input
-                          aria-label="圖片說明"
-                          key={node.alt}
-                          maxLength={200}
-                          defaultValue={node.alt}
-                          onBlur={(e) => {
-                            if (e.target.value !== node.alt)
-                              patch(
-                                [
-                                  {
-                                    operation: "set-property",
-                                    targetId: node.id,
-                                    payload: {
-                                      property: "alt",
-                                      value: e.target.value,
-                                    },
-                                  },
-                                ],
-                                node.id,
-                              );
-                          }}
-                        />
-                      </label>
-                      <p className="note">
-                        PNG／JPEG，原圖最多 5 MB，圖片只保存在此瀏覽器。
-                      </p>
-                    </div>
+                            );
+                        }}
+                      />
+                    </label>
+                    <p className="note">
+                      PNG／JPEG，原圖最多 5 MB，圖片只保存在此瀏覽器。
+                    </p>
+                  </div>
+                )}
+                <div className="effect-editor">
+                  <h2>已附加動畫</h2>
+                  {!node.effects.length && (
+                    <p className="note">從動畫效果庫拖入，或單擊效果套用。</p>
                   )}
-                  <div className="effect-editor">
-                    <h2>已附加動畫</h2>
-                    {!node.effects.length && (
-                      <p className="note">從動畫效果庫拖入，或單擊效果套用。</p>
-                    )}
-                    {node.effects.map((effect) => (
-                      <div className="effect-edit-row" key={effect.effectId}>
-                        <label className="field">
-                          {effectLabels[effect.effectId]}
-                          <select
-                            aria-label={"更換" + effectLabels[effect.effectId]}
-                            value={effect.effectId}
-                            onChange={(e) => {
-                              const effectId = e.target
-                                .value as (typeof effectIds)[number];
-                              if (!effectCompatible(node, effectId)) {
-                                setPatchError(true);
-                                setNotice("依序顯示僅適用於有子元件的容器。");
-                                return;
-                              }
-                              patch(
-                                [
-                                  {
-                                    operation: "remove-effect",
-                                    targetId: node.id,
-                                    payload: { effectId: effect.effectId },
-                                  },
-                                  {
-                                    operation: "attach-effect",
-                                    targetId: node.id,
-                                    payload: { ...effect, effectId },
-                                  },
-                                ],
-                                node.id,
-                              );
-                            }}
-                          >
-                            {effectIds.map((id) => (
-                              <option key={id} value={id}>
-                                {effectLabels[id]}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        {
-                          <label className="field">
-                            時長（毫秒）
-                            <input
-                              aria-label={
-                                effect.effectId === "fade-in"
-                                  ? "動畫時長（毫秒）"
-                                  : effectLabels[effect.effectId] + "時長"
-                              }
-                              type="number"
-                              min={120}
-                              max={1200}
-                              value={
-                                effectDurations[effect.effectId] ??
-                                String(effect.duration)
-                              }
-                              onChange={(e) =>
-                                setEffectDurations((values) => ({
-                                  ...values,
-                                  [effect.effectId]: e.target.value,
-                                }))
-                              }
-                            />
-                          </label>
-                        }
-                        <button
-                          onClick={() =>
+                  {node.effects.map((effect) => (
+                    <div className="effect-edit-row" key={effect.effectId}>
+                      <label className="field">
+                        {effectLabels[effect.effectId]}
+                        <select
+                          aria-label={"更換" + effectLabels[effect.effectId]}
+                          value={effect.effectId}
+                          onChange={(e) => {
+                            const effectId = e.target
+                              .value as (typeof effectIds)[number];
+                            if (!effectCompatible(node, effectId)) {
+                              setPatchError(true);
+                              setNotice("依序顯示僅適用於有子元件的容器。");
+                              return;
+                            }
                             patch(
                               [
                                 {
@@ -1124,16 +1135,73 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                                   targetId: node.id,
                                   payload: { effectId: effect.effectId },
                                 },
+                                {
+                                  operation: "attach-effect",
+                                  targetId: node.id,
+                                  payload: { ...effect, effectId },
+                                },
                               ],
                               node.id,
-                            )
-                          }
+                            );
+                          }}
                         >
-                          移除{effectLabels[effect.effectId]}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                          {effectIds.map((id) => (
+                            <option key={id} value={id}>
+                              {effectLabels[id]}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {
+                        <label className="field">
+                          時長（毫秒）
+                          <input
+                            aria-label={
+                              effect.effectId === "fade-in"
+                                ? "動畫時長（毫秒）"
+                                : effectLabels[effect.effectId] + "時長"
+                            }
+                            type="number"
+                            min={120}
+                            max={1200}
+                            value={
+                              effectDurations[effect.effectId] ??
+                              String(effect.duration)
+                            }
+                            onChange={(e) =>
+                              setEffectDurations((values) => ({
+                                ...values,
+                                [effect.effectId]: e.target.value,
+                              }))
+                            }
+                          />
+                        </label>
+                      }
+                      <button
+                        onClick={() =>
+                          patch(
+                            [
+                              {
+                                operation: "remove-effect",
+                                targetId: node.id,
+                                payload: { effectId: effect.effectId },
+                              },
+                            ],
+                            node.id,
+                          )
+                        }
+                      >
+                        移除{effectLabels[effect.effectId]}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="inspector-form-actions">
+                  {pendingProperties && (
+                    <small className="pending-property-hint">
+                      修改尚未套用
+                    </small>
+                  )}
                   <button
                     className="primary inspector-apply"
                     type="submit"
@@ -1141,26 +1209,33 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                   >
                     套用
                   </button>
-                  {session.diff?.changes.some(
-                    (c) => c.targetId === node.id,
-                  ) && (
-                    <details className="patch-diff">
-                      <summary>最近修改</summary>
-                      {session.diff.changes
-                        .filter((c) => c.targetId === node.id)
-                        .map((c) => (
-                          <div key={c.property}>
-                            <small>{changeLabel(c)}</small>
-                            <p>
-                              <del>{valueLabel(c.before)}</del> →{" "}
-                              <ins>{valueLabel(c.after)}</ins>
-                            </p>
-                          </div>
-                        ))}
-                    </details>
+                  {pendingProperties && (
+                    <button
+                      className="discard-properties"
+                      onClick={() => resetProperties.current()}
+                    >
+                      捨棄修改
+                    </button>
                   )}
-                </section>
-              )}
+                </div>
+                {session.diff?.changes.some((c) => c.targetId === node.id) && (
+                  <details className="patch-diff">
+                    <summary>最近修改</summary>
+                    {session.diff.changes
+                      .filter((c) => c.targetId === node.id)
+                      .map((c) => (
+                        <div key={c.property}>
+                          <small>{changeLabel(c)}</small>
+                          <p>
+                            <del>{valueLabel(c.before)}</del> →{" "}
+                            <ins>{valueLabel(c.after)}</ins>
+                          </p>
+                        </div>
+                      ))}
+                  </details>
+                )}
+              </section>
+            )}
           </div>
         </aside>
       </div>

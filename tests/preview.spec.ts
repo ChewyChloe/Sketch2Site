@@ -100,12 +100,18 @@ test("預覽互動、動畫、草稿隔離與恢復", async ({ page, context }) 
   expect(await popup.evaluate(() => window.opener)).toBeNull();
   await popup.close();
 
+  const beforeInvalid = await page
+    .locator(".preview-frame .rendered-page")
+    .innerHTML();
   await upload(page, {
     ...demoPage,
     sections: [{ ...demoPage.sections[0], onclick: "alert(1)" }],
   });
   await expect(page.getByRole("alert")).toContainText("預覽失敗");
-  await expect(page.locator("[data-page-id]")).toHaveCount(0);
+  expect(await page.locator(".preview-frame .rendered-page").innerHTML()).toBe(
+    beforeInvalid,
+  );
+  await expect(page.locator(".preview-frame [onclick]")).toHaveCount(0);
   await pageAction(page, "還原範例");
   await expect(heading).toBeVisible();
   await page.keyboard.press("Delete");

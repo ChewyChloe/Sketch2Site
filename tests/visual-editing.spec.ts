@@ -112,6 +112,7 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
   await page.getByLabel("標題文字").fill('<img src=x onerror="alert(1)">');
   await page.getByRole("button", { name: "套用", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("修改格式或數值無效");
+  await page.getByRole("button", { name: "捨棄修改", exact: true }).click();
   await page.keyboard.press("Escape");
   await expect(page.locator("[data-page-selected]")).toHaveCount(0);
   for (const zoom of ["1", "0.75", "0.5"]) {

@@ -129,7 +129,7 @@ export default function App() {
     if (generating || abortRef.current || !ready || loadError) return;
     const target = previewRef.current?.target();
     if (!target) {
-      setGenerationError("請先完成目前頁面的保存或重新載入預覽。");
+      setGenerationError("請先套用或捨棄預覽中的修改，並完成頁面保存。");
       return;
     }
     const version = canvasVersion.current,
@@ -349,8 +349,6 @@ export default function App() {
     const key = (e: KeyboardEvent) => {
       if (
         e.defaultPrevented ||
-        (e.target instanceof Element &&
-          e.target.closest("input,textarea,select,[contenteditable=true]")) ||
         !ready ||
         loadError ||
         drag.current ||
@@ -361,6 +359,11 @@ export default function App() {
       if (mod && e.key.toLowerCase() === "s") {
         e.preventDefault();
         void save();
+      } else if (
+        e.target instanceof Element &&
+        e.target.closest("input,textarea,select,[contenteditable=true]")
+      ) {
+        return;
       } else if (
         mod &&
         (e.key.toLowerCase() === "z" || e.key.toLowerCase() === "y")
@@ -556,6 +559,7 @@ export default function App() {
             <>
               <button
                 disabled={busy || !ready || loadError}
+                title="儲存草稿（⌘ / Ctrl S）"
                 onClick={() => void save()}
               >
                 {busy ? "儲存中…" : "儲存草稿"}

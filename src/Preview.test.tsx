@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "fake-indexeddb/auto";
-import { it, expect, afterEach } from "vitest";
+import { it, expect, afterEach, vi } from "vitest";
 import {
   render,
   screen,
@@ -12,7 +12,10 @@ import {
 import Preview from "./Preview";
 import { demoPage } from "./pageFixtures";
 import { indexNodes } from "./patch";
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 it("selects an ID, applies a patch through the form and safely rejects invalid text", async () => {
   render(<Preview />);
   const target = Array.from(indexNodes(demoPage).values()).find(
@@ -53,5 +56,26 @@ it("selects an ID, applies a patch through the form and safely rejects invalid t
   fireEvent.click(screen.getByRole("button", { name: "套用" }));
   expect(screen.getByRole("alert").textContent).toContain("修改格式或數值無效");
   expect(screen.getByRole("heading", { name: "我的作品集" })).toBeTruthy();
+  expect(screen.getByTestId("page-save-status").textContent).toBe("尚未套用");
+  const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+  const paragraph = Array.from(indexNodes(demoPage).values()).find(
+    (n) => n.type === "paragraph",
+  )!;
+  fireEvent.click(screen.getByText(paragraph.content!));
+  expect(confirm).toHaveBeenCalledTimes(1);
+  expect(
+    (screen.getByLabelText("標題文字") as HTMLTextAreaElement).value,
+  ).toContain("<script>");
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(confirm).toHaveBeenCalledTimes(2);
+  expect(screen.getByLabelText("標題文字")).toBeTruthy();
+  const unload = new Event("beforeunload", { cancelable: true });
+  window.dispatchEvent(unload);
+  expect(unload.defaultPrevented).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "捨棄修改" }));
+  expect((screen.getByLabelText("標題文字") as HTMLTextAreaElement).value).toBe(
+    "我的作品集",
+  );
+  expect(screen.queryByRole("button", { name: "捨棄修改" })).toBeNull();
   expect(indexNodes(demoPage).get(target.id)?.content).toBe(target.content);
 });
