@@ -7,7 +7,7 @@
 - DONE：PNG／JPEG安全本機匯入、替換、保存與匯出；IndexedDB v3、規格化PNG、SHA256、容量／數量限制、物件URL回收、過時匯入拒絕。未上傳圖片。
 - DONE：四個可重載展示草稿與明確非AI的本機候選流程；使用既有驗證／確認／Session／Revision保存。真實AI失敗不自動偽裝示範成功。
 - DONE：兩輪獨立Chromium操作與原始截圖審查，修正大字裁切、分頁鍵盤衝突／焦點、縮圖圖示重疊及示範標題窄欄；100元素50%／75%拖曳與取消通過。
-- PASS：Typecheck；Vitest15檔130/130；全套Chromium54/54（1.7分鐘）；Build；check:secrets；git diff --check；Git fsck；根專案與匯出模板npm audit皆0已知漏洞。匯出ZIP真正下載、隔離npm ci／Build、1440／375px呈現、文字注入安全／離線執行均通過。無npm run check腳本，使用實際存在的check:secrets，不聲稱執行不存在指令。既有Zod PURE註解警告保留。
+- PASS：Typecheck；Vitest15檔130/130；全套Chromium66/66（2.1分鐘）；Build；check:secrets；git diff --check；Git fsck；根專案與匯出模板npm audit皆0已知漏洞。匯出ZIP真正下載、隔離npm ci／Build、1440／375px呈現、文字注入安全／離線執行均通過。無npm run check腳本，使用實際存在的check:secrets，不聲稱執行不存在指令。既有Zod PURE註解警告保留。
 - PASS：Git歷史秘密特徵及敏感路徑掃描（備份前再核對）、dist與實際配置Key的精確比對；無金鑰、內部Prompt、source map進前端。掃描不代表完全安全。
 - PARTIAL：人工視覺驗收／初次使用可發現性／長時間操作手感。窄版開工具仍覆蓋預覽，清楚可退出；本機素材不自動刪除以保護Undo，最多10張／20MiB。
 - NOT TESTED：真實AI模型權限、付費生成品質與實際用量；Firefox／Safari（未安裝）、實機觸控／讀屏、瀏覽器原生放大設定。已測明確的200%介面文字模擬，不冒稱原生設定。
@@ -170,3 +170,9 @@ PNG/JPEG匯入及替換，IndexedDB v3無損升級、10張／20MiB上限、SHA25
 DONE：未套用屬性保護、明確捨棄／狀態、取消切換／Esc／Undo／重載保留輸入、實際beforeunload取消、匯出／候選目標保護；無效匯入保留已驗證頁面及輸入；375px工具改為55%高度下方區與45%獨立預覽port（375×405），套用列持續可見；Ctrl／⌘+S在草稿輸入欄可用且保留原生文字Undo/Delete。
 PASS：130單元／整合、Typecheck、Build、check:secrets、全套Chromium63/63（1.9分鐘）、npm audit0已知漏洞、git diff --check。含舊流程全部保留與9個新增E2E；安全測試改斷言無效輸入不改原頁面HTML及無onclick，未放寬Schema。API呼叫0。原始圖及量測另保存/workspace/backups/quality-20261112/。
 使用者追加要求：像嚴格使用者逐步驗證，改善真正美感與直覺，參考Notion（不複製布局）與https://github.com/nutlope/hallmark。Hallmark README／LICENSE（MIT）已讀，接續讀SKILL並開始視覺修整；工程通過不等於美感通過。不得停在此檢查點或宣稱完美，不付費生成、不Merge／部署；使用者先前已明確允許正常Push。
+
+## 工作台美感修整（Hallmark／Notion參考）
+DONE工程：元件庫由框線卡片改清單與SVG圖示、工具與導覽去噪、屬性分類／側欄寬度Disclosure／去UUID、1px選取、狀態圖示、16px手機欄位與對比修正；正式Renderer／內容／資料管線不變。三尺寸新舊原始截圖及具體缺陷修正見docs/WORKBENCH_DESIGN_REVIEW.md。視覺主觀驗收仍PARTIAL，不能以工具PASS宣稱完美。
+Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38個spacing位置有明確例外、1個表單一致性Finish已回答；不是無條件全規則通過。App無新增依賴；tmp Puppeteer僅驗證工具。完整回歸與最新Commit／Push以本輪最後紀錄為準。
+
+本輪最終驗證PASS：Vitest130/130、Chromium66/66、Typecheck、Build、check:secrets、git diff --check；既有Zod註解警告保留。Hallmark實際render 0 FAIL、0 WARN、38個明確spacing例外、F7回答，未隱瞞例外。前後原圖／比較頁／JSON在/workspace/backups/design-polish-20261112/。工程DONE、主觀設計驗收PARTIAL、真實付費AI仍NOT TESTED；沒有付費呼叫、Merge或部署。本地提交後正常Push至既有work並核對SHA，更新bundle與恢復驗證。

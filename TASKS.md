@@ -2,7 +2,7 @@
 
 ## 目前結論（2026-11-12）
 - DONE：免費MVP React獨立匯出、本機圖片、四展示草稿、非AI完整流程、編輯／動畫／註記／保存、兩輪UI審查與高字級修正。
-- PASS：130單元／整合、54 Chromium E2E、Typecheck／Build／秘密掃描／兩套依賴audit／歷史與Git完整性。詳細證據見STATUS.md及docs/FREE_MVP_REVIEW.md。
+- PASS：130單元／整合、66 Chromium E2E、Typecheck／Build／秘密掃描／兩套依賴audit／歷史與Git完整性。詳細證據見STATUS.md及docs/FREE_MVP_REVIEW.md。
 - PARTIAL：使用者最終視覺與操作手感驗收；NOT TESTED：真實付費AI、未安裝瀏覽器／實機。
 - DONE交付：本機Commit與Git bundle；依使用者追加授權正常Push至origin/work，遠端功能SHA=7c77b46dc180816583fbaecba7f03de7c54f234f核對一致。沒有Force Push／Merge／部署；收尾文件一併推送，最終SHA以git log確認。
 - 下一個最小任務：人工驗收桌面手感、示範入口及動畫辨識；免費工程工作已達停止條件。
@@ -63,4 +63,6 @@
 
 ## 持續品質與美感（2026-11-12）
 - DONE：未套用輸入／失敗保留／手機下方工具區／草稿保存快捷鍵，130單元與63E2E、Build／秘密掃描PASS。
-- IN PROGRESS：依使用者Notion美感與Hallmark技能參考重新檢視工作台，提升元件庫、工具列、屬性層級、選取回饋及實際操作；逐步Chromium驗證，不以工程測試代替美感驗收。
+- DONE工程／PARTIAL人工美感驗收：Notion克制美感與Hallmark app-scope restyle，保留功能；新三尺寸原生操作、前後原圖與Hallmark render檢查，詳見docs/WORKBENCH_DESIGN_REVIEW.md。
+
+- PASS收尾：130單元／整合、66全套E2E、Typecheck／Build／秘密掃描；原圖／比較頁與Hallmark render JSON保留。工程完成後GitHub正常Push與bundle核對，不宣稱人工美感已驗收。

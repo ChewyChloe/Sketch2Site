@@ -1,3 +1,4 @@
+import { WorkbenchIcon } from "./WorkbenchIcon";
 import { importImage, assetErrorMessage } from "./assets";
 import { isLocalAsset } from "./assetRef";
 import { useAssetUrls, useAssetRefs } from "./useAssetUrls";
@@ -507,6 +508,9 @@ export default function App() {
           </span>
           <h1>Sketch2Site</h1>
         </div>
+        <span className="project-divider" aria-hidden="true">
+          /
+        </span>
         <input
           className="project-name"
           aria-label="專案名稱"
@@ -528,23 +532,25 @@ export default function App() {
           hidden={mode !== "preview" || Boolean(candidate)}
         />
         <div className="toolbar-actions">
-          <button
-            aria-pressed={mode === "draft"}
-            disabled={accepting}
-            onClick={() => {
-              setCandidate(null);
-              setMode("draft");
-            }}
-          >
-            草稿
-          </button>
-          <button
-            aria-pressed={mode === "preview"}
-            disabled={accepting}
-            onClick={() => setMode("preview")}
-          >
-            預覽
-          </button>
+          <div className="workspace-modes" role="group" aria-label="工作區模式">
+            <button
+              aria-pressed={mode === "draft"}
+              disabled={accepting}
+              onClick={() => {
+                setCandidate(null);
+                setMode("draft");
+              }}
+            >
+              草稿
+            </button>
+            <button
+              aria-pressed={mode === "preview"}
+              disabled={accepting}
+              onClick={() => setMode("preview")}
+            >
+              預覽
+            </button>
+          </div>
           {mode === "draft" && (
             <button
               className="primary"
@@ -916,14 +922,18 @@ export default function App() {
                         </p>
                       )}
                     <div className="library">
-                      <h2>新增元件</h2>
+                      <p className="library-intro">
+                        拖曳到畫布，或點一下新增。
+                      </p>
                       <button
+                        className="import-image"
                         disabled={disabled || importingImage}
                         onClick={() => {
                           imageTarget.current = null;
                           imageInput.current?.click();
                         }}
                       >
+                        <WorkbenchIcon name="image" />
                         {importingImage ? "正在匯入圖片…" : "匯入圖片"}
                       </button>
                       {(Object.keys(labels) as CanvasNode["type"][])
@@ -955,30 +965,23 @@ export default function App() {
                             aria-label={"新增" + labels[t]}
                           >
                             <span className="glyph" aria-hidden="true">
-                              {
-                                {
-                                  text: "T",
-                                  button: "↗",
-                                  card: "▤",
-                                  heading: "H",
-                                  image: "▧",
-                                }[t]
-                              }
+                              <WorkbenchIcon name={t} />
                             </span>
                             <span>
                               <strong>{labels[t]}</strong>
                               <small>
                                 {
                                   {
-                                    text: "標題、段落與說明",
+                                    text: "段落與文字說明",
                                     button: "網站的行動入口",
                                     card: "相關內容的集合",
                                     heading: "頁面的主要標題",
-                                    image: "使用內建示意素材",
+                                    image: "圖片與視覺素材",
                                   }[t]
                                 }
                               </small>
                             </span>
+                            <WorkbenchIcon name="grip" />
                           </button>
                         ))}
                     </div>
@@ -1022,7 +1025,12 @@ export default function App() {
                   />
                 ) : node ? (
                   <>
-                    <h2>{labels[node.type]}</h2>
+                    <div className="selected-component">
+                      <span className="component-icon">
+                        <WorkbenchIcon name={node.type} />
+                      </span>
+                      <h2>{labels[node.type]}</h2>
+                    </div>
                     <label className="field">
                       內容
                       <textarea
@@ -1092,6 +1100,7 @@ export default function App() {
                         </small>
                       </label>
                     )}
+                    <h3 className="property-section-title">位置與尺寸</h3>
                     <div className="pair">
                       {(["x", "y", "width", "height"] as const).map((k) => (
                         <label className="field" key={k}>
@@ -1146,25 +1155,28 @@ export default function App() {
                       <button onClick={duplicate}>複製元件</button>
                       <button onClick={remove}>刪除元件</button>
                     </div>
-                    <small>ID · {node.id}</small>
                   </>
                 ) : (
                   <p className="note">
                     先在畫布上選取一個元件，即可編輯內容、位置與動畫標記。
                   </p>
                 )}
-                <label className="field note">
-                  側欄寬度
-                  <input
-                    className="panel-width"
-                    type="range"
-                    min={260}
-                    max={420}
-                    step={8}
-                    value={panelWidth}
-                    onChange={(e) => setPanelWidth(Number(e.target.value))}
-                  />
-                </label>
+                <details className="panel-preferences">
+                  <summary>側欄寬度</summary>
+                  <label className="field note">
+                    調整側欄寬度
+                    <input
+                      className="panel-width"
+                      aria-label="側欄寬度"
+                      type="range"
+                      min={260}
+                      max={420}
+                      step={8}
+                      value={panelWidth}
+                      onChange={(e) => setPanelWidth(Number(e.target.value))}
+                    />
+                  </label>
+                </details>
               </aside>
             )}
           </>
@@ -1180,7 +1192,9 @@ export default function App() {
 
           {mode === "draft" && (
             <span className="shortcuts">
-              ⌘ / Ctrl Z 還原 · Delete 刪除 · 方向鍵微調
+              <span>⌘ / Ctrl Z 還原</span>
+              <span>Delete 刪除</span>
+              <span>方向鍵微調</span>
             </span>
           )}
         </footer>

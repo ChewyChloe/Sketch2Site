@@ -481,6 +481,9 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         }
         aria-live="polite"
       >
+        <WorkbenchIcon
+          name={status.kind === "saved" && !pendingProperties ? "check" : "pen"}
+        />
         <span data-testid="page-save-status">
           {!ready
             ? "正在載入頁面"
@@ -979,7 +982,26 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
               >
                 <>
                   <div className="side-head">
-                    <h2>{node.type === "heading" ? "編輯標題" : "編輯元件"}</h2>
+                    <div className="selected-component">
+                      <span className="component-icon">
+                        <WorkbenchIcon
+                          name={
+                            node.type === "heading"
+                              ? "heading"
+                              : node.type === "image"
+                                ? "image"
+                                : node.type === "button"
+                                  ? "button"
+                                  : node.type === "card"
+                                    ? "card"
+                                    : "text"
+                          }
+                        />
+                      </span>
+                      <h2>
+                        {node.type === "heading" ? "編輯標題" : "編輯元件"}
+                      </h2>
+                    </div>
                     <button onClick={() => setSelected(null)}>取消選取</button>
                   </div>
                   <form
@@ -1017,8 +1039,8 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                           value={level}
                           onChange={(e) => setLevel(e.target.value)}
                         >
-                          <option value="1">主標題 · 大</option>
-                          <option value="2">章節標題 · 中</option>
+                          <option value="1">主標題（大）</option>
+                          <option value="2">章節標題（中）</option>
                           <option value="3">小標題</option>
                         </select>
                       </label>
