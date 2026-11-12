@@ -114,15 +114,27 @@ function useAnimations(
     };
   }, [node, ref]);
 }
-const AssetUrls = createContext<Readonly<Record<string,string|null>>>({});
+const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
 function SafeImage({ node }: { node: PageNode }) {
   const urls = useContext(AssetUrls);
   const [failed, setFailed] = useState(false),
     [attempt, setAttempt] = useState(0);
   const resolved = urls[node.src!];
-  useEffect(()=>{setFailed(false);},[resolved,node.src]);
-  if(resolved === "") return <div className="page-image-error" role="status">正在載入圖片…</div>;
-  if(resolved === null) return <div className="page-image-error" role="status">找不到本機圖片，請重新匯入。</div>;
+  useEffect(() => {
+    setFailed(false);
+  }, [resolved, node.src]);
+  if (resolved === "")
+    return (
+      <div className="page-image-error" role="status">
+        正在載入圖片…
+      </div>
+    );
+  if (resolved === null)
+    return (
+      <div className="page-image-error" role="status">
+        找不到本機圖片，請重新匯入。
+      </div>
+    );
   return failed ? (
     <div className="page-image-error" role="status">
       <p>圖片無法載入</p>
@@ -138,7 +150,7 @@ function SafeImage({ node }: { node: PageNode }) {
   ) : (
     <img
       key={attempt}
-      src={urls[node.src!] ?? (import.meta.env.BASE_URL + node.src!.slice(1))}
+      src={urls[node.src!] ?? import.meta.env.BASE_URL + node.src!.slice(1)}
       alt={node.alt}
       loading="lazy"
       decoding="async"
@@ -240,7 +252,13 @@ class RenderBoundary extends Component<
     );
   }
 }
-export function PageRuntime({ input, assetUrls = {} }: { input: unknown; assetUrls?: Readonly<Record<string,string|null>> }) {
+export function PageRuntime({
+  input,
+  assetUrls = {},
+}: {
+  input: unknown;
+  assetUrls?: Readonly<Record<string, string | null>>;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const previous = useRef<PageSpec | undefined>(undefined);
   const result = useMemo(() => {
@@ -263,40 +281,42 @@ export function PageRuntime({ input, assetUrls = {} }: { input: unknown; assetUr
     );
   const page = result.page;
   return (
-    <AssetUrls.Provider value={assetUrls}><RenderBoundary resetKey={input}>
-      <div
-        ref={rootRef}
-        className={
-          "rendered-page typography-" +
-          page.typography +
-          " theme-" +
-          page.styles
-        }
-        lang={page.metadata.language}
-        aria-label={page.metadata.title}
-        style={
-          {
-            "--desktop-columns": page.responsive.desktopColumns,
-          } as CSSProperties
-        }
-        onClick={(e) => {
-          const link = (e.target as Element).closest("a");
-          const href = link?.getAttribute("href");
-          if (href?.startsWith("#page-")) {
-            e.preventDefault();
-            const target = e.currentTarget.querySelector<HTMLElement>(
-              '[id="' + href.slice(1) + '"]',
-            );
-            target?.scrollIntoView({ behavior: "instant", block: "start" });
-            target?.setAttribute("tabindex", "-1");
-            target?.focus({ preventScroll: true });
+    <AssetUrls.Provider value={assetUrls}>
+      <RenderBoundary resetKey={input}>
+        <div
+          ref={rootRef}
+          className={
+            "rendered-page typography-" +
+            page.typography +
+            " theme-" +
+            page.styles
           }
-        }}
-      >
-        {page.sections.map((section) => (
-          <RenderNode key={section.id} node={section} />
-        ))}
-      </div>
-    </RenderBoundary></AssetUrls.Provider>
+          lang={page.metadata.language}
+          aria-label={page.metadata.title}
+          style={
+            {
+              "--desktop-columns": page.responsive.desktopColumns,
+            } as CSSProperties
+          }
+          onClick={(e) => {
+            const link = (e.target as Element).closest("a");
+            const href = link?.getAttribute("href");
+            if (href?.startsWith("#page-")) {
+              e.preventDefault();
+              const target = e.currentTarget.querySelector<HTMLElement>(
+                '[id="' + href.slice(1) + '"]',
+              );
+              target?.scrollIntoView({ behavior: "instant", block: "start" });
+              target?.setAttribute("tabindex", "-1");
+              target?.focus({ preventScroll: true });
+            }
+          }}
+        >
+          {page.sections.map((section) => (
+            <RenderNode key={section.id} node={section} />
+          ))}
+        </div>
+      </RenderBoundary>
+    </AssetUrls.Provider>
   );
 }

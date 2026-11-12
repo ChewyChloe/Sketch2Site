@@ -14,7 +14,12 @@ export async function exportProjectFiles(
   input: unknown,
 ): Promise<ProjectFile[]> {
   const page = PageSchema.parse(input);
-  const refs = new Set<string>();const walk=(node:PageNode)=>{if(node.src)refs.add(node.src);node.children?.forEach(walk);};page.sections.forEach(walk);
+  const refs = new Set<string>();
+  const walk = (node: PageNode) => {
+    if (node.src) refs.add(node.src);
+    node.children?.forEach(walk);
+  };
+  page.sections.forEach(walk);
   const files: ProjectFile[] = [
     { path: "package.json", content: manifest },
     { path: "package-lock.json", content: lock },
@@ -67,8 +72,16 @@ export async function exportProjectFiles(
         "# 匯出網站\n\n使用 Node.js 24 LTS，執行 `npm ci`、`npm run dev`；正式建置為 `npm run build`，預覽產物為 `npm run preview`。首次安裝需連線 npm，網站執行不需 Sketch2Site 後端。\n\n內容來自經驗證的頁面，文字、素材與六種受控動畫隨專案提供。修改後可自行建置；動畫遵守 prefers-reduced-motion。只包含目前頁面，不包含草稿、註記、編輯歷史、使用者秘密或 AI 呼叫功能。\n",
     },
   ];
-  files.push({path:"src/assetRef.ts",content:assetSchema});
-  for(const ref of refs)if(isLocalAsset(ref)){const image=await readAsset(ref);if(!image)throw new Error("找不到本機圖片，請重新匯入。");files.push({path:"public"+ref,content:new Uint8Array(await image.blob.arrayBuffer())});}
+  files.push({ path: "src/assetRef.ts", content: assetSchema });
+  for (const ref of refs)
+    if (isLocalAsset(ref)) {
+      const image = await readAsset(ref);
+      if (!image) throw new Error("找不到本機圖片，請重新匯入。");
+      files.push({
+        path: "public" + ref,
+        content: new Uint8Array(await image.blob.arrayBuffer()),
+      });
+    }
   if (refs.has("/assets/workspace.svg")) {
     const response = await fetch(
       import.meta.env.BASE_URL + "assets/workspace.svg",

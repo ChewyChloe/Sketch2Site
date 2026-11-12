@@ -108,3 +108,6 @@
 - 未更動產品程式、UI／Renderer／Schema／Fixtures，未購買額度、變更帳務、Push、Merge 或部署。下一個最小任務：使用者確認 Project 帳務與支出限制，並另行授權上述最多一次 portfolio 付費生成；失敗即停，不第二次呼叫。
 
 本次 Recovery 驗證：typecheck PASS；Vitest 10檔115/115 PASS；Chromium Mock／回歸29/29 PASS；build PASS（既有 Zod PURE 註解警告）；check:secrets PASS；generation:preflight 五份指紋 PASS；git diff --check PASS。僅更新這三份文件；本地提交 SHA 以 git log -1 查詢。真實生成及其桌面／手機 UI 品質仍 NOT TESTED。
+
+## 2026-11-12 免費MVP補充
+React獨立匯出、本機圖片與明確「示範排版（非 AI）」完整流程已驗證，見FREE_MVP_REVIEW.md。五份CanvasSpec Fixture移至共用src/demoFixtures.ts，測試重用原資料；沒有真實模型呼叫，不能用這些新截圖判定AI生成視覺品質。真實模型權限／輸出／付費token／延遲仍NOT TESTED，本輪付費API呼叫0、費用0。

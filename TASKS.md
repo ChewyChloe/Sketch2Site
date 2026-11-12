@@ -1,4 +1,13 @@
 # 任務
+
+## 目前結論（2026-11-12）
+- DONE：免費MVP React獨立匯出、本機圖片、四展示草稿、非AI完整流程、編輯／動畫／註記／保存、兩輪UI審查與高字級修正。
+- PASS：130單元／整合、54 Chromium E2E、Typecheck／Build／秘密掃描／兩套依賴audit／歷史與Git完整性。詳細證據見STATUS.md及docs/FREE_MVP_REVIEW.md。
+- PARTIAL：使用者最終視覺與操作手感驗收；NOT TESTED：真實付費AI、未安裝瀏覽器／實機。
+- 交付收尾：本機commit與驗證bundle；依使用者追加授權嘗試正常Push既有origin並核對SHA，若網路限制須明確記錄，不Force Push／Merge／部署。
+- 下一個最小任務：人工驗收桌面手感、示範入口及動畫辨識；免費工程工作已達停止條件。
+
+## 歷史階段紀錄
 - P0 DONE：文件、工具鏈、版本 1 Schema、Token、安全設定及測試。驗收：build、型別、測試、秘密檢查後第一個 commit。
 - P1 DONE（依賴 P0）：真正拖曳、移動／刪除、標記、歷史、本機保存。驗收：Playwright 操作與截圖檢查，再 commit。
 - P2 DONE（依賴 P1）：PageSpec v2、九種受控元件、六種動畫、響應式範例／本機 JSON 預覽、穩定 DOM ID、未修改分支 memo、安全拒絕與錯誤恢復。驗收：33 項單元／整合與 9 項 Chromium E2E、typecheck、build、秘密掃描、依賴稽核與 1440／768／375px 截圖檢查。
@@ -43,10 +52,10 @@
 
 ## 自主免費 MVP（2026-11-12，Asia/Taipei）
 本次使用者授權覆蓋先前逐Phase停止規則；持續完成免費MVP，不呼叫付費API、不Push／部署。
-1. IN PROGRESS：安全的獨立React+TypeScript ZIP匯出；只帶正式Renderer、驗證、樣式與引用素材，下載後獨立建置與瀏覽器驗收。
-2. NOT STARTED：安全本機圖片（實際格式驗證／重編碼／容量限制／IndexedDB／釋放URL），串接草稿、頁面及匯出，不外傳原圖。
-3. NOT STARTED：可重複載入的作品集／活動／凌亂／動畫展示、明確標示Mock的免費完整流程、未啟用AI的清楚狀態。
-4. NOT STARTED：操作／鍵盤／焦點／文字放大及兩輪重新操作的UI審查；全套回歸、安全檢查與最新備份。
+1. DONE：安全的獨立React+TypeScript ZIP匯出；只帶正式Renderer、驗證、樣式與引用素材，下載後獨立建置與瀏覽器驗收。
+2. DONE：安全本機圖片（實際格式驗證／重編碼／容量限制／IndexedDB／釋放URL），串接草稿、頁面及匯出，不外傳原圖。
+3. DONE：可重複載入的作品集／活動／凌亂／動畫展示、明確標示Mock的免費完整流程、未啟用AI的清楚狀態。
+4. DONE：操作／鍵盤／焦點／文字放大及兩輪重新操作的UI審查；全套回歸、安全檢查與最新備份。
 基準4cc1ab1015ee7852b0aacd0b58b167af6f509972，Git fsck通過、工作區原先乾淨。Apple Design技能讀取成功（MIT），採用直接操作、即時回饋與克制原則，不新增動態套件或Apple外觀。
 - 更新：A獨立React匯出DONE（121單元、38舊E2E及獨立匯出E2E通過），下一項立即進入B本機圖片與匯出資產串接。
 

@@ -133,3 +133,7 @@ PageRuntime.tsx與pageRuntime.css是原Renderer抽出的純執行部分，工作
 
 ### 本機素材
 IndexedDB v3 新增 assets store，既有 draft/pages CAS不變。PNG/JPEG 經實際簽章、CRC、尺寸檢查及瀏覽器解碼，再縮至最長1600px、重編碼PNG；SHA-256固定路徑保存，不保存原檔名或原始metadata。Renderer以生命週期受控blob URL呈現，正式匯出包含驗證後PNG與相同Runtime；註記不匯出。
+
+### 免費示範流程與展示資料
+`src/demoFixtures.ts` 共用五份穩定ID草稿（原生成測試直接重用，指紋與內容未另造一套）。UI提供作品集／活動／不規則／多動畫四份重複載入，替換未保存草稿前確認、一次Undo可復原。`src/demo.ts` 是顯式本機確定性排版：使用既有prepareIntent → Layout → materialize → preservation／PageSpec驗證 → CandidatePreview → 既有acceptGeneration/CAS；不發fetch，不作Provider失敗fallback，也不聲稱AI品質。候選mode=demo只存在前端型別，後端Response schema仍只容許mock/live，沒有新API Provider。
+示範候選使用真實的本機執行耗時、零模型tokens／費用。草稿／預覽的圖片更改仍用同一History／Patch Engine。圖片處理完成前若草稿物件已變更，拒絕套用過時結果；素材保留以供重新選取。PageSpec替換沿用Revision／Session拒絕過時操作。沒有第二套Renderer、動畫或保存管線。

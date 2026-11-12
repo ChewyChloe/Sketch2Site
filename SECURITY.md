@@ -77,3 +77,7 @@ Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或�
 
 ### 本機圖片邊界
 僅允許PNG/JPEG：原檔5MiB、4096px邊長／12MP，規範化PNG2MiB、1600px、10張／20MiB。PNG逐chunk CRC，拒絕APNG／SVG／混淆MIME，解碼重編碼去metadata。每次讀取／匯出重驗SHA256及實際尺寸。PageSpec只接受固定安全asset ref，不接受任意URL。物件URL限可信讀取結果並於卸載／替換撤銷。素材滿額／損毀／Quota錯誤拒絕並保留頁面；不自動清理可能被Undo引用的素材，不上傳外部。CSP僅圖片增加blob，腳本限制不變。
+
+### 示範、匯出與秘密驗證
+本機demo不能隱式代替失敗的模型輸出，不能接觸API Key，也不能直接跳過PageSpec／內容保留／動畫對應驗證。展示資料皆為可辨識的虛構範例。前端candidate的demo型別不擴張後端API合約。正式AI入口仍由既有後端旗標、CSRF、用量／預算與零重試限制控制；本輪絕不啟用或測試真實模型。
+React ZIP只包含固定可信模板、原Renderer純Runtime、嚴格Schema及引用素材；不可由標題／模型內容生成檔名或插入HTML腳本。ZIP路徑、大小及CRC32驗證由獨立Python解碼測試，真正隔離npm ci與build，再以Chromium驗證執行時不連線編輯器／外部。前端dist掃描不包含內部Prompt、可辨識API金鑰或source map；Git備份先掃描歷史，禁止.env／憑證進bundle。掃描PASS僅代表所執行檢查未發現問題，不宣稱完全安全。

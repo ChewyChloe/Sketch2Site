@@ -23,7 +23,7 @@ export const generationCodes = [
 ] as const;
 export type GenerationCode = (typeof generationCodes)[number];
 export const generationMessages: Record<GenerationCode, string> = {
-  NOT_CONFIGURED: "AI 尚未設定，仍可編輯草稿與本機預覽。",
+  NOT_CONFIGURED: "AI 尚未設定，可在草稿選單使用示範排版。",
   INVALID_INPUT: "草稿無法生成：請檢查元素、按鈕連結與設計限制。",
   INVALID_OUTPUT: "生成失敗：結果未符合頁面或內容規則，原版本已保留。",
   REFUSED: "模型未提供布局，原版本已保留。",
@@ -33,7 +33,7 @@ export const generationMessages: Record<GenerationCode, string> = {
   LIMIT: "已達生成用量上限，請檢查後端額度設定。",
   FORBIDDEN: "無法驗證生成請求，請重新整理後重試。",
   DUPLICATE: "這次生成請求已處理，請重新發起。",
-  UNAVAILABLE: "無法連線至生成服務，原版本已保留。",
+  UNAVAILABLE: "無法連線至生成服務，原版本已保留；可在草稿選單使用示範排版。",
   STALE: "草稿或頁面已更新，請重新生成。",
 };
 export class GenerationError extends Error {

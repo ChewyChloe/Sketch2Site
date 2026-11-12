@@ -18,8 +18,11 @@ import {
 import { loadDraft, saveDraft } from "./storage";
 import Preview, { type PreviewHandle } from "./Preview";
 import CandidatePreview from "./CandidatePreview";
+import { createDemoCandidate, type CandidateResult } from "./demo";
+import { generationFixtures } from "./demoFixtures";
+import { tabNavigation } from "./tabNavigation";
 import { requestGeneration } from "./generationClient";
-import { GenerationError, type GenerationResponse } from "./generation";
+import { GenerationError } from "./generation";
 const labels = {
   text: "文字",
   button: "按鈕",
@@ -38,10 +41,12 @@ const effects = {
 };
 type Effect = keyof typeof effects;
 const dragType = "application/x-sketch2site";
+const demoFixtures = generationFixtures();
 export default function App() {
-  const imageInput = useRef<HTMLInputElement>(null), imageTarget = useRef<string|null>(null);
-  const [importingImage,setImportingImage]=useState(false);
-  const localImages=useAssetRefs();
+  const imageInput = useRef<HTMLInputElement>(null),
+    imageTarget = useRef<string | null>(null);
+  const [importingImage, setImportingImage] = useState(false);
+  const localImages = useAssetRefs();
   const previewRef = useRef<PreviewHandle>(null);
   const canvasVersion = useRef(0),
     canvasHead = useRef<CanvasSpec | null>(null);
@@ -50,7 +55,7 @@ export default function App() {
   const generationRun = useRef(0),
     abortRef = useRef<AbortController | null>(null);
   const [candidate, setCandidate] = useState<{
-    result: GenerationResponse;
+    result: CandidateResult;
     canvasVersion: number;
     target: { sessionId: string; revision: number };
   } | null>(null);
@@ -106,7 +111,9 @@ export default function App() {
   const spec = history.present,
     node = spec.nodes.find((n) => n.id === selected),
     dirty = JSON.stringify(spec) !== saved;
-  const imageUrls=useAssetUrls(spec.nodes.flatMap(n=>n.assetId?[n.assetId]:[]));
+  const imageUrls = useAssetUrls(
+    spec.nodes.flatMap((n) => (n.assetId ? [n.assetId] : [])),
+  );
   if (canvasHead.current !== spec) {
     canvasVersion.current++;
     canvasHead.current = spec;
@@ -118,7 +125,7 @@ export default function App() {
     },
     [],
   );
-  async function generate() {
+  async function generate(demo = false) {
     if (generating || abortRef.current || !ready || loadError) return;
     const target = previewRef.current?.target();
     if (!target) {
@@ -132,7 +139,9 @@ export default function App() {
     setGenerating(true);
     setGenerationError("");
     try {
-      const result = await requestGeneration(spec, controller.signal);
+      const result = demo
+        ? createDemoCandidate(spec)
+        : await requestGeneration(spec, controller.signal);
       const latest = previewRef.current?.target();
       if (
         run !== generationRun.current ||
@@ -143,8 +152,8 @@ export default function App() {
       )
         throw new GenerationError("STALE");
       report(
-        result.mode === "mock"
-          ? "測試生成完成，未呼叫 AI。"
+        result.mode !== "live"
+          ? "示範排版完成，未呼叫 AI。"
           : "草稿已送至 OpenAI，候選尚未儲存。",
       );
       setCandidate({ result, canvasVersion: version, target });
@@ -233,14 +242,51 @@ export default function App() {
       ),
     });
   }
-  async function importPicture(file:File|undefined) {
-    if(!file||importingImage)return;setImportingImage(true);
-    const id=imageTarget.current, previous=id?state.current.present.nodes.find(n=>n.id===id):undefined;
-    try{const asset=await importImage(file);
-      if(id){const now=state.current.present.nodes.find(n=>n.id===id);if(!now||now.assetId!==previous?.assetId){report("圖片已存於本機，但原元素已變更，請重新選取素材。",true);return;}patch(id,{assetId:asset.ref});setSelected(id);}
-      else {if(state.current.present.nodes.length>=100){report("草稿已達元素上限，圖片保留於本機素材。",true);return;}const next={...createNode("image",80,80),assetId:asset.ref,content:"匯入的圖片"};change({...state.current.present,nodes:[...state.current.present.nodes,next]});setSelected(next.id);}
-      setTab("properties");report("圖片已匯入，僅存於本機。");
-    }catch(e){report(assetErrorMessage(e),true);}finally{setImportingImage(false);}
+  async function importPicture(file: File | undefined) {
+    if (!file || importingImage) return;
+    setImportingImage(true);
+    const originalDraft = state.current.present;
+    const id = imageTarget.current,
+      previous = id
+        ? state.current.present.nodes.find((n) => n.id === id)
+        : undefined;
+    try {
+      const asset = await importImage(file);
+      if (state.current.present !== originalDraft) {
+        report("草稿已變更，圖片保留於本機素材，請重新選取。", true);
+        return;
+      }
+      if (id) {
+        const now = state.current.present.nodes.find((n) => n.id === id);
+        if (!now || now.assetId !== previous?.assetId) {
+          report("圖片已存於本機，但原元素已變更，請重新選取素材。", true);
+          return;
+        }
+        patch(id, { assetId: asset.ref });
+        setSelected(id);
+      } else {
+        if (state.current.present.nodes.length >= 100) {
+          report("草稿已達元素上限，圖片保留於本機素材。", true);
+          return;
+        }
+        const next = {
+          ...createNode("image", 80, 80),
+          assetId: asset.ref,
+          content: "匯入的圖片",
+        };
+        change({
+          ...state.current.present,
+          nodes: [...state.current.present.nodes, next],
+        });
+        setSelected(next.id);
+      }
+      setTab("properties");
+      report("圖片已匯入，僅存於本機。");
+    } catch (e) {
+      report(assetErrorMessage(e), true);
+    } finally {
+      setImportingImage(false);
+    }
   }
   function add(type: CanvasNode["type"], x = 80, y = 80) {
     if (!ready || loadError) return;
@@ -302,6 +348,7 @@ export default function App() {
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
+        e.defaultPrevented ||
         (e.target instanceof Element &&
           e.target.closest("input,textarea,select,[contenteditable=true]")) ||
         !ready ||
@@ -460,6 +507,7 @@ export default function App() {
         <input
           className="project-name"
           aria-label="專案名稱"
+          title={spec.metadata.name}
           value={spec.metadata.name}
           maxLength={80}
           disabled={disabled || mode === "preview"}
@@ -514,6 +562,40 @@ export default function App() {
               </button>
               <WorkbenchMenu label="草稿選單">
                 <button
+                  disabled={disabled || generating || !spec.nodes.length}
+                  onClick={() => void generate(true)}
+                >
+                  示範排版（非 AI）
+                </button>
+                <div className="menu-label">示範草稿（非 AI）</div>
+                {demoFixtures
+                  .filter((_, index) => index !== 2)
+                  .map((fixture) => (
+                    <button
+                      key={fixture.metadata.name}
+                      disabled={disabled || generating}
+                      onClick={() => {
+                        if (
+                          dirty &&
+                          !window.confirm(
+                            "載入示範會取代目前草稿，可使用還原復原。是否繼續？",
+                          )
+                        )
+                          return;
+                        if (change(fixture)) {
+                          setSelected(null);
+                          setPending(null);
+                          setMoving(null);
+                          drag.current = null;
+                          setCandidate(null);
+                          report("已載入示範草稿（非 AI），可還原。");
+                        }
+                      }}
+                    >
+                      載入{fixture.metadata.name}
+                    </button>
+                  ))}
+                <button
                   disabled={!ready}
                   onClick={() => {
                     if (
@@ -542,7 +624,17 @@ export default function App() {
           正在生成，可繼續編輯；變更草稿後需重新生成。
         </p>
       )}
-      <input hidden type="file" ref={imageInput} accept="image/png,image/jpeg" aria-label="匯入圖片檔案" onChange={e=>{void importPicture(e.target.files?.[0]);e.target.value="";}}/>
+      <input
+        hidden
+        type="file"
+        ref={imageInput}
+        accept="image/png,image/jpeg"
+        aria-label="匯入圖片檔案"
+        onChange={(e) => {
+          void importPicture(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
       <div className="workspace">
         <div
           className="preview-host"
@@ -638,6 +730,7 @@ export default function App() {
                         <h2>從一個想法開始</h2>
                         <p>把右側元件拖進畫布，安排內容與位置。</p>
                         <p>也可以點選元件新增，再拖曳調整。</p>
+                        <p>草稿選單提供示範草稿與非 AI 排版。</p>
                       </div>
                     )}
                     {spec.nodes.map((original) => {
@@ -685,10 +778,19 @@ export default function App() {
                               {Math.round(n.y)}
                             </span>
                           )}
-                          {n.type === "image" && isLocalAsset(n.assetId!) && !imageUrls[n.assetId!] ? <span>{imageUrls[n.assetId!]===null?"找不到本機圖片，請重新匯入。":"正在載入圖片…"}</span> : n.type === "image" ? (
+                          {n.type === "image" &&
+                          isLocalAsset(n.assetId!) &&
+                          !imageUrls[n.assetId!] ? (
+                            <span>
+                              {imageUrls[n.assetId!] === null
+                                ? "找不到本機圖片，請重新匯入。"
+                                : "正在載入圖片…"}
+                            </span>
+                          ) : n.type === "image" ? (
                             <img
                               src={imageUrls[n.assetId!] || n.assetId!}
-                              loading="lazy" decoding="async"
+                              loading="lazy"
+                              decoding="async"
                               alt={n.content}
                               draggable={false}
                             />
@@ -726,10 +828,16 @@ export default function App() {
                   </button>
                   <small>{spec.nodes.length} / 100 元件</small>
                 </div>
-                <div className="tabs" role="tablist" aria-label="工具分類">
+                <div
+                  className="tabs"
+                  role="tablist"
+                  aria-label="工具分類"
+                  onKeyDown={tabNavigation}
+                >
                   <button
                     role="tab"
                     aria-selected={tab === "library"}
+                    tabIndex={tab === "library" ? 0 : -1}
                     onClick={() => setTab("library")}
                   >
                     元件
@@ -737,6 +845,7 @@ export default function App() {
                   <button
                     role="tab"
                     aria-selected={tab === "animations"}
+                    tabIndex={tab === "animations" ? 0 : -1}
                     onClick={() => setTab("animations")}
                   >
                     動畫
@@ -745,6 +854,7 @@ export default function App() {
                     role="tab"
                     aria-label="編輯元素"
                     aria-selected={tab === "properties"}
+                    tabIndex={tab === "properties" ? 0 : -1}
                     onClick={() => setTab("properties")}
                   >
                     屬性
@@ -802,7 +912,16 @@ export default function App() {
                         </p>
                       )}
                     <div className="library">
-                      <h2>新增元件</h2><button disabled={disabled||importingImage} onClick={()=>{imageTarget.current=null;imageInput.current?.click();}}>{importingImage?"正在匯入圖片…":"匯入圖片"}</button>
+                      <h2>新增元件</h2>
+                      <button
+                        disabled={disabled || importingImage}
+                        onClick={() => {
+                          imageTarget.current = null;
+                          imageInput.current?.click();
+                        }}
+                      >
+                        {importingImage ? "正在匯入圖片…" : "匯入圖片"}
+                      </button>
                       {(Object.keys(labels) as CanvasNode["type"][])
                         .filter(
                           (t) =>
@@ -911,7 +1030,41 @@ export default function App() {
                         }
                       />
                     </label>
-                    {node.type === "image" && <div className="image-controls"><label className="field">圖片素材<select aria-label="草稿圖片素材" value={node.assetId??"/assets/workspace.svg"} onChange={e=>patch(node.id,{assetId:e.target.value})}><option value="/assets/workspace.svg">內建示意圖</option>{localImages.map((ref,index)=><option key={ref} value={ref}>本機圖片 {index+1}</option>)}</select></label><button disabled={importingImage} onClick={()=>{imageTarget.current=node.id;imageInput.current?.click();}}>{importingImage?"正在匯入圖片…":"替換圖片"}</button><p className="note">PNG／JPEG，每張原圖最多 5 MB，僅存於本機。</p></div>}
+                    {node.type === "image" && (
+                      <div className="image-controls">
+                        <label className="field">
+                          圖片素材
+                          <select
+                            aria-label="草稿圖片素材"
+                            value={node.assetId ?? "/assets/workspace.svg"}
+                            onChange={(e) =>
+                              patch(node.id, { assetId: e.target.value })
+                            }
+                          >
+                            <option value="/assets/workspace.svg">
+                              內建示意圖
+                            </option>
+                            {localImages.map((ref, index) => (
+                              <option key={ref} value={ref}>
+                                本機圖片 {index + 1}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <button
+                          disabled={importingImage}
+                          onClick={() => {
+                            imageTarget.current = node.id;
+                            imageInput.current?.click();
+                          }}
+                        >
+                          {importingImage ? "正在匯入圖片…" : "替換圖片"}
+                        </button>
+                        <p className="note">
+                          PNG／JPEG，每張原圖最多 5 MB，僅存於本機。
+                        </p>
+                      </div>
+                    )}
                     {node.type === "button" && (
                       <label className="field">
                         按鈕連結

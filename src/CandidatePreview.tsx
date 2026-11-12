@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { PageRenderer } from "./PageRenderer";
-import type { GenerationResponse } from "./generation";
+import type { CandidateResult } from "./demo";
 export default function CandidatePreview({
   candidate,
   stale,
   onAccept,
   onBack,
 }: {
-  candidate: GenerationResponse;
+  candidate: CandidateResult;
   stale: boolean;
   onAccept: () => Promise<void>;
   onBack: () => void;
@@ -19,7 +19,11 @@ export default function CandidatePreview({
       <div className="preview-tools">
         <div>
           <strong>
-            {candidate.mode === "mock" ? "測試生成（非 AI）" : "生成候選版本"}
+            {candidate.mode === "demo"
+              ? "示範排版（非 AI）"
+              : candidate.mode === "mock"
+                ? "測試生成（非 AI）"
+                : "生成候選版本"}
           </strong>
           <small>確認後才儲存</small>
         </div>

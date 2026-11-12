@@ -1,4 +1,25 @@
 # 狀態
+2026-11-12（Asia/Taipei）
+
+目前工作：自主免費MVP工程 DONE；最終UI/UX人工驗收 PARTIAL。本次使用者完整附件覆蓋舊階段停止點，並於本輪追加授權適時Push至GitHub；不Merge／Force Push／部署，不使用付費API。以下先列目前結論，後續舊Phase紀錄只供歷史參考。
+
+- DONE：獨立React+TypeScript ZIP匯出（同一Renderer／Registry、固定安全模板、引用圖片、可隔離安裝與建置）。
+- DONE：PNG／JPEG安全本機匯入、替換、保存與匯出；IndexedDB v3、規格化PNG、SHA256、容量／數量限制、物件URL回收、過時匯入拒絕。未上傳圖片。
+- DONE：四個可重載展示草稿與明確非AI的本機候選流程；使用既有驗證／確認／Session／Revision保存。真實AI失敗不自動偽裝示範成功。
+- DONE：兩輪獨立Chromium操作與原始截圖審查，修正大字裁切、分頁鍵盤衝突／焦點、縮圖圖示重疊及示範標題窄欄；100元素50%／75%拖曳與取消通過。
+- PASS：Typecheck；Vitest15檔130/130；全套Chromium54/54（1.7分鐘）；Build；check:secrets；git diff --check；Git fsck；根專案與匯出模板npm audit皆0已知漏洞。匯出ZIP真正下載、隔離npm ci／Build、1440／375px呈現、文字注入安全／離線執行均通過。無npm run check腳本，使用實際存在的check:secrets，不聲稱執行不存在指令。既有Zod PURE註解警告保留。
+- PASS：Git歷史秘密特徵及敏感路徑掃描（備份前再核對）、dist與實際配置Key的精確比對；無金鑰、內部Prompt、source map進前端。掃描不代表完全安全。
+- PARTIAL：人工視覺驗收／初次使用可發現性／長時間操作手感。窄版開工具仍覆蓋預覽，清楚可退出；本機素材不自動刪除以保護Undo，最多10張／20MiB。
+- NOT TESTED：真實AI模型權限、付費生成品質與實際用量；Firefox／Safari（未安裝）、實機觸控／讀屏、瀏覽器原生放大設定。已測明確的200%介面文字模擬，不冒稱原生設定。
+- 真實模型、外部AI及圖像生成API呼叫0，付費tokens／費用0。自然語言AI修改仍未實作，沒有假送出流程。
+
+完整觀察：[免費MVP審查](docs/FREE_MVP_REVIEW.md)；操作：[示範指南](docs/DEMO_GUIDE.md)。原始截圖test-results/review{1,2}-{1440,768,375}.png（均非AI），另保存/workspace/backups/artifacts/。正常預覽收合面板可用容器1440×896／768×896／375×900px；非全部像素皆網頁內容，內距另計。無文件水平溢出不等同產品級品質。
+
+Git：起點4cc1ab1015ee7852b0aacd0b58b167af6f509972；A=2c5edae、B=1da8cfe，接續本機提交包含示範／UX／完整驗證文件。基準bundle已建立，最終bundle在/workspace/backups/Sketch2Site-free-mvp.bundle，提交後驗證恢復。使用者已追加允許Push；既有origin為ChewyChloe/Sketch2Site，目前遠端heads查詢成功但為空，gh GraphQL查詢403。正常Push與SHA核對尚待本機提交後執行；不假稱遠端已有備份。即使Push受限，保留可下載bundle且不強制推送。
+
+停止判定：免費MVP必要項目及完整流程完成，沒有已知未修復P0／P1；剩餘為上述P2與人工／環境限制。最小下一步是人工驗收示範入口、動畫辨識、桌面手感；不要求重跑已驗證的工程檢查。付費AI須另行授權，不擅自進入。
+
+## 歷史紀錄（舊狀態不覆蓋上述目前結論）
 2026-11-10（Asia/Taipei）
 
 目前工作：Phase 6.1。Phase 6 功能完成但工作台 UI/UX 未通過使用者驗收；本輪修整與最新驗證見文末。Phase 5 真實付費生成仍 NOT TESTED，本輪不執行。
