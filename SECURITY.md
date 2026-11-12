@@ -74,3 +74,6 @@ Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或�
 
 ## React匯出
 匯出僅接受完整PageSchema，檔案路徑由程式固定，不使用標題、檔名、模型文字作程式碼或路徑。JSON獨立保存，不嵌進HTML script。只複製純Runtime及Schema／CSS，沒有Provider、內部Prompt、Session、IndexedDB、註記或編輯控制；只讀取固定同來源內建素材，沒有任意URL抓取。ZIP以外部標準解析器驗證CRC、路徑與內容，下載後獨立npm ci／Build／瀏覽器驗收。
+
+### 本機圖片邊界
+僅允許PNG/JPEG：原檔5MiB、4096px邊長／12MP，規範化PNG2MiB、1600px、10張／20MiB。PNG逐chunk CRC，拒絕APNG／SVG／混淆MIME，解碼重編碼去metadata。每次讀取／匯出重驗SHA256及實際尺寸。PageSpec只接受固定安全asset ref，不接受任意URL。物件URL限可信讀取結果並於卸載／替換撤銷。素材滿額／損毀／Quota錯誤拒絕並保留頁面；不自動清理可能被Undo引用的素材，不上傳外部。CSP僅圖片增加blob，腳本限制不變。

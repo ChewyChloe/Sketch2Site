@@ -1,4 +1,6 @@
 import {
+  createContext,
+  useContext,
   Component,
   memo,
   useEffect,
@@ -112,9 +114,15 @@ function useAnimations(
     };
   }, [node, ref]);
 }
+const AssetUrls = createContext<Readonly<Record<string,string|null>>>({});
 function SafeImage({ node }: { node: PageNode }) {
+  const urls = useContext(AssetUrls);
   const [failed, setFailed] = useState(false),
     [attempt, setAttempt] = useState(0);
+  const resolved = urls[node.src!];
+  useEffect(()=>{setFailed(false);},[resolved,node.src]);
+  if(resolved === "") return <div className="page-image-error" role="status">正在載入圖片…</div>;
+  if(resolved === null) return <div className="page-image-error" role="status">找不到本機圖片，請重新匯入。</div>;
   return failed ? (
     <div className="page-image-error" role="status">
       <p>圖片無法載入</p>
@@ -130,7 +138,7 @@ function SafeImage({ node }: { node: PageNode }) {
   ) : (
     <img
       key={attempt}
-      src={import.meta.env.BASE_URL + node.src!.slice(1)}
+      src={urls[node.src!] ?? (import.meta.env.BASE_URL + node.src!.slice(1))}
       alt={node.alt}
       loading="lazy"
       decoding="async"
@@ -232,7 +240,7 @@ class RenderBoundary extends Component<
     );
   }
 }
-export function PageRuntime({ input }: { input: unknown }) {
+export function PageRuntime({ input, assetUrls = {} }: { input: unknown; assetUrls?: Readonly<Record<string,string|null>> }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const previous = useRef<PageSpec | undefined>(undefined);
   const result = useMemo(() => {
@@ -255,7 +263,7 @@ export function PageRuntime({ input }: { input: unknown }) {
     );
   const page = result.page;
   return (
-    <RenderBoundary resetKey={input}>
+    <AssetUrls.Provider value={assetUrls}><RenderBoundary resetKey={input}>
       <div
         ref={rootRef}
         className={
@@ -289,6 +297,6 @@ export function PageRuntime({ input }: { input: unknown }) {
           <RenderNode key={section.id} node={section} />
         ))}
       </div>
-    </RenderBoundary>
+    </RenderBoundary></AssetUrls.Provider>
   );
 }

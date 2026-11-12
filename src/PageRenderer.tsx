@@ -1,4 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useAssetUrls } from "./useAssetUrls";
+import { PageSchema } from "./pageSpec";
+import type { PageNode } from "./pageSpec";
+import { useEffect, useRef, useMemo } from "react";
 import { PageRuntime } from "./PageRuntime";
 import { componentIdFromElement } from "./pageSpec";
 import "./preview.css";
@@ -16,6 +19,10 @@ export function PageRenderer({
   selectedId?: string | null;
   onSelect?: (id: string) => void;
 }) {
+  const checked = useMemo(()=>PageSchema.safeParse(input),[input]), refs:string[]=[];
+  const walk=(node:PageNode)=>{if(node.src)refs.push(node.src);node.children?.forEach(walk);};
+  if(checked.success)checked.data.sections.forEach(walk);
+  const urls=useAssetUrls(refs);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     root.current
@@ -37,7 +44,7 @@ export function PageRenderer({
         }
       }}
     >
-      <PageRuntime input={input} />
+      <PageRuntime input={input} assetUrls={urls} />
     </div>
   );
 }

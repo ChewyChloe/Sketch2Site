@@ -141,3 +141,6 @@ GitHub遠端備份尚待核對；安全掃描Git歷史後建立/workspace/backup
 ### 自主循環A：React匯出 DONE
 抽出同一Renderer純Runtime，加入受控ZIP下載、固定模板與依賴lockfile，保留原38個Chromium回歸PASS；新增ZIP格式／路徑2項單元，總121/121 PASS。真正下載的匯出ZIP在隔離/tmp目錄獨立npm ci、Build及Chromium1440／375px呈現PASS，沒有Sketch2Site／外部網路呼叫，圖片、手機單欄、惡意標題文字安全通過。Build及秘密掃描PASS（Zod既有註解警告保留）。曾發現公共目錄raw import會產生Vite警告，已改固定同來源讀取；測試曾因頁面有兩個grid選取過廣，已改逐一驗證全部grid，不減少驗收。
 遠端origin分支查詢成功但0分支，仍無已確認遠端備份；基準Git歷史秘密特徵掃描PASS（0），baseline bundle建立。接續B本機使用者圖片，不因完成A停止。
+
+### 自主循環B：本機圖片 DONE
+PNG/JPEG匯入及替換，IndexedDB v3無損升級、10張／20MiB上限、SHA256內容指紋、metadata去除、object URL生命週期、缺失／損毀安全拒絕。PageSpec圖片經既有Patch／Revision保存，匯出包含本機PNG。PASS：typecheck、124單元；新增2個Chromium素材流程＋1個隔離npm ci/Build匯出流程，3/3。原檔名不進spec／ZIP，假PNG被拒絕；圖片重載、Mock候選、alt修改、動畫Undo/Redo及ZIP驗證通過。付費API 0。接續離線示範與兩輪UI審查。

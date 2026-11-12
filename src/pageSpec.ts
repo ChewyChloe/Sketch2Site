@@ -1,3 +1,4 @@
+import { imageSource } from "./assetRef";
 import { z } from "zod";
 export const effectIds = [
   "fade-in",
@@ -62,7 +63,7 @@ export type PageNode = {
   content?: string;
   level?: 1 | 2 | 3;
   href?: string;
-  src?: (typeof localAssets)[number];
+  src?: string;
   alt?: string;
   columns?: 1 | 2 | 3;
   children?: PageNode[];
@@ -156,7 +157,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
       .object({
         ...common,
         type: z.literal("image"),
-        src: z.enum(localAssets),
+        src: imageSource,
         alt: z.string().min(1).max(200),
       })
       .strict(),

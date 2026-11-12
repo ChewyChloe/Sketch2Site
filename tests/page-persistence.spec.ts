@@ -34,7 +34,7 @@ async function disk(page: Page) {
   return page.evaluate(
     async () =>
       new Promise<any>((res, rej) => {
-        const r = indexedDB.open("sketch2site", 2);
+        const r = indexedDB.open("sketch2site", 3);
         r.onsuccess = () => {
           const db = r.result;
           const q = db
@@ -101,7 +101,7 @@ test("交易未完成不顯示已儲存；連續修改合併保存最新版本",
       new Promise<void>((res, rej) => {
         const flags = window as typeof window & { releasePageLock?: boolean };
         flags.releasePageLock = false;
-        const r = indexedDB.open("sketch2site", 2);
+        const r = indexedDB.open("sketch2site", 3);
         r.onsuccess = () => {
           const db = r.result;
           const tx = db.transaction("pages", "readwrite");
@@ -223,7 +223,7 @@ test("損毀資料不進 Renderer、不被範例覆蓋；確認後原子備份�
   await page.evaluate(
     async (value) =>
       new Promise<void>((res, rej) => {
-        const r = indexedDB.open("sketch2site", 2);
+        const r = indexedDB.open("sketch2site", 3);
         r.onsuccess = () => {
           const db = r.result;
           const tx = db.transaction("pages", "readwrite");
@@ -256,7 +256,7 @@ test("損毀資料不進 Renderer、不被範例覆蓋；確認後原子備份�
   const backups = await page.evaluate(
     async () =>
       new Promise<any[]>((res, rej) => {
-        const r = indexedDB.open("sketch2site", 2);
+        const r = indexedDB.open("sketch2site", 3);
         r.onsuccess = () => {
           const db = r.result;
           const q = db

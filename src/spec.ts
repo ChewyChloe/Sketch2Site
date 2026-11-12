@@ -1,5 +1,6 @@
 import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
+import { imageSource } from "./assetRef";
 import { href, localAssets } from "./pageSpec";
 export const Effect = z.enum([
   "hover-glow",
@@ -29,7 +30,7 @@ export const NodeSchema = z
           a.length,
       ),
     parentId: z.string().uuid().nullable(),
-    assetId: z.enum(localAssets).nullable(),
+    assetId: imageSource.nullable(),
     href: href.nullable().optional(),
     zIndex: z.number().int().min(0).max(100),
   })

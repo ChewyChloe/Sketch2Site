@@ -49,3 +49,5 @@
 4. NOT STARTED：操作／鍵盤／焦點／文字放大及兩輪重新操作的UI審查；全套回歸、安全檢查與最新備份。
 基準4cc1ab1015ee7852b0aacd0b58b167af6f509972，Git fsck通過、工作區原先乾淨。Apple Design技能讀取成功（MIT），採用直接操作、即時回饋與克制原則，不新增動態套件或Apple外觀。
 - 更新：A獨立React匯出DONE（121單元、38舊E2E及獨立匯出E2E通過），下一項立即進入B本機圖片與匯出資產串接。
+
+- [x] 自主循環B：本機PNG/JPEG安全匯入、替換、持久保存、既有Patch及React匯出；單元與真實Chromium整合驗證。

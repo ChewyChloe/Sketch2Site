@@ -130,3 +130,6 @@ workbench.css僅為編輯器chrome配置，沿用既有Design Tokens，於Render
 ## 免費MVP：獨立React匯出
 PageRuntime.tsx與pageRuntime.css是原Renderer抽出的純執行部分，工作台PageRenderer僅包覆選取控制，不建立第二個渲染／動畫系統。exportProject先驗證目前PageSpec，再以固定模板、受限路徑及ZIP STORE封裝runtime、Schema、純頁面Tokens、page.json、必要資產及鎖定依賴。文字不拼進HTML／JS；HTML入口固定，標題用DOM property，內容仍由React文字插值。匯出不含編輯器、後端、Prompt、Session／Revision、草稿或註記。
 匯出項位於預覽「頁面」選單。使用Vite relative base與container root，支援獨立靜態呈現與手機欄位布局。首次npm ci需npm網路，網站執行不依賴Sketch2Site。ZIP路徑拒絕絕對／相對跳脫／重複路徑，檔案／總量受限。
+
+### 本機素材
+IndexedDB v3 新增 assets store，既有 draft/pages CAS不變。PNG/JPEG 經實際簽章、CRC、尺寸檢查及瀏覽器解碼，再縮至最長1600px、重編碼PNG；SHA-256固定路徑保存，不保存原檔名或原始metadata。Renderer以生命週期受控blob URL呈現，正式匯出包含驗證後PNG與相同Runtime；註記不匯出。

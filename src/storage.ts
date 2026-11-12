@@ -1,9 +1,9 @@
 import { CanvasSchema, type CanvasSpec } from "./spec";
 export async function database(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const r = indexedDB.open("sketch2site", 2);
+    const r = indexedDB.open("sketch2site", 3);
     r.onupgradeneeded = () => {
-      for (const name of ["drafts", "pages", "pageBackups"])
+      for (const name of ["drafts", "pages", "pageBackups", "assets"])
         if (!r.result.objectStoreNames.contains(name))
           r.result.createObjectStore(name);
     };

@@ -15,7 +15,15 @@ test("downloaded React project installs and builds independently; runtime stays 
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "預覽", exact: true }).click();
+  // A local raster is imported through the real UI, then referenced by the page being exported.
+  await page.getByRole("button", {name:"草稿",exact:true}).click();
+  const raster=await page.evaluate(()=>{const c=document.createElement("canvas");c.width=320;c.height=160;const x=c.getContext("2d")!;x.fillStyle="#237552";x.fillRect(0,0,320,160);return c.toDataURL("image/png").split(",")[1];});
+  await page.getByLabel("匯入圖片檔案").setInputFiles({name:"export-fixture.png",mimeType:"image/png",buffer:Buffer.from(raster,"base64")});
+  await expect(page.getByTestId("canvas-node").locator("img")).toHaveAttribute("src",/^blob:/);
+  const localRef=await page.evaluate(()=>new Promise<string>(resolve=>{const r=indexedDB.open("sketch2site",3);r.onsuccess=()=>{const db=r.result,q=db.transaction("assets").objectStore("assets").getAllKeys();q.onsuccess=()=>{resolve(String(q.result[0]));db.close();};};}));
+  await page.getByRole("button", {name:"預覽",exact:true}).click();
   const input = structuredClone(demoPage);
+  const replaceImage=(nodes:typeof input.sections)=>nodes.forEach(n=>{if(n.type==="image")n.src=localRef;if(n.children)replaceImage(n.children);});replaceImage(input.sections);
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
   await page

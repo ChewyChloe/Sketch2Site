@@ -13,7 +13,7 @@ async function record(page: Page, store = "pages", key = "local-project") {
   return page.evaluate(
     ({ store, key }) =>
       new Promise<unknown>((resolve, reject) => {
-        const open = indexedDB.open("sketch2site", 2);
+        const open = indexedDB.open("sketch2site", 3);
         open.onsuccess = () => {
           const db = open.result,
             r = db.transaction(store).objectStore(store).get(key);

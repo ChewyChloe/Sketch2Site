@@ -19,7 +19,7 @@ async function seed(page: Page, canvas = fixtures[0]) {
   await page.evaluate(
     async (value) =>
       new Promise<void>((resolve, reject) => {
-        const open = indexedDB.open("sketch2site", 2);
+        const open = indexedDB.open("sketch2site", 3);
         open.onsuccess = () => {
           const db = open.result,
             t = db.transaction("drafts", "readwrite");
@@ -41,7 +41,7 @@ async function savedPage(page: Page) {
   return page.evaluate(
     async () =>
       new Promise<unknown>((res, rej) => {
-        const r = indexedDB.open("sketch2site", 2);
+        const r = indexedDB.open("sketch2site", 3);
         r.onsuccess = () => {
           const db = r.result,
             q = db

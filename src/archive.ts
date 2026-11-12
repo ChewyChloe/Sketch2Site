@@ -1,14 +1,8 @@
 // Small ZIP/STORE writer: fixed application paths, no dependencies or executable archive metadata.
 const encoder = new TextEncoder();
 export type ProjectFile = { path: string; content: string | Uint8Array };
-function crc32(bytes: Uint8Array) {
-  let crc = 0xffffffff;
-  for (const byte of bytes) {
-    crc ^= byte;
-    for (let n = 0; n < 8; n++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
-  }
-  return (crc ^ 0xffffffff) >>> 0;
-}
+const crcTable = Uint32Array.from({length:256},(_,i)=>{let value=i;for(let n=0;n<8;n++)value=(value>>>1)^((value&1)?0xedb88320:0);return value>>>0;});
+export function crc32(bytes: Uint8Array) { let crc=0xffffffff;for(const byte of bytes)crc=(crc>>>8)^crcTable[(crc^byte)&255];return (crc^0xffffffff)>>>0; }
 export function zipProject(files: readonly ProjectFile[]): ArrayBuffer {
   if (!files.length || files.length > 100)
     throw new Error("匯出檔案數量無效。");

@@ -1,3 +1,5 @@
+import { importImage, assetErrorMessage } from "./assets";
+import { useAssetRefs } from "./useAssetUrls";
 import { downloadProject } from "./exportProject";
 import { createPortal } from "react-dom";
 import { WorkbenchMenu } from "./WorkbenchMenu";
@@ -63,6 +65,9 @@ export type PreviewHandle = {
   ): Promise<{ ok: boolean; error?: string }>;
 };
 export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
+  const imageInput=useRef<HTMLInputElement>(null);
+  const [importingImage,setImportingImage]=useState(false);
+  const localImages=useAssetRefs();
   const persistence = usePagePersistence();
   const { session, current, update, ready, loadError, status } = persistence;
   useImperativeHandle(ref, () => ({
@@ -323,6 +328,11 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
       id,
     );
   }
+  async function replaceImage(file:File|undefined) {
+    if(!file||!node||node.type!=="image"||importingImage)return;
+    const id=node.id, revision=current.current.revision;setImportingImage(true);
+    try{const asset=await importImage(file);patch([{operation:"set-property",targetId:id,payload:{property:"src",value:asset.ref}}],id,revision);}catch(e){setPatchError(true);setNotice(assetErrorMessage(e));}finally{setImportingImage(false);}
+  }
   function apply() {
     if (!node || !ready || loadError) return;
     const patches: unknown[] = [
@@ -443,6 +453,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         }}
       />
 
+      <input hidden type="file" accept="image/png,image/jpeg" ref={imageInput} aria-label="替換頁面圖片檔案" onChange={e=>{void replaceImage(e.target.files?.[0]);e.target.value="";}}/>
       <div className="visual-tools" aria-label="視覺編輯工具">
         <div className="mode-switch" role="group" aria-label="預覽工具模式">
           {(
@@ -914,6 +925,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                       </label>
                     </form>
                   </>
+                  {node.type === "image" && <div className="image-controls"><label className="field">圖片素材<select aria-label="頁面圖片素材" value={node.src} onChange={e=>patch([{operation:"set-property",targetId:node.id,payload:{property:"src",value:e.target.value}}],node.id)}><option value="/assets/workspace.svg">內建示意圖</option>{localImages.map((ref,index)=><option key={ref} value={ref}>本機圖片 {index+1}</option>)}</select></label><button disabled={importingImage} onClick={()=>imageInput.current?.click()}>{importingImage?"正在匯入圖片…":"替換圖片"}</button><label className="field">圖片說明<input aria-label="圖片說明" key={node.alt} maxLength={200} defaultValue={node.alt} onBlur={e=>{if(e.target.value!==node.alt)patch([{operation:"set-property",targetId:node.id,payload:{property:"alt",value:e.target.value}}],node.id);}}/></label><p className="note">PNG／JPEG，原圖最多 5 MB，圖片只保存在此瀏覽器。</p></div>}
                   <div className="effect-editor">
                     <h2>已附加動畫</h2>
                     {!node.effects.length && (

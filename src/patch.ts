@@ -1,3 +1,4 @@
+import { imageSource } from "./assetRef";
 import { z } from "zod";
 import {
   PageSchema,
@@ -63,7 +64,7 @@ export const PatchSchema = z.discriminatedUnion("operation", [
           .strict(),
         z.object({ property: z.literal("href"), value: href }).strict(),
         z
-          .object({ property: z.literal("src"), value: z.enum(localAssets) })
+          .object({ property: z.literal("src"), value: imageSource })
           .strict(),
         z.object({ property: z.literal("alt"), value: plainText }).strict(),
         z
