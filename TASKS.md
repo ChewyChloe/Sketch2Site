@@ -4,7 +4,7 @@
 - DONE：免費MVP React獨立匯出、本機圖片、四展示草稿、非AI完整流程、編輯／動畫／註記／保存、兩輪UI審查與高字級修正。
 - PASS：130單元／整合、54 Chromium E2E、Typecheck／Build／秘密掃描／兩套依賴audit／歷史與Git完整性。詳細證據見STATUS.md及docs/FREE_MVP_REVIEW.md。
 - PARTIAL：使用者最終視覺與操作手感驗收；NOT TESTED：真實付費AI、未安裝瀏覽器／實機。
-- 交付收尾：本機commit與驗證bundle；依使用者追加授權嘗試正常Push既有origin並核對SHA，若網路限制須明確記錄，不Force Push／Merge／部署。
+- DONE交付：本機Commit與Git bundle；依使用者追加授權正常Push至origin/work，遠端功能SHA=7c77b46dc180816583fbaecba7f03de7c54f234f核對一致。沒有Force Push／Merge／部署；收尾文件一併推送，最終SHA以git log確認。
 - 下一個最小任務：人工驗收桌面手感、示範入口及動畫辨識；免費工程工作已達停止條件。
 
 ## 歷史階段紀錄

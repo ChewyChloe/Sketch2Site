@@ -15,7 +15,7 @@
 
 完整觀察：[免費MVP審查](docs/FREE_MVP_REVIEW.md)；操作：[示範指南](docs/DEMO_GUIDE.md)。原始截圖test-results/review{1,2}-{1440,768,375}.png（均非AI），另保存/workspace/backups/artifacts/。正常預覽收合面板可用容器1440×896／768×896／375×900px；非全部像素皆網頁內容，內距另計。無文件水平溢出不等同產品級品質。
 
-Git：起點4cc1ab1015ee7852b0aacd0b58b167af6f509972；A=2c5edae、B=1da8cfe，接續本機提交包含示範／UX／完整驗證文件。基準bundle已建立，最終bundle在/workspace/backups/Sketch2Site-free-mvp.bundle，提交後驗證恢復。使用者已追加允許Push；既有origin為ChewyChloe/Sketch2Site，目前遠端heads查詢成功但為空，gh GraphQL查詢403。正常Push與SHA核對尚待本機提交後執行；不假稱遠端已有備份。即使Push受限，保留可下載bundle且不強制推送。
+Git：起點4cc1ab1015ee7852b0aacd0b58b167af6f509972；A=2c5edae、B=1da8cfe，接續本機提交包含示範／UX／完整驗證文件。基準bundle已建立，最終bundle在/workspace/backups/Sketch2Site-free-mvp.bundle，提交後驗證恢復。使用者已追加允許Push；既有origin為ChewyChloe/Sketch2Site，推送前遠端heads查詢為空，gh GraphQL查詢403；Git HTTPS正常可用。正常Push PASS：work已推至https://github.com/ChewyChloe/Sketch2Site/tree/work，git ls-remote確認功能Commit 7c77b46dc180816583fbaecba7f03de7c54f234f與本地一致；後續僅提交／推送此份核對紀錄。先前無遠端備份的風險已解除，最終bundle仍另行保存與還原驗證；沒有Force Push／Merge／部署。GitHub visibility未透過GraphQL取得（403），未更改repository設定。
 
 停止判定：免費MVP必要項目及完整流程完成，沒有已知未修復P0／P1；剩餘為上述P2與人工／環境限制。最小下一步是人工驗收示範入口、動畫辨識、桌面手感；不要求重跑已驗證的工程檢查。付費AI須另行授權，不擅自進入。
 
