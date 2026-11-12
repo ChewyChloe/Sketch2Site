@@ -40,3 +40,12 @@
 - PARTIAL：UI/UX產品級人工驗收，等待使用者檢視新截圖及實際操作；不能以工程測試通過代替。
 - 驗證、原始截圖及前後比較見STATUS.md與docs/PHASE61_UI_REVIEW.md。Phase5真實付費生成仍NOT TESTED，本輪不執行。
 - 停止點：本地提交後停止Phase6.1，不進入Phase7，不Push／Merge／部署。
+
+## 自主免費 MVP（2026-11-12，Asia/Taipei）
+本次使用者授權覆蓋先前逐Phase停止規則；持續完成免費MVP，不呼叫付費API、不Push／部署。
+1. IN PROGRESS：安全的獨立React+TypeScript ZIP匯出；只帶正式Renderer、驗證、樣式與引用素材，下載後獨立建置與瀏覽器驗收。
+2. NOT STARTED：安全本機圖片（實際格式驗證／重編碼／容量限制／IndexedDB／釋放URL），串接草稿、頁面及匯出，不外傳原圖。
+3. NOT STARTED：可重複載入的作品集／活動／凌亂／動畫展示、明確標示Mock的免費完整流程、未啟用AI的清楚狀態。
+4. NOT STARTED：操作／鍵盤／焦點／文字放大及兩輪重新操作的UI審查；全套回歸、安全檢查與最新備份。
+基準4cc1ab1015ee7852b0aacd0b58b167af6f509972，Git fsck通過、工作區原先乾淨。Apple Design技能讀取成功（MIT），採用直接操作、即時回饋與克制原則，不新增動態套件或Apple外觀。
+- 更新：A獨立React匯出DONE（121單元、38舊E2E及獨立匯出E2E通過），下一項立即進入B本機圖片與匯出資產串接。

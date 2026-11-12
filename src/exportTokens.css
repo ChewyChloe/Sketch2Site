@@ -1,0 +1,25 @@
+:root {
+  --bg: #efefeb;
+  --panel: #fff;
+  --ink: #202a27;
+  --muted: #68736d;
+  --accent: #237552;
+  --accent-soft: #e7f1ea;
+  --line: #daddd6;
+  --danger: #ab3932;
+  --font:
+    Inter, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --text: 14px;
+  --title: 20px;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 16px;
+  --s4: 24px;
+  --radius: 6px;
+  --shadow: 0 4px 18px #202a270d;
+  --border: 1px solid var(--line);
+  --motion: 120ms;
+}
+* { box-sizing:border-box; } body { margin:0; background:var(--panel); color:var(--ink); font:var(--text)/1.6 var(--font); } h1,h2,p {margin:0;} button {font:inherit;} :focus-visible {outline:2px solid var(--accent);outline-offset:3px;}
+
+#root {container-type:inline-size;}

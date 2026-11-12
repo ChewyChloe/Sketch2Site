@@ -126,3 +126,7 @@ WorkbenchMenu為原生details選單，處理外部點擊、Esc與操作後關閉
 共用工具區的呈現分頁不改動資料合約。預覽元件清單使用穩定ID；窄視窗預設關閉，開啟時明確提供關閉按鈕，原Canvas／PageSpec編輯器各自保持原資料狀態。拖放開始時收退窄側欄、drop／dragend／取消時清除視覺狀態，防止拖曳結束後側欄仍越界。
 屬性輸入暫存保留於Preview；切換素材分頁或附加動畫不丟棄尚未套用的文字。來源欄位真的改變、Undo／Redo或更換選取時以有效資料同步；文字／對齊／標題層級與已附加效果的時長，由單一套用建立既有原子Patch批次。附加、替換、移除仍是各自明確操作，均沿原Session／Revision／trusted scope驗證；沒有擴大scope或直接寫入PageSpec。測試對應更新為新選單路徑與真實操作次數，未移除原回歸情境。
 workbench.css僅為編輯器chrome配置，沿用既有Design Tokens，於Renderer樣式之後載入；成品PageSpec的樣式Token與Renderer合約未變。量測與驗收報告見docs/PHASE61_UI_REVIEW.md。
+
+## 免費MVP：獨立React匯出
+PageRuntime.tsx與pageRuntime.css是原Renderer抽出的純執行部分，工作台PageRenderer僅包覆選取控制，不建立第二個渲染／動畫系統。exportProject先驗證目前PageSpec，再以固定模板、受限路徑及ZIP STORE封裝runtime、Schema、純頁面Tokens、page.json、必要資產及鎖定依賴。文字不拼進HTML／JS；HTML入口固定，標題用DOM property，內容仍由React文字插值。匯出不含編輯器、後端、Prompt、Session／Revision、草稿或註記。
+匯出項位於預覽「頁面」選單。使用Vite relative base與container root，支援獨立靜態呈現與手機欄位布局。首次npm ci需npm網路，網站執行不依賴Sketch2Site。ZIP路徑拒絕絕對／相對跳脫／重複路徑，檔案／總量受限。

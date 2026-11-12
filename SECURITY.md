@@ -71,3 +71,6 @@ Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或�
 沒有修改Provider、後端啟用條件、秘密讀取、Patch／PageSpec驗證、Session／Revision或CAS。portal僅移動既有前端控制與保存狀態，不傳遞任何秘密。選單／SVG圖示不接受任意HTML、事件程式或CSS字串。
 動畫素材示意僅由程式內固定內容與既有六Preset建立，仍通過PageSchema與原Renderer；不接受外部SVG或動畫程式。示意與實際草稿／頁面隔離，不保存，不傳外部。草稿仍只附加標記，預覽修改仍經既有Patch；相容性提示與實際拖放拒絕一致。
 本輪測試程序移除兩個Key變數並停用AI旗標，後端僅啟動既有Mock測試服務；新增跨尺寸E2E拒絕外部HTTPS並斷言沒有生成POST。所有付費／外部AI／圖像生成呼叫為0。不是以UI隱藏取代後端安全檢查。
+
+## React匯出
+匯出僅接受完整PageSchema，檔案路徑由程式固定，不使用標題、檔名、模型文字作程式碼或路徑。JSON獨立保存，不嵌進HTML script。只複製純Runtime及Schema／CSS，沒有Provider、內部Prompt、Session、IndexedDB、註記或編輯控制；只讀取固定同來源內建素材，沒有任意URL抓取。ZIP以外部標準解析器驗證CRC、路徑與內容，下載後獨立npm ci／Build／瀏覽器驗收。

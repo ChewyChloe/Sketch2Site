@@ -1,3 +1,4 @@
+import { downloadProject } from "./exportProject";
 import { createPortal } from "react-dom";
 import { WorkbenchMenu } from "./WorkbenchMenu";
 import { WorkbenchIcon } from "./WorkbenchIcon";
@@ -125,6 +126,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   const [level, setLevel] = useState("1");
   const [text, setText] = useState(""),
     [editRevision, setEditRevision] = useState(0);
+  const [exporting, setExporting] = useState(false);
   const [notice, setNotice] = useState(""),
     [patchError, setPatchError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -386,6 +388,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         </span>
       </span>
       <WorkbenchMenu label="頁面">
+        <button disabled={exporting || !ready || Boolean(loadError) || Boolean(error)} onClick={async()=>{setExporting(true);try{await downloadProject(current.current.history.present);setPatchError(false);setNotice("已匯出 React 專案。");}catch{setPatchError(true);setNotice("匯出失敗，請檢查頁面與素材後重試。");}finally{setExporting(false);}}}>{exporting ? "正在匯出…" : "匯出 React 專案"}</button>
         <button
           disabled={!ready || Boolean(loadError)}
           onClick={() => fileRef.current?.click()}

@@ -132,3 +132,12 @@ server/config.ts／index.ts（候選、gate、授權上限配置）；server/pro
 ### 安全、Git及停止點
 所有付費模型／外部AI／圖像生成呼叫0、費用0。沒有更動Provider／後端設定，測試使用Mock並移除Key環境變數；跨尺寸新流程拒絕外部HTTPS並斷言沒有生成POST。PageSpec Schema、Patch Engine、Renderer、Registry、Session／Revision、Canvas及IndexedDB CAS合約未重寫。
 起點ac3d5de681b3a78a7cc88961894457ee633c0032，分支work。本輪通過測試後建立本地commit，SHA以git log -1查詢；沒有Push／Merge／部署。GitHub備份仍未確認，新增變更只在本機。完成Phase6.1後停止，下一項最小任務是使用者人工驗收此版工作台，不進入Phase7。
+
+## 自主工作恢復（2026-11-12，Asia/Taipei）
+目前IN PROGRESS：依使用者完整附件持續完成免費MVP，先React匯出、再本機圖片與展示／品質迴圈；不在每個Phase結束停等。基準Commit核對及git fsck PASS。使用者API Key即使已配置也不啟用／不發模型請求。
+Apple Design參考：https://github.com/emilkowalski/skills/blob/main/skills/apple-design/SKILL.md ，已讀取（MIT）；專案Design System及使用者限制優先。外部技能未安裝任何依賴。
+GitHub遠端備份尚待核對；安全掃描Git歷史後建立/workspace/backups/Sketch2Site-baseline-4cc1ab1.bundle（僅Git已追蹤歷史，不包含工作區.env或憑證）。可採用既有私人GitHub repository作人工核准後的備份目的地，但本輪不Push或更改遠端設定。
+
+### 自主循環A：React匯出 DONE
+抽出同一Renderer純Runtime，加入受控ZIP下載、固定模板與依賴lockfile，保留原38個Chromium回歸PASS；新增ZIP格式／路徑2項單元，總121/121 PASS。真正下載的匯出ZIP在隔離/tmp目錄獨立npm ci、Build及Chromium1440／375px呈現PASS，沒有Sketch2Site／外部網路呼叫，圖片、手機單欄、惡意標題文字安全通過。Build及秘密掃描PASS（Zod既有註解警告保留）。曾發現公共目錄raw import會產生Vite警告，已改固定同來源讀取；測試曾因頁面有兩個grid選取過廣，已改逐一驗證全部grid，不減少驗收。
+遠端origin分支查詢成功但0分支，仍無已確認遠端備份；基準Git歷史秘密特徵掃描PASS（0），baseline bundle建立。接續B本機使用者圖片，不因完成A停止。
