@@ -158,3 +158,9 @@ CanvasSpec v1與PageSpec v2保留外層版本；每個效果改存 `{presetId,pr
 折頁使用原創單位正方形對角裁切與折線帶，四個折角均受控；拖曳從當前進度接手，釋放依方向、速度與門檻收斂。不是紙張物理模擬。翻面與折頁提供原生按鈕及inert隱藏面；Reduced Motion直接切換。
 
 既有ZIP產生器複製同一runtime、公開registry、schema及幾何／物理純函式，不包含server briefs、編輯UI、Session或歷史。匯出驗收以獨立npm ci/build及獨立Chromium來源執行，預覽伺服器使用動態空閒埠並清理整個程序群組，避免誤驗舊產物。沒有新增產品依賴。
+
+## 2026-11-14：素材預覽可讀性修整
+
+AnimationLibrary仍以PageSchema／PageRenderer建立隔離的示意頁，現在為不同Preset建立具辨識度的原創內容；沒有新增Renderer或動畫實作。每個Preset獨立replay key，不重建其他示意。持續／互動效果直接由既有Runtime呈現，物理及呼吸仍由既有visibility機制暫停。單欄原生尺寸移除CSS縮小及展開狀態。
+
+PhysicsTags的Canvas內部高度依真正CSS viewport重新建立（160–400px），避免CSS縮小畫布導致字體、碰撞和指標不一致。正式網站的inline預設280px不變，素材環境以可信CSS設180px；沒有新資料欄位、任意樣式或外部服務。素材控制樣式留在workbench.css，Runtime CSS移除素材replay按鈕樣式。

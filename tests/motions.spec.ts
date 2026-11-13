@@ -164,7 +164,7 @@ test('24-tag Chromium performance, offscreen pause, resize and touch exit', asyn
     writeFileSync('test-results/motion-performance.json', JSON.stringify({ ...metrics, offscreenCallbackDelta: hidden, limitations: 'Chromium headless; not a physical mobile-device benchmark' }, null, 2));
 });
 for (const width of [1440, 768, 375])
-    test(`review 2 gallery: stable click targets and explicit interactive sample ${width}`, async ({ page }) => {
+    test(`review 2 gallery: native-size readable samples and direct interaction ${width}`, async ({ page }) => {
         await page.setViewportSize({ width, height: 1000 });
         await load(page);
         await openPanel(page, '動畫');
@@ -172,15 +172,18 @@ for (const width of [1440, 768, 375])
         await page.screenshot({ path: `test-results/motions-gallery-${width}.png` });
         await page.getByRole('button', { name: '重播物理標籤場示意' }).click();
         const asset = page.locator('#preview-inspector [data-effect-id="physics-tag-field"]');
-        await expect(asset).toHaveClass(/motion-expanded/);
+        await expect(asset.locator(".rendered-page")).toHaveCSS("transform","none");
         await expect(asset.locator('canvas')).toBeVisible();
         await asset.getByRole('button', { name: '拖曳標籤', exact: true }).click();
         await expect(asset.getByRole('button', { name: '退出標籤拖曳' })).toBeVisible();
         await expect.poll(() => asset.locator("canvas").evaluate((el: HTMLCanvasElement) => el.getContext("2d")!.getImageData(0, 0, el.width, el.height).data.some((v, i) => i % 4 === 3 && v > 0))).toBe(true);
         await asset.getByRole("button", { name: "退出標籤拖曳" }).scrollIntoViewIfNeeded();
         await page.screenshot({ path: `test-results/motions-gallery-expanded-${width}.png` });
-        await asset.getByRole('button', { name: '收合示意' }).click();
-        await expect(asset).not.toHaveClass(/motion-expanded/);
+        const exit=asset.getByRole('button', { name: '退出標籤拖曳' });
+        expect((await exit.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+        await exit.click();
+        await expect(asset.getByRole('button',{name:'拖曳標籤',exact:true})).toBeVisible();
+        await expect(page.getByRole('button',{name:'收合示意'})).toHaveCount(0);
     });
 test('draft markers retain user-supplied faces and labels without running them on the canvas', async ({ page }) => {
     const calls: string[] = [];

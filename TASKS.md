@@ -1,5 +1,14 @@
 # 任務
 
+## 目前結論（2026-11-14）
+
+- DONE：錄影參考後的三項UI缺陷修整：原生字級與44px目標、每效果可辨識示意、直接操作不需展開。
+- DONE：只重播指定Preset；懸停效果可鍵盤試玩；物理示意180px真實場景／上方入口；保留主畫布、原Renderer／Patch／Session／Revision／CAS與React匯出。
+- PASS：155單元／整合、82全套Chromium E2E、Typecheck／Build／秘密掃描／雙依賴audit／三尺寸兩輪具體UI審查。證據見STATUS.md最新交付與docs/LIBRARY_UX_REVIEW_20261114.md。
+- DONE收尾：本地Commit及恢復bundle，沒有付費API、Push／Merge或部署。實機手感仍無自動化保證，不把PASS當成「完美」宣稱；本輪可驗證缺陷已修正。
+
+以下保留歷史紀錄。
+
 ## 目前結論（2026-11-13）
 
 - DONE：12種動畫的統一規格、Schema、實際示意／正式Renderer、相容拖放、參數編輯、Patch／Undo/Redo、保存、Mock生成保留與同runtime React匯出。

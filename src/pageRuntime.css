@@ -269,7 +269,6 @@
 @media(max-width:420px) { .motion-controls { grid-template-columns:1fr; } }
 .effect-breathing[data-motion-paused=true]::before { animation-play-state:paused; }
 .motion-fold-edge { grid-area:1/1;background:var(--accent-soft);box-shadow:var(--fold-shadow);pointer-events:none;min-height:100%; }
-.motion-replay { padding:4px 8px;font-size:12px;background:transparent;border:0;color:var(--muted);text-align:start; }
 .page-button.tone-soft { background:var(--accent-soft);color:var(--accent); }
 .motion-fold { padding-top:48px; }
 .motion-fold[data-bottom=true] { padding-top:0;padding-bottom:48px; }

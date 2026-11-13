@@ -1,5 +1,16 @@
 # 狀態
 
+## 最新交付：原生尺寸動畫素材預覽（2026-11-14）
+
+- DONE：依使用者錄影修正縮圖文字太小、示意辨識不足與需先展開才可互動三項問題。單欄原生16px示意、14px名稱／13px說明、44px操作；不同效果使用原創內容。翻面／折頁直接操作，懸停「試玩」使用真實焦點效果，重播只重建自己。
+- DONE：物理示意採180px真實viewport，入口與畫布同時完整可見。正式Renderer／匯出仍280px預設；CSS高度有160–400px界線。舊縮圖／展開樣式已整理，主畫布面積與側欄寬度未縮減。
+- PASS：155單元／整合、82完整Chromium E2E（新增4項原生字級、44px、穩定幾何、獨立重播、三尺寸直接互動、Reduced Motion與不外連驗證）、Typecheck／Build、check:secrets、git diff --check、兩份npm audit均0漏洞。獨立React npm ci/build／瀏覽器驗收保留。無付費API、沒有部署或改動其他Repository。
+- 兩輪審查及具體取捨見docs/LIBRARY_UX_REVIEW_20261114.md；原始三尺寸截圖、量測JSON與完整測試log在/workspace/backups/library-polish-20261114/。不是Mock AI生成的品質宣稱。
+- 量測：三尺寸示意正文16px、互動目標至少44px、物理Canvas180px與按鈕44px皆完整位於預覽內。主要畫布尺寸保持既有工作台規格。原生單欄需較多捲動，這是可讀性取捨；實體裝置與個人美感不以自動化PASS宣稱已證明。
+- Git：建立本地Commit及/workspace/backups/Sketch2Site-library-polish.bundle。GitHub仍為先前ca9e49a，本輪沒有Push、Merge或部署。下一項最小驗收為實體裝置拖曳手感；沒有把已知可修的本輪缺陷留待使用者再下指示。
+
+以下為先前交付紀錄，不覆蓋上述最新結果。
+
 ## 最新交付：自有Motion Spec Library（2026-11-13）
 
 - DONE工程：12種原創Motion Spec、公開參數／後端內部指引分層、v0安全遷移／v1嚴格實例、實際素材預覽、相容性／組合拒絕、參數側欄、既有Patch與Undo/Redo／保存、同runtime React ZIP匯出。沒有第二套Renderer或Patch。

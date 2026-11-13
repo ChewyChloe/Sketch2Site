@@ -9,49 +9,24 @@ type EffectId = (typeof effectIds)[number];
 const descriptions=Object.fromEntries(Object.entries(motionCatalog).map(([id,d])=>[id,d.summary])) as Record<EffectId,string>;
 function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
   const [ids] = useState(() =>
-    Array.from({ length: 4 }, () => crypto.randomUUID()),
+    Array.from({ length: 5 }, () => crypto.randomUUID()),
   );
-  const page = useMemo(
-    () =>
-      PageSchema.parse({
-        schemaVersion: 2,
-        metadata: { title: "動畫素材示意", language: "zh-Hant" },
-        typography: "sans",
-        styles: "neutral",
-        responsive: { mobileColumns: 1, desktopColumns: 1 },
-        sections: [
-          {
-            id: ids[0],
-            type: "section",
-            style: { padding: "none", gap: "none" },
-            children: [
-              {
-                id: ids[1],
-                type: id==="breathing-glow"?"button":["count-up","curved-path-text"].includes(id)?"paragraph":"card",
-                ...(id==="breathing-glow"?{content:"查看作品",href:"https://learn.microsoft.com/zh-tw/training/"}:id==="count-up"?{content:"1234"}:id==="curved-path-text"?{content:"原創動畫示意"}:{}),
-                style: { padding: "small", gap: "small", tone: "soft" },
-                effects: active ? [createMotion(id,ids[1],id==="count-up"?{endValue:1234}:id==="flip-card"?{backText:"這是背面示意內容"}:id==="fold-reveal"?{underText:"這是下層示意內容"}:id==="physics-tag-field"?{labels:["示意一","示意二","示意三"]}:{})] : [],
-                ...(!["breathing-glow","count-up","curved-path-text"].includes(id)?{children: [
-                  {
-                    id: ids[2],
-                    type: "paragraph",
-                    content: "Aa",
-                    style: { padding: "none" },
-                  },
-                  {
-                    id: ids[3],
-                    type: "paragraph",
-                    content: "—",
-                    style: { padding: "none" },
-                  },
-                ]}:{}),
-              },
-            ],
-          },
-        ],
-      }),
-    [id, active, ids],
-  );
+  const page = useMemo(() => {
+    const paragraph=(index:number,content:string)=>({id:ids[index],type:"paragraph",content,style:{padding:"none",gap:"none"}});
+    const persistent=["breathing-glow","curved-path-text","count-up","flip-card","fold-reveal","physics-tag-field"].includes(id);
+    const controls=id==="count-up"?{endValue:128,durationMs:1200}:id==="curved-path-text"?{curvature:"medium"}:id==="flip-card"?{backText:"把細節，說清楚。"}:id==="fold-reveal"?{underText:"下一層，藏著新想法。"}:id==="physics-tag-field"?{labels:["設計","工程","研究"]}:{};
+    const button=["hover-glow","breathing-glow"].includes(id);
+    const leaf=["count-up","curved-path-text"].includes(id);
+    const content:Record<string,string>={"fade-in":"讓內容自然出現","slide-up":"向上，回到原位。","scale-in":"讓重點被看見","hover-lift":"移入試試，移出回位。","flip-card":"從想法到作品","fold-reveal":"把這一頁揭開。"};
+    return PageSchema.parse({schemaVersion:2,metadata:{title:"動畫素材示意",language:"zh-Hant"},typography:"sans",styles:"neutral",responsive:{mobileColumns:1,desktopColumns:1},sections:[{
+      id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:[{
+        id:ids[1],type:button?"button":leaf?"paragraph":id==="physics-tag-field"?"container":"card",
+        style:{padding:button?"small":leaf||id==="physics-tag-field"?"none":"small",gap:"small",tone:button?"accent":"plain"},
+        effects:active||persistent?[createMotion(id,ids[1],controls)]:[],
+        ...(button?{content:"看看作品",href:"https://example.com"}:leaf?{content:id==="count-up"?"128":"讓想法流動"}:{children:id==="physics-tag-field"?[]:id==="stagger-reveal"?[paragraph(2,"構思"),paragraph(3,"設計"),paragraph(4,"實作")]:[paragraph(2,content[id]??"內容示意")]}),
+      }],
+    }]});
+  },[id,active,ids]);
   return <PageRenderer input={page} />;
 }
 function EffectGlyph({ id }: { id: EffectId }) {
@@ -131,8 +106,7 @@ export function AnimationLibrary({
   filter?: string;
   draft?: boolean;
 }) {
-  const [expanded,setExpanded]=useState<EffectId|null>(null);
-  const [replay,setReplay]=useState(0);
+  const [replay,setReplay]=useState<Record<string,number>>({});
   const [active, setActive] = useState<EffectId | null>(null);
   return (
     <section
@@ -160,7 +134,7 @@ export function AnimationLibrary({
             const reason = compatibility(id);
             return (
               <div
-                className={"animation-asset"+(["flip-card","physics-tag-field","fold-reveal","curved-path-text"].includes(id)&&expanded===id?" motion-expanded":"")}
+                className="animation-asset"
                 key={id}
                 data-effect-id={id}
                 data-compatibility={reason ? "unavailable" : "available"}
@@ -177,17 +151,17 @@ export function AnimationLibrary({
                   e.currentTarget.classList.remove("is-dragging");
                   onDragEnd?.();
                 }}
-                onMouseEnter={() => {if(!expanded)setActive(id);}}
-                onMouseLeave={() => {if(!expanded)setActive(null);}}
-                onFocusCapture={() => {if(!expanded)setActive(id);}}
-                onBlurCapture={() => {if(!expanded)setActive(null);}}
+                onMouseEnter={() => setActive(id)}
+                onMouseLeave={(e) => {if(!e.currentTarget.contains(document.activeElement))setActive(null);}}
+                onFocusCapture={() => setActive(id)}
+                onBlurCapture={(e) => {if(!e.currentTarget.contains(e.relatedTarget as Node))setActive(null);}}
               >
-                <div className="asset-preview" aria-label="效果示意" onClickCapture={e=>{if((e.target as Element).closest("a"))e.preventDefault();}}>
-                  <EffectGlyph id={id} />
+                <div className="asset-preview" role="group" aria-label={effectLabels[id]+"效果示意"} onClickCapture={e=>{if((e.target as Element).closest("a"))e.preventDefault();}}>
                   <div className="asset-sample">
-                    <EffectSample key={replay} id={id} active={active === id} />
+                    <EffectSample key={replay[id]??0} id={id} active={active === id} />
                   </div>
                 </div>
+                <div className="asset-actions">
                 <button
                   className="asset-choose"
                   draggable={!disabled}
@@ -202,12 +176,18 @@ export function AnimationLibrary({
                   onClick={() => onChoose(id)}
                   title={reason ?? descriptions[id]}
                 >
-                  <strong>{effectLabels[id]}</strong>
+                  <EffectGlyph id={id}/><strong>{effectLabels[id]}</strong>
                   <WorkbenchIcon name="grip" />
                 </button>
+                <button type="button" className="motion-replay" aria-label={(["hover-lift","hover-glow"].includes(id)?"體驗":"重播")+effectLabels[id]+"示意"} onClick={(e)=>{
+                  const asset=e.currentTarget.closest(".animation-asset");
+                  setActive(id);setReplay(values=>({...values,[id]:(values[id]??0)+1}));
+                  if(["hover-lift","hover-glow"].includes(id))requestAnimationFrame(()=>{
+                    if(asset?.isConnected)asset.querySelector<HTMLElement>(".effect-lift,.effect-glow")?.focus({preventScroll:true});
+                  });
+                }}>{["hover-lift","hover-glow"].includes(id)?"試玩":"重播"}</button>
+                </div>
                 <small>{reason ?? descriptions[id]}</small>
-                <button type="button" className="motion-replay" aria-label={"重播"+effectLabels[id]+"示意"} onClick={()=>{if(["flip-card","physics-tag-field","fold-reveal","curved-path-text"].includes(id))setExpanded(id);setActive(id);setReplay(v=>v+1);}}>重播示意</button>
-                {expanded===id&&<button type="button" onClick={()=>{setExpanded(null);setActive(null);}}>收合示意</button>}
               </div>
             );
           })}

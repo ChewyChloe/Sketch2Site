@@ -36,7 +36,8 @@ export function PhysicsTags({ effect }: {
         const resize = () => {
             const r = container.getBoundingClientRect(), old = width;
             width = container.clientWidth;
-            height = 280;
+            // Use the actual CSS viewport without scaling text or pointer coordinates.
+            height = clamp(canvas.clientHeight || 280,160,400);
             const dpr = Math.min(2, window.devicePixelRatio || 1);
             canvas.width = Math.round(width * dpr);
             canvas.height = height * dpr;
