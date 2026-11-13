@@ -91,7 +91,7 @@ it("rejects dangerous URLs and invalid effects from local storage", async () => 
       )!.href = "javascript:alert(1)";
     },
     (p: typeof demoPage) => {
-      p.sections[0].effects[0].duration = 99999;
+      p.sections[0].effects[0].validatedControls.durationMs = 99999;
     },
   ]) {
     const record = recordOf(createPageSession(demoPage));

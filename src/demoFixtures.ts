@@ -1,3 +1,4 @@
+import {legacyMotion,type MotionInstance} from "./motion";
 import {
   blank,
   createNode,
@@ -63,10 +64,10 @@ export function generationFixtures(): CanvasSpec[] {
     ["card", "卡片內文逐項顯示。", 100, 600],
     ["button", "回到開頭", 850, 600],
   ]);
-  animated.nodes[0].effects = ["slide-up"];
-  animated.nodes[1].effects = ["fade-in"];
-  animated.nodes[2].effects = ["scale-in"];
-  animated.nodes[3].effects = ["stagger-reveal", "lift"];
-  animated.nodes[4].effects = ["hover-glow"];
+  animated.nodes[0].effects = ["slide-up"].map(id=>legacyMotion(id,animated.nodes[0].id) as MotionInstance);
+  animated.nodes[1].effects = ["fade-in"].map(id=>legacyMotion(id,animated.nodes[1].id) as MotionInstance);
+  animated.nodes[2].effects = ["scale-in"].map(id=>legacyMotion(id,animated.nodes[2].id) as MotionInstance);
+  animated.nodes[3].effects = ["stagger-reveal", "lift"].map(id=>legacyMotion(id,animated.nodes[3].id) as MotionInstance);
+  animated.nodes[4].effects = ["hover-glow"].map(id=>legacyMotion(id,animated.nodes[4].id) as MotionInstance);
   return [portfolio, event, product, irregular, CanvasSchema.parse(animated)];
 }

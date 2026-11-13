@@ -1,7 +1,9 @@
+import {MotionControlsFields} from "./MotionControls";
+import {motionCatalog,defaultControls,type MotionControls} from "./motionCatalog";
+import {motionDuration,createMotion,numericContent,combinationReason,targetReason,type MotionId} from "./motion";
 import { tabNavigation } from "./tabNavigation";
 import { importImage, assetErrorMessage } from "./assets";
 import { useAssetRefs } from "./useAssetUrls";
-import { downloadProject } from "./exportProject";
 import { createPortal } from "react-dom";
 import { WorkbenchMenu } from "./WorkbenchMenu";
 import { WorkbenchIcon } from "./WorkbenchIcon";
@@ -40,8 +42,10 @@ function changeLabel(c: Change) {
 }
 function valueLabel(value: unknown): string {
   if (value === undefined) return "未設定";
+  if (typeof value === "boolean") return value ? "啟用" : "停用";
+  if(value && typeof value === "object" && "presetId" in value && typeof value.presetId === "string" && value.presetId in motionCatalog) return motionCatalog[value.presetId as MotionId].nameZh;
   if (value && typeof value === "object" && "duration" in value)
-    return String(value.duration) + " 毫秒";
+    return String((value as {duration:number}).duration) + " 毫秒";
   if (Array.isArray(value))
     return (
       value
@@ -202,6 +206,8 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   const [effectDurations, setEffectDurations] = useState<
     Record<string, string>
   >({});
+  const [compose,setCompose]=useState<{id:MotionId;targetId:string;revision:number;controls:MotionControls}|null>(null);
+  const [motionEdits,setMotionEdits]=useState<Record<string,MotionControls>>({});
   const effectSource = useRef<{
     id: string | null;
     values: Record<string, number>;
@@ -223,43 +229,46 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   useEffect(() => {
     const previous = effectSource.current;
     const effects = node?.effects ?? [];
+    setMotionEdits({});
     setEffectDurations((pending) =>
       Object.fromEntries(
         effects.map((e) => [
-          e.effectId,
-          previous.id === selected && previous.values[e.effectId] === e.duration
-            ? (pending[e.effectId] ?? String(e.duration))
-            : String(e.duration),
+          e.presetId,
+          previous.id === selected && previous.values[e.presetId] === motionDuration(e)
+            ? (pending[e.presetId] ?? String(motionDuration(e)))
+            : String(motionDuration(e)),
         ]),
       ),
     );
     effectSource.current = {
       id: selected,
-      values: Object.fromEntries(effects.map((e) => [e.effectId, e.duration])),
+      values: Object.fromEntries(effects.map((e) => [e.presetId, motionDuration(e)])),
     };
   }, [selected, node?.effects]);
   const pendingProperties = Boolean(
     node &&
       effectSource.current.id === selected &&
-      (text !== (node.content ?? "") ||
+      (Boolean(compose) || text !== (node.content ?? "") ||
         align !== node.style.align ||
         level !== String(node.level ?? 1) ||
         node.effects.some(
           (effect) =>
-            (effectDurations[effect.effectId] ?? String(effect.duration)) !==
-            String(effect.duration),
-        )),
+            (effectDurations[effect.presetId] ?? String(motionDuration(effect))) !==
+            String(motionDuration(effect)),
+        ) || node.effects.some(effect=>motionEdits[effect.presetId] && JSON.stringify(motionEdits[effect.presetId])!==JSON.stringify(effect.validatedControls))),
   );
   pendingEdits.current = pendingProperties;
   resetProperties.current = () => {
+    setMotionEdits({});
+    setCompose(null);
     setText(node?.content ?? "");
     setAlign(node?.style.align ?? "start");
     setLevel(String(node?.level ?? 1));
     setEffectDurations(
       Object.fromEntries(
         (node?.effects ?? []).map((effect) => [
-          effect.effectId,
-          String(effect.duration),
+          effect.presetId,
+          String(motionDuration(effect)),
         ]),
       ),
     );
@@ -391,12 +400,17 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
     const effectId = value as (typeof effectIds)[number];
     if (!effectCompatible(target, effectId)) {
       setPatchError(true);
-      setNotice("依序顯示僅適用於有子元件的容器。");
+      setNotice(targetReason(target,effectId)??"此效果不適用於目前元件。");
       return;
     }
+    const conflict=combinationReason([...target.effects,{presetId:effectId}]);if(conflict){setPatchError(true);setNotice(conflict);return;}
     if (!setSelectedIds([id])) return;
+    if(Object.values(motionCatalog[effectId].controls).some(c=>c.required)){
+      setCompose({id:effectId,targetId:id,revision:current.current.revision,controls:{...defaultControls(effectId),...(effectId==="count-up"?(numericContent(target.content??"")??{}):{})}});
+      setPanelTab("properties");setPanelOpen(true);return;
+    }
     patch(
-      [{ operation: "attach-effect", targetId: id, payload: { effectId } }],
+      [{ operation: "attach-effect", targetId: id, payload: createMotion(effectId,id) }],
       id,
     );
   }
@@ -443,13 +457,17 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         payload: { property: "level", value: Number(level) },
       });
     for (const effect of node.effects) {
-      const value = Number(effectDurations[effect.effectId] ?? effect.duration);
-      if (value !== effect.duration)
+      if(effect.presetVersion===1){
+        if(motionEdits[effect.presetId])patches.push({operation:"update-effect",targetId:node.id,payload:{effectId:effect.presetId,validatedControls:motionEdits[effect.presetId]}});
+        continue;
+      }
+      const value = Number(effectDurations[effect.presetId] ?? motionDuration(effect));
+      if (value !== motionDuration(effect))
         patches.push({
           operation: "update-effect",
           targetId: node.id,
           payload: {
-            effectId: effect.effectId,
+            effectId: effect.presetId,
             parameters: { duration: value },
           },
         });
@@ -511,7 +529,9 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
           onClick={async () => {
             setExporting(true);
             try {
-              await downloadProject(current.current.history.present);
+              const snapshot=current.current.history.present;
+              const {downloadProject}=await import("./exportProject");
+              await downloadProject(snapshot);
               setPatchError(false);
               setNotice("已匯出 React 專案。");
             } catch {
@@ -819,7 +839,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                           n,
                           draggedEffect as (typeof effectIds)[number],
                         ) &&
-                        !n.effects.some((e) => e.effectId === draggedEffect),
+                        !n.effects.some((e) => e.presetId === draggedEffect),
                     );
                   }}
                   sessionId={session.sessionId}
@@ -919,8 +939,8 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                   !node
                     ? null
                     : !effectCompatible(node, id)
-                      ? "僅適用於容器"
-                      : node.effects.some((e) => e.effectId === id)
+                      ? targetReason(node,id)
+                      : node.effects.some((e) => e.presetId === id)
                         ? "已附加"
                         : null
                 }
@@ -1135,65 +1155,72 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                   {!node.effects.length && (
                     <p className="note">從動畫效果庫拖入，或單擊效果套用。</p>
                   )}
+                  {compose && compose.targetId===node.id && <div className="effect-edit-row">
+                    <h3>{effectLabels[compose.id]}</h3><p className="note">請提供實際內容，確認後才會套用。</p>
+                    <MotionControlsFields id={compose.id} values={compose.controls} onChange={controls=>setCompose({...compose,controls})}/>
+                    <button type="button" onClick={()=>{try{const effect=createMotion(compose.id,compose.targetId,compose.controls);if(patch([{operation:"attach-effect",targetId:compose.targetId,payload:effect}],compose.targetId,compose.revision))setCompose(null);}catch{setPatchError(true);setNotice("請檢查動畫的必填內容與數值範圍。");}}}>確認附加動畫</button>
+                    <button type="button" onClick={()=>setCompose(null)}>取消附加</button>
+                  </div>}
                   {node.effects.map((effect) => (
-                    <div className="effect-edit-row" key={effect.effectId}>
+                    <div className="effect-edit-row" key={effect.presetId}>
                       <label className="field">
-                        {effectLabels[effect.effectId]}
+                        {effectLabels[effect.presetId]}
                         <select
-                          aria-label={"更換" + effectLabels[effect.effectId]}
-                          value={effect.effectId}
+                          aria-label={"更換" + effectLabels[effect.presetId]}
+                          value={effect.presetId}
                           onChange={(e) => {
                             const effectId = e.target
                               .value as (typeof effectIds)[number];
                             if (!effectCompatible(node, effectId)) {
                               setPatchError(true);
-                              setNotice("依序顯示僅適用於有子元件的容器。");
+                              setNotice(targetReason(node,effectId)??"此效果不適用於目前元件。");
                               return;
                             }
+                            if(Object.values(motionCatalog[effectId].controls).some(c=>c.required)){setPatchError(true);setNotice("請先移除原效果，再從素材庫填寫新效果的內容。");return;}
                             patch(
                               [
                                 {
                                   operation: "remove-effect",
                                   targetId: node.id,
-                                  payload: { effectId: effect.effectId },
+                                  payload: { effectId: effect.presetId },
                                 },
                                 {
                                   operation: "attach-effect",
                                   targetId: node.id,
-                                  payload: { ...effect, effectId },
+                                  payload: createMotion(effectId,node.id),
                                 },
                               ],
                               node.id,
                             );
                           }}
                         >
-                          {effectIds.map((id) => (
-                            <option key={id} value={id}>
+                          {effectIds.filter(id=>motionCatalog[id].status==="DONE").map((id) => (
+                            <option key={id} value={id} disabled={!effectCompatible(node,id)}>
                               {effectLabels[id]}
                             </option>
                           ))}
                         </select>
                       </label>
-                      {
+                      {effect.presetVersion===1 ? <MotionControlsFields id={effect.presetId} values={motionEdits[effect.presetId]??effect.validatedControls} onChange={values=>setMotionEdits(previous=>({...previous,[effect.presetId]:values}))}/> :
                         <label className="field">
                           時長（毫秒）
                           <input
                             aria-label={
-                              effect.effectId === "fade-in"
+                              effect.presetId === "fade-in"
                                 ? "動畫時長（毫秒）"
-                                : effectLabels[effect.effectId] + "時長"
+                                : effectLabels[effect.presetId] + "時長"
                             }
                             type="number"
                             min={120}
                             max={1200}
                             value={
-                              effectDurations[effect.effectId] ??
-                              String(effect.duration)
+                              effectDurations[effect.presetId] ??
+                              String(motionDuration(effect))
                             }
                             onChange={(e) =>
                               setEffectDurations((values) => ({
                                 ...values,
-                                [effect.effectId]: e.target.value,
+                                [effect.presetId]: e.target.value,
                               }))
                             }
                           />
@@ -1206,14 +1233,14 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                               {
                                 operation: "remove-effect",
                                 targetId: node.id,
-                                payload: { effectId: effect.effectId },
+                                payload: { effectId: effect.presetId },
                               },
                             ],
                             node.id,
                           )
                         }
                       >
-                        移除{effectLabels[effect.effectId]}
+                        移除{effectLabels[effect.presetId]}
                       </button>
                     </div>
                   ))}

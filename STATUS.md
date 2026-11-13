@@ -1,4 +1,17 @@
 # 狀態
+
+## 最新交付：自有Motion Spec Library（2026-11-13）
+
+- DONE工程：12種原創Motion Spec、公開參數／後端內部指引分層、v0安全遷移／v1嚴格實例、實際素材預覽、相容性／組合拒絕、參數側欄、既有Patch與Undo/Redo／保存、同runtime React ZIP匯出。沒有第二套Renderer或Patch。
+- DONE：前六種規格適配、呼吸光／曲線文字／數字／雙面卡片，以及原創有界物理標籤／四角折頁。DONE僅為工程驗收，主觀美感與實機手感仍PARTIAL。詳細規格以ANIMATION_SPECS.md由registry產生，兩輪具體缺陷與修正見docs/MOTION_LIBRARY_REVIEW.md。
+- PASS：155項單元／整合（含全部12種Patch生命週期）、完整78項Chromium E2E；最後文字／載入修整另跑匯出、圖片與Patch回歸。Typecheck、Build、check:secrets、git diff --check、主專案與匯出模板npm audit（均0漏洞）。保留既有Zod註解警告，沒有壓制；匯出按需載入使主JS降至458.48KB、gzip144.93KB。
+- 效能：24個標籤360個Chromium幀平均16.69ms、最長33.4ms，離屏停止更新；36,000步求解器耐久／有限值／邊界／速度／旋轉驗證PASS。沒有實體手機效能或10分鐘Chromium記憶體曲線驗證，均NOT TESTED。
+- 安全／授權：所有動作仍走既有Session、Revision、scope、CAS；不接受任意HTML／JS／SVG。沒有新增產品依賴，不複製參考網站Prompt／程式／素材。THIRD_PARTY_NOTICES.md隨ZIP提供。付費API呼叫0；真實AI仍NOT TESTED。
+- 證據：/workspace/backups/motion-library-20261113/，包含三尺寸原始預覽／素材展開截圖、效能JSON、完整測試log、獨立React ZIP。原圖沒有手動修飾；恢復bundle為/workspace/backups/Sketch2Site-motion-library.bundle。
+- Git／限制：本輪附件明確禁止Push，覆蓋先前授權；沒有Push、Merge或部署。遠端尚未包含本輪變更，是備份風險；已提供可驗證本機Git bundle，最終SHA以git log為準。
+- 剩餘P2：高密度標籤採靜態降級；物理非精確剛體、折頁非紙張模擬；窄側欄12項需捲動，複雜預覽使用明確展開。沒有已知未處理P0/P1。下一最小任務：人工確認物理／折頁手感、三尺寸素材面板及繁中閱讀品質；不自行進入付費AI／登入／部署。
+
+以下為歷史紀錄，早期狀態與Push紀錄不覆蓋上述本輪結果。
 2026-11-12（Asia/Taipei）
 
 目前工作：免費MVP與資料保護修整 DONE；使用者明確否決目前美感，工作台視覺品質仍 PARTIAL，正在依Notion克制美感與Hallmark設計技能重新修整。本次使用者完整附件覆蓋舊階段停止點，並於本輪追加授權適時Push至GitHub；不Merge／Force Push／部署，不使用付費API。以下先列目前結論，後續舊Phase紀錄只供歷史參考。
@@ -177,5 +190,5 @@ Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38�
 
 本輪最終驗證PASS：Vitest130/130、Chromium66/66、Typecheck、Build、check:secrets、git diff --check；既有Zod註解警告保留。Hallmark實際render 0 FAIL、0 WARN、38個明確spacing例外、F7回答，未隱瞞例外。前後原圖／比較頁／JSON在/workspace/backups/design-polish-20261112/。工程DONE、主觀設計驗收PARTIAL、真實付費AI仍NOT TESTED；沒有付費呼叫、Merge或部署。本地提交後正常Push至既有work並核對SHA，更新bundle與恢復驗證。
 
-## 最新工作：自有Motion Spec Library IN PROGRESS
+## 歷史：Motion Spec規格階段（已由最新交付取代）
 起點7e6aa6fd96ace1b1b6eb329677d4a9fa9b2a6f8e，工作區原先乾淨。已讀新附件、現有文件及Registry／Patch／Renderer；參考網站僅市場概念，不再讀取或複製。已建立12種原創公開參數規格及後端單獨生成指引；ANIMATION_SPECS.md由Registry離線產生。前6個的新規格適配仍PARTIAL、後6個NOT STARTED，未冒充可用功能。接續做版本化參數／既有管線整合，不在單一效果完成時停等。最新附件禁止Push，覆蓋先前授權；只做本地提交，付費API0。

@@ -1,3 +1,4 @@
+import {motionIds,motionCatalog,type MotionId} from "./motionCatalog";
 import type { PageNode } from "./pageSpec";
 export type Point = { x: number; y: number };
 export type Rect = Point & { width: number; height: number };
@@ -55,14 +56,7 @@ export const marqueeTypes = new Set<PageNode["type"]>([
   "image",
   "card",
 ]);
-export const effectLabels = {
-  "fade-in": "淡入",
-  "slide-up": "向上滑入",
-  "scale-in": "縮放進入",
-  "hover-lift": "懸停上浮",
-  "hover-glow": "懸停強調",
-  "stagger-reveal": "依序顯示",
-} as const;
+export const effectLabels = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameZh])) as Record<MotionId,string>;
 export const effectMime = "application/x-sketch2site-effect";
 
 export const nodeLabels: Record<PageNode["type"], string> = {

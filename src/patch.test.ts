@@ -1,3 +1,4 @@
+import {legacyMotion,type MotionInstance} from "./motion";
 import { describe, it, expect } from "vitest";
 import { demoPage } from "./pageFixtures";
 import { PageSchema, type PageNode } from "./pageSpec";
@@ -126,7 +127,7 @@ describe("ID-scoped atomic patch engine", () => {
     expect(
       indexNodes(s.history.present)
         .get(id)
-        ?.effects.find((e) => e.effectId === "fade-in")?.duration,
+        ?.effects.find((e) => e.presetId === "fade-in")?.validatedControls.durationMs,
     ).toBe(450);
     const updated = success(s, [
       {
@@ -137,7 +138,7 @@ describe("ID-scoped atomic patch engine", () => {
     ]);
     s = updated.state;
     expect(updated.diff.changes.map((c) => c.property)).toEqual([
-      "effects.fade-in.duration",
+      "effects.fade-in.validatedControls.durationMs",
     ]);
     const removed = success(s, [
       {
@@ -149,7 +150,7 @@ describe("ID-scoped atomic patch engine", () => {
     expect(
       indexNodes(removed.after)
         .get(id)
-        ?.effects.some((e) => e.effectId === "fade-in"),
+        ?.effects.some((e) => e.presetId === "fade-in"),
     ).toBe(false);
   });
   it.each([
@@ -330,7 +331,7 @@ describe("ID-scoped atomic patch engine", () => {
         targetId: n.id,
         payload: {
           effectId: "slide-up",
-          parameters: { duration: n.effects[0].duration },
+          parameters: { duration: n.effects[0].validatedControls.durationMs },
         },
       },
     ]);
@@ -383,13 +384,7 @@ describe("ID-scoped atomic patch engine", () => {
       { ...s, history: { ...s.history, present: after } },
       "heading",
     );
-    n.effects.push({
-      effectId: "fade-in",
-      duration: 450,
-      delay: 0,
-      distance: 12,
-      stagger: 70,
-    });
+    n.effects.push(legacyMotion({effectId:"fade-in",duration:450,delay:0,distance:12,stagger:70},n.id) as MotionInstance);
     const original = structuredClone(after);
     n.effects.reverse();
     expect(diffPages(original, after).changes[0].property).toBe(

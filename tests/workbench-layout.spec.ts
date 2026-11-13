@@ -120,10 +120,10 @@ for (const width of [1440, 768, 375])
     await openPanel(page, "動畫");
     await expect(
       page.locator("#preview-inspector [data-effect-id]"),
-    ).toHaveCount(6);
+    ).toHaveCount(12);
     await expect(
       page.locator("#preview-inspector .asset-sample .rendered-page"),
-    ).toHaveCount(6);
+    ).toHaveCount(12);
     if (width === 1440) {
       const sample = page.locator(
         '#preview-inspector [data-effect-id="slide-up"] .page-card',

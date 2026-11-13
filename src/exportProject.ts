@@ -4,6 +4,14 @@ import { readAsset } from "./assets";
 import type { PageNode } from "./pageSpec";
 import { PageSchema } from "./pageSpec";
 import { zipProject, type ProjectFile } from "./archive";
+import notices from "../THIRD_PARTY_NOTICES.md?raw";
+import foldGeometrySource from "./foldGeometry.ts?raw";
+import physicsSource from "./physics.ts?raw";
+import physicsTagsSource from "./PhysicsTags.tsx?raw";
+import foldSource from "./FoldReveal.tsx?raw";
+import motionRuntimeSource from "./MotionRuntime.tsx?raw";
+import motionSource from "./motion.ts?raw";
+import motionCatalogSource from "./motionCatalog.ts?raw";
 import runtime from "./PageRuntime.tsx?raw";
 import schema from "./pageSpec.ts?raw";
 import styles from "./pageRuntime.css?raw";
@@ -22,6 +30,7 @@ export async function exportProjectFiles(
   page.sections.forEach(walk);
   const files: ProjectFile[] = [
     { path: "package.json", content: manifest },
+    { path: "THIRD_PARTY_NOTICES.md", content: notices },
     { path: "package-lock.json", content: lock },
     {
       path: "index.html",
@@ -63,13 +72,20 @@ export async function exportProjectFiles(
     },
     { path: "src/PageRuntime.tsx", content: runtime },
     { path: "src/pageSpec.ts", content: schema },
+    { path: "src/motion.ts", content: motionSource },
+    { path: "src/MotionRuntime.tsx", content: motionRuntimeSource },
+    { path: "src/physics.ts", content: physicsSource },
+    { path: "src/PhysicsTags.tsx", content: physicsTagsSource },
+    { path: "src/FoldReveal.tsx", content: foldSource },
+    { path: "src/foldGeometry.ts", content: foldGeometrySource },
+    { path: "src/motionCatalog.ts", content: motionCatalogSource },
     { path: "src/pageRuntime.css", content: styles },
     { path: "src/tokens.css", content: tokens },
     { path: "src/page.json", content: JSON.stringify(page, null, 2) },
     {
       path: "README.md",
       content:
-        "# 匯出網站\n\n使用 Node.js 24 LTS，執行 `npm ci`、`npm run dev`；正式建置為 `npm run build`，預覽產物為 `npm run preview`。首次安裝需連線 npm，網站執行不需 Sketch2Site 後端。\n\n內容來自經驗證的頁面，文字、素材與六種受控動畫隨專案提供。修改後可自行建置；動畫遵守 prefers-reduced-motion。只包含目前頁面，不包含草稿、註記、編輯歷史、使用者秘密或 AI 呼叫功能。\n",
+        "# 匯出網站\n\n使用 Node.js 24 LTS，執行 `npm ci`、`npm run dev`；正式建置為 `npm run build`，預覽產物為 `npm run preview`。首次安裝需連線 npm，網站執行不需 Sketch2Site 後端。\n\n內容來自經驗證的頁面，文字、素材與已套用的受控動畫隨專案提供。修改後可自行建置；動畫遵守 prefers-reduced-motion。只包含目前頁面，不包含草稿、註記、編輯歷史、使用者秘密或 AI 呼叫功能。\n",
     },
   ];
   files.push({ path: "src/assetRef.ts", content: assetSchema });

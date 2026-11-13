@@ -203,18 +203,22 @@ test("動畫拖放、相容性、替換移除、Undo/Redo 與實際播放", asyn
   await page.getByRole("button", { name: "重做修改" }).click();
   await expect(node(page, 2)).toHaveAttribute("data-effects", "slide-up");
   await page.locator('[data-effect-id="stagger-reveal"]').dragTo(node(page, 2));
-  await expect(page.getByRole("alert")).toContainText("僅適用於有子元件");
+  await expect(page.getByRole("alert")).toContainText("不適用於目前元件");
   await expect(node(page, 2)).toHaveAttribute("data-effects", "slide-up");
   await editSelection(page);
-  await page.getByLabel("更換向上滑入").selectOption("scale-in");
-  await expect(node(page, 2)).toHaveAttribute("data-effects", "scale-in");
-  await page.getByRole("button", { name: "移除縮放進入", exact: true }).click();
+  await expect(page.getByLabel("更換向上滑入").locator('option[value="scale-in"]')).toBeDisabled();
+  await page.getByLabel("更換向上滑入").selectOption("fade-in");
+  await expect(node(page, 2)).toHaveAttribute("data-effects", "fade-in");
+  await page.getByRole("button", { name: "移除淡入", exact: true }).click();
   await expect(node(page, 2)).toHaveAttribute("data-effects", "");
   await openPanel(page, "動畫");
   await page
     .locator('[data-effect-id="stagger-reveal"]')
     .dragTo(node(page, 4), { targetPosition: { x: 3, y: 3 } });
-  await expect(node(page, 4)).toHaveAttribute("data-effects", "stagger-reveal");
+  await expect(page.getByRole("alert")).toContainText("至少兩個子元素");
+  await expect(node(page, 4)).toHaveAttribute("data-effects", "");
+  await page.locator('[data-effect-id="stagger-reveal"]').dragTo(node(page,1),{targetPosition:{x:3,y:3}});
+  await expect(node(page,1)).toHaveAttribute("data-effects","stagger-reveal");
   await page.screenshot({
     path: "test-results/phase6-animations.png",
     fullPage: true,
@@ -222,11 +226,11 @@ test("動畫拖放、相容性、替換移除、Undo/Redo 與實際播放", asyn
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await viewAction(page, "重播動畫");
   await expect
-    .poll(() => node(page, 5).evaluate((el) => el.getAnimations().length))
+    .poll(() => node(page, 4).evaluate((el) => el.getAnimations().length))
     .toBeGreaterThan(0);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect
-    .poll(() => node(page, 5).evaluate((el) => el.getAnimations().length))
+    .poll(() => node(page, 4).evaluate((el) => el.getAnimations().length))
     .toBe(0);
   expect(external).toEqual([]);
 });

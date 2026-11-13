@@ -1,17 +1,12 @@
+import {createMotion} from "./motion";
+import {motionCatalog} from "./motionCatalog";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { useMemo, useState } from "react";
 import { PageRenderer, animationRegistry } from "./PageRenderer";
 import { PageSchema, type effectIds } from "./pageSpec";
 import { effectLabels } from "./visualEditing";
 type EffectId = (typeof effectIds)[number];
-const descriptions: Record<EffectId, string> = {
-  "fade-in": "由淡到清晰",
-  "slide-up": "輕盈向上進入",
-  "scale-in": "輕微縮放進入",
-  "hover-lift": "游標移入時上浮",
-  "hover-glow": "游標移入時強調",
-  "stagger-reveal": "子元件依序出現",
-};
+const descriptions=Object.fromEntries(Object.entries(motionCatalog).map(([id,d])=>[id,d.summary])) as Record<EffectId,string>;
 function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
   const [ids] = useState(() =>
     Array.from({ length: 4 }, () => crypto.randomUUID()),
@@ -32,10 +27,11 @@ function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
             children: [
               {
                 id: ids[1],
-                type: "card",
+                type: id==="breathing-glow"?"button":["count-up","curved-path-text"].includes(id)?"paragraph":"card",
+                ...(id==="breathing-glow"?{content:"查看作品",href:"https://learn.microsoft.com/zh-tw/training/"}:id==="count-up"?{content:"1234"}:id==="curved-path-text"?{content:"原創動畫示意"}:{}),
                 style: { padding: "small", gap: "small", tone: "soft" },
-                effects: active ? [{ effectId: id }] : [],
-                children: [
+                effects: active ? [createMotion(id,ids[1],id==="count-up"?{endValue:1234}:id==="flip-card"?{backText:"這是背面示意內容"}:id==="fold-reveal"?{underText:"這是下層示意內容"}:id==="physics-tag-field"?{labels:["示意一","示意二","示意三"]}:{})] : [],
+                ...(!["breathing-glow","count-up","curved-path-text"].includes(id)?{children: [
                   {
                     id: ids[2],
                     type: "paragraph",
@@ -48,7 +44,7 @@ function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
                     content: "—",
                     style: { padding: "none" },
                   },
-                ],
+                ]}:{}),
               },
             ],
           },
@@ -59,7 +55,7 @@ function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
   return <PageRenderer input={page} />;
 }
 function EffectGlyph({ id }: { id: EffectId }) {
-  const paths: Record<EffectId, React.ReactNode> = {
+  const paths: Partial<Record<EffectId, React.ReactNode>> = {
     "fade-in": (
       <>
         <rect x="3" y="7" width="5" height="10" opacity=".2" />
@@ -91,6 +87,12 @@ function EffectGlyph({ id }: { id: EffectId }) {
         <path d="M3 7V3h4m10 0h4v4M3 17v4h4m10 0h4v-4" />
       </>
     ),
+    "breathing-glow": <><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" opacity=".4"/></>,
+    "curved-path-text": <><path d="M3 17Q12 2 21 17"/><path d="M6 9v3m6-6v3m6 0v3"/></>,
+    "count-up": <><path d="M4 8h3v11M12 10q0-6 6-3t-4 8l-2 4h9"/><path d="m3 4 2-2 2 2"/></>,
+    "flip-card": <><path d="M6 4h12v16H6zM3 9l-2 3 2 3m18-6 2 3-2 3"/><path d="M12 4v16" opacity=".4"/></>,
+    "physics-tag-field": <><rect x="2" y="3" width="12" height="6" rx="3"/><rect x="8" y="14" width="14" height="6" rx="3"/><path d="m6 12-2 4m14-9 2 4"/></>,
+    "fold-reveal": <><path d="M3 3h12l6 6v12H3zM15 3v6h6"/><path d="m8 15 4-4m-4 0h4v4"/></>,
     "stagger-reveal": (
       <>
         <path d="M3 5h8M7 12h10M12 19h9" />
@@ -106,7 +108,7 @@ function EffectGlyph({ id }: { id: EffectId }) {
       stroke="currentColor"
       strokeWidth="1.5"
     >
-      {paths[id]}
+      {paths[id]??<><path d="M4 12h16M12 4v16"/><circle cx="12" cy="12" r="7"/></>}
     </svg>
   );
 }
@@ -129,6 +131,8 @@ export function AnimationLibrary({
   filter?: string;
   draft?: boolean;
 }) {
+  const [expanded,setExpanded]=useState<EffectId|null>(null);
+  const [replay,setReplay]=useState(0);
   const [active, setActive] = useState<EffectId | null>(null);
   return (
     <section
@@ -137,6 +141,7 @@ export function AnimationLibrary({
     >
       <div className="panel-intro">
         <h2>動畫素材</h2>
+        <small>素材示意，非使用者內容</small>
         <p>
           {selectedLabel
             ? `目前選取：${selectedLabel}`
@@ -155,11 +160,11 @@ export function AnimationLibrary({
             const reason = compatibility(id);
             return (
               <div
-                className="animation-asset"
+                className={"animation-asset"+(["flip-card","physics-tag-field","fold-reveal","curved-path-text"].includes(id)&&expanded===id?" motion-expanded":"")}
                 key={id}
                 data-effect-id={id}
                 data-compatibility={reason ? "unavailable" : "available"}
-                draggable={!disabled}
+                draggable={!disabled && !["flip-card","physics-tag-field","fold-reveal"].includes(id)}
                 onDragStart={(e) => {
                   if (disabled) {
                     e.preventDefault();
@@ -172,31 +177,25 @@ export function AnimationLibrary({
                   e.currentTarget.classList.remove("is-dragging");
                   onDragEnd?.();
                 }}
-                onMouseEnter={() => setActive(id)}
-                onMouseLeave={() => setActive(null)}
-                onFocusCapture={() => setActive(id)}
-                onBlurCapture={() => setActive(null)}
+                onMouseEnter={() => {if(!expanded)setActive(id);}}
+                onMouseLeave={() => {if(!expanded)setActive(null);}}
+                onFocusCapture={() => {if(!expanded)setActive(id);}}
+                onBlurCapture={() => {if(!expanded)setActive(null);}}
               >
-                <div className="asset-preview" aria-hidden="true">
+                <div className="asset-preview" aria-label="效果示意" onClickCapture={e=>{if((e.target as Element).closest("a"))e.preventDefault();}}>
                   <EffectGlyph id={id} />
                   <div className="asset-sample">
-                    <EffectSample id={id} active={active === id} />
+                    <EffectSample key={replay} id={id} active={active === id} />
                   </div>
                 </div>
                 <button
                   className="asset-choose"
+                  draggable={!disabled}
                   aria-label={
                     effectLabels[id] +
                     (draft
                       ? " · " +
-                        {
-                          "hover-glow": "Hover Glow",
-                          "fade-in": "Fade In",
-                          "hover-lift": "Hover Lift",
-                          "slide-up": "Slide Up",
-                          "scale-in": "Scale In",
-                          "stagger-reveal": "Stagger Reveal",
-                        }[id]
+                        motionCatalog[id].nameEn
                       : "")
                   }
                   disabled={disabled || Boolean(reason)}
@@ -207,6 +206,8 @@ export function AnimationLibrary({
                   <WorkbenchIcon name="grip" />
                 </button>
                 <small>{reason ?? descriptions[id]}</small>
+                <button type="button" className="motion-replay" aria-label={"重播"+effectLabels[id]+"示意"} onClick={()=>{if(["flip-card","physics-tag-field","fold-reveal","curved-path-text"].includes(id))setExpanded(id);setActive(id);setReplay(v=>v+1);}}>重播示意</button>
+                {expanded===id&&<button type="button" onClick={()=>{setExpanded(null);setActive(null);}}>收合示意</button>}
               </div>
             );
           })}

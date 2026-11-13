@@ -1,0 +1,23 @@
+import {it,expect} from 'vitest';
+import {motionFixture} from '../tests/fixtures/motions';
+import {PageSchema} from './pageSpec';
+import {motionIds,motionCatalog,createMotion,targetReason,numericContent} from './motion';
+import {applyPatchBatch,createPageSession,indexNodes,travelPage} from './patch';
+it.each(motionIds)('versioned %s attaches, edits, rejects invalid data and survives Undo/Redo and serialization',id=>{
+ const clean=structuredClone(motionFixture());const nodes=indexNodes(clean);for(const node of nodes.values())node.effects=[];
+ let state=createPageSession(clean);
+ const target=[...nodes.values()].find(n=>!targetReason(n,id))!;
+ const data=id==='count-up'?numericContent(target.content!)!:id==='flip-card'?{backText:'測試使用者背面'}:id==='fold-reveal'?{underText:'測試使用者下層'}:id==='physics-tag-field'?{labels:['測試標籤一','測試標籤二']}:{};
+ const commit=(patches:unknown[])=>applyPatchBatch(state,{schemaVersion:1,sessionId:state.sessionId,baseRevision:state.revision,patches},[target.id]);
+ let result=commit([{operation:'attach-effect',targetId:target.id,payload:createMotion(id,target.id,data)}]);expect(result.ok).toBe(true);if(!result.ok)throw new Error(result.code);state=result.state;
+ const before=state.history.present,original=indexNodes(before).get(target.id)!.effects[0];
+ const entry=Object.entries(motionCatalog[id].controls).find(([key,control])=>!['endValue','decimals','prefix','suffix'].includes(key)&&control.kind==='number')??Object.entries(motionCatalog[id].controls).find(([,control])=>control.kind==='select')!;
+ const [key,control]=entry,value=control.kind==='number'?(original.validatedControls[key]===control.min?control.max!:control.min!):control.options!.find(v=>v!==original.validatedControls[key])!;
+ result=commit([{operation:'update-effect',targetId:target.id,payload:{effectId:id,validatedControls:{[key]:value}}}]);expect(result.ok).toBe(true);if(!result.ok)throw new Error(result.code);state=result.state;
+ expect(result.diff.changedIds).toEqual([target.id]);
+ expect(commit([{operation:'update-effect',targetId:target.id,payload:{effectId:id,validatedControls:{arbitraryCss:'url(https://evil.invalid)'}}}]).ok).toBe(false);
+ const restored=PageSchema.parse(JSON.parse(JSON.stringify(state.history.present)));expect(indexNodes(restored).get(target.id)!.effects[0].validatedControls[key]).toEqual(value);
+ expect(travelPage(state,'undo').history.present).toEqual(before);
+ expect(travelPage(travelPage(state,'undo'),'redo').history.present).toEqual(state.history.present);
+ const removed=commit([{operation:'remove-effect',targetId:target.id,payload:{effectId:id}}]);expect(removed.ok).toBe(true);if(removed.ok)expect(indexNodes(removed.after).get(target.id)!.effects).toEqual([]);
+});

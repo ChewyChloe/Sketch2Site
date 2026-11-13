@@ -1,22 +1,8 @@
 import { imageSource } from "./assetRef";
 import { z } from "zod";
-export const effectIds = [
-  "fade-in",
-  "slide-up",
-  "scale-in",
-  "hover-lift",
-  "hover-glow",
-  "stagger-reveal",
-] as const;
-export const EffectSchema = z
-  .object({
-    effectId: z.enum(effectIds),
-    duration: z.number().int().min(120).max(1200).default(450),
-    delay: z.number().int().min(0).max(1000).default(0),
-    distance: z.number().int().min(0).max(32).default(12),
-    stagger: z.number().int().min(30).max(150).default(70),
-  })
-  .strict();
+import { motionIds, MotionSchema, bindMotionInput, compatibleMotion, combinationReason, targetReason, withinMotionBudget, type MotionInstance } from "./motion";
+export const effectIds = motionIds;
+export const EffectSchema = MotionSchema;
 export const localAssets = ["/assets/workspace.svg"] as const;
 export const href = z
   .string()
@@ -72,7 +58,7 @@ export function effectCompatible(
   node: PageNode,
   effectId: (typeof effectIds)[number],
 ) {
-  return effectId !== "stagger-reveal" || Boolean(node.children?.length);
+  return targetReason(node,effectId) === null;
 }
 const common = {
   id: z.string().uuid(),
@@ -85,15 +71,15 @@ const common = {
   }),
   effects: z
     .array(EffectSchema)
-    .max(6)
+    .max(12)
     .default([])
     .refine(
-      (a) => new Set(a.map((e) => e.effectId)).size === a.length,
+      (a) => new Set(a.map((e) => e.presetId)).size === a.length,
       "動畫重複",
     ),
 };
 export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
-  z.discriminatedUnion("type", [
+  z.preprocess(bindMotionInput,z.discriminatedUnion("type", [
     z
       .object({
         ...common,
@@ -161,7 +147,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         alt: z.string().min(1).max(200),
       })
       .strict(),
-  ]),
+  ])),
 );
 // Bound untrusted input before recursive Zod traversal; reject cycles and huge/deep objects.
 function withinBudget(input: unknown): boolean {
@@ -206,6 +192,7 @@ const PageObject = z
   .superRefine((page, ctx) => {
     const ids = new Set<string>();
     const links: string[] = [];
+    const motions:MotionInstance[]=[];
     let count = 0;
     const walk = (n: PageNode, depth: number) => {
       if (++count > 200 || depth > 10)
@@ -213,11 +200,12 @@ const PageObject = z
       if (ids.has(n.id))
         ctx.addIssue({ code: "custom", message: "元件 ID 重複" });
       ids.add(n.id);
-      if (n.effects.some((e) => !effectCompatible(n, e.effectId)))
+      motions.push(...n.effects);
+      if (n.effects.some((e) => !compatibleMotion(n, e)) || combinationReason(n.effects))
         ctx.addIssue({
           code: "custom",
           path: ["effects"],
-          message: "依序顯示需要子元件",
+          message: "動畫參數、對象或組合不相容",
         });
       if (n.href?.startsWith("#")) links.push(n.href.slice(1));
       n.children?.forEach((c) => walk(c, depth + 1));
@@ -227,6 +215,7 @@ const PageObject = z
         ctx.addIssue({ code: "custom", message: "最外層必須是區塊" });
       walk(section, 0);
     }
+    if(!withinMotionBudget(motions))ctx.addIssue({code:"custom",message:"動畫數量超過效能上限"});
     if (links.some((id) => !ids.has(id)))
       ctx.addIssue({ code: "custom", message: "找不到連結目標" });
   });

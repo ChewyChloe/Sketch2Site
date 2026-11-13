@@ -1,3 +1,7 @@
+import {FoldReveal} from "./FoldReveal";
+import {PhysicsTags} from "./PhysicsTags";
+import {CountUp,CurvedText,FlipCard} from "./MotionRuntime";
+import { motionCatalog, motionIds, motionNumber, motionDuration } from "./motion";
 import {
   createContext,
   useContext,
@@ -19,100 +23,43 @@ import {
 } from "./pageSpec";
 import "./pageRuntime.css";
 type Effect = PageNode["effects"][number];
-export const animationRegistry: Record<
-  (typeof effectIds)[number],
-  { entrance?: boolean; hover?: boolean; stagger?: boolean }
-> = {
-  "fade-in": { entrance: true },
-  "slide-up": { entrance: true },
-  "scale-in": { entrance: true },
-  "hover-lift": { hover: true },
-  "hover-glow": { hover: true },
-  "stagger-reveal": { stagger: true },
-};
-function animateEntrance(
-  element: HTMLElement,
-  effects: Effect[],
-  extraDelay = 0,
-) {
-  const entrance = effects.filter(
-    (e) => animationRegistry[e.effectId].entrance,
-  );
-  if (!entrance.length) return null;
-  const slide = entrance.find((e) => e.effectId === "slide-up");
-  const scale = entrance.some((e) => e.effectId === "scale-in");
-  return element.animate(
-    [
-      {
-        opacity: 0,
-        transform: `translateY(${slide?.distance ?? 0}px) scale(${scale ? 0.96 : 1})`,
-      },
-      { opacity: 1, transform: "translateY(0) scale(1)" },
-    ],
-    {
-      duration: Math.max(...entrance.map((e) => e.duration)),
-      delay: Math.max(...entrance.map((e) => e.delay)) + extraDelay,
-      easing: "cubic-bezier(.2,.7,.3,1)",
-      fill: "backwards",
-    },
-  );
+export const animationRegistry = Object.fromEntries(motionIds.filter(id=>motionCatalog[id].status==="DONE").map(id=>[id,{entrance:["fade-in","slide-up","scale-in"].includes(id),hover:["hover-lift","hover-glow"].includes(id),stagger:id==="stagger-reveal"}])) as Record<typeof motionIds[number],{entrance?:boolean;hover?:boolean;stagger?:boolean}>;
+const easingValues:Record<string,string>={smooth:"cubic-bezier(.2,.7,.3,1)",linear:"linear","ease-out":"ease-out"};
+function animateEntrance(element:HTMLElement,effects:Effect[],extraDelay=0) {
+  const entrance=effects.filter(e=>animationRegistry[e.presetId]?.entrance);
+  if(!entrance.length)return null;
+  const slide=entrance.find(e=>e.presetId==="slide-up"),scale=entrance.find(e=>e.presetId==="scale-in");
+  return element.animate([
+    {opacity:0,translate:`0 ${slide?motionNumber(slide,"distancePx"):0}px`,scale:scale?motionNumber(scale,"initialScale",.96):1},
+    {opacity:1,translate:"0 0",scale:1}
+  ],{duration:Math.max(...entrance.map(motionDuration)),delay:Math.max(...entrance.map(e=>motionNumber(e,"delayMs")))+extraDelay,
+    easing:easingValues[String(entrance[0].validatedControls.easing??"smooth")],fill:"backwards"});
 }
-function useAnimations(
-  node: PageNode,
-  ref: React.RefObject<HTMLElement | null>,
-) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !node.effects.length || !el.animate) return;
-    const media = matchMedia("(prefers-reduced-motion: reduce)");
-    const running: Animation[] = [];
-    let observer: IntersectionObserver | undefined;
-    const cancel = () => {
-      observer?.disconnect();
-      running.forEach((a) => a.cancel());
-    };
-    const start = () => {
-      if (media.matches) return;
-      const own = animateEntrance(el, node.effects);
-      if (own) running.push(own);
-      const stagger = node.effects.find(
-        (e) => animationRegistry[e.effectId].stagger,
-      );
-      if (stagger)
-        node.children?.forEach((child, index) => {
-          if (child.effects.some((e) => animationRegistry[e.effectId].entrance))
-            return;
-          const target = el.querySelector<HTMLElement>(
-            '[data-page-id="' + child.id + '"]',
-          );
-          if (target) {
-            const animation = animateEntrance(
-              target,
-              [{ ...stagger, effectId: "slide-up" }],
-              Math.min(index, 12) * stagger.stagger,
-            );
-            if (animation) running.push(animation);
-          }
-        });
-    };
-    if (!media.matches) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((e) => e.isIntersecting)) {
-            start();
-            observer?.disconnect();
-          }
-        },
-        { threshold: 0.05 },
-      );
-      observer.observe(el);
-    }
-    media.addEventListener("change", cancel);
-    return () => {
-      cancel();
-      media.removeEventListener("change", cancel);
-    };
-  }, [node, ref]);
+function useAnimations(node:PageNode,ref:React.RefObject<HTMLElement|null>) {
+ useEffect(()=>{
+  const el=ref.current;if(!el||!node.effects.length||!el.animate)return;
+  const media=matchMedia("(prefers-reduced-motion: reduce)"),running:Animation[]=[];
+  let observer:IntersectionObserver|undefined;
+  const cancel=()=>{observer?.disconnect();running.forEach(a=>a.cancel());};
+  const play=(effects:Effect[])=>{if(media.matches)return;const own=animateEntrance(el,effects);if(own)running.push(own);
+   const stagger=effects.find(e=>e.presetId==="stagger-reveal");
+   if(stagger)node.children?.forEach((child,index)=>{
+    if(child.effects.some(e=>animationRegistry[e.presetId]?.entrance))return;
+    const target=el.querySelector<HTMLElement>('[data-page-id="'+child.id+'"]');if(!target)return;
+    const v1=stagger.presetVersion===1,c=stagger.validatedControls;
+    const presetId=v1?(c.revealStyle==="fade"?"fade-in":c.revealStyle==="scale"?"scale-in":"slide-up"):"slide-up";
+    const animation=animateEntrance(target,[{...stagger,presetId,validatedControls:{durationMs:motionDuration(stagger),delayMs:0,distancePx:v1?16:motionNumber(stagger,"distancePx"),initialScale:.96}}],
+      Math.min(1200,(c.direction==="reverse"?(node.children!.length-1-index):index)*motionNumber(stagger,"intervalMs",100)));
+    if(animation)running.push(animation);
+   });
+  };
+  if(!media.matches){
+   play(node.effects.filter(e=>e.validatedControls.trigger==="enter"||e.presetId==="scale-in"&&e.presetVersion===1));
+   const observed=node.effects.filter(e=>e.validatedControls.trigger!=="enter"&&!(e.presetId==="scale-in"&&e.presetVersion===1));
+   if(observed.length){observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){play(observed);observer?.disconnect();}},{threshold:.05});observer.observe(el);}
+  }
+  media.addEventListener("change",cancel);return ()=>{cancel();media.removeEventListener("change",cancel);};
+ },[node,ref]);
 }
 const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
 function SafeImage({ node }: { node: PageNode }) {
@@ -182,12 +129,29 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       node.type === "heading"
         ? (`h${node.level}` as "h1" | "h2" | "h3")
         : entry.tag;
-  const lift = node.effects.find((e) => e.effectId === "hover-lift"),
-    glow = node.effects.find((e) => e.effectId === "hover-glow");
+  const lift = node.effects.find((e) => e.presetId === "hover-lift"),
+    glow = node.effects.find((e) => e.presetId === "hover-glow");
+  const breathing=node.effects.find(e=>e.presetId==="breathing-glow"),curve=node.effects.find(e=>e.presetId==="curved-path-text"),count=node.effects.find(e=>e.presetId==="count-up"),flip=node.effects.find(e=>e.presetId==="flip-card");
+  const physics=node.effects.find(e=>e.presetId==="physics-tag-field"),fold=node.effects.find(e=>e.presetId==="fold-reveal");
+  useEffect(()=>{
+    const el=ref.current;if(!breathing||!el)return;
+    let visible=false;
+    const update=()=>{el.dataset.motionPaused=String(!visible||document.hidden);};
+    const observer=new IntersectionObserver(entries=>{visible=entries.some(e=>e.isIntersecting);update();});
+    observer.observe(el);document.addEventListener('visibilitychange',update);update();
+    return ()=>{observer.disconnect();document.removeEventListener('visibilitychange',update);};
+  },[breathing]);
+  const children=node.children?.map(child=><RenderNode key={child.id} node={child}/>);
   const style = {
+    "--breathing-cycle":(breathing?motionNumber(breathing,"cycleMs"):3200)+"ms",
+    "--breathing-spread":(breathing?motionNumber(breathing,"spreadPx"):12)+"px",
+    "--breathing-strength":breathing?.validatedControls.intensity==="medium"?"30%":"15%",
     "--page-columns": node.columns ?? 1,
-    "--effect-lift": (lift?.distance ?? 0) + "px",
-    "--hover-duration": (lift?.duration ?? glow?.duration ?? 250) + "ms",
+    "--effect-shadow": lift?.validatedControls.shadowIntensity==="none"?"none":lift?.validatedControls.shadowIntensity==="medium"?"0 8px 18px rgb(0 0 0 / .16)":"0 4px 10px rgb(0 0 0 / .08)",
+    "--glow-spread": (glow?motionNumber(glow,"spreadPx",4):4)+"px",
+    "--glow-strength": glow?.validatedControls.intensity==="medium"?"35%":"18%",
+    "--effect-lift": (lift ? motionNumber(lift,lift.presetVersion===0?"distancePx":"liftPx",5) : 0) + "px",
+    "--hover-duration": (lift ? motionDuration(lift) : glow ? motionDuration(glow) : 250) + "ms",
   } as CSSProperties;
   return (
     <Tag
@@ -195,7 +159,9 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       id={"page-" + node.id}
       data-page-id={node.id}
       data-page-type={node.type}
-      data-effects={node.effects.map((e) => e.effectId).join(" ")}
+      data-pause-hover={breathing?.validatedControls.pauseOnHover===true}
+      tabIndex={(lift||glow)&&node.type!=="button"?0:undefined}
+      data-effects={node.effects.map((e) => e.presetId).join(" ")}
       className={[
         "page-node",
         entry.className,
@@ -206,6 +172,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
         "width-" + node.style.width,
         lift ? "effect-lift" : "",
         glow ? "effect-glow" : "",
+        breathing ? "effect-breathing" : "",
       ].join(" ")}
       style={style}
       {...(node.type === "button"
@@ -220,11 +187,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
     >
       {node.type === "image" ? (
         <SafeImage key={node.src} node={node} />
-      ) : node.children ? (
-        node.children.map((child) => <RenderNode key={child.id} node={child} />)
-      ) : (
-        node.content
-      )}
+      ) : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.content}
     </Tag>
   );
 });

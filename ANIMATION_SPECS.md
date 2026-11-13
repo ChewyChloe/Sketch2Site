@@ -7,23 +7,23 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | Preset | 中文名稱 | 狀態 | 類別 | 複雜度 |
 | --- | --- | --- | --- | --- |
-| fade-in | 淡入 | PARTIAL | 進場 | low |
-| slide-up | 向上滑入 | PARTIAL | 進場 | low |
-| scale-in | 縮放進入 | PARTIAL | 進場 | low |
-| hover-lift | 懸停浮起 | PARTIAL | 互動 | low |
-| hover-glow | 懸停光暈 | PARTIAL | 互動 | low |
-| stagger-reveal | 依序顯示 | PARTIAL | 進場 | medium |
-| breathing-glow | 呼吸光按鈕 | NOT STARTED | 互動 | medium |
-| curved-path-text | 曲線文字 | NOT STARTED | 內容 | medium |
-| count-up | 數字遞增 | NOT STARTED | 內容 | medium |
-| flip-card | 雙面卡片 | NOT STARTED | 內容 | medium |
-| physics-tag-field | 物理標籤場 | NOT STARTED | 互動 | high |
-| fold-reveal | 折頁揭露 | NOT STARTED | 內容 | high |
+| fade-in | 淡入 | DONE | 進場 | low |
+| slide-up | 向上滑入 | DONE | 進場 | low |
+| scale-in | 縮放進入 | DONE | 進場 | low |
+| hover-lift | 懸停浮起 | DONE | 互動 | low |
+| hover-glow | 懸停光暈 | DONE | 互動 | low |
+| stagger-reveal | 依序顯示 | DONE | 進場 | medium |
+| breathing-glow | 呼吸光按鈕 | DONE | 互動 | medium |
+| curved-path-text | 曲線文字 | DONE | 內容 | medium |
+| count-up | 數字遞增 | DONE | 內容 | medium |
+| flip-card | 雙面卡片 | DONE | 內容 | medium |
+| physics-tag-field | 物理標籤場 | DONE | 互動 | high |
+| fold-reveal | 折頁揭露 | DONE | 內容 | high |
 
 ## 淡入 / Fade In
 
 - Preset: `fade-in` / version 1
-- 狀態：PARTIAL
+- 狀態：DONE
 - 說明：內容從透明自然顯現。
 - 適用：標題、段落與圖片
 - targetType：text、heading、paragraph、image、card、container、button、section、stack、grid
@@ -54,7 +54,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 向上滑入 / Slide Up
 
 - Preset: `slide-up` / version 1
-- 狀態：PARTIAL
+- 狀態：DONE
 - 說明：輕微上移，同時淡入。
 - 適用：介紹、圖片與卡片
 - targetType：text、heading、paragraph、image、card、container、button、section、stack、grid
@@ -86,7 +86,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 縮放進入 / Scale In
 
 - Preset: `scale-in` / version 1
-- 狀態：PARTIAL
+- 狀態：DONE
 - 說明：從略小尺寸平滑顯現。
 - 適用：圖片與重點區塊
 - targetType：image、card、container、section、stack、grid
@@ -116,7 +116,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 懸停浮起 / Hover Lift
 
 - Preset: `hover-lift` / version 1
-- 狀態：PARTIAL
+- 狀態：DONE
 - 說明：移入或聚焦時輕微浮起。
 - 適用：卡片、圖片與按鈕
 - targetType：card、button、image、container、section、stack、grid
@@ -146,7 +146,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 懸停光暈 / Hover Glow
 
 - Preset: `hover-glow` / version 1
-- 狀態：PARTIAL
+- 狀態：DONE
 - 說明：以主題色柔和強調邊緣。
 - 適用：按鈕與互動卡片
 - targetType：button、card
@@ -176,7 +176,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 依序顯示 / Stagger Reveal
 
 - Preset: `stagger-reveal` / version 1
-- 狀態：PARTIAL
+- 狀態：DONE
 - 說明：讓群組內容依序顯現。
 - 適用：列表與作品群組
 - targetType：card、container、section、stack、grid
@@ -207,12 +207,12 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 呼吸光按鈕 / Breathing Glow Button
 
 - Preset: `breathing-glow` / version 1
-- 狀態：NOT STARTED
+- 狀態：DONE
 - 說明：以平緩亮度節奏標示主要行動。
 - 適用：主要行動按鈕
 - targetType：button
 - interactionType：idle-loop、hover、focus
-- techBase：Web Animations / CSS / Pointer Events
+- techBase：CSS opacity keyframes
 - previewComponent：breathing-glow
 - tags：互動、主要行動按鈕
 - rendererMapping：breathing-glow
@@ -238,7 +238,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 曲線文字 / Curved Path Text
 
 - Preset: `curved-path-text` / version 1
-- 狀態：NOT STARTED
+- 狀態：DONE
 - 說明：讓短文字沿自製弧線呈現。
 - 適用：品牌標語與短標題
 - targetType：text、heading、paragraph
@@ -269,12 +269,12 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 數字遞增 / Count Up
 
 - Preset: `count-up` / version 1
-- 狀態：NOT STARTED
+- 狀態：DONE
 - 說明：從起始值變化至使用者的真實數值。
 - 適用：已有的統計數字
 - targetType：text、heading、paragraph
 - interactionType：on-enter、scroll-enter
-- techBase：Web Animations / CSS / Pointer Events
+- techBase：requestAnimationFrame / Intl.NumberFormat
 - previewComponent：count-up
 - tags：內容、已有的統計數字
 - rendererMapping：count-up
@@ -303,12 +303,12 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 雙面卡片 / Flip Card
 
 - Preset: `flip-card` / version 1
-- 狀態：NOT STARTED
+- 狀態：DONE
 - 說明：點擊翻面，閱讀使用者提供的另一面。
 - 適用：作品與詳情卡片
 - targetType：card
 - interactionType：click、keyboard、hover
-- techBase：Web Animations / CSS / Pointer Events
+- techBase：CSS 3D Transform
 - previewComponent：flip-card
 - tags：內容、作品與詳情卡片
 - rendererMapping：flip-card
@@ -335,7 +335,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 物理標籤場 / Physics Tag Field
 
 - Preset: `physics-tag-field` / version 1
-- 狀態：NOT STARTED
+- 狀態：DONE
 - 說明：標籤落下、碰撞，並可拖曳拋動。
 - 適用：技能與分類標籤
 - targetType：card、container、section、stack、grid
@@ -361,7 +361,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **implementationBrief**：映射本機Canvas 2D固定步長求解器，限制數量、速度、碰撞迭代與旋轉；拖曳保留偏移、拋動保留有限速度，離屏暫停並清理。
 
-**compatibilityRules**：限容器；與stagger/flip/fold互斥；狹窄容器改靜態列表
+**compatibilityRules**：限容器；與stagger/flip/fold互斥；狹窄或標籤過密的容器改靜態列表
 
 **constraints**：最多24個標籤，每個最多24字；固定60Hz步長；重力以px/step²計；離屏暫停並清理RAF；高DPI與resize需保留標籤；觸控拖曳模式可退出
 
@@ -370,12 +370,12 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 ## 折頁揭露 / Fold Reveal
 
 - Preset: `fold-reveal` / version 1
-- 狀態：NOT STARTED
+- 狀態：DONE
 - 說明：拖曳折角，揭露使用者提供的下層內容。
 - 適用：前後對照與介紹卡片
 - targetType：card、container、section
 - interactionType：drag、click、keyboard
-- techBase：Web Animations / CSS / Pointer Events
+- techBase：Pointer Events / clipped polygon / requestAnimationFrame
 - previewComponent：fold-reveal
 - tags：內容、前後對照與介紹卡片
 - rendererMapping：fold-reveal

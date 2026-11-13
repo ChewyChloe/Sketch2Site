@@ -21,7 +21,7 @@ describe("PageSpec v2 validation", () => {
     expect(PageSchema.safeParse(demoPage).success).toBe(true);
     expect(new Set(leaves().map((n) => n.type)).size).toBe(9);
     expect(
-      new Set(leaves().flatMap((n) => n.effects.map((e) => e.effectId))).size,
+      new Set(leaves().flatMap((n) => n.effects.map((e) => e.presetId))).size,
     ).toBe(6);
   });
   it.each(["script", "iframe", "unknown"])(

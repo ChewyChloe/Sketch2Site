@@ -1,3 +1,4 @@
+import {legacyMotion,type MotionInstance} from "./motion";
 import { it, expect } from "vitest";
 import { generationFixtures, mockLayout } from "../tests/fixtures/generation";
 import {
@@ -60,7 +61,7 @@ it("rejects empty, invalid and excessive input, unknown constraints, missing but
   link.nodes.find((n) => n.type === "button")!.href = null;
   expect(() => prepareIntent(link)).toThrow();
   const effect = structuredClone(fixtures[0]);
-  effect.nodes[0].effects = ["stagger-reveal"];
+  effect.nodes[0].effects = [legacyMotion("stagger-reveal",effect.nodes[0].id) as MotionInstance];
   expect(() => prepareIntent(effect)).toThrow();
 });
 it("rejects missing/duplicate sources, changed types, unknown components, extra prose and arbitrary URLs", () => {
@@ -110,4 +111,13 @@ it("enforces supported explicit constraints without weakening PageSpec", () => {
   expect(materialize(canvas, plan).typography).toBe("serif");
   plan.typography = "sans";
   expect(() => materialize(canvas, plan)).toThrow();
+});
+
+import {createMotion} from './motion';
+it('materializes a versioned stagger marker into actual original lines without inventing children or text',()=>{
+ const canvas=structuredClone(fixtures[0]),card=canvas.nodes.find(n=>n.type==='card')!;
+ card.content='第一行原文\n第二行原文';card.effects=[createMotion('stagger-reveal',card.id,{direction:'reverse',revealStyle:'fade'})];
+ const page=materialize(canvas,mockLayout(prepareIntent(canvas)));
+ expect(indexNodes(page).get(card.id)!.children!.map(n=>n.content)).toEqual(['第一行原文','第二行原文']);
+ expect(()=>verifyPreservation(canvas,page)).not.toThrow();
 });

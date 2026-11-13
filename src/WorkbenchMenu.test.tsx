@@ -32,7 +32,7 @@ it("closes secondary menus after actions, outside clicks and Escape with focus r
   expect(menu.open).toBe(false);
   expect(document.activeElement).toBe(summary);
 });
-it("shows only the six controlled assets, exposes compatibility and passes only a preset ID to drag handlers", () => {
+it("shows only the twelve controlled assets, exposes compatibility and passes only a preset ID to drag handlers", () => {
   const choose = vi.fn(),
     drag = vi.fn();
   const { container } = render(
@@ -42,7 +42,7 @@ it("shows only the six controlled assets, exposes compatibility and passes only 
       onDragStart={drag}
     />,
   );
-  expect(container.querySelectorAll("[data-effect-id]")).toHaveLength(6);
+  expect(container.querySelectorAll("[data-effect-id]")).toHaveLength(12);
   expect(
     (screen.getByRole("button", { name: "依序顯示" }) as HTMLButtonElement)
       .disabled,

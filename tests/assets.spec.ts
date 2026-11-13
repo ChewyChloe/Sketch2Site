@@ -60,6 +60,8 @@ test("private raster import, reload, Mock generation, page edits, animation and 
     page.getByText("測試生成（非 AI）", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "使用此版本", exact: true }).click();
+  // Confirmation commits asynchronously; wait until the candidate has closed before inspecting the saved preview.
+  await expect(page.getByRole("main", { name: "生成候選預覽", exact: true })).toHaveCount(0);
   const image = page.locator(".preview-frame .page-image");
   await expect
     .poll(() =>

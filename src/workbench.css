@@ -387,7 +387,7 @@
   position: absolute;
   inset: 0;
 }
-.asset-sample > .rendered-page {
+.asset-sample .rendered-page {
   position: absolute;
   width: 128px;
   top: 12px;
@@ -1293,3 +1293,16 @@ input[type="range"] {
 .preview-inspector select:hover {
   border-bottom-color: var(--ui-field-line);
 }
+.animation-asset.motion-expanded { grid-column:1 / -1; }
+.motion-expanded .asset-preview { height:210px; }
+.motion-expanded .asset-sample .rendered-page { width:480px;transform:scale(.52);left:8px;top:8px; }
+.motion-expanded .asset-sample .page-card { min-height:150px; }
+.animation-asset > small { font-size:12px; }
+.asset-choose strong { font-size:13px; }
+.motion-expanded[data-effect-id="physics-tag-field"] .asset-preview { height:250px; }
+.motion-expanded[data-effect-id="flip-card"] .asset-preview,
+.motion-expanded[data-effect-id="fold-reveal"] .asset-preview,
+.motion-expanded[data-effect-id="curved-path-text"] .asset-preview { height:160px; }
+/* Expanded samples are scaled, so their controls retain a 44px visual hit area. */
+.motion-expanded .motion-toggle { min-height:85px;padding:16px 24px;font-size:26px; }
+.motion-expanded[data-effect-id="physics-tag-field"] .asset-preview { height:285px; }

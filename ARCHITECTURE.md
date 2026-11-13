@@ -142,3 +142,19 @@ IndexedDB v3 新增 assets store，既有 draft/pages CAS不變。PNG/JPEG 經�
 Preview的屬性暫存仍只存在記憶體，不新增PageSpec欄位或保存管線。以目前穩定元件ID、文字／對齊／標題層級／動畫時長與已提交值比較，辨識未套用狀態。切換單選／框選、取消選取／Esc、Undo/Redo需先明確同意捨棄；取消保持原欄位。關閉工具不丟失暫存，beforeunload保護瀏覽器重載。提供顯式捨棄，不自動把未驗證輸入寫入頁面。
 未套用時保留既有單一保存狀態位置，顯示「尚未套用」；匯出與候選生成目標暫不可用，避免將舊頁面錯當作新輸入結果。套用仍僅通過原Patch Engine／Session／Revision及CAS。有效頁面檔案替換沿用一次確認，過時讀取檢查不變。
 無效／超大／JSON失敗的匯入改為非破壞性錯誤通知：保留目前已驗證Renderer、選取和屬性暫存；不再清空可用畫面或停用後續安全編輯。僅validated PageSpec能到persistence.replace，並非將無效輸入作fallback渲染。
+
+## 自有 Motion Spec Library（2026-11-13，覆蓋早期六種平面效果格式）
+
+`src/motionCatalog.ts` 是12種效果的公開名稱、型別、預設、範圍、相容對象及版本的唯一來源。`MotionControlsFields` 依相同資料建立欄位；UI不顯示內部生成指令。`server/motionBriefs.ts` 才包含原創 designIntent / implementationBrief，Provider僅加入目前標記所需的規格，且納入預算估算。本輪只測Mock及fake transport，沒有呼叫真實模型。
+
+CanvasSpec v1與PageSpec v2保留外層版本；每個效果改存 `{presetId,presetVersion,targetId,validatedControls}`。presetVersion=0只供舊六種受驗證資料遷移，保留舊時長／距離／作用對象；新附加效果使用v1嚴格範圍。不接受未知欄位、錯誤目標、未知版本或任意執行程式。來源Fixture僅含動畫的指紋因表示法變更，保留舊指紋及遷移說明，原文、ID與幾何未改。
+
+預覽仍經同一PageSchema→PageRenderer→PageRuntime；MotionRuntime、PhysicsTags、FoldReveal是現有RenderNode使用的受控元件，不是另一個Renderer。進場使用獨立translate／scale，hover使用transform，避免互相覆寫。Stagger v1需至少兩個實際直接子元素；草稿卡片需兩行非空內容，materialize分行並逐字保留全文。總延遲最多1200ms。
+
+新增參數修改仍為既有`update-effect`，payload可使用validatedControls，合併後重新驗證完整Motion及PageSpec、精確Diff與可信scope。舊parameters payload仍接受並顯式映射。Session、Revision、CAS、Undo/Redo原子流程不變。必填背面／下層／標籤由使用者輸入後才提交；數字終值必須與原文相符。草稿只保存標記。
+
+物理場為原創固定60Hz有界AABB求解器，角度限制±0.12rad，速度上限18px/step，每幀最多5步，不追趕無限積欠時間。Canvas依DPI（最多2倍）重設，保留標籤並投影回邊界；離屏、背景頁、inert及卸載停止更新／清理。小於240px或文字面積過密時改靜態列表。每文件最多3個物理場、48個物理標籤、8個呼吸按鈕；由Canvas及Page Schema共同限制。
+
+折頁使用原創單位正方形對角裁切與折線帶，四個折角均受控；拖曳從當前進度接手，釋放依方向、速度與門檻收斂。不是紙張物理模擬。翻面與折頁提供原生按鈕及inert隱藏面；Reduced Motion直接切換。
+
+既有ZIP產生器複製同一runtime、公開registry、schema及幾何／物理純函式，不包含server briefs、編輯UI、Session或歷史。匯出驗收以獨立npm ci/build及獨立Chromium來源執行，預覽伺服器使用動態空閒埠並清理整個程序群組，避免誤驗舊產物。沒有新增產品依賴。

@@ -1,3 +1,6 @@
+import {MotionControlsFields} from "./MotionControls";
+import type {MotionControls} from "./motionCatalog";
+import {motionCatalog,motionIds,createMotion,numericContent,combinationReason,targetReason,type MotionId,defaultControls} from "./motion";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { importImage, assetErrorMessage } from "./assets";
 import { isLocalAsset } from "./assetRef";
@@ -31,15 +34,7 @@ const labels = {
   heading: "標題",
   image: "圖片",
 };
-const effects = {
-  "hover-glow": "Hover Glow",
-  "fade-in": "Fade In",
-  lift: "Hover Lift",
-  "slide-up": "Slide Up",
-  "scale-in": "Scale In",
-  "hover-lift": "Hover Lift",
-  "stagger-reveal": "Stagger Reveal",
-};
+const effects = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameEn])) as Record<MotionId,string>;
 type Effect = keyof typeof effects;
 const dragType = "application/x-sketch2site";
 const demoFixtures = generationFixtures();
@@ -97,6 +92,7 @@ export default function App() {
       window.removeEventListener("keydown", cancel);
     };
   }, []);
+  const [pendingControls,setPendingControls]=useState<MotionControls>({});
   const [pending, setPending] = useState<Effect | null>(null),
     [target, setTarget] = useState("");
   const [moving, setMoving] = useState<CanvasNode | null>(null);
@@ -296,18 +292,21 @@ export default function App() {
     setSelected(next.id);
     report("已新增" + labels[type]);
   }
-  function attach(effect: Effect, id: string) {
+  function attach(effect: Effect, id: string, controls?:MotionControls) {
     const n = state.current.present.nodes.find((n) => n.id === id);
     if (!n) return;
     if (effect === "stagger-reveal" && n.type !== "card") {
       report("依序顯示僅適用於卡片。", true);
       return;
     }
-    if (n.effects.includes(effect)) {
+    if (n.effects.some(e=>e.presetId===effect)) {
       report("此元素已有該動畫標記");
       return;
     }
-    patch(id, { effects: [...n.effects, effect] });
+    if(targetReason(n,effect)){report(targetReason(n,effect)!,true);return;}
+    const conflict=combinationReason([...n.effects,{presetId:effect}]);if(conflict){report(conflict,true);return;}
+    let motion; try {motion=createMotion(effect,id,controls??{});}catch{if(controls){report("請檢查動畫必填內容與數值範圍。",true);return;}setPending(effect);setTarget(id);setPendingControls({...defaultControls(effect),...(effect==="count-up"?(numericContent(n.content)??{}):{})});report("請填寫動畫內容與設定，再確認附加。",true);return;}
+    patch(id, { effects: [...n.effects, motion] });
     setSelected(id);
     setPending(null);
     report("已附加 " + effects[effect] + " · 草稿不播放動畫");
@@ -809,7 +808,7 @@ export default function App() {
                           )}
                           <span className="effect-tags">
                             {n.effects.map((f) => (
-                              <span key={f}>{effects[f]}</span>
+                              <span key={f.presetId}>{effects[f.presetId]}</span>
                             ))}
                           </span>
                         </div>
@@ -885,9 +884,10 @@ export default function App() {
                         </option>
                       ))}
                     </select>
+                    {Object.values(motionCatalog[pending].controls).some(c=>c.required)&&<MotionControlsFields id={pending} values={pendingControls} onChange={setPendingControls}/>}
                     <button
                       disabled={!target}
-                      onClick={() => attach(pending, target)}
+                      onClick={() => attach(pending, target, Object.values(motionCatalog[pending].controls).some(c=>c.required)?pendingControls:undefined)}
                     >
                       附加標記
                     </button>{" "}
@@ -994,17 +994,13 @@ export default function App() {
                     selectedLabel={node ? labels[node.type] : undefined}
                     compatibility={(id) =>
                       node?.effects.some(
-                        (e) => (e === "lift" ? "hover-lift" : e) === id,
+                        (e) => e.presetId === id,
                       )
                         ? "已附加標記"
-                        : id === "stagger-reveal" &&
-                            node &&
-                            node.type !== "card"
-                          ? "僅適用於卡片"
-                          : null
+                        : node ? targetReason(node,id) : null
                     }
                     onChoose={(id) => {
-                      const effect = id === "hover-lift" ? "lift" : id;
+                      const effect = id;
                       if (node) attach(effect, node.id);
                       else {
                         setPending(effect);
@@ -1134,13 +1130,13 @@ export default function App() {
                     <h2>動畫標記</h2>
                     {node.effects.length ? (
                       node.effects.map((f) => (
-                        <div className="effect-row" key={f}>
-                          <span>{effects[f]}</span>
+                        <div className="effect-row" key={f.presetId}>
+                          <span>{effects[f.presetId]}</span>
                           <button
-                            aria-label={"移除 " + effects[f]}
+                            aria-label={"移除 " + effects[f.presetId]}
                             onClick={() =>
                               patch(node.id, {
-                                effects: node.effects.filter((x) => x !== f),
+                                effects: node.effects.filter((x) => x.presetId !== f.presetId),
                               })
                             }
                           >

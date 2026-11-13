@@ -84,3 +84,13 @@ React ZIP只包含固定可信模板、原Renderer純Runtime、嚴格Schema及�
 
 ### 未套用與匯入失敗的資料保留
 未套用文字／屬性不因選取、Esc、Undo／Redo或重載而靜默消失；明確捨棄才清除，不以自動保存繞過驗證。候選生成／接受與匯出不能略過未套用狀態。匯入驗證失敗僅回報固定安全訊息，原已驗證PageSpec／Renderer／暫存欄位保留，無不可信資料落入Renderer或IndexedDB。後端CSRF、金鑰、用量、Session與Revision規則沒有放寬。
+
+## Motion Library安全補充（2026-11-13）
+
+效果實例只接受已登錄的Preset、版本、同節點targetId及strict controls。完整Page／Canvas驗證拒絕非法相容性、衝突組合與全頁效能超量。Patch update-effect仍經既有Session／Revision／scope／Page Schema，未知參數及超界值原子拒絕；不接受路徑寫入、HTML、JS、CSS或使用者SVG。標籤及必填兩面內容也驗證純文字，React插值／Canvas fillText僅顯示文字。
+
+公開catalog／預覽程式不是秘密；安全不依賴Prompt保密。server/motionBriefs.ts內部指引只由後端解析Preset後加入生成上下文，不打包至瀏覽器、PageSpec或ZIP。ZIP只有目前頁面必要內容與公開執行模組、依賴鎖檔及授權聲明，沒有秘密、模型呼叫或測試示例。
+
+物理標籤最多24個／項、每項24字，全頁48個／3場；breathing全頁8個。求解步數、速度、角度、DPI均有限制；不可見、背景頁或inert時暫停，卸載清理RAF、Observer與事件。高密度及狹窄容器靜態降級。註記仍不匯出、不傳出。
+
+本輪新增效果、生成上下文與獨立匯出均以本機／Mock驗證；付費API呼叫0。不讀取或記錄完整金鑰、不改帳務、不新增第三方服務或追蹤套件，不Push／Merge／部署。第三方聲明見THIRD_PARTY_NOTICES.md。

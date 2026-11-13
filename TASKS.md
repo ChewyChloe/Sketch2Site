@@ -1,5 +1,15 @@
 # 任務
 
+## 目前結論（2026-11-13）
+
+- DONE：12種動畫的統一規格、Schema、實際示意／正式Renderer、相容拖放、參數編輯、Patch／Undo/Redo、保存、Mock生成保留與同runtime React匯出。
+- DONE：舊六種資料安全遷移；未知／錯誤版本、目標與參數拒絕；未完成Preset不可被當作可用效果。必填內容來自使用者，數字終值不能編造。
+- PASS：155單元／整合、78完整Chromium E2E、三尺寸兩輪審查、獨立npm ci/build/離線執行、Typecheck／Build／秘密掃描／兩份依賴audit。最終補測與效能數據見STATUS.md及docs/MOTION_LIBRARY_REVIEW.md。
+- PARTIAL人工驗收：素材操作密度、原創物理／折頁的主觀手感、美感；NOT TESTED：實體裝置、螢幕閱讀器、10分鐘瀏覽器記憶體耐久、付費AI。
+- DONE收尾：只建立本地Commit及恢復bundle；本輪不Push／Merge／部署／付費呼叫。沒有已知待修P0/P1；免費MVP必要工程功能已完成，下一步是針對上述P2人工驗收，不擅自增加產品範圍。
+
+以下保留歷史階段紀錄。
+
 ## 目前結論（2026-11-12）
 - DONE：免費MVP React獨立匯出、本機圖片、四展示草稿、非AI完整流程、編輯／動畫／註記／保存、兩輪UI審查與高字級修正。
 - PASS：130單元／整合、66 Chromium E2E、Typecheck／Build／秘密掃描／兩套依賴audit／歷史與Git完整性。詳細證據見STATUS.md及docs/FREE_MVP_REVIEW.md。
@@ -68,5 +78,5 @@
 - PASS收尾：130單元／整合、66全套E2E、Typecheck／Build／秘密掃描；原圖／比較頁與Hallmark render JSON保留。工程完成後GitHub正常Push與bundle核對，不宣稱人工美感已驗收。
 
 ## 自有Motion Spec Library（新附件，2026-11-12）
-- IN PROGRESS：先完成12個原創結構化規格，整併6個舊效果並保留舊資料安全相容，再依序完成展示／高複雜度效果；僅有通過Renderer、Patch、預覽、匯出與測試者標記DONE。
+- 歷史規劃（本輪已完成）：先完成12個原創結構化規格，整併6個舊效果並保留舊資料安全相容，再依序完成展示／高複雜度效果；僅有通過Renderer、Patch、預覽、匯出與測試者標記DONE。
 - 本輪附件明確禁止Push，覆蓋先前Push授權；不Merge／部署／付費模型。

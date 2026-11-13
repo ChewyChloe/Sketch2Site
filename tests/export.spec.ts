@@ -1,4 +1,6 @@
+import {createServer} from "node:net";
 import { test, expect } from "@playwright/test";
+import {motionFixture,motionId} from "./fixtures/motions";
 import { demoPage } from "../src/pageFixtures";
 import { pageAction } from "./helpers/workbench";
 import { mkdtemp, readFile, readdir, copyFile } from "node:fs/promises";
@@ -53,6 +55,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   );
   await page.getByRole("button", { name: "預覽", exact: true }).click();
   const input = structuredClone(demoPage);
+  const motions=motionFixture();motions.sections[0].children![0].level=2;input.sections.push(...motions.sections);
   const replaceImage = (nodes: typeof input.sections) =>
     nodes.forEach((n) => {
       if (n.type === "image") n.src = localRef;
@@ -110,16 +113,17 @@ z.extractall(root)
     maxBuffer: 1024 * 1024,
   });
   expect(await readdir(join(project, "node_modules"))).toContain("react");
+  const previewPort=await new Promise<number>((resolve,reject)=>{const socket=createServer();socket.once('error',reject);socket.listen(0,'127.0.0.1',()=>{const address=socket.address();if(!address||typeof address==='string')return reject(new Error('missing preview port'));socket.close(()=>resolve(address.port));});});
   const service = spawn(
     "npm",
-    ["run", "preview", "--", "--port", "4178", "--strictPort"],
-    { cwd: project, stdio: "ignore", detached: false },
+    ["run", "preview", "--", "--port", String(previewPort), "--strictPort"],
+    { cwd: project, stdio: "ignore", detached: true },
   );
   try {
     await expect
       .poll(async () => {
         try {
-          return (await fetch("http://127.0.0.1:4178")).status;
+          return (await fetch(`http://127.0.0.1:${previewPort}`)).status;
         } catch {
           return 0;
         }
@@ -131,7 +135,7 @@ z.extractall(root)
       const url = new URL(route.request().url());
       if (
         url.protocol.startsWith("http") &&
-        url.origin !== "http://127.0.0.1:4178"
+        url.origin !== `http://127.0.0.1:${previewPort}`
       ) {
         calls.push(url.origin);
         return route.abort();
@@ -139,7 +143,7 @@ z.extractall(root)
       return route.continue();
     });
     await standalone.emulateMedia({ reducedMotion: "reduce" });
-    await standalone.goto("http://127.0.0.1:4178");
+    await standalone.goto(`http://127.0.0.1:${previewPort}`);
     await expect(standalone.locator(".rendered-page h1")).toHaveText(
       "把想法，排成一個頁面。",
     );
@@ -148,6 +152,22 @@ z.extractall(root)
       await standalone.evaluate(() => Boolean((window as any).exportPwned)),
     ).toBe(false);
     await expect(standalone.getByRole("img")).toBeVisible();
+    const exportedMotion=(id:number)=>standalone.locator(`[data-page-id="${motionId(id)}"]`);
+    await expect(exportedMotion(3)).toContainText("1,234.50");
+    await expect(exportedMotion(4).locator('textPath')).toHaveCount(1);
+    await exportedMotion(6).getByRole('button',{name:'查看背面'}).click();
+    await expect(exportedMotion(6).getByText('使用者提供的背面內容')).toBeVisible();
+    await exportedMotion(8).getByRole('button',{name:'折頁切換'}).click();
+    await expect(exportedMotion(8).getByText('使用者提供的下層內容')).toBeVisible();
+    await expect(exportedMotion(10).getByRole('list')).toBeVisible();
+    await standalone.emulateMedia({reducedMotion:'no-preference'});
+    await exportedMotion(10).scrollIntoViewIfNeeded();
+    const exportedCanvas=exportedMotion(10).locator('canvas');await expect(exportedCanvas).toBeVisible();
+    await expect.poll(()=>exportedCanvas.evaluate((el:HTMLCanvasElement)=>el.getContext('2d')!.getImageData(0,0,el.width,el.height).data.some((v,i)=>i%4===3&&v>0))).toBe(true);
+    await exportedMotion(5).scrollIntoViewIfNeeded();
+    await expect.poll(()=>exportedMotion(5).evaluate(el=>el.getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect?.getComputedTiming().iterations===Infinity))).toBe(true);
+    await standalone.emulateMedia({reducedMotion:'reduce'});
+    await standalone.evaluate(()=>window.scrollTo(0,0));
     await expect
       .poll(() =>
         standalone
@@ -185,8 +205,7 @@ z.extractall(root)
     await copyFile(archive, "test-results/validated-react-project.zip");
   } finally {
     if (service.pid) {
-      await run("pkill", ["-TERM", "-P", String(service.pid)]).catch(() => {});
-      service.kill("SIGTERM");
+      try{process.kill(-service.pid,"SIGTERM");}catch{/* already exited */}
     }
   }
 });

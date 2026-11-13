@@ -1,11 +1,12 @@
+import {normalizeMotionInput,type MotionInstance} from "./motion";
 import { PageSchema, type PageNode } from "./pageSpec";
 let count = 0;
 const id = () => "00000000-0000-4000-8000-" + String(++count).padStart(12, "0");
 const node = (
   type: PageNode["type"],
-  fields: Partial<PageNode> = {},
-): PageNode => ({
-  id: id(),
+  fields: Omit<Partial<PageNode>,"effects"> & {effects?:unknown[]} = {},
+): PageNode => {const generatedId=id();return ({
+  id: generatedId,
   type,
   style: {
     gap: "medium",
@@ -15,9 +16,9 @@ const node = (
     tone: "plain",
     width: "full",
   },
-  effects: [],
   ...fields,
-});
+  effects:(fields.effects??[]).map(e=>normalizeMotionInput(e,generatedId)) as MotionInstance[],
+});};
 const heading = (content: string, level: 1 | 2 | 3 = 2) =>
   node("heading", { content, level });
 const text = (content: string) => node("paragraph", { content });
@@ -60,7 +61,7 @@ const cards = node("grid", {
 });
 const heroHeading = heading("把想法，排成一個頁面。", 1);
 heroHeading.effects = [
-  { effectId: "slide-up", duration: 500, delay: 0, distance: 16, stagger: 70 },
+  normalizeMotionInput({ effectId: "slide-up", duration: 500, delay: 0, distance: 16, stagger: 70 },heroHeading.id) as MotionInstance,
 ];
 const image = node("image", {
   src: "/assets/workspace.svg",

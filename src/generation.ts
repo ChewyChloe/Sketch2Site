@@ -85,7 +85,7 @@ export function prepareIntent(input: unknown) {
       throw new GenerationError("INVALID_INPUT");
   if (
     canvas.nodes.some(
-      (n) => n.effects.includes("stagger-reveal") && n.type !== "card",
+      (n) => n.effects.some(e=>e.presetId==="stagger-reveal") && n.type !== "card",
     )
   )
     throw new GenerationError("INVALID_INPUT", "GROUP_EFFECT");
@@ -163,8 +163,6 @@ export type Layout = z.infer<typeof LayoutSchema>;
 export const layoutJSONSchema = z.toJSONSchema(LayoutSchema, {
   target: "draft-7",
 });
-const effectName = (effect: CanvasNode["effects"][number]) =>
-  effect === "lift" ? "hover-lift" : effect;
 export function materialize(canvasInput: unknown, output: unknown): PageSpec {
   const { canvas } = prepareIntent(canvasInput);
   let serialized: string | undefined;
@@ -218,9 +216,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
           tone: item.tone,
           width: item.width,
         },
-        effects: node.effects.map((effect) =>
-          EffectSchema.parse({ effectId: effectName(effect) }),
-        ),
+        effects: node.effects,
       };
       switch (item.presentation) {
         case "heading":
@@ -247,7 +243,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         case "card":
           return make("card", {
             ...common,
-            children: [make("paragraph", { content: node.content })],
+            children: (node.effects.some(e=>e.presetId==="stagger-reveal"&&e.presetVersion===1) ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content })),
           });
       }
     });
@@ -305,7 +301,7 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
         (n.type === "paragraph" &&
           (!parent ||
             sources.get(parent.id)?.type !== "card" ||
-            parent.children?.length !== 1))
+            (parent.children?.length !== 1 && !sources.get(parent.id)?.effects.some(e=>e.presetId==="stagger-reveal"&&e.presetVersion===1))))
       )
         throw new GenerationError("INVALID_OUTPUT");
     }
@@ -335,8 +331,9 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
       )
         throw new GenerationError("INVALID_OUTPUT");
     } else {
-      expectedContent.push(source.content);
-      const actual = n.type === "card" ? n.children?.[0]?.content : n.content;
+      const splitCard=source.type==="card"&&source.effects.some(e=>e.presetId==="stagger-reveal"&&e.presetVersion===1);
+      expectedContent.push(...(splitCard?source.content.split("\n"):[source.content]));
+      const actual = n.type === "card" ? n.children?.map(c=>c.content).join("\n") : n.content;
       if (actual !== source.content)
         throw new GenerationError("INVALID_OUTPUT");
       if (
@@ -346,8 +343,8 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
         throw new GenerationError("INVALID_OUTPUT");
     }
     if (
-      JSON.stringify([...n.effects.map((e) => e.effectId)].sort()) !==
-      JSON.stringify(source.effects.map(effectName).sort())
+      JSON.stringify([...n.effects].sort((a,b)=>a.presetId.localeCompare(b.presetId))) !==
+      JSON.stringify([...source.effects].sort((a,b)=>a.presetId.localeCompare(b.presetId)))
     )
       throw new GenerationError("INVALID_OUTPUT");
   }

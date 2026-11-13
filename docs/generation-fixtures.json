@@ -38,10 +38,12 @@
   {
     "fixtureId": "animated",
     "name": "動畫草稿",
-    "sha256": "7f8c9b946fd33d875393c0add25bb4eaa621d3555c43e245ea4ba6184db2bf69",
+    "sha256": "e7867d42977a3978bcade8aae984336d5b7da9364e1bdcdf93483e8a4c3554a4",
     "elements": 5,
     "animations": 6,
     "inputTokenReservation": 13802,
-    "maxOutputTokens": 4096
+    "maxOutputTokens": 4096,
+    "legacySha256": "7f8c9b946fd33d875393c0add25bb4eaa621d3555c43e245ea4ba6184db2bf69",
+    "migration": "motion instance version 0; original IDs, text, geometry and six marks unchanged"
   }
 ]

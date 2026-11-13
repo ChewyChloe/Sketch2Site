@@ -1,6 +1,7 @@
 import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
 import { imageSource } from "./assetRef";
+import { MotionSchema, bindMotionInput, compatibleMotion, combinationReason, withinMotionBudget } from "./motion";
 import { href, localAssets } from "./pageSpec";
 export const Effect = z.enum([
   "hover-glow",
@@ -12,7 +13,7 @@ export const Effect = z.enum([
   "stagger-reveal",
 ]);
 export const Kind = z.enum(["text", "button", "card", "heading", "image"]);
-export const NodeSchema = z
+export const NodeSchema = z.preprocess(bindMotionInput,z
   .object({
     id: z.string().uuid(),
     type: Kind,
@@ -22,11 +23,11 @@ export const NodeSchema = z
     height: z.number().min(40).max(1200),
     content: z.string().max(2000),
     effects: z
-      .array(Effect)
-      .max(6)
+      .array(MotionSchema)
+      .max(12)
       .refine(
         (a) =>
-          new Set(a.map((e) => (e === "lift" ? "hover-lift" : e))).size ===
+          new Set(a.map((e) => e.presetId)).size ===
           a.length,
       ),
     parentId: z.string().uuid().nullable(),
@@ -34,7 +35,7 @@ export const NodeSchema = z
     href: href.nullable().optional(),
     zIndex: z.number().int().min(0).max(100),
   })
-  .strict();
+  .strict());
 export const CanvasSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -50,10 +51,12 @@ export const CanvasSchema = z
   })
   .strict()
   .superRefine((v, ctx) => {
+    if(!withinMotionBudget(v.nodes.flatMap(n=>n.effects)))ctx.addIssue({code:"custom",message:"動畫數量超過效能上限"});
     const ids = new Set(v.nodes.map((n) => n.id));
     if (ids.size !== v.nodes.length)
       ctx.addIssue({ code: "custom", message: "Duplicate IDs" });
     for (const n of v.nodes) {
+      if(n.effects.some(e=>!compatibleMotion(n,e)) || combinationReason(n.effects))ctx.addIssue({code:"custom",message:"動畫目標或組合無效"});
       if (
         n.x + n.width > v.metadata.width ||
         n.y + n.height > v.metadata.height

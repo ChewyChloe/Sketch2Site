@@ -44,11 +44,11 @@ test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ pag
   await page.getByRole("tab", { name: "動畫", exact: true }).click();
   await drag(
     page,
-    page.getByRole("button", { name: "Hover Glow", exact: false }),
+    page.getByRole("button", { name: "Fade In", exact: false }),
     nodes.first(),
     { x: 30, y: 20 },
   );
-  await expect(nodes.first()).toContainText("Hover Glow");
+  await expect(nodes.first()).toContainText("Fade In");
   await page.getByRole("tab", { name: "元件", exact: true }).click();
   await page.getByRole("button", { name: "新增按鈕", exact: true }).click();
   await page.getByRole("button", { name: "新增卡片", exact: true }).click();
@@ -73,7 +73,7 @@ test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ pag
   await expect(nodes).toHaveCount(3);
   await expect(nodes.first()).toHaveAttribute("data-node-id", originalId!);
   await expect(nodes.first()).toHaveCSS("left", "400px");
-  await expect(nodes.first()).toContainText("Hover Glow");
+  await expect(nodes.first()).toContainText("Fade In");
   await nodes.last().click();
   await page.keyboard.press("Delete");
   await expect(nodes).toHaveCount(2);

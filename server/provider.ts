@@ -1,3 +1,4 @@
+import {motionGenerationContext} from "./motionBriefs";
 import OpenAI from "openai";
 import {
   GenerationError,
@@ -57,7 +58,7 @@ export function providerInput(intent: Intent) {
 export function inputTokenBound(intent: Intent) {
   return (
     Buffer.byteLength(
-      systemRules +
+      systemRules + JSON.stringify(motionGenerationContext([...new Set(intent.canvas.nodes.flatMap(n=>n.effects.map(e=>e.presetId)))])) +
         JSON.stringify(providerInput(intent)) +
         JSON.stringify(layoutJSONSchema),
     ) + 8192
@@ -85,7 +86,7 @@ export function openAIProvider(
           reasoning: { effort: "low" },
           max_output_tokens: 4096,
           input: [
-            { role: "developer", content: systemRules },
+            { role: "developer", content: systemRules+"\n"+JSON.stringify(motionGenerationContext([...new Set(intent.canvas.nodes.flatMap(n=>n.effects.map(e=>e.presetId)))])) },
             { role: "user", content: JSON.stringify(providerInput(intent)) },
           ],
           text: {

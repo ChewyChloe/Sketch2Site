@@ -1,3 +1,4 @@
+import {MotionSchema,LegacyEffectSchema,legacyMotion,updateMotion,type MotionId,type MotionInstance} from "./motion";
 import { imageSource } from "./assetRef";
 import { z } from "zod";
 import {
@@ -87,14 +88,17 @@ export const PatchSchema = z.discriminatedUnion("operation", [
     .object({
       operation: z.literal("attach-effect"),
       targetId,
-      payload: EffectSchema,
+      payload: z.union([LegacyEffectSchema,MotionSchema]),
     })
     .strict(),
   z
     .object({
       operation: z.literal("update-effect"),
       targetId,
-      payload: z.object({ effectId: z.enum(effectIds), parameters }).strict(),
+      payload: z.union([
+        z.object({ effectId: z.enum(effectIds), parameters }).strict(),
+        z.object({ effectId: z.enum(effectIds), validatedControls: z.record(z.string().max(40), z.union([z.string().max(1000), z.number().finite(), z.boolean(), z.array(z.string().max(24)).max(24)])) }).strict(),
+      ]),
     })
     .strict(),
   z
@@ -212,8 +216,8 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
           after: next.style[key],
         });
     for (const effectId of effectIds) {
-      const old = node.effects.find((e) => e.effectId === effectId),
-        updated = next.effects.find((e) => e.effectId === effectId);
+      const old = node.effects.find((e) => e.presetId === effectId),
+        updated = next.effects.find((e) => e.presetId === effectId);
       if (!old || !updated) {
         if (!equal(old, updated))
           changes.push({
@@ -222,32 +226,27 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
             before: old,
             after: updated,
           });
-      } else
-        for (const key of ["duration", "delay", "distance", "stagger"] as const)
-          if (old[key] !== updated[key])
-            changes.push({
-              targetId: id,
-              property: "effects." + effectId + "." + key,
-              before: old[key],
-              after: updated[key],
-            });
+      } else {
+        if(old.presetVersion !== updated.presetVersion || old.targetId!==updated.targetId) changes.push({targetId:id,property:"effects."+effectId,before:old,after:updated});
+        else for(const key of new Set([...Object.keys(old.validatedControls),...Object.keys(updated.validatedControls)])) if(!equal(old.validatedControls[key],updated.validatedControls[key]))changes.push({targetId:id,property:"effects."+effectId+".validatedControls."+key,before:old.validatedControls[key],after:updated.validatedControls[key]});
+      }
     }
     // Effect order is meaningful data even though it does not change the preset registry.
     if (
       !equal(
-        node.effects.map((e) => e.effectId),
-        next.effects.map((e) => e.effectId),
+        node.effects.map((e) => e.presetId),
+        next.effects.map((e) => e.presetId),
       ) &&
       node.effects.length === next.effects.length &&
       node.effects.every((e) =>
-        next.effects.some((x) => x.effectId === e.effectId),
+        next.effects.some((x) => x.presetId === e.presetId),
       )
     )
       changes.push({
         targetId: id,
         property: "effects.order",
-        before: node.effects.map((e) => e.effectId),
-        after: next.effects.map((e) => e.effectId),
+        before: node.effects.map((e) => e.presetId),
+        after: next.effects.map((e) => e.presetId),
       });
   }
   return {
@@ -285,12 +284,14 @@ function authorized(patch: Patch, change: Change): boolean {
       );
     case "attach-effect":
     case "remove-effect":
-      return change.property === "effects." + patch.payload.effectId;
+      return change.property === "effects." + ("presetId" in patch.payload ? patch.payload.presetId : patch.payload.effectId);
     case "update-effect":
-      return Object.keys(patch.payload.parameters).some(
-        (k) =>
-          change.property === "effects." + patch.payload.effectId + "." + k,
-      );
+      if ("validatedControls" in patch.payload)
+        return Object.keys(patch.payload.validatedControls).some(k=>change.property === "effects."+patch.payload.effectId+".validatedControls."+k);
+      return Object.keys(patch.payload.parameters).some(k=> {
+        const names:Record<string,string[]>={duration:["durationMs","childDurationMs"],delay:["delayMs"],distance:["distancePx","liftPx"],stagger:["intervalMs"]};
+        return (names[k]??[]).some(name=>change.property === "effects."+patch.payload.effectId+".validatedControls."+name);
+      });
   }
 }
 export function validateScope(
@@ -375,30 +376,15 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
     }
     case "set-style":
       return { ...node, style: { ...node.style, ...p.payload } };
-    case "attach-effect":
-      return node.effects.some((e) => e.effectId === p.payload.effectId)
-        ? "EFFECT_CONFLICT"
-        : { ...node, effects: [...node.effects, p.payload] };
-    case "update-effect":
-      return !node.effects.some((e) => e.effectId === p.payload.effectId)
-        ? "EFFECT_CONFLICT"
-        : {
-            ...node,
-            effects: node.effects.map((e) =>
-              e.effectId === p.payload.effectId
-                ? { ...e, ...p.payload.parameters }
-                : e,
-            ),
-          };
-    case "remove-effect":
-      return !node.effects.some((e) => e.effectId === p.payload.effectId)
-        ? "EFFECT_CONFLICT"
-        : {
-            ...node,
-            effects: node.effects.filter(
-              (e) => e.effectId !== p.payload.effectId,
-            ),
-          };
+    case "attach-effect": {
+      const motion = "presetId" in p.payload ? p.payload : legacyMotion(p.payload,node.id) as MotionInstance;
+      return node.effects.some(e=>e.presetId===motion.presetId)?"EFFECT_CONFLICT":{...node,effects:[...node.effects,motion]};
+    }
+    case "update-effect": {
+      if(!node.effects.some(e=>e.presetId===p.payload.effectId))return "EFFECT_CONFLICT";
+      try{return {...node,effects:node.effects.map(e=>e.presetId===p.payload.effectId?updateMotion(e,"validatedControls" in p.payload?p.payload.validatedControls:p.payload.parameters,!("validatedControls" in p.payload)):e)};}catch{return "INVALID_PATCH";}
+    }
+    case "remove-effect": return !node.effects.some(e=>e.presetId===p.payload.effectId)?"EFFECT_CONFLICT":{...node,effects:node.effects.filter(e=>e.presetId!==p.payload.effectId)};
   }
 }
 export type PatchResult =
