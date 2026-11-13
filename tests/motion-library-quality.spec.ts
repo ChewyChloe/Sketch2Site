@@ -8,6 +8,11 @@ for(const width of [1440,768,375])test(`native library review: readable, directl
  for(const sample of await library.locator('.rendered-page').all()){
   expect(await sample.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);await expect(sample).toHaveCSS('transform','none');
  }
+ const gallery=library.locator('.animation-assets');
+ const columns=await gallery.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);expect(columns).toBe(width===1440?2:1);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ const panelWidth=(await page.locator('#preview-inspector').boundingBox())!.width;
+ if(width===1440){expect(panelWidth).toBe(560);expect((await page.locator('.preview-scroll').boundingBox())!.width).toBeGreaterThan(panelWidth);}
  const fade=library.locator('[data-effect-id="fade-in"]'),slide=library.locator('[data-effect-id="slide-up"]');
  const before=await slide.locator('[data-page-id]').first().getAttribute('data-page-id');
  const size=await fade.boundingBox();await fade.getByRole('button',{name:'重播淡入示意'}).click();expect((await fade.boundingBox())!.height).toBe(size!.height);
@@ -24,6 +29,8 @@ for(const width of [1440,768,375])test(`native library review: readable, directl
  expect(metrics.buttonInside&&metrics.canvasInside).toBe(true);expect(metrics.buttonHeight).toBeGreaterThanOrEqual(44);
  await page.screenshot({path:`test-results/library-interaction-${width}.png`});await physics.getByRole('button',{name:'退出標籤拖曳'}).click();await expect(canvas).toHaveCSS('touch-action','pan-y');
  await page.emulateMedia({reducedMotion:'reduce'});await expect(physics.locator('canvas')).toHaveCount(0);await expect(physics.getByRole('list')).toBeVisible();
+ await openPanel(page,'屬性');if(width===1440)expect((await page.locator('#preview-inspector').boundingBox())!.width).toBe(288);
+ await page.getByRole('button',{name:'關閉工具面板'}).click();await expect(page.locator('#preview-inspector')).toBeHidden();
  expect(errors).toEqual([]);expect(external).toEqual([]);
  const {writeFileSync}=await import('node:fs');writeFileSync(`test-results/library-metrics-${width}.json`,JSON.stringify(metrics,null,2));
 });

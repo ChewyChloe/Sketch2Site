@@ -825,6 +825,7 @@ export default function App() {
                 }
                 style={{ width: panelWidth }}
                 aria-label="元件與屬性"
+                data-panel={tab}
               >
                 <div className="side-head">
                   <h2>設計工具</h2>

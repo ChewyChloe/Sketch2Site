@@ -867,6 +867,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         </div>
         <aside
           id="preview-inspector"
+          data-panel={panelTab}
           hidden={!panelOpen}
           className={
             "preview-inspector" + (draggedEffect ? " dragging-effect" : "")

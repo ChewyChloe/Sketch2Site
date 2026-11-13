@@ -164,3 +164,6 @@ CanvasSpec v1與PageSpec v2保留外層版本；每個效果改存 `{presetId,pr
 AnimationLibrary仍以PageSchema／PageRenderer建立隔離的示意頁，現在為不同Preset建立具辨識度的原創內容；沒有新增Renderer或動畫實作。每個Preset獨立replay key，不重建其他示意。持續／互動效果直接由既有Runtime呈現，物理及呼吸仍由既有visibility機制暫停。單欄原生尺寸移除CSS縮小及展開狀態。
 
 PhysicsTags的Canvas內部高度依真正CSS viewport重新建立（160–400px），避免CSS縮小畫布導致字體、碰撞和指標不一致。正式網站的inline預設280px不變，素材環境以可信CSS設180px；沒有新資料欄位、任意樣式或外部服務。素材控制樣式留在workbench.css，Runtime CSS移除素材replay按鈕樣式。
+
+## 動畫素材展示布局
+App／Preview以data-panel公開目前工具頁籤給工作台CSS，只在桌面動畫頁籤加寬；AnimationLibrary使用容器查詢決定單雙欄。示意仍經PageSchema與既有PageRenderer；主題CSS全部限定asset-sample／asset-preview，不進入使用者PageSpec或React匯出。移除重複的EffectGlyph展示，以Registry的中英文名和category作metadata。Patch、Runtime、保存與生成流程均未變更。

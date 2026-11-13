@@ -146,8 +146,11 @@ for (const width of [1440, 768, 375])
     // Real native drag, including the target feedback before releasing the pointer.
     const source = page.locator(
         '#preview-inspector [data-effect-id="slide-up"]',
-      ),
-      a = (await source.boundingBox())!,
+      );
+    // Larger gallery samples require scrolling the chosen material into view first.
+    await source.scrollIntoViewIfNeeded();
+    await expect(source).toBeInViewport();
+    const a = (await source.boundingBox())!,
       b = (await heading.boundingBox())!;
     await page.mouse.move(a.x + a.width / 2, a.y + 20);
     await page.mouse.down();

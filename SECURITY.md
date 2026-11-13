@@ -98,3 +98,6 @@ React ZIP只包含固定可信模板、原Renderer純Runtime、嚴格Schema及�
 ## 2026-11-14：素材庫可讀性修整
 
 新示意只有開發者定義的純文字與既有Preset，仍完整驗證PageSpec；原始使用者草稿／頁面、Patch與儲存授權路徑不變。試玩只聚焦同一素材內的受控效果元件，預覽連結阻止導航；RAF回呼檢查元素仍掛載。CSS viewport高度限制160–400px，不接受模型或使用者傳任意樣式。無新依賴、外傳或付費API；既有Reduced Motion及離屏／卸載清理保留。
+
+## 素材展示樣式修正
+素材舞台的背景、字級、分類標籤均為可信工作台原始碼，沒有新增使用者CSS／HTML輸入。PageSpec／CanvasSpec、Patch、Session與Revision驗證維持原合約；素材連結仍禁止外連，示意資料不寫入使用者頁面。沒有新增服務、第三方套件或付費API請求。
