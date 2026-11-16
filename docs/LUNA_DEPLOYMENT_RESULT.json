@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-17",
+  "status": "DEPLOYED_PRIVATE_GENERATION_DISABLED",
+  "url": "https://sketch2site-work-test-20261116.chewychloe.chatgpt.site",
+  "project_id": "appgprj_6afafb77233081918b3029cd9bbbd706",
+  "version_id": "appgprj_6afafb77233081918b3029cd9bbbd706~appgver_c70aa3e74ef08191a4c3a8b49bf55231",
+  "deployment_id": "appgdep_6afb38ac93888191852f85faaea3df03",
+  "env_set_revision": 4,
+  "source_commit": "0105560508f5e6f851786f20ab7d36dcaa1d9ee7",
+  "ownerBound": true,
+  "preflight": [
+    {
+      "requestSha256": "9fbf4c198117fb265721d61355987233a6406cfe5cb79a020a95c55534741ccb",
+      "outcome": "READY",
+      "inputTokens": 1791,
+      "reservedMicros": 2272
+    }
+  ],
+  "paidSlotUsed": false,
+  "paidGenerationRequests": 0,
+  "manualItems": [
+    "Confirm Platform billing/credits, Project spending controls and Responses-generation permission for this model",
+    "Explicit later approval for one paid generation; current switches remain false"
+  ]
+}

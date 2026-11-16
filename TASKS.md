@@ -1,4 +1,9 @@
 
+## 線上修復結果（2026-11-17）
+- DONE：既有Sites私人第3版部署成功，env revision4；D1已綁定正式owner，實際Sites Key免費model／count為READY（1791 tokens、最高預留US$0.002272），paid slot0筆。
+- 待手動：Platform帳務／餘額、Project支出控制及Responses權限；之後另行明確付費批准。ENABLED、TEST_APPROVED、BILLING_CONFIRMED全false，本輪生成0。部署證據見docs/LUNA_DEPLOYMENT_RESULT.json。
+
+
 ## 首次Luna測試BLOCKED修復（2026-11-17）
 - DONE：Luna／Standard硬鎖、完整request16KB及免費精確input計數8192上限、最壞30m cache-write預留、無tools／4096 output／零retry、可信dispatch owner永久D1綁定。保留舊paid slot，新增owner／free-preflight兩表。
 - PASS：278單元／整合、11項Chromium Mock／匯出、Typecheck／Build／秘密與內部指引掃描。免費模型可見與counter確認固定request1791 input／6913 bytes，最多預留US$0.002272；可接受請求硬上限US$0.003072。未呼叫生成。

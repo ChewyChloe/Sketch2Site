@@ -33,3 +33,6 @@ Runtime保持SKETCH_AI_ENABLED=false、SKETCH_AI_TEST_APPROVED=false，並新增
 Typecheck及278項單元／整合PASS；其中新測試涵蓋硬鎖完整請求、免費計數與生成輸入一致、16KB／8192拒絕、owner正式身分綁定、免費檢查不產生生成、成本分類、原有D1跨連線／冷啟動／重放及429／500／503零重試。11項Chromium Mock生成／匯出回歸PASS（55.5秒）。Build／前端秘密與內部指引掃描PASS；test／build只用合成canary或移除Key，不把runtime Secret寫入檔案。
 
 增量schema migration只新增owner／preflight表，沒有改動或清除永久付費slot。私人部署及線上preflight結果以本次原生Sites工具回傳／D1唯讀核對為準；不假稱未登入的owner已完成綁定。付費生成0次。
+
+## 實際線上結果
+既有Site私人第3版已部署成功（source 0105560、env revision4）。原生D1唯讀核對確認正式owner subject已綁定；完整請求hash 9fbf4c198117fb265721d61355987233a6406cfe5cb79a020a95c55534741ccb 的實際Sites Key免費preflight為READY，input1791、reserved2272微美元。paid slot仍0筆，證明免費檢查沒有消耗生成。Secret遮罩、owner-private與三個false閘門保持，沒有GitHub修改。原生開啟頁面工具回報無handler，但後續D1已由正式登入的頁面載入完成，故不再要求使用者重做登入綁定。剩餘手動項目只有Platform帳務／支出控制／Responses權限及日後具體付費批准；見LUNA_DEPLOYMENT_RESULT.json。
