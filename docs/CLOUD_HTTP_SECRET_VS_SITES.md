@@ -1,3 +1,5 @@
+> 最新狀態（2026-11-17）：Sites OPENAI_API_KEY已標記為Secret，既有第2版已成功重新部署並套用環境revision3。AI仍停用。以[SITES_SECRET_DEPLOYMENT_20261117.md](SITES_SECRET_DEPLOYMENT_20261117.md)為最新結果；以下保留先前紀錄。
+
 # Codex Cloud HTTP Secret 與 Sites Runtime Secret
 
 2026-11-16（Asia/Taipei）。沿用既有Sketch2Site Site及Worker。沒有新增Key、沒有要求.env、沒有重新部署、沒有付費生成。

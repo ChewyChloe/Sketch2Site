@@ -1,3 +1,5 @@
+> 最新狀態（2026-11-17）：Sites OPENAI_API_KEY已標記為Secret，既有第2版已成功重新部署並套用環境revision3。AI仍停用。以[SITES_SECRET_DEPLOYMENT_20261117.md](SITES_SECRET_DEPLOYMENT_20261117.md)為最新結果；以下保留先前紀錄。
+
 > 後續更正：已確認使用者配置的是平台管理的Cloud HTTP Secret，state=ready且免費GET /v1/models為HTTP200；不依賴.env或本機helper。本站Runtime Secret仍未設定。以[CLOUD_HTTP_SECRET_VS_SITES.md](CLOUD_HTTP_SECRET_VS_SITES.md)為最新結論，以下保留當時檢查紀錄。
 
 # Sites Runtime Secret 核對
