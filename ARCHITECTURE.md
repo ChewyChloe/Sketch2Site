@@ -177,3 +177,5 @@ ExtendedMotion與既有MotionRuntime並列為同一PageRuntime的內部模組；
 ## 工作台回報問題修正
 草稿的預覽按鈕對非空Canvas使用既有createDemoCandidate與CandidatePreview，標示本機非AI；不呼叫Provider、不自動接受版本。既有PageSpec工作區以具名選單入口開啟。草稿／網站兩份資料仍分開保存，所有來源內容與動畫目標驗證、候選版本與Session／Revision檢查保持。
 圖片匯入以Canvas version拒絕過時結果，新增圖片先尋找不重疊位置並選取／捲入視野；MIME別名不取代檔頭、尺寸、CRC與重新編碼檢查。
+
+CurvedText仍在共用MotionRuntime。curveRows以Intl.Segmenter字素與Canvas字寬建立有界文字行，每行產生可信數值的SVG path；讀屏原文只保留一份。使用clientWidth避免預覽縮放重複縮小布局。Reduced Motion訂閱時立即同步當前設定，補上掛載競態。正式Renderer與React匯出共用此路徑。

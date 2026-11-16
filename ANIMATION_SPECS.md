@@ -270,7 +270,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **compatibilityRules**：只套用文字；不可與count-up合用
 
-**constraints**：保留原文供讀屏；超過80字改水平文字；只產生可信SVG path
+**constraints**：保留原文供讀屏；超過240字或8行改水平文字；一般文字依實際字寬分行；只產生可信SVG path
 
 **reducedMotionFallback**：靜態曲線或水平文字
 

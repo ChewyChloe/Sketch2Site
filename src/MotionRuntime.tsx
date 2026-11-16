@@ -1,8 +1,8 @@
-import { useEffect, useId, useRef, useState, type ReactNode, type CSSProperties } from 'react';
+import { useEffect, useId, useRef, useState, useMemo, type ReactNode, type CSSProperties } from 'react';
 import { motionNumber, motionDuration, type MotionInstance } from './motion';
 export function useReducedMotion() {
     const [reduced, setReduced] = useState(() => typeof matchMedia !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches);
-    useEffect(() => { if(typeof matchMedia !== 'function')return; const q = matchMedia('(prefers-reduced-motion: reduce)'), update = () => setReduced(q.matches); q.addEventListener('change', update); return () => q.removeEventListener('change', update); }, []);
+    useEffect(() => { if(typeof matchMedia !== 'function')return; const q = matchMedia('(prefers-reduced-motion: reduce)'), update = () => setReduced(q.matches); q.addEventListener('change', update); update(); return () => q.removeEventListener('change', update); }, []);
     return reduced;
 }
 export function CountUp({ effect, original }: {
@@ -36,24 +36,41 @@ export function CountUp({ effect, original }: {
     const formatted = new Intl.NumberFormat(String(c.locale), { minimumFractionDigits: Number(c.decimals), maximumFractionDigits: Number(c.decimals) }).format(value);
     return <span ref={ref} className="motion-number"><span className="motion-sr">{original}</span><span aria-hidden="true">{String(c.prefix)}{formatted}{String(c.suffix)}</span></span>;
 }
-export function CurvedText({ effect, text }: {
-    effect: MotionInstance;
-    text: string;
-}) {
-    const id = 'curve-' + useId().replaceAll(':', ''), ref = useRef<SVGSVGElement>(null), host = useRef<HTMLSpanElement>(null), reduced = useReducedMotion();
-    const [width, setWidth] = useState(600), [fontSize, setFontSize] = useState(16);
-    useEffect(() => { if (!host.current)
-        return; const o = new ResizeObserver(entries => { setWidth(entries[0].contentRect.width); setFontSize(Math.max(16, parseFloat(getComputedStyle(host.current!).fontSize) || 16)); }); o.observe(host.current); return () => o.disconnect(); }, []);
-    useEffect(() => { const svg = ref.current; if (!svg || reduced || !svg.animate)
-        return; let animation: Animation | undefined; const o = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) {
-        animation = svg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: motionDuration(effect), easing: 'ease-out' });
-        o.disconnect();
-    } }); o.observe(svg); return () => { o.disconnect(); animation?.cancel(); }; }, [effect, reduced, width]);
-    const fallback = text.length > 80 || text.length * fontSize > width - 40 || width < 180, c = effect.validatedControls;
-    const bend = ({ gentle: 40, medium: 80, strong: 120 } as Record<string, number>)[String(c.curvature)] * (c.direction === 'downward' ? -1 : 1);
-    const height = Math.max(fontSize * 3, Math.abs(bend) + fontSize * 2);
-    const offset = ({ start: '0%', center: '50%', end: '100%' } as Record<string, string>)[String(c.textAlign)];
-    return <span className="motion-curve" ref={host}>{fallback ? text : <><span className="motion-sr">{text}</span><svg aria-hidden="true" ref={ref} viewBox={`0 0 ${width} ${height}`}><defs><path id={id} d={`M 20 ${height / 2} Q ${width / 2} ${height / 2 - bend * .6} ${width - 20} ${height / 2}`}/></defs><text style={{ fontSize }} textAnchor={c.textAlign === 'center' ? 'middle' : c.textAlign === 'end' ? 'end' : 'start'}><textPath href={'#' + id} startOffset={offset}>{text}</textPath></text></svg></>}</span>;
+export function curveRows(text:string, available:number, measure:(value:string)=>number):string[]{
+    const segments=typeof Intl.Segmenter==='function'?Array.from(new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(text),v=>v.segment):Array.from(text);
+    const rows:string[]=[];let row='';
+    for(const letter of segments){
+        if(letter==='\n'){rows.push(row);row='';continue;}
+        if(row&&measure(row+letter)>available){rows.push(row);row=letter;}else row+=letter;
+    }
+    rows.push(row);return rows;
+}
+export function CurvedText({ effect, text }: {effect:MotionInstance;text:string}) {
+    const id='curve-'+useId().replaceAll(':',''),host=useRef<HTMLSpanElement>(null),reduced=useReducedMotion();
+    const [width,setWidth]=useState(600),[fontSize,setFontSize]=useState(16),[font,setFont]=useState('16px sans-serif');
+    useEffect(()=>{
+        const el=host.current;if(!el)return;let live=true;
+        const update=()=>{if(!live)return;const style=getComputedStyle(el),size=Math.max(16,parseFloat(style.fontSize)||16);setWidth(el.clientWidth);setFontSize(size);setFont(`${style.fontStyle} ${style.fontWeight} ${size}px ${style.fontFamily}`);};
+        const observer=new ResizeObserver(update);observer.observe(el);update();void document.fonts?.ready.then(update);
+        return()=>{live=false;observer.disconnect();};
+    },[]);
+    const layout=useMemo(()=>{
+        const context=typeof CanvasRenderingContext2D==='undefined'?null:document.createElement('canvas').getContext('2d');if(context)context.font=font;
+        const measure=(value:string)=>context?.measureText(value).width??Array.from(value).reduce((sum,c)=>sum+fontSize*(/[\u2e80-\u9fff]/u.test(c)?1:.65),0);
+        const margin=Math.ceil(fontSize*.75+4),available=Math.max(1,width-margin*2);
+        return {margin,rows:curveRows(text,available,measure).map(value=>({text:value,chord:Math.min(available,Math.max(fontSize*3,measure(value)))}))};
+    },[text,width,font,fontSize]);
+    const fallback=Array.from(text).length>240||width<80||layout.rows.length>8,c=effect.validatedControls;
+    useEffect(()=>{
+        const el=host.current;if(!el||reduced||fallback)return;const running:Animation[]=[];
+        const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){for(const svg of el.querySelectorAll('svg'))if(svg.animate)running.push(svg.animate([{opacity:0},{opacity:1}],{duration:motionDuration(effect),easing:'ease-out'}));observer.disconnect();}});
+        observer.observe(el);return()=>{observer.disconnect();running.forEach(a=>a.cancel());};
+    },[effect,reduced,fallback,width,text,font]);
+    return <span className="motion-curve" ref={host} data-curve-layout={fallback?'static':'curved'}>{fallback?text:<><span className="motion-sr">{text}</span>{layout.rows.map((row,index)=>{
+        const rise=Math.min(row.chord*.3,fontSize*({gentle:1.5,medium:2.5,strong:3.5} as Record<string,number>)[String(c.curvature)]),down=c.direction==='downward';
+        const baseline=fontSize+8+(down?0:rise),svgWidth=row.chord+layout.margin*2,height=rise+fontSize*2+16,pathId=id+'-'+index;
+        return <svg key={index} aria-hidden="true" viewBox={`0 0 ${svgWidth} ${height}`} style={{width:svgWidth,maxWidth:'100%',marginLeft:c.textAlign==='start'?0:'auto',marginRight:c.textAlign==='end'?0:'auto'}}><defs><path id={pathId} d={`M ${layout.margin} ${baseline} Q ${svgWidth/2} ${baseline+(down?2:-2)*rise} ${svgWidth-layout.margin} ${baseline}`}/></defs><text style={{fontSize}} textAnchor={c.textAlign==='center'?'middle':c.textAlign==='end'?'end':'start'}><textPath href={'#'+pathId} startOffset={c.textAlign==='center'?'50%':c.textAlign==='end'?'100%':'0%'}>{row.text}</textPath></text></svg>;
+    })}</>}</span>;
 }
 export function FlipCard({ effect, children }: {
     effect: MotionInstance;

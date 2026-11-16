@@ -105,3 +105,5 @@ React ZIP只包含固定可信模板、原Renderer純Runtime、嚴格Schema及�
 ## ExtendedMotion安全與資源界線
 新增八種效果只接受Registry的strict參數，反向輸入任意CSS／事件屬性等仍拒絕。互動操作只在目標根節點與直接子元件執行，保留穩定ID、原連結與內容；隱藏收合內容inert並處理焦點。移除效果、變更資料、卸載或Reduced Motion會清理事件、WAAPI及Observer。
 逐字上限100字素／每頁12項，長文靜態保留；局部進度每頁8項，沿用物理與呼吸預算。ExtendedMotion原始碼隨固定匯出模板提供；server-only briefs、Session與秘密不匯出。沒有新增依賴、素材外傳或付費API。
+
+曲線文字修正維持受控字級／曲度與本機字寬計算，不接受使用者SVG路徑或程式。單元件最多8條動態曲線／240字，超長靜態降級；沒有遠端字型、URL抓取或付費請求。
