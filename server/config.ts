@@ -1,6 +1,6 @@
-// Candidate only: SDK recognition does not establish API access or feature support.
+// Fixed model for this single-test backend; no alternate model or fallback.
 export const defaultModel = "gpt-6-luna";
-export const candidateModels = [defaultModel, "gpt-6.1-sol"] as const;
+export const candidateModels = [defaultModel] as const;
 export function configFromEnv(env: NodeJS.ProcessEnv) {
   const inputRate = Number(env.SKETCH_AI_INPUT_USD_PER_MILLION),
     outputRate = Number(env.SKETCH_AI_OUTPUT_USD_PER_MILLION);

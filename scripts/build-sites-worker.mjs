@@ -17,12 +17,14 @@ async function collect(dir) {
 }
 await collect('dist');
 const entry = `import api from './server/sitesWorker.ts';
+import {warmOwnerPreflight} from './server/sitesPreflight.ts';
 const assets=${JSON.stringify(assets)};
 const headers={'X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"};
-export default { async fetch(request, env) {
+export default { async fetch(request, env, ctx) {
 try {
 const url=new URL(request.url);
 if(url.pathname.startsWith('/api/')) return await api(request,env);
+if(url.pathname==='/' && request.method==='GET' && ctx?.waitUntil) ctx.waitUntil(warmOwnerPreflight(request,env).catch(()=>{}));
 if(!['GET','HEAD'].includes(request.method)) return new Response('Method not allowed',{status:405,headers});
 const asset=assets[url.pathname==='/'?'/index.html':url.pathname];
 if(!asset)return new Response('Not found',{status:404,headers});

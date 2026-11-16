@@ -113,3 +113,6 @@ React ZIP只包含固定可信模板、原Renderer純Runtime、嚴格Schema及�
 要求精確SKETCH_SITE_ORIGIN、同源Origin／Fetch Metadata、依後端Key計算且綁定站內userId及origin的HMAC CSRF。Key只在runtime env，status不傳Key或金鑰衍生簽章以外的秘密。啟用需原模型／價格review gates、SKETCH_AI_TEST_APPROVED、owner ID、固定草稿SHA256、至多一小時到期時間、maxCalls=1、預算<=US$0.01及D1。
 D1額度在Provider前以固定主鍵原子保留，失敗／逾時／重新部署均不重開；DB缺失／不確定寫入直接停止，不能fallback到記憶體額度。只有精確核准草稿可生成。仍限制32KB、40元素、12000字、4096 output tokens、30秒、零重試；模型輸出經原materialize／全頁及來源保留檢查。費用是保守估計，不代替OpenAI Project支出控制。
 本輪只準備與Mock驗證，SKETCH_AI_ENABLED與SKETCH_AI_TEST_APPROVED保持false；模型／當日費率／Project支出設定／安全Key／具體付費同意待完成。不得因使用者安裝外掛或環境已有Key就發付費請求。
+
+## 2026-11-17 Luna單次安全合約更新
+Luna-only、Standard-only、max4096 output含reasoning、完整request<=16384 bytes、精確免費counter<=8192 input、30m cache-write最壞預留固定價格。Unknown count或D1 preflight proof不匹配就拒絕，沒有heuristic fallback。正式Sites dispatch身分與可信owner policy初始核對後固定於D1；不再接受env或browser提供owner ID作初始身分證明。保留原永久單次paid slot。owner背景model/count檢查只使用免費端點，不調generate、不自動重試或啟用。帳務確認為獨立false gate，兩個生成旗標仍false。新表不保存Key／Prompt／草稿原文；原生Secret值不輸出，根頁面不回傳任何preflight秘密。

@@ -1,56 +1,34 @@
 {
-  "status": "BLOCKED",
-  "checkedAt": "2026-11-17",
-  "fixture": "portfolio",
+  "model": "gpt-6-luna",
+  "serviceTier": "default",
+  "requestSha256": "9fbf4c198117fb265721d61355987233a6406cfe5cb79a020a95c55534741ccb",
   "canvasHash": "a1384324ce1429b60e980cb47b822fc88f15059c878cfc366f7929ba67947283",
-  "elements": 6,
-  "intendedModel": "gpt-6-luna",
-  "effectiveModel": "gpt-6-luna (server default; explicit runtime pin absent)",
-  "measuredInput": {
-    "canvasUtf8Bytes": 1309,
-    "developerUtf8Bytes": 902,
-    "userUtf8Bytes": 3697,
-    "schemaUtf8Bytes": 1498,
-    "combinedContentUtf8Bytes": 6097
-  },
-  "exactInputTokens": null,
-  "inputTokenReservation": 14288,
-  "inputReservationIsHardAPILimit": false,
+  "requestUtf8Bytes": 6913,
+  "maxRequestUtf8Bytes": 16384,
+  "inputTokens": 1791,
+  "maxInputTokens": 8192,
   "maxOutputTokens": 4096,
-  "maxCalls": 1,
-  "budgetUsd": 0.01,
-  "pricing": {
-    "unit": "USD per million tokens",
-    "service": "Standard",
+  "extraPaidTools": 0,
+  "cacheTTL": "30m",
+  "rates": {
     "input": 0.1,
     "cachedInput": 0.01,
     "cacheWrite30m": 0.125,
     "cacheWrite12h": 0.25,
-    "output": 0.5,
-    "sources": [
-      "https://developers.openai.com/api/docs/models/gpt-6-luna",
-      "https://developers.openai.com/api/docs/pricing",
-      "https://developers.openai.com/api/docs/guides/prompt-caching",
-      "https://developers.openai.com/api/docs/guides/reasoning"
-    ]
+    "output": 0.5
   },
-  "estimates": {
-    "noCacheWritesUsd": 0.0034768000000000004,
-    "conservative30mWritesUsd": 0.003834,
-    "alternative12hWritesUsd": 0.00562,
-    "strictMaximumBillVerified": false,
-    "assumptions": "Exact approved fixture; reservation bounds actual tokens; Standard tier; <=4096 total output/reasoning tokens; no tools; taxes/FX and Sites hosting not included."
-  },
-  "backendGaps": [
-    "service_tier omitted: auto may inherit Project tier",
-    "reservation and usage accounting omit cache-write prices",
-    "14,288 is a byte-based heuristic, not exact counted input tokens or a pre-call token hard cap",
-    "runtime owner ID/model pin/prices/canvas hash/review settings not configured",
-    "Project billing/spend controls and real Worker-to-OpenAI access unverified"
+  "estimatedUpperUsd": 0.002272,
+  "hardMaximumReservedUsd": 0.003072,
+  "budgetUsd": 0.01,
+  "unknownCountPolicy": "REJECT; no heuristic or memory fallback",
+  "maxPaidCalls": 1,
+  "retries": 0,
+  "identity": "Trusted Sites dispatch identity, sole-owner policy email bootstrap, D1 permanent Site subject; no browser owner ID",
+  "verification": "Local free count used Codex Cloud HTTP Secret. Actual Sites Key is checked on signed-in owner page load, persisted separately in D1; both generation switches stay false.",
+  "manualItems": [
+    "Confirm OpenAI Project billing/credit/spend controls and Responses/model permissions",
+    "Sign in to the private Site once if durable owner/free-preflight row is not yet present",
+    "Explicit later paid-generation approval; never enabled automatically"
   ],
-  "extraPaidTools": false,
-  "reasoningEffort": "low",
-  "reasoningIncludedInOutputCap": true,
-  "actualPaidCalls": 0,
-  "activation": "No runtime flags changed. Keep ENABLED and TEST_APPROVED=false. Stop after acceptance and wait for explicit paid approval only after blockers are resolved."
+  "paidGenerationRequests": 0
 }

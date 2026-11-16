@@ -9,7 +9,7 @@ async function scan(dir) {
       if (
         s.includes("You are a responsive single-page layout planner") ||
         s.includes(marker) ||
-        /sk-[A-Za-z0-9]{32,}/.test(s)
+        /sk-(?:proj-)?[A-Za-z0-9_-]{24,}/.test(s)
       )
         throw Error("Secret detected in " + p);
       if (p.endsWith(".map")) throw Error("Unexpected source map");

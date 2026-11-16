@@ -2,10 +2,12 @@ import { z } from 'zod';
 import { CanvasSchema } from '../src/spec';
 import { GenerationError, prepareIntent, materialize, type GenerationCode } from '../src/generation';
 import { configFromEnv } from './config';
-import { inputTokenBound, openAIProvider, validUsage, type LayoutProvider } from './provider';
+import { openAIProvider, validUsage, type LayoutProvider } from './provider';
+import {LUNA_MODEL,LUNA_RATES,LUNA_MAX_OUTPUT_TOKENS,lunaUsageUsd} from './lunaPolicy';
+import {authenticatedOwner,type SitesEnv} from './sitesIdentity';
+import {exactInputProof} from './sitesPreflight';
+export type {D1,SitesEnv} from './sitesIdentity';
 
-export type D1 = { prepare(sql: string): { bind(...values: unknown[]): { run(): Promise<{ meta: { changes?: number } }>; first<T>(): Promise<T | null> } } };
-export type SitesEnv = Record<string, unknown> & { DB?: D1 };
 const slot = 'sites-ai-single-test-v1'; // Permanent across isolates, versions and deployments.
 const schema = z.object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema }).strict();
 const encoder = new TextEncoder();
@@ -20,11 +22,16 @@ async function csrf(key: string, user: string, origin: string, day: number) {
   return hex(await crypto.subtle.sign('HMAC', secret, encoder.encode(`sketch-csrf-v1:${user}:${origin}:${day}`)));
 }
 function config(env: SitesEnv, now: number) {
-  const c = configFromEnv(env as NodeJS.ProcessEnv);
+  const strings:NodeJS.ProcessEnv={};
+  for(const [key,value] of Object.entries(env))if(typeof value==='string')strings[key]=value;
+  delete strings.SKETCH_AI_API_KEY; // Sites uses only the configured OPENAI_API_KEY runtime Secret.
+  const c = configFromEnv(strings);
   const expires = Date.parse(String(env.SKETCH_AI_TEST_EXPIRES_AT ?? ''));
-  const ready = c.enabled && c.maxCalls === 1 && c.budgetUsd <= .01 && !!env.DB &&
+  const ready = c.enabled && c.model===LUNA_MODEL && c.maxCalls === 1 && c.budgetUsd >= .002048 && c.budgetUsd <= .01 && !!env.DB &&
+    c.inputRate===LUNA_RATES.input && c.outputRate===LUNA_RATES.output && c.cachedInputRate===LUNA_RATES.cachedInput &&
+    Number(env.SKETCH_AI_CACHE_WRITE_USD_PER_MILLION)===LUNA_RATES.cacheWrite30m &&
+    env.SKETCH_AI_BILLING_CONFIRMED === 'true' &&
     env.SKETCH_AI_TEST_APPROVED === 'true' &&
-    typeof env.SKETCH_AI_OWNER_ID === 'string' && env.SKETCH_AI_OWNER_ID.length > 0 &&
     /^[a-f0-9]{64}$/.test(String(env.SKETCH_AI_TEST_CANVAS_SHA256 ?? '')) &&
     Number.isFinite(expires) && expires > now && expires - now <= 3600000;
   return { ...c, ready };
@@ -52,14 +59,13 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
   return async function handle(request: Request, env: SitesEnv): Promise<Response> {
     const url = new URL(request.url), now = Date.now();
     // Dispatch authenticates these headers. Never trust them on an independently public Worker URL.
-    const user = request.headers.get('oai-authenticated-user-id');
+    const user = await authenticatedOwner(request,env);
     if (!user || url.origin !== env.SKETCH_SITE_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site') return fail('FORBIDDEN');
     if (request.headers.has('origin') && request.headers.get('origin') !== url.origin) return fail('FORBIDDEN');
-    if (env.SKETCH_AI_OWNER_ID && user !== env.SKETCH_AI_OWNER_ID) return fail('FORBIDDEN');
     const c = config(env, now);
     const day = Math.floor(now / 86400000);
     if (request.method === 'GET' && url.pathname === '/api/generation/status') {
-      if (!c.ready) return json({ configured: false, setupUserId: env.SKETCH_AI_OWNER_ID ? undefined : user });
+      if (!c.ready) return json({ configured: false });
       try {
         const used = await env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE id = ?').bind(slot).first();
         return json({ configured: !used, csrfToken: used ? undefined : await csrf(c.apiKey!, user, url.origin, day) });
@@ -81,9 +87,19 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     catch { return fail('INVALID_INPUT', 400); }
     const hash = await canvasHash(payload.canvasSpec);
     if (hash !== env.SKETCH_AI_TEST_CANVAS_SHA256) return fail('FORBIDDEN');
-    const intent = prepareIntent(payload.canvasSpec), inputBound = inputTokenBound(intent);
-    const reservedMicros = Math.ceil(inputBound * c.inputRate + 4096 * c.outputRate);
-    if (!Number.isSafeInteger(reservedMicros) || reservedMicros <= 0 || reservedMicros > Math.floor(c.budgetUsd * 1e6)) return fail('LIMIT', 429);
+    const intent=prepareIntent(payload.canvasSpec);
+    let provider:LayoutProvider, inputBound:number, reservedMicros:number;
+    try {
+      // Reject exact replays before even the free count request.
+      if(await env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE id = ?').bind(slot).first())return fail('LIMIT',429);
+      provider=providerFactory(c.apiKey!,LUNA_MODEL);
+      const proof=await exactInputProof(provider,intent);
+      inputBound=proof.inputTokens;reservedMicros=proof.reservedMicros;
+      const checked=await env.DB!.prepare('SELECT outcome,input_tokens,reserved_micros FROM sketch_ai_preflight WHERE id = ?').bind(proof.requestHash).first<{outcome:string;input_tokens:number;reserved_micros:number}>();
+      if(!checked||checked.outcome!=='READY'||checked.input_tokens!==inputBound||checked.reserved_micros!==reservedMicros)return fail('NOT_CONFIGURED',503);
+      if(!config(env,Date.now()).ready)return fail('NOT_CONFIGURED',503);
+    }catch{return fail('LIMIT',429);}
+    if(reservedMicros>Math.floor(c.budgetUsd*1e6))return fail('LIMIT',429);
     try {
       const claimed = await env.DB!.prepare('INSERT INTO sketch_ai_single_test (id, request_id, user_id, canvas_hash, reserved_micros, started_at, outcome) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING')
         .bind(slot, payload.requestId, user, hash, reservedMicros, now, 'RESERVED').run();
@@ -94,19 +110,20 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     const started = Date.now();
     let outcome = 'UNAVAILABLE';
     try {
-      const task = providerFactory(c.apiKey!, c.model).generate(intent, controller.signal);
+      const task = provider.generate(intent, controller.signal);
       const result = await Promise.race([task, new Promise<never>((_, reject) => {
         timer = setTimeout(() => { controller.abort(); reject(new GenerationError('TIMEOUT')); }, timeoutMs);
       })]);
       if (!validUsage(result) || result.inputTokens > inputBound || result.outputTokens > 4096) throw new GenerationError('INVALID_OUTPUT');
       const page = materialize(payload.canvasSpec, result.layout);
-      const cached = result.cachedInputTokens ?? 0;
+      const estimatedCostUsd=lunaUsageUsd(result);
+      if(estimatedCostUsd>reservedMicros/1e6)throw new GenerationError("INVALID_OUTPUT");
       outcome = 'PASS';
       return json({ requestId: payload.requestId, page, mode: 'live', usage: {
         inputTokens: result.inputTokens, outputTokens: result.outputTokens,
         cachedInputTokens: result.cachedInputTokens ?? null, reasoningTokens: result.reasoningTokens ?? null,
         latencyMs: Date.now() - started,
-        estimatedCostUsd: ((result.inputTokens - cached) * c.inputRate + cached * c.cachedInputRate + result.outputTokens * c.outputRate) / 1e6,
+        estimatedCostUsd,
       } });
     } catch (error) {
       outcome = error instanceof GenerationError ? error.code : 'UNAVAILABLE';

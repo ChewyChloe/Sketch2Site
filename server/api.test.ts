@@ -212,7 +212,10 @@ it("OpenAI official SDK adapter uses strict output, no tools, no retry, store:fa
   expect(calls).toHaveLength(1);
   expect(calls[0]).toMatchObject({ model: "gpt-6-luna", store: false, max_output_tokens: 4096 });
   expect(calls[0].reasoning).toEqual({ effort: "low" });
-  expect(calls[0].tools).toBeUndefined();
+  expect(calls[0].tools).toEqual([]);
+  expect(calls[0].service_tier).toBe("default");
+  expect(calls[0].tool_choice).toBe("none");
+  expect(calls[0].prompt_cache_options).toEqual({mode:"implicit",ttl:"30m"});
   expect(JSON.stringify(calls[0])).not.toContain("synthetic-server-key");
   expect(calls[0].text).toMatchObject({
     format: { type: "json_schema", strict: true },
@@ -247,7 +250,7 @@ it("requires explicit price review, keeps model configuration server-side, and e
     { SKETCH_AI_CACHED_INPUT_USD_PER_MILLION: "" },
     { SKETCH_AI_CACHED_INPUT_USD_PER_MILLION: "1" },
   ]) expect(configFromEnv({ ...env, ...change }).enabled).toBe(false);
-  expect(configFromEnv({ ...env, SKETCH_AI_MODEL: "gpt-6.1-sol" }).enabled).toBe(true);
+  expect(configFromEnv({ ...env, SKETCH_AI_MODEL: "gpt-6.1-sol" }).enabled).toBe(false);
   expect(configFromEnv({ ...env, SKETCH_AI_MAX_CALLS: undefined }).maxCalls).toBe(1);
   expect(
     configFromEnv({ ...env, SKETCH_AI_PRICING_REVIEWED: "false" }).enabled,

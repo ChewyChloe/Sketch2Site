@@ -9,3 +9,10 @@ export const aiTest = sqliteTable('sketch_ai_single_test', {
   startedAt: integer('started_at').notNull(),
   outcome: text('outcome').notNull(),
 });
+
+export const aiOwner=sqliteTable('sketch_ai_owner',{
+ id:text('id').primaryKey(),userId:text('user_id').notNull(),enrolledAt:integer('enrolled_at').notNull(),
+});
+export const aiPreflight=sqliteTable('sketch_ai_preflight',{
+ id:text('id').primaryKey(),outcome:text('outcome').notNull(),inputTokens:integer('input_tokens'),reservedMicros:integer('reserved_micros'),checkedAt:integer('checked_at').notNull(),
+});

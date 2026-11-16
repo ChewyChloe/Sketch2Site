@@ -1,4 +1,11 @@
 
+## 首次Luna測試BLOCKED修復（2026-11-17）
+- DONE：Luna／Standard硬鎖、完整request16KB及免費精確input計數8192上限、最壞30m cache-write預留、無tools／4096 output／零retry、可信dispatch owner永久D1綁定。保留舊paid slot，新增owner／free-preflight兩表。
+- PASS：278單元／整合、11項Chromium Mock／匯出、Typecheck／Build／秘密與內部指引掃描。免費模型可見與counter確認固定request1791 input／6913 bytes，最多預留US$0.002272；可接受請求硬上限US$0.003072。未呼叫生成。
+- 手動待確認：Platform帳務／Project支出與Responses模型權限；owner需正式登入本站以完成實際Sites Key免費檢查。ENABLED／TEST_APPROVED／BILLING_CONFIRMED全false。
+- 本輪只同步與私人部署既有Sites，不改GitHub；正式部署／D1核對依工具結果，詳細見docs/LUNA_TEST_REPAIRS.md。
+
+
 ## 第一次付費生成前最後驗收（2026-11-17）
 - BLOCKED：已核實官方Standard input .10／cached .01／write30m .125／write12h .25／output .50 USD每百萬tokens；目前reserve／usage公式漏write計費且service_tier未固定default。Luna目前為有效預設但非硬鎖；runtime owner／費率／草稿核准配置仍缺。
 - 實測固定草稿developer＋user＋schema 6097 bytes；14288為heuristic預留，非精確tokens或API硬input上限；output4096含reasoning。Standard全input按30m write的保守估算US$0.003834，尚不能認證無條件最高帳單。

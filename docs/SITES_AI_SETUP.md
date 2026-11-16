@@ -1,3 +1,5 @@
+> 修復更新（2026-11-17）：程式阻擋項已修復並補上免費精確計數與正式owner綁定，見[LUNA_TEST_REPAIRS.md](LUNA_TEST_REPAIRS.md)。仍不啟用或生成；以下保留原驗收紀錄。
+
 > 付費前最後驗收（2026-11-17）：BLOCKED。最新官方費率已查到，現有預留公式漏cache-write計費，且未鎖定Standard tier／正式owner配置。參見[FIRST_PAID_TEST_FINAL_ACCEPTANCE.md](FIRST_PAID_TEST_FINAL_ACCEPTANCE.md)。AI未啟用。
 
 > 最新狀態（2026-11-17）：Sites OPENAI_API_KEY已標記為Secret，既有第2版已成功重新部署並套用環境revision3。AI仍停用。以[SITES_SECRET_DEPLOYMENT_20261117.md](SITES_SECRET_DEPLOYMENT_20261117.md)為最新結果；以下保留先前紀錄。

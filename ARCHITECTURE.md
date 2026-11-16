@@ -183,3 +183,6 @@ CurvedText仍在共用MotionRuntime。curveRows以Intl.Segmenter字素與Canvas�
 ## Sites私人AI測試（2026-11-16，僅Sites副本）
 保留React/Vite、IndexedDB、Renderer、Patch及匯出。server/sitesWorker.ts為Web Request/Response入口，重用原OpenAI Provider、CanvasSchema、prepareIntent及materialize；本機server/api.ts不更換。build:sites將經檢查的Vite public assets嵌入自包含Worker，server bundle在outputs/sites-artifact/dist/server；瀏覽器dist與server bundle分開檢查，部署不含Node HTTP listener。
 D1 sketch_ai_single_test僅保存一次測試的ID、requestId、站內userId、草稿SHA256、保守預留費用、開始時間及固定outcome，不保存草稿內容、圖片、Key、Prompt或模型原始輸出。固定主鍵的單次INSERT ON CONFLICT保證跨isolate／版本最多一個請求取得額度；任何失敗或不確定結果不退款、不刪除、不重設。沒有新增多專案／雲端草稿同步。
+
+## 2026-11-17單次Luna安全準備
+server/lunaPolicy.ts固定價格／模型／token與完整payload上限；Provider用共用builder固定Standard／30m cache／無tools。Sites每次付費前必須免費精確計數並匹配D1完整請求proof，不再用heuristic授權。sitesIdentity.ts以dispatch正式登入＋可信owner policy首次綁定D1永久subject；sitesPreflight.ts只在owner頁面載入執行免費model metadata／token counting。新增兩張表不改sketch_ai_single_test。UI及儲存合約不變，詳見docs/LUNA_TEST_REPAIRS.md。

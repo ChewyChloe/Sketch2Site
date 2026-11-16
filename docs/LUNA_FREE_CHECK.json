@@ -1,0 +1,17 @@
+{
+  "generationRequests": 0,
+  "model": "gpt-6-luna",
+  "serviceTier": "default",
+  "maxOutputTokens": 4096,
+  "hardMaxInputTokens": 8192,
+  "hardMaxReservedUsd": 0.003072,
+  "requestUtf8Bytes": 6913,
+  "extraTools": 0,
+  "requestSha256": "9fbf4c198117fb265721d61355987233a6406cfe5cb79a020a95c55534741ccb",
+  "verificationScope": "Codex Cloud HTTP Secret; Sites runtime key is checked independently on authenticated owner page load",
+  "modelVisible": true,
+  "inputTokens": 1791,
+  "reservedMicros": 2272,
+  "estimatedUpperUsd": 0.002272,
+  "status": "PASS"
+}
