@@ -1266,3 +1266,8 @@ input[type="range"] {
 
 .asset-choose:disabled { opacity:1;color:var(--ink);cursor:not-allowed; }
 .asset-choose:disabled > svg { opacity:.35; }
+
+.node[data-draft-drop="available"] { outline:2px dashed var(--accent);outline-offset:3px; }
+.node[data-draft-drop="invalid"] { outline:2px dashed var(--danger);outline-offset:3px; }
+.canvas-scroll { position:relative; }
+.draft-drop-hint { position:absolute;top:8px;left:16px;max-width:calc(100% - 32px);z-index:4;padding:8px 12px;border:var(--border);background:var(--panel);border-radius:4px;font-size:13px;line-height:1.5;color:var(--ink);pointer-events:none; }

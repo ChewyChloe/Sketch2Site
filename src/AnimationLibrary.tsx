@@ -65,7 +65,7 @@ export function AnimationLibrary({
         <p>
           {selectedLabel
             ? `目前選取：${selectedLabel}`
-            : "拖至元件，或選取元件後套用。"}
+            : draft?"拖到相容元件以附加動畫，不會新增元件。":"拖至元件，或選取元件後套用。"}
         </p>
         {draft && <small>草稿只附加標記</small>}
       </div>

@@ -76,8 +76,9 @@ export default function App() {
   const [panel, setPanel] = useState(() => window.innerWidth > 1000),
     [panelWidth, setPanelWidth] = useState(304);
   const [draftDragging, setDraftDragging] = useState(false);
+  const [draftEffect,setDraftEffect]=useState<Effect|null>(null),[draftHover,setDraftHover]=useState<string|null>(null);
   useEffect(() => {
-    const end = () => setDraftDragging(false);
+    const end = () => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);};
     const cancel = (e: KeyboardEvent) => {
       if (e.key === "Escape") end();
     };
@@ -438,12 +439,16 @@ export default function App() {
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
+  function draftDropReason(n:CanvasNode,id:Effect) {
+    return targetReason(n,id) ?? (n.effects.some(e=>e.presetId===id)?"已附加此動畫":combinationReason([...n.effects,{presetId:id}]));
+  }
   function drop(e: React.DragEvent) {
     setDraftDragging(false);
     e.preventDefault();
     if (!ready || loadError) return;
     try {
       const data = JSON.parse(e.dataTransfer.getData(dragType));
+      if(data.value==="lift")data.value="hover-lift";
       if (
         data.type === "component" &&
         Object.keys(labels).includes(data.value)
@@ -721,6 +726,7 @@ export default function App() {
                 className="canvas-scroll"
                 style={{ "--draft-scale": scale } as React.CSSProperties}
               >
+                {draftEffect && <span className="draft-drop-hint" role="status">{draftHover && spec.nodes.find(n=>n.id===draftHover) ? (draftDropReason(spec.nodes.find(n=>n.id===draftHover)!,draftEffect) ?? "放開以附加動畫") : "拖到綠框元件以附加動畫；不會新增元件"}</span>}
                 <div
                   className="canvas-wrap"
                   style={{ width: 1440 * scale, height: 1200 * scale }}
@@ -735,7 +741,12 @@ export default function App() {
                       height: 1200,
                       transform: "scale(" + scale + ")",
                     }}
-                    onDragOver={(e) => e.preventDefault()}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      const id=(e.target as HTMLElement).closest('[data-node-id]')?.getAttribute('data-node-id')??null;
+                      setDraftHover(id);
+                      if(draftEffect){const target=spec.nodes.find(n=>n.id===id);e.dataTransfer.dropEffect=target&&draftDropReason(target,draftEffect)?'none':'copy';}
+                    }}
                     onDrop={drop}
                     onPointerDown={(e) => {
                       if (e.target === e.currentTarget) setSelected(null);
@@ -762,6 +773,7 @@ export default function App() {
                           aria-label={labels[n.type] + "：" + n.content}
                           aria-pressed={selected === n.id}
                           data-node-id={n.id}
+                          data-draft-drop={draftEffect ? (draftDropReason(n,draftEffect) ? (draftHover===n.id?'invalid':undefined) : 'available') : undefined}
                           data-testid="canvas-node"
                           className={
                             "node " +
@@ -958,7 +970,7 @@ export default function App() {
                             key={t}
                             draggable={!disabled}
                             disabled={disabled || spec.nodes.length >= 100}
-                            onDragEnd={() => setDraftDragging(false)}
+                            onDragEnd={() => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);}}
                             onDragStart={(e) => {
                               setDraftDragging(true);
                               e.dataTransfer.setData(
@@ -1018,14 +1030,15 @@ export default function App() {
                         setTarget("");
                       }
                     }}
-                    onDragEnd={() => setDraftDragging(false)}
+                    onDragEnd={() => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);}}
                     onDragStart={(id, data) => {
                       setDraftDragging(true);
+                      setDraftEffect(id);
                       data.setData(
                         dragType,
                         JSON.stringify({
                           type: "effect",
-                          value: id === "hover-lift" ? "lift" : id,
+                          value: id,
                         }),
                       );
                     }}
