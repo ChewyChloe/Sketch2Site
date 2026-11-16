@@ -1,15 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createSitesAPI, canvasHash, type D1, type SitesEnv } from './sitesWorker';
 import { generationFixtures, mockProvider } from '../tests/fixtures/generation';
 import { CanvasSchema } from '../src/spec';
 const origin = 'https://test.example';
 const user = 'test-site-scoped-user';
-function db(): D1 {
- const sqlite = new DatabaseSync(':memory:');
+function db(sqlite = new DatabaseSync(':memory:'), migrate = true): D1 {
  const migration = readdirSync('drizzle').find(p=>p.endsWith('.sql'))!;
- sqlite.exec(readFileSync('drizzle/'+migration,'utf8'));
+ if (migrate) sqlite.exec(readFileSync('drizzle/'+migration,'utf8'));
  return { prepare(sql) { return { bind(...values) { return {
   async run() { const result=sqlite.prepare(sql).run(...values as never[]); return {meta:{changes:Number(result.changes)}}; },
   async first<T>() { return (sqlite.prepare(sql).get(...values as never[]) ?? null) as T|null; },
@@ -33,6 +34,34 @@ async function setup() {
  return {canvas,env,api,factory,generate,req,status,post,database};
 }
 describe('Sites paid-test boundary (mock only)',()=>{
+ it('retains the consumed slot after closing and reopening the database with a new Worker handler',async()=>{
+  const dir=mkdtempSync(join(tmpdir(),'sketch-sites-persistent-'));
+  let connection:DatabaseSync|undefined=new DatabaseSync(join(dir,'quota.sqlite'));
+  try {
+   const s=await setup();s.env.DB=db(connection);
+   const token=(await (await s.status()).json()).csrfToken;
+   expect((await s.post()).status).toBe(200);
+   connection.close();connection=new DatabaseSync(join(dir,'quota.sqlite'));s.env.DB=db(connection,false);
+   const cold=createSitesAPI(s.factory);
+   expect((await (await cold(s.req('/api/generation/status'),s.env)).json()).configured).toBe(false);
+   const retry=s.req('/api/generation',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':token},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:s.canvas})});
+   expect((await cold(retry,s.env)).status).toBe(429);expect(s.generate).toHaveBeenCalledTimes(1);
+  } finally {connection?.close();rmSync(dir,{recursive:true,force:true});}
+ });
+ it('allows one call across independent SQLite connections and independent Worker handlers, including exact replay',async()=>{
+  const dir=mkdtempSync(join(tmpdir(),'sketch-sites-concurrent-'));
+  const first=new DatabaseSync(join(dir,'quota.sqlite')),second=new DatabaseSync(join(dir,'quota.sqlite'));
+  try {
+   const s=await setup(),env1={...s.env,DB:db(first)},env2={...s.env,DB:db(second,false)};
+   const a=createSitesAPI(s.factory),b=createSitesAPI(s.factory);
+   const token=(await (await a(s.req('/api/generation/status'),env1)).json()).csrfToken;
+   const requestId=crypto.randomUUID(),body=JSON.stringify({requestId,canvasSpec:s.canvas});
+   const make=()=>s.req('/api/generation',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':token},body});
+   const result=await Promise.all([a(make(),env1),b(make(),env2),b(make(),env2)]);
+   expect(result.map(r=>r.status).sort()).toEqual([200,429,429]);expect(s.generate).toHaveBeenCalledTimes(1);
+  } finally {first.close();second.close();rmSync(dir,{recursive:true,force:true});}
+ });
+
  it('reads OPENAI_API_KEY from runtime env and never echoes or logs the mock key',async()=>{
   const marker='SKETCH2SITE_RUNTIME_SECRET_CANARY_4e52';
   const logs:string[]=[];

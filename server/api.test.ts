@@ -358,3 +358,14 @@ it.each(["refusal", "incomplete", "rate-limit"] as const)(
     expect(calls).toBe(1);
   },
 );
+
+// Final preflight: fake transport only; no network or live API key.
+it.each([429,500,503])("OpenAI provider never retries HTTP %s",async status=>{
+ let requests=0;
+ const provider=openAIProvider("SKETCH2SITE_RETRY_TEST_CANARY",defaultModel,async()=>{
+  requests++;
+  return new Response(JSON.stringify({error:{message:"synthetic upstream failure",type:"server_error"}}),{status,headers:{"content-type":"application/json"}});
+ });
+ await expect(provider.generate(prepareIntent(generationFixtures()[0]),new AbortController().signal)).rejects.toBeDefined();
+ expect(requests).toBe(1);
+});

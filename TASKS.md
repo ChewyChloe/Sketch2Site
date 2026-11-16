@@ -1,4 +1,11 @@
 
+## 第一次付費生成前最後驗收（2026-11-17）
+- BLOCKED：已核實官方Standard input .10／cached .01／write30m .125／write12h .25／output .50 USD每百萬tokens；目前reserve／usage公式漏write計費且service_tier未固定default。Luna目前為有效預設但非硬鎖；runtime owner／費率／草稿核准配置仍缺。
+- 實測固定草稿developer＋user＋schema 6097 bytes；14288為heuristic預留，非精確tokens或API硬input上限；output4096含reasoning。Standard全input按30m write的保守估算US$0.003834，尚不能認證無條件最高帳單。
+- PASS：92項相關單元／Mock、10項Chromium生成回歸；新增磁碟DB重開、多連線／Worker重放、429／500／503零重試測試；Schema／Renderer及秘密／archive檢查。
+- 線上仍Secret revision3、owner-private、雙開關false、max1／budget.01、D1 slot表0筆。本輪只驗收，未改production程式／runtime、未部署、付費呼叫0。完整九項結果與風險見docs/FIRST_PAID_TEST_FINAL_ACCEPTANCE.md；停止等待後續指示與未來明確付費批准。
+
+
 ## Sites Runtime Secret已套用（2026-11-17）
 - DONE：原生平台確認OPENAI_API_KEY is_secret=true且遮罩；既有第2版重新私人部署成功，env_set_revision=3。沒有建立新站或修改產品程式。
 - PASS：28項相關Mock／後端測試；部署後owner-private、外部訪客0、ENABLED與TEST_APPROVED=false、MAX_CALLS=1、BUDGET_USD=0.01；D1單次slot表0筆。SDK零重試與安全讀取路徑保留。
