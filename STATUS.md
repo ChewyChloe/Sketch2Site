@@ -1,4 +1,11 @@
 
+## Cloud HTTP Secret與Sites配置釐清（2026-11-16）
+- PASS：平台狀態current、網路policy enforced、OPENAI_API_KEY HTTP Secret ready且限定api.openai.com；透過既有HTTPS proxy／CA以GET /v1/models回傳HTTP200，maxRetries=0，未生成。
+- 更正：Cloud HTTP Secret不依賴本機.env；先前以.env缺失推論Cloud Key不可用不正確，不再要求本機路徑或重建Key。
+- BLOCKED Sites：獨立runtime Secret清單仍無OPENAI_API_KEY；兩個AI開關false、單次／US$0.01設定及owner-private不變。Cloud Secret不會自動繼承給Worker。
+- 已記錄經核實的Sites原生設定入口、Secret欄位與私人版本重新部署步驟；無法檢視帳號管理UI，不臆造選單路徑。見docs/CLOUD_HTTP_SECRET_VS_SITES.md。本輪未改產品或部署、未新增Key、付費生成0。
+
+
 ## Sites Runtime Secret免費核對（2026-11-16）
 - PASS：原生Sites權限與runtime設定核對，owner-private、外部訪客0、ENABLED／TEST_APPROVED=false、MAX_CALLS=1、BUDGET_USD=0.01；D1單次slot表0筆。
 - PASS：Typecheck、28項相關Mock／Provider測試、Bundle／封包秘密掃描及source map排除、內部指引掃描。新增2項runtime Key讀取與response／log隔離測試，未改產品程式。

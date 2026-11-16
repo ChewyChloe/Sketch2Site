@@ -1,3 +1,5 @@
+> 最新配置核對：Cloud HTTP Secret已ready並通過免費認證；Sites Runtime Secret獨立且尚未設定，AI保持停用。參見[CLOUD_HTTP_SECRET_VS_SITES.md](CLOUD_HTTP_SECRET_VS_SITES.md)。
+
 # 私人 Sites AI 串接與單次測試準備
 
 來源仍為 GitHub work f02329e；只修改獨立 Sites 副本，不回寫 GitHub。私人固定網址不變。

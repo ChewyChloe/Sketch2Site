@@ -1,3 +1,5 @@
+> 後續更正：已確認使用者配置的是平台管理的Cloud HTTP Secret，state=ready且免費GET /v1/models為HTTP200；不依賴.env或本機helper。本站Runtime Secret仍未設定。以[CLOUD_HTTP_SECRET_VS_SITES.md](CLOUD_HTTP_SECRET_VS_SITES.md)為最新結論，以下保留當時檢查紀錄。
+
 # Sites Runtime Secret 核對
 
 2026-11-16（Asia/Taipei）。整體BLOCKED；付費生成0。沿用既有Site appgprj_6afafb77233081918b3029cd9bbbd706、既有Worker，不重建站或改造已完成後端。本輪只有Mock測試與文件變更，未部署、未改runtime設定、未新增API Key。
