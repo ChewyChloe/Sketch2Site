@@ -1,4 +1,11 @@
 
+## Sites Runtime Secret免費核對（2026-11-16）
+- PASS：原生Sites權限與runtime設定核對，owner-private、外部訪客0、ENABLED／TEST_APPROVED=false、MAX_CALLS=1、BUDGET_USD=0.01；D1單次slot表0筆。
+- PASS：Typecheck、28項相關Mock／Provider測試、Bundle／封包秘密掃描及source map排除、內部指引掃描。新增2項runtime Key讀取與response／log隔離測試，未改產品程式。
+- BLOCKED：使用者已在Platform建立Key，但本站Runtime Secret清單沒有OPENAI_API_KEY，指定.env亦無Key；等待安全儲存路徑。官方helper仍缺失，不另建Key、不自行替代核准流程。線上HTTP回應驗收未完成，未以Mock冒充。
+- 未呼叫付費生成；未重建站、未重部署、未修改GitHub。詳細六項結果與官方流程恢復方式見docs/SITES_RUNTIME_SECRET_AUDIT.md。
+
+
 ## Sites私人AI測試準備（2026-11-16）
 - DONE程式：Sites Worker API接回原Provider／驗證／候選，D1原子永久單次slot、owner ID／同源／CSRF／固定草稿／時限與預算檢查；保留原UI及資料流程，只同步Sites來源。
 - PASS：258單元／整合、18項相關Chromium、Typecheck、Worker／前端Build、靜態資產回應、前端秘密及內部指引掃描、npm audit 0漏洞。

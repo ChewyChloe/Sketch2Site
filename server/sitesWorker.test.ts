@@ -33,6 +33,31 @@ async function setup() {
  return {canvas,env,api,factory,generate,req,status,post,database};
 }
 describe('Sites paid-test boundary (mock only)',()=>{
+ it('reads OPENAI_API_KEY from runtime env and never echoes or logs the mock key',async()=>{
+  const marker='SKETCH2SITE_RUNTIME_SECRET_CANARY_4e52';
+  const logs:string[]=[];
+  const spies=(["log","info","warn","error","debug"] as const).map(method=>vi.spyOn(console,method).mockImplementation((...args)=>{logs.push(args.map(String).join(' '));}));
+  try {
+   for(const failure of [false,true]) {
+    const s=await setup();delete s.env.SKETCH_AI_API_KEY;s.env.OPENAI_API_KEY=marker;
+    if(failure)s.generate.mockRejectedValue(new Error('upstream includes '+marker));
+    const status=await s.status();expect(await status.text()).not.toContain(marker);
+    const response=await s.post();expect(response.status).toBe(failure?502:200);
+    expect(await response.text()).not.toContain(marker);
+    expect(JSON.stringify([...response.headers])).not.toContain(marker);
+    expect(s.factory).toHaveBeenCalledWith(marker,'gpt-6-luna');
+    expect(s.generate).toHaveBeenCalledTimes(1);
+   }
+   expect(logs.some(line=>line.includes(marker))).toBe(false);
+  } finally {spies.forEach(spy=>spy.mockRestore());}
+ });
+ it('keeps AI off with a mock runtime key while billing/test approval is absent',async()=>{
+  const s=await setup();delete s.env.SKETCH_AI_API_KEY;s.env.OPENAI_API_KEY='SKETCH2SITE_RUNTIME_SECRET_CANARY_4e52';
+  s.env.SKETCH_AI_ENABLED='false';s.env.SKETCH_AI_TEST_APPROVED='false';
+  expect((await (await s.status()).json()).configured).toBe(false);
+  expect((await s.post()).status).toBe(503);expect(s.factory).not.toHaveBeenCalled();
+ });
+
  it('returns original validated DTO and permanently consumes the slot across cold instances',async()=>{
   const s=await setup(); const r=await s.post(); expect(r.status).toBe(200); expect((await r.json()).mode).toBe('live'); expect(s.generate).toHaveBeenCalledTimes(1);
   const cold=createSitesAPI(s.factory); const r2=await cold(s.req('/api/generation/status'),s.env); expect((await r2.json()).configured).toBe(false);

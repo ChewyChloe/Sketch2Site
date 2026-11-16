@@ -5,7 +5,7 @@
 - Worker重用既有Provider、驗證、候選確認／CAS；UI、畫布、動畫素材、IndexedDB及React ZIP匯出不重做。
 - D1永久單次slot：並行／重整／重新部署最多一筆；失敗不退額度。資料庫遷移由db:generate產生，禁止刪slot來重試。
 - Runtime現為SKETCH_AI_ENABLED=false、SKETCH_AI_TEST_APPROVED=false。瀏覽器可以查詢status，但不會向付費Provider發請求。
-- OpenAI Developers已安裝；已開啟安全Key target-selection。尚未收到選定organization/project IDs，尚未建立或傳輸Key。安全金鑰技能未出現在目前可讀技能清單，不能跳過必要流程自行建立Key。
+- OpenAI Developers已安裝，picker選擇與本機目的地授權已收到；技能現已可讀取，但官方helper仍缺失。使用者已在Platform建立Key，目前Sites Runtime Secret清單與指定.env均未收到該Key；正在確認安全儲存位置，不另建Key。本輪核對與官方流程恢復方式見SITES_RUNTIME_SECRET_AUDIT.md。
 - 官方模型頁在本環境CONNECT403，現有候選gpt-6-luna與紀錄中的三種價格都不能視為本次已核實。不得自動設review flags或改用另一模型。
 
 ## 具體待核准提案
