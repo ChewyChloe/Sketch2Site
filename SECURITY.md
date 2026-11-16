@@ -13,7 +13,7 @@ Schema 測試拒絕未知程式欄位、惡意 URL、不合法效果、重複 ID
 PageSpec、檔名與本機內容都不可信。UI 限制 200 KB；PageSchema 在遞迴驗證前限制物件深度、項目及字元總量，拒絕循環參照，再驗證整頁 200 節點／10 層、UUID 唯一性與 anchor 目標。
 僅九種型別、特有欄位與六種動畫，所有物件 strict；拒絕任意 style、html、onclick、script、iframe、未知屬性與不合法效果參數。HTML／事件字串出現在 content 時，React 將其顯示為純文字，不嘗試過濾成可執行 HTML。
 圖片只允許 /assets/workspace.svg，其他來源、data:、相對任意路徑、缺少資產均拒絕。資產檔由應用開發者維護；不接收使用者 SVG 或遠端圖片，不產生伺服器端 URL 抓取。
-連結只允許有效元件 UUID anchor，或 HTTPS 的 learn.microsoft.com / example.com，禁止 userinfo、非預設埠、其他主機與協定。擴充網域需程式碼檢閱。外部連結使用新分頁、noopener noreferrer；本頁連結只在預覽根節點尋找 UUID 目標，不操作主工作台。E2E 將外部目標攔截為本地測試回應，不依賴網站可用性。
+連結以結構性 public HTTPS 驗證取代早期 learn.microsoft.com / example.com 網域白名單，允許 Discord、GitHub 等公開主機連結；不需要逐網域擴充。長度最多2048字元，只允許HTTPS（省略埠或明確443），禁止任何userinfo（含空userinfo）、控制字元、空白、反斜線、authority百分比編碼與空埠。主機須為至少兩個合法DNS label、總長最多253字元及2–63個ASCII字母的末段；IDN依URL標準轉為punycode後驗證。拒絕IP literal（含URL parser正規化的整數／八進位／十六進位IPv4及IPv6）、單段主機、尾點，以及任何label為localhost/local/internal/localdomain/lan/home/intranet/onion/test/invalid的名稱與home.arpa。這是保守的結構驗證，不查DNS／公共後綴、不保證主機存在或可信，也無法保證DNS解析／重新導向不指向私人或本機位址；不是SSRF防護。僅產生使用者啟動的外連，沒有新增fetch、proxy、遠端資產、任意HTML／JS或憑證URL能力。保留有效UUID anchor及完整PageSchema的目標ID存在檢查。外部連結使用新分頁、noopener noreferrer；本頁連結只在預覽根節點尋找 UUID 目標，不操作主工作台。E2E 將外部目標攔截為本地測試回應，不依賴網站可用性。
 Renderer 不取得環境變數、秘密、IndexedDB 操作或主工作台修改 callback；只渲染驗證的內容。可信 Preview 控制層可透過保存模組讀寫本機頁面。以受控數值建立動畫與 CSS 變數，沒有 eval、Function、innerHTML 或任意 CSS 字串。
 目前預覽與主網站同來源，並非程式執行沙箱；安全性依賴嚴格資料合約與可信 Renderer。未來若加入任意 HTML／JS、第三方嵌入、遠端資產或自訂事件，必須重新評估 XSS、SSRF、資料外傳與來源隔離，必要時採不同來源、限制權限的沙箱；不可直接放寬現有 Registry。
 原始匯入 JSON 不額外保存，Phase 4 僅將驗證後 PageSpec 納入本機紀錄；錯誤只顯示固定原因，不顯示檔名、堆疊、內部路徑或任意輸入片段。開發者工具仍可檢查已傳送內容，不宣稱預覽能藏住前端資料。
@@ -21,7 +21,7 @@ Renderer 不取得環境變數、秘密、IndexedDB 操作或主工作台修改 
 
 ## Phase 3 Patch 信任邊界
 Patch 一律視為不可信。外層／payload／參數均 strict；最多 20 操作、2000 個走訪項目、8 層、16000 字元。拒絕循環／重複物件參照及 __proto__、constructor、prototype 鍵；不使用任意路徑 setter、eval、Function、HTML 注入或動態元件。
-變更屬性用明確 switch，僅允許類型對應欄位與既有 Token／Preset。URL 與資產沿用 PageSpec 白名單。文字 Patch 對網頁標記、事件賦值與 javascript: 字串安全拒絕；這是輸入限制，不是 HTML sanitizer；Renderer 仍將內容當純文字。
+變更屬性用明確 switch，僅允許類型對應欄位與既有 Token／Preset。URL 沿用 PageSpec 結構性 public HTTPS／UUID anchor 政策，資產沿用既有白名單。文字 Patch 對網頁標記、事件賦值與 javascript: 字串安全拒絕；這是輸入限制，不是 HTML sanitizer；Renderer 仍將內容當純文字。
 授權 ID 由可信呼叫參數 allowedTargetIds 提供，不由 Patch Payload 指定。預覽 UI 僅授權選取的標題；原始頁面與每步暫存結果均驗證完整 Schema，拒絕重複／有歧義 ID。最終 Diff 再確認沒有未請求的欄位、元件或全頁／樹變化。
 整批只在全部成功後發布一個新狀態。失敗保持原參照、revision、歷史與預覽；沒有秘密、環境變數、系統設定或 Registry 可寫入欄位。
 sessionId + 單調 revision 防止過期操作，包括 Undo／Redo 後重用舊版本及跨載入 Session 重播。這是本機一致性控制，不是身分認證；未來後端必須另驗證使用者資源權限與可信 scope，AI 不得繞過此流程。

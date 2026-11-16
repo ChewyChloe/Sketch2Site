@@ -8,13 +8,26 @@ export const href = z
   .string()
   .max(2048)
   .refine((value) => {
-    if (/^#[0-9a-f-]{36}$/i.test(value)) return true;
+    if (value.startsWith("#")) return z.uuid().safeParse(value.slice(1)).success;
+    // Reject characters the URL parser would trim, ignore or reinterpret.
+    if (/[\s\u0000-\u001f\u007f-\u009f\\]/u.test(value)) return false;
     try {
       const u = new URL(value);
+      const authority = value.match(/^https:\/\/([^/?#]+)/i)?.[1];
+      const host = u.hostname.toLowerCase();
+      const labels = host.split(".");
+      // DNS-shaped public names only; no literals, single-label or local namespaces.
+      const publicHost = host.length <= 253 && labels.length >= 2 &&
+        labels.every((label) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label)) &&
+        /^[a-z]{2,63}$/i.test(labels.at(-1)!) &&
+        !labels.some((label) => ["localhost", "local", "internal", "localdomain", "lan", "home", "intranet", "onion", "test", "invalid"].includes(label)) &&
+        !host.endsWith(".home.arpa") && host !== "home.arpa";
       return (
-        value.startsWith("https://") &&
+        /^https:\/\//i.test(value) &&
+        !!authority && !/[@%]/.test(authority) &&
+        !authority.endsWith(":") &&
         u.protocol === "https:" &&
-        ["learn.microsoft.com", "example.com"].includes(u.hostname) &&
+        publicHost &&
         !u.username &&
         !u.password &&
         !u.port

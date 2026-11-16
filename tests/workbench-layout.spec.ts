@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
 import { writeFileSync } from "node:fs";
 import { fixture, id } from "./fixtures/workbench";
@@ -96,7 +97,7 @@ for (const width of [1440, 768, 375])
       page.getByRole("heading", { name: "從一個想法開始", exact: true }),
     ).toBeInViewport();
     await page.screenshot({ path: `test-results/phase61-draft-${width}.png` });
-    await page.getByRole("button", { name: "預覽", exact: true }).click();
+    await openWebsiteWorkspace(page);
     await page.getByLabel("載入頁面檔案").setInputFiles({
       name: "workbench-fixture.json",
       mimeType: "application/json",

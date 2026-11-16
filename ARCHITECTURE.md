@@ -173,3 +173,7 @@ ExtendedMotion與既有MotionRuntime並列為同一PageRuntime的內部模組；
 焦點與收合草稿卡片需兩行；materialize沿原內容換行產生子項，verifyPreservation比對完整原文及綁定效果。新增跨效果衝突與每頁資源上限；局部修改仍走Session／Revision／CAS。
 
 草稿手動保存以ref維持單一進行中的寫入與最新待保存快照；僅明確保存動作入隊，不因編輯自動保存。顯示保存中至隊列完成，避免舊成功訊息與busy期間丟失新要求；資料Schema及儲存交易合約不變。
+
+## 工作台回報問題修正
+草稿的預覽按鈕對非空Canvas使用既有createDemoCandidate與CandidatePreview，標示本機非AI；不呼叫Provider、不自動接受版本。既有PageSpec工作區以具名選單入口開啟。草稿／網站兩份資料仍分開保存，所有來源內容與動畫目標驗證、候選版本與Session／Revision檢查保持。
+圖片匯入以Canvas version拒絕過時結果，新增圖片先尋找不重疊位置並選取／捲入視野；MIME別名不取代檔頭、尺寸、CRC與重新編碼檢查。

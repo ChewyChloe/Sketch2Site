@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import {
   pageAction,
   viewAction,
@@ -14,7 +15,7 @@ test.beforeEach(async ({ page }) => {
 });
 async function open(page: Page) {
   await page.goto("/");
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(page.locator(".rendered-page h1")).toBeVisible();
 }
 async function edit(page: Page, text: string, fade?: number) {
@@ -62,14 +63,14 @@ test("自動保存、刷新、新 Session 歷史、範例取消與 Canvas 隔離
     .getAttribute("data-node-id");
   await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
   await expect(page.getByRole("status")).toHaveText("已儲存至本機");
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(page.getByTestId("page-save-status")).toHaveText("尚未儲存");
   expect(await disk(page)).toBeUndefined();
   await edit(page, "已保存的頁面", 650);
   await saved(page);
   const first = await disk(page);
   await page.reload();
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(page.locator(".rendered-page h1")).toHaveText("已保存的頁面");
   await expect(page.getByRole("button", { name: "撤銷修改" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "重做修改" })).toBeDisabled();
@@ -134,7 +135,7 @@ test("交易未完成不顯示已儲存；連續修改合併保存最新版本",
   await saved(page);
   expect((await disk(page)).revision).toBe(3); // Text A, attach preset, then text B + duration.
   await page.reload();
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(page.locator(".rendered-page h1")).toHaveText("連續修改 B");
 });
 test("配額失敗保留記憶體內容並可重試", async ({ page }) => {
@@ -172,7 +173,7 @@ test("配額失敗保留記憶體內容並可重試", async ({ page }) => {
   await page.getByRole("button", { name: "重試儲存" }).click();
   await saved(page);
   await page.reload();
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(page.locator(".rendered-page h1")).toHaveText(
     "配額不足時的內容",
   );
@@ -238,7 +239,7 @@ test("損毀資料不進 Renderer、不被範例覆蓋；確認後原子備份�
     bad,
   );
   await page.reload();
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(page.getByRole("alert")).toContainText("原始紀錄已保留");
   await expect(page.locator("[data-page-id]")).toHaveCount(0);
   expect(await disk(page)).toEqual(bad);
@@ -281,7 +282,7 @@ test("禁止 IndexedDB 時安全失敗且不顯示預設範例", async ({ page }
     };
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(page.getByRole("alert")).toContainText("無法開啟本機儲存");
   await expect(page.locator("[data-page-id]")).toHaveCount(0);
 });

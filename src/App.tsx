@@ -42,6 +42,7 @@ export default function App() {
   const imageInput = useRef<HTMLInputElement>(null),
     imageTarget = useRef<string | null>(null);
   const [importingImage, setImportingImage] = useState(false);
+  const [imageFeedback,setImageFeedback]=useState(""),[imageError,setImageError]=useState(false),[linkError,setLinkError]=useState("");
   const localImages = useAssetRefs();
   const previewRef = useRef<PreviewHandle>(null);
   const canvasVersion = useRef(0),
@@ -52,6 +53,7 @@ export default function App() {
     abortRef = useRef<AbortController | null>(null);
   const [candidate, setCandidate] = useState<{
     result: CandidateResult;
+    previewOnly?:boolean;
     canvasVersion: number;
     target: { sessionId: string; revision: number };
   } | null>(null);
@@ -124,7 +126,7 @@ export default function App() {
     },
     [],
   );
-  async function generate(demo = false) {
+  async function generate(demo = false, previewOnly = false) {
     if (generating || abortRef.current || !ready || loadError) return;
     const target = previewRef.current?.target();
     if (!target) {
@@ -155,7 +157,7 @@ export default function App() {
           ? "示範排版完成，未呼叫 AI。"
           : "草稿已送至 OpenAI，候選尚未儲存。",
       );
-      setCandidate({ result, canvasVersion: version, target });
+      setCandidate({ result, canvasVersion: version, target, previewOnly });
       setMode("preview");
     } catch (e) {
       if (run === generationRun.current)
@@ -187,6 +189,7 @@ export default function App() {
   }
   useEffect(() => {
     setLinkDraft(node?.href ?? "");
+    setLinkError("");
   }, [node?.id, node?.href]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
@@ -244,45 +247,57 @@ export default function App() {
   async function importPicture(file: File | undefined) {
     if (!file || importingImage) return;
     setImportingImage(true);
-    const originalDraft = state.current.present;
+    setImageFeedback("正在處理圖片…");setImageError(false);
+    const originalVersion = canvasVersion.current;
     const id = imageTarget.current,
       previous = id
         ? state.current.present.nodes.find((n) => n.id === id)
         : undefined;
     try {
       const asset = await importImage(file);
-      if (state.current.present !== originalDraft) {
+      if (canvasVersion.current !== originalVersion) {
+        setImageFeedback("草稿已變更，圖片保留於本機素材，請重新選取。");setImageError(true);
         report("草稿已變更，圖片保留於本機素材，請重新選取。", true);
         return;
       }
       if (id) {
         const now = state.current.present.nodes.find((n) => n.id === id);
         if (!now || now.assetId !== previous?.assetId) {
+          setImageFeedback("圖片已存於本機，但原元素已變更，請重新選取素材。");setImageError(true);
           report("圖片已存於本機，但原元素已變更，請重新選取素材。", true);
           return;
         }
-        patch(id, { assetId: asset.ref });
+        if(!patch(id, { assetId: asset.ref }))throw new Error("image patch rejected");
         setSelected(id);
       } else {
         if (state.current.present.nodes.length >= 100) {
+          setImageFeedback("草稿已達元素上限，圖片保留於本機素材。");setImageError(true);
           report("草稿已達元素上限，圖片保留於本機素材。", true);
           return;
         }
+        let position={x:80,y:80};
+        outer:for(let y=80;y<=1000;y+=220)for(let x=80;x<=1120;x+=320){
+          if(state.current.present.nodes.every(n=>x+280<=n.x||x>=n.x+n.width||y+180<=n.y||y>=n.y+n.height)){position={x,y};break outer;}
+        }
         const next = {
-          ...createNode("image", 80, 80),
+          ...createNode("image", position.x, position.y),
           assetId: asset.ref,
           content: "匯入的圖片",
         };
-        change({
+        if(!change({
           ...state.current.present,
           nodes: [...state.current.present.nodes, next],
-        });
+        }))throw new Error("image insertion rejected");
         setSelected(next.id);
       }
       setTab("properties");
+      setImageFeedback("圖片已匯入，僅存於本機。");
       report("圖片已匯入，僅存於本機。");
+      requestAnimationFrame(()=>{const selectedId=id??state.current.present.nodes.at(-1)?.id;if(selectedId)board.current?.querySelector<HTMLElement>('[data-node-id="'+selectedId+'"]')?.scrollIntoView({block:'nearest',inline:'nearest'});});
     } catch (e) {
+      setImageFeedback(assetErrorMessage(e));setImageError(true);
       report(assetErrorMessage(e), true);
+      requestAnimationFrame(()=>document.querySelector('.image-feedback')?.scrollIntoView({block:'nearest'}));
     } finally {
       setImportingImage(false);
     }
@@ -560,7 +575,14 @@ export default function App() {
             <button
               aria-pressed={mode === "preview"}
               disabled={accepting}
-              onClick={() => setMode("preview")}
+              onClick={() => {
+                if(mode==="draft"&&spec.nodes.length&&!generating){
+                  if(!previewRef.current?.target()){setMode("preview");return;}
+                  const missing=spec.nodes.find(n=>n.type==="button"&&!n.href);
+                  if(missing){setSelected(missing.id);setTab("properties");setPanel(true);setGenerationError("請先為「"+missing.content+"」設定按鈕連結，再預覽。");return;}
+                  void generate(true,true);
+                }else setMode("preview");
+              }}
             >
               預覽
             </button>
@@ -580,11 +602,13 @@ export default function App() {
               <button
                 disabled={busy || !ready || loadError}
                 title="儲存草稿（⌘ / Ctrl S）"
+                aria-label={busy?"儲存中…":"儲存草稿"}
                 onClick={() => void save()}
               >
-                {busy ? "儲存中…" : "儲存草稿"}
+                {busy ? "儲存中…" : saved&&!dirty ? "已儲存" : "儲存草稿"}
               </button>
               <WorkbenchMenu label="草稿選單">
+                <button onClick={()=>{setCandidate(null);setMode("preview");}}>開啟網站工作區</button>
                 <button
                   disabled={disabled || generating || !spec.nodes.length}
                   onClick={() => void generate(true)}
@@ -671,6 +695,7 @@ export default function App() {
         {mode === "preview" && candidate && (
           <CandidatePreview
             candidate={candidate.result}
+            previewOnly={candidate.previewOnly}
             stale={candidate.canvasVersion !== canvasVersion.current}
             onAccept={acceptCandidate}
             onBack={() => {
@@ -892,6 +917,7 @@ export default function App() {
                     屬性
                   </button>
                 </div>
+                {imageFeedback && <p className="image-feedback" role={imageError?"alert":undefined}>{imageFeedback}</p>}
                 {pending && (
                   <div className="pending">
                     <strong>{effects[pending]} · 選擇附加對象</strong>
@@ -1104,20 +1130,21 @@ export default function App() {
                           aria-label="按鈕連結"
                           placeholder="尚未設定連結"
                           value={linkDraft}
-                          onChange={(e) => setLinkDraft(e.target.value)}
+                          onChange={(e) => {setLinkDraft(e.target.value);setLinkError("");}}
                           onBlur={() => {
-                            if (!patch(node.id, { href: linkDraft || null })) {
-                              setLinkDraft(node.href ?? "");
-                              report("連結無效，原連結未變更。", true);
-                            }
+                            if (!patch(node.id, { href: linkDraft.trim() || null })) {
+                              setLinkError("請使用有效的公開 HTTPS 網址或本頁元素連結。輸入已保留，尚未套用。");
+                              report("連結尚未套用，請修正網址。", true);
+                            } else {setLinkError("");if(linkError)report("連結已更新，草稿尚未儲存。");}
                           }}
+                          aria-invalid={Boolean(linkError)}
+                          aria-describedby={linkError?"draft-link-error":undefined}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") e.currentTarget.blur();
                           }}
                         />
-                        <small>
-                          支援文件、example.com 或頁面中的元素連結。
-                        </small>
+                        {linkError && <small id="draft-link-error" role="alert">{linkError}</small>}
+                        <small>支援公開 HTTPS 網址或頁面中的元素連結。</small>
                       </label>
                     )}
                     <h3 className="property-section-title">位置與尺寸</h3>

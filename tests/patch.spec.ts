@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import {
   pageAction,
   viewAction,
@@ -20,7 +21,7 @@ test("依 ID 選取、套用、Diff、撤銷重做、非法修改與草稿隔離
   const draft = page.getByTestId("canvas-node");
   const draftId = await draft.getAttribute("data-node-id"),
     draftText = await draft.textContent();
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   const heading = page.locator(".rendered-page h1");
   const id = await heading.getAttribute("data-page-id"),
     original = await heading.textContent();
@@ -95,7 +96,7 @@ for (const width of [768, 375]) {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
-    await page.getByRole("button", { name: "預覽", exact: true }).click();
+    await openWebsiteWorkspace(page);
     await page.locator(".rendered-page h1").click();
     await editSelection(page);
     await page.getByLabel("標題文字").fill("測試局部修改");

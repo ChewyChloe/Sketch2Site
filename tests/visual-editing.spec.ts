@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import {
   pageAction,
   viewAction,
@@ -51,7 +52,7 @@ async function setup(page: Page) {
     await page.getByRole("button", { name: "展開側欄", exact: true }).click();
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
   await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await page.getByLabel("載入頁面檔案").setInputFiles({
     name: "visual-mock.json",
     mimeType: "application/json",
@@ -141,7 +142,7 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
   await expect.poll(() => record(page, "drafts", "current")).toEqual(draft);
   await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
   await page.reload();
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(node(page, 2)).toHaveText("清楚呈現我的作品");
   expect(external).toEqual([]);
 });
@@ -187,7 +188,7 @@ test("畫筆、撤銷清除、縮放與瀏覽互動；註記不進入 PageSpec",
   await expect(node(page, 4)).toBeFocused();
   expect(await record(page)).toEqual(before);
   await page.reload();
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(stroke).toHaveCount(0);
   expect(external).toEqual([]);
 });

@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
 import { openPanel, editSelection, viewAction } from "./helpers/workbench";
 import { generationFixtures } from "../src/demoFixtures";
@@ -127,7 +128,7 @@ for (const width of [1440, 768, 375])
     await viewAction(page, "桌面");
     await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
     await page.reload();
-    await page.getByRole("button", { name: "預覽", exact: true }).click();
+    await openWebsiteWorkspace(page);
     await expect(h).toHaveText("閱讀，從這裡開始");
     await expect(h).toHaveAttribute("data-effects", "fade-in");
     if (await page.getByRole("button", { name: "關閉工具面板" }).isVisible())
@@ -239,7 +240,7 @@ test("200% text magnification preserves readable controls and exits at narrow wi
     await page.setViewportSize({ width, height: 1000 });
     await page.goto("/");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
-    await page.getByRole("button", { name: "預覽", exact: true }).click();
+    await openWebsiteWorkspace(page);
     // Simulate text-only enlargement explicitly; this is not a claim about browser zoom settings.
     await page.evaluate(() => {
       const targets = Array.from(

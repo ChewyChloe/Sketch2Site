@@ -49,3 +49,10 @@ export async function cancelSelection(page: Page) {
     await page.getByRole("button", { name: "取消選取", exact: true }).click();
   else await page.keyboard.press("Escape");
 }
+
+// Enter the existing website editor explicitly; Preview now previews a populated draft.
+export async function openWebsiteWorkspace(page: Page){
+ const menu=page.locator('.workbench-menu > summary').filter({hasText:'草稿選單'});
+ if(await menu.isVisible()){await menu.click();await page.getByRole('button',{name:'開啟網站工作區',exact:true}).click();}
+ else await page.getByRole('button',{name:'預覽',exact:true}).click();
+}

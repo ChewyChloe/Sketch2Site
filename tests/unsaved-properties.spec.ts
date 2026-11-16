@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
 import { fixture, id } from "./fixtures/workbench";
 import { editSelection, pageAction, openPanel } from "./helpers/workbench";
@@ -6,7 +7,7 @@ async function setup(page: Page, width = 1440) {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await page.getByLabel("載入頁面檔案").setInputFiles({
     name: "unsaved-fixture.json",
     mimeType: "application/json",
@@ -110,7 +111,7 @@ test("reload, Undo, page replacement and local candidate cannot silently discard
     .click();
   await expect(page.getByRole("alert")).toContainText("請先套用或捨棄");
   await expect(page.getByRole("main", { name: "生成候選預覽" })).toHaveCount(0);
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(input).toHaveValue("保留這份輸入");
 });
 

@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import {serverMotionRegistry} from "../server/motionBriefs";
 import {extendedMotionFixture} from "./fixtures/extendedMotions";
 import {createServer} from "node:net";
@@ -18,7 +19,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   test.setTimeout(180000);
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   // A local raster is imported through the real UI, then referenced by the page being exported.
   await page.getByRole("button", { name: "草稿", exact: true }).click();
   const raster = await page.evaluate(() => {
@@ -55,7 +56,7 @@ test("downloaded React project installs and builds independently; runtime stays 
         };
       }),
   );
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   const input = structuredClone(demoPage);
   const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections);
   const replaceImage = (nodes: typeof input.sections) =>

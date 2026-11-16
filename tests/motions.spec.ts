@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page } from '@playwright/test';
 import { motionFixture, motionId } from './fixtures/motions';
 import { openPanel, editSelection, viewAction } from './helpers/workbench';
@@ -8,7 +9,7 @@ async function load(page: Page) {
         calls.push(r.url()); });
     await page.goto('/');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
-    await page.getByRole('button', { name: '預覽', exact: true }).click();
+    await openWebsiteWorkspace(page);
     await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'original-motions-test.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(motionFixture())) });
     await expect(node(page, 2)).toHaveText('原創動畫驗證示例');
     await expect(page.getByTestId('page-save-status')).toHaveText('已儲存');
@@ -43,7 +44,7 @@ for (const width of [1440, 768, 375])
         expect(await frame.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
         await page.screenshot({ path: `test-results/motions-review1-${width}.png`, fullPage: true });
         await page.reload();
-        await page.getByRole('button', { name: '預覽', exact: true }).click();
+        await openWebsiteWorkspace(page);
         await expect(node(page, 3)).toContainText('1,234.50');
         expect(calls).toEqual([]);
         expect(errors).toEqual([]);
@@ -115,7 +116,7 @@ test('required user content is composed locally and committed through Undo/Redo 
     await expect(node(page, 12)).toHaveAttribute('data-effects', /flip-card/);
     await expect(page.getByTestId('page-save-status')).toHaveText('已儲存');
     await page.reload();
-    await page.getByRole('button', { name: '預覽', exact: true }).click();
+    await openWebsiteWorkspace(page);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await node(page, 12).scrollIntoViewIfNeeded();
     await node(page, 12).getByRole('button', { name: '查看背面' }).click();

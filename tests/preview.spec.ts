@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import {
   pageAction,
   viewAction,
@@ -18,7 +19,7 @@ test.beforeEach(async ({ page }) => {
 async function openPreview(page: Page) {
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(
     page.getByRole("heading", { level: 1, name: "把想法，排成一個頁面。" }),
   ).toBeVisible();
@@ -37,7 +38,7 @@ test("預覽互動、動畫、草稿隔離與恢復", async ({ page, context }) 
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
   const id = await page.getByTestId("canvas-node").getAttribute("data-node-id");
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await expect(page.getByText("範例預覽", { exact: true })).toBeVisible();
   // Replay, then inspect live browser Animation objects rather than only class names.
   await viewAction(page, "重播動畫");

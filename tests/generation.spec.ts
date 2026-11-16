@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import {
   pageAction,
   viewAction,
@@ -208,7 +209,7 @@ test("生成期間重新載入 Page Session 使結果過期", async ({ page }) =
   });
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
   await arrived;
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await pageAction(page, "重新載入頁面");
   await expect(page.getByTestId("page-save-status")).toHaveText("尚未儲存");
   await fulfillMock(captured);
@@ -233,7 +234,7 @@ test("候選保存失敗仍保留候選，最後有效頁面不變，可重試�
   });
   await seed(page);
   // Save an existing valid page first, then generate a different candidate.
-  await page.getByRole("button", { name: "預覽", exact: true }).click();
+  await openWebsiteWorkspace(page);
   await page.locator(".rendered-page h1").click();
   await editSelection(page);
   await page.getByLabel("標題文字").fill("原有效版本");
@@ -270,7 +271,9 @@ test("透過既有元件庫建立標題、圖片與可操作按鈕再生成", as
   await page.getByRole("tab", { name: "編輯元素" }).click();
   await page.getByLabel("按鈕連結").fill("javascript:alert(1)");
   await page.getByLabel("按鈕連結").press("Enter");
-  await expect(page.getByLabel("按鈕連結")).toHaveValue("");
+  await expect(page.getByLabel("按鈕連結")).toHaveValue("javascript:alert(1)");
+  await expect(page.getByLabel("按鈕連結")).toHaveAttribute("aria-invalid","true");
+  await expect(page.getByText(/輸入已保留，尚未套用/)).toBeVisible();
   await page.getByLabel("按鈕連結").fill("https://example.com");
   await page.getByLabel("按鈕連結").press("Enter");
   await page.getByRole("button", { name: "生成網站", exact: true }).click();

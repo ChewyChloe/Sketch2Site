@@ -1,3 +1,4 @@
+import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { extendedMotionFixture, extendedMotionId, extendedMotionNames, extendedMotionNodeIds, extendedMotionText } from './fixtures/extendedMotions';
 import { openPanel, editSelection, viewAction } from './helpers/workbench';
@@ -11,7 +12,7 @@ async function load(page: Page, bare = false) {
     page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/api/generation')) generation.push(request.url()); });
     await page.goto('/');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
-    await page.getByRole('button', { name: '預覽', exact: true }).click();
+    await openWebsiteWorkspace(page);
     const fixture = extendedMotionFixture();
     if (bare) fixture.sections[0].children!.forEach(child => { child.effects = []; });
     await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'extended-motions.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(fixture)) });
@@ -191,7 +192,7 @@ for (const id of effects) test(`${id}: actual drag patch, parameter apply, undo,
     await expect(input).toHaveValue(value);
     await expect(page.getByTestId('page-save-status')).toHaveText('已儲存');
     await page.reload();
-    await page.getByRole('button', { name: '預覽', exact: true }).click();
+    await openWebsiteWorkspace(page);
     await expect(node(page, id)).toHaveAttribute('data-effects', id);
     await page.getByRole('button', { name: '選取', exact: true }).click();
     await node(page, id).click({ position: { x: 4, y: 4 } });

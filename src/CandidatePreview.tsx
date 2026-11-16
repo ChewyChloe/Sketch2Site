@@ -3,11 +3,13 @@ import { PageRenderer } from "./PageRenderer";
 import type { CandidateResult } from "./demo";
 export default function CandidatePreview({
   candidate,
+  previewOnly=false,
   stale,
   onAccept,
   onBack,
 }: {
   candidate: CandidateResult;
+  previewOnly?:boolean;
   stale: boolean;
   onAccept: () => Promise<void>;
   onBack: () => void;
@@ -19,7 +21,7 @@ export default function CandidatePreview({
       <div className="preview-tools">
         <div>
           <strong>
-            {candidate.mode === "demo"
+            {previewOnly ? "草稿預覽（非 AI）" : candidate.mode === "demo"
               ? "示範排版（非 AI）"
               : candidate.mode === "mock"
                 ? "測試生成（非 AI）"

@@ -239,7 +239,13 @@ export async function listAssetRefs(): Promise<string[]> {
 }
 export async function importImage(file: File) {
   if (!file.size || file.size > assetLimits.rawBytes) throw failure();
-  inspectRaster(new Uint8Array(await file.arrayBuffer()), file.type);
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  // Native file pickers may omit MIME or report legacy PNG/JPEG aliases.
+  // Only the missing MIME case uses the signature; explicit other formats fail.
+  const mime = file.type === ""
+    ? (bytes[0] === 137 ? "image/png" : "image/jpeg")
+    : ({ "image/x-png": "image/png", "image/jpg": "image/jpeg", "image/pjpeg": "image/jpeg" }[file.type] ?? file.type);
+  inspectRaster(bytes, mime);
   let bitmap: ImageBitmap;
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
