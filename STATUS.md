@@ -1,3 +1,10 @@
+
+
+## Sites私人測試副本（2026-11-16）
+- DONE：從GitHub work f02329ecf2fe2eb59595f95607a09ed12c53fcb3建立獨立副本，保留既有功能及UI，加入靜態hosting manifest、production AI停用保護與安全標頭。只同步Sites來源，不回寫原GitHub。
+- PASS：Typecheck、248單元／整合、123 Chromium回歸、Build、秘密／內部指引邊界及正式JS端點檢查。真實付費AI呼叫0。
+- BLOCKED：Sites內部preview relay逾時；線上私人網址人工驗收待使用者檢查。Node本機API不相容，沒有部署AI端點。
+- 部署僅限owner-private；工具回傳決定實際發布狀態。細節與後續公開固定網址步驟見docs/SITES_TEST_ENVIRONMENT.md。
 # 狀態
 
 ## GitHub同步（2026-11-16）

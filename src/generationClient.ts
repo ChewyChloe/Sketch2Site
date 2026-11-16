@@ -10,6 +10,8 @@ export async function requestGeneration(
   canvasSpec: CanvasSpec,
   signal: AbortSignal,
 ) {
+  if (import.meta.env.VITE_SITES_FRONTEND_ONLY === "true")
+    throw new GenerationError("NOT_CONFIGURED");
   prepareIntent(canvasSpec);
   let status: Response;
   try {

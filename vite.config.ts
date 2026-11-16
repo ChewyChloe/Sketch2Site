@@ -2,6 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 export default defineConfig(({ command }) => ({
   plugins: [react()],
+  // Sites copy: production builds must never contact the paid generation API.
+  define: command === "build" ? { "import.meta.env.VITE_SITES_FRONTEND_ONLY": JSON.stringify("true") } : {},
   html: command === "serve" ? { cspNonce: "sketch2site-dev-only" } : {},
   build: { sourcemap: false },
   server: {
