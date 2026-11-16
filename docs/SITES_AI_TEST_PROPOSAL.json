@@ -1,0 +1,19 @@
+{
+  "fixture": "portfolio",
+  "canvasHash": "a1384324ce1429b60e980cb47b822fc88f15059c878cfc366f7929ba67947283",
+  "elements": 6,
+  "inputTokenReservation": 14288,
+  "maxOutputTokens": 4096,
+  "maxCalls": 1,
+  "budgetUsd": 0.01,
+  "pricingStatus": "NOT VERIFIED in this session; live model/pricing pages blocked by network CONNECT 403",
+  "previousRecordedRates": {
+    "input": 0.1,
+    "cachedInput": 0.01,
+    "output": 0.5,
+    "unit": "USD per million tokens; unverified"
+  },
+  "provisionalReservationUsd": 0.0034768000000000004,
+  "actualPaidCalls": 0,
+  "activation": "Requires owner ID, reviewed model/pricing, backend key, explicit test approval and <=1h expiry; never enabled automatically"
+}

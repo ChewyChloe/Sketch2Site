@@ -179,3 +179,7 @@ ExtendedMotion與既有MotionRuntime並列為同一PageRuntime的內部模組；
 圖片匯入以Canvas version拒絕過時結果，新增圖片先尋找不重疊位置並選取／捲入視野；MIME別名不取代檔頭、尺寸、CRC與重新編碼檢查。
 
 CurvedText仍在共用MotionRuntime。curveRows以Intl.Segmenter字素與Canvas字寬建立有界文字行，每行產生可信數值的SVG path；讀屏原文只保留一份。使用clientWidth避免預覽縮放重複縮小布局。Reduced Motion訂閱時立即同步當前設定，補上掛載競態。正式Renderer與React匯出共用此路徑。
+
+## Sites私人AI測試（2026-11-16，僅Sites副本）
+保留React/Vite、IndexedDB、Renderer、Patch及匯出。server/sitesWorker.ts為Web Request/Response入口，重用原OpenAI Provider、CanvasSchema、prepareIntent及materialize；本機server/api.ts不更換。build:sites將經檢查的Vite public assets嵌入自包含Worker，server bundle在outputs/sites-artifact/dist/server；瀏覽器dist與server bundle分開檢查，部署不含Node HTTP listener。
+D1 sketch_ai_single_test僅保存一次測試的ID、requestId、站內userId、草稿SHA256、保守預留費用、開始時間及固定outcome，不保存草稿內容、圖片、Key、Prompt或模型原始輸出。固定主鍵的單次INSERT ON CONFLICT保證跨isolate／版本最多一個請求取得額度；任何失敗或不確定結果不退款、不刪除、不重設。沒有新增多專案／雲端草稿同步。

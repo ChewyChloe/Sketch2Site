@@ -1,3 +1,5 @@
+> 更新：以下為最初純前端版本紀錄。新的私人AI測試Worker串接與停用狀態見[SITES_AI_SETUP.md](SITES_AI_SETUP.md)；沒有啟用付費AI。
+
 # Sites 私人前端測試副本
 
 來源：ChewyChloe/Sketch2Site，work，f02329ecf2fe2eb59595f95607a09ed12c53fcb3。

@@ -1,4 +1,11 @@
 
+## Sites私人AI測試準備（2026-11-16）
+- DONE程式：Sites Worker API接回原Provider／驗證／候選，D1原子永久單次slot、owner ID／同源／CSRF／固定草稿／時限與預算檢查；保留原UI及資料流程，只同步Sites來源。
+- PASS：258單元／整合、18項相關Chromium、Typecheck、Worker／前端Build、靜態資產回應、前端秘密及內部指引掃描、npm audit 0漏洞。
+- BLOCKED啟用：等待OpenAI Developers安全Key目標選擇／必要技能可用、模型／費率核實、Project支出限制與具體單次付費確認。Runtime ENABLED與TEST_APPROVED保持false；真實付費呼叫0。
+- 私人部署狀態以Sites工具結果為準；提案、恢復及驗證見docs/SITES_AI_SETUP.md。
+
+
 
 ## Sites私人測試副本（2026-11-16）
 - DONE：從GitHub work f02329ecf2fe2eb59595f95607a09ed12c53fcb3建立獨立副本，保留既有功能及UI，加入靜態hosting manifest、production AI停用保護與安全標頭。只同步Sites來源，不回寫原GitHub。

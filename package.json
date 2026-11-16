@@ -13,7 +13,9 @@
     "generation:preflight": "tsx scripts/generation-preflight.ts",
     "dev:api": "NODE_USE_ENV_PROXY=1 tsx --env-file-if-exists=.env server/index.ts",
     "motion:docs": "tsx scripts/generate-motion-docs.ts",
-    "check:motion-boundary": "tsx scripts/check-motion-boundary.ts"
+    "check:motion-boundary": "tsx scripts/check-motion-boundary.ts",
+    "db:generate": "drizzle-kit generate",
+    "build:sites": "npm run build && node scripts/build-sites-worker.mjs"
   },
   "dependencies": {
     "openai": "^7.53.0",
@@ -29,11 +31,19 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.1.0",
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.4",
+    "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.8",
     "jsdom": "^27.2.0",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "vite": "^7.2.0",
     "vitest": "^4.0.0"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.28.2"
+    }
   }
 }

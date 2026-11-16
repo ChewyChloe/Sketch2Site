@@ -107,3 +107,9 @@ React ZIP只包含固定可信模板、原Renderer純Runtime、嚴格Schema及�
 逐字上限100字素／每頁12項，長文靜態保留；局部進度每頁8項，沿用物理與呼吸預算。ExtendedMotion原始碼隨固定匯出模板提供；server-only briefs、Session與秘密不匯出。沒有新增依賴、素材外傳或付費API。
 
 曲線文字修正維持受控字級／曲度與本機字寬計算，不接受使用者SVG路徑或程式。單元件最多8條動態曲線／240字，超長靜態降級；沒有遠端字型、URL抓取或付費請求。
+
+## Sites私人AI測試副本
+本站必須維持owner-private。只信任Sites dispatch注入的oai-authenticated-user-id，未登入／非指定SKETCH_AI_OWNER_ID皆拒絕；不能把Worker另行掛在不經dispatch的公開入口。首次未配置owner時status僅回傳目前已登入者自己的setupUserId，不接受任何生成。
+要求精確SKETCH_SITE_ORIGIN、同源Origin／Fetch Metadata、依後端Key計算且綁定站內userId及origin的HMAC CSRF。Key只在runtime env，status不傳Key或金鑰衍生簽章以外的秘密。啟用需原模型／價格review gates、SKETCH_AI_TEST_APPROVED、owner ID、固定草稿SHA256、至多一小時到期時間、maxCalls=1、預算<=US$0.01及D1。
+D1額度在Provider前以固定主鍵原子保留，失敗／逾時／重新部署均不重開；DB缺失／不確定寫入直接停止，不能fallback到記憶體額度。只有精確核准草稿可生成。仍限制32KB、40元素、12000字、4096 output tokens、30秒、零重試；模型輸出經原materialize／全頁及來源保留檢查。費用是保守估計，不代替OpenAI Project支出控制。
+本輪只準備與Mock驗證，SKETCH_AI_ENABLED與SKETCH_AI_TEST_APPROVED保持false；模型／當日費率／Project支出設定／安全Key／具體付費同意待完成。不得因使用者安裝外掛或環境已有Key就發付費請求。

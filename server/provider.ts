@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import {motionGenerationContext} from "./motionBriefs";
 import OpenAI from "openai";
 import {
