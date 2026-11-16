@@ -78,8 +78,8 @@ export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 
     const def = motionCatalog[id];
     if (!def.targetType.includes(target.type))
         return '此效果不適用於目前元件。';
-    if (id === 'stagger-reveal' && !(target.children ? target.children.length >= 2 : target.type === 'card' && (target.content ?? '').split('\n').filter(s => s.trim()).length >= 2))
-        return '依序顯示需要至少兩個子元素；草稿卡片請填兩行內容。';
+    if (['stagger-reveal','focus-transfer','disclosure-panel'].includes(id) && !(target.children ? target.children.length >= 2 : target.type === 'card' && (target.content ?? '').split('\n').filter(s => s.trim()).length >= 2))
+        return '此效果需要至少兩個子元素；草稿卡片請填兩行內容。';
     if (id === 'count-up' && !numericContent(target.content ?? ''))
         return '數字遞增只適用於既有數字內容。';
     return null;
@@ -103,15 +103,19 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
         return '光暈效果不可重複套用。';
     if (ids.has('count-up') && ids.has('curved-path-text'))
         return '數字與曲線文字不可同時套用。';
-    if (['flip-card', 'physics-tag-field', 'fold-reveal'].filter(id => ids.has(id as MotionId)).length > 1)
+    if (['flip-card', 'physics-tag-field', 'fold-reveal','focus-transfer','disclosure-panel'].filter(id => ids.has(id as MotionId)).length > 1)
         return '互動內容效果一次只能套用一種。';
     if (ids.has('physics-tag-field') && ids.has('stagger-reveal'))
         return '物理標籤不能再套用逐項進場。';
+    if (['letter-assembly','accent-stroke','count-up','curved-path-text'].filter(id=>ids.has(id as MotionId)).length>1)
+        return '文字呈現效果一次只能套用一種。';
+    if(ids.has('magnetic-control') && ['hover-lift','slide-up','press-feedback'].some(id=>ids.has(id as MotionId)))
+        return '磁吸回饋不能與其他位移或按壓效果重疊。';
     return null;
 }
 /** Per-document resource limits, in addition to each preset's own bounds. */
-export const motionPerformanceLimits = { physicsFields: 3, physicsTags: 48, breathingButtons: 8 } as const;
+export const motionPerformanceLimits = { physicsFields: 3, physicsTags: 48, breathingButtons: 8, textAssemblies:12, scrollIndicators:8 } as const;
 export function withinMotionBudget(effects: readonly MotionInstance[]) {
     const physics = effects.filter(e => e.presetId === 'physics-tag-field');
-    return physics.length <= motionPerformanceLimits.physicsFields && physics.reduce((sum, e) => sum + (e.validatedControls.labels as string[]).length, 0) <= motionPerformanceLimits.physicsTags && effects.filter(e => e.presetId === 'breathing-glow').length <= motionPerformanceLimits.breathingButtons;
+    return effects.filter(e=>e.presetId==='letter-assembly').length<=motionPerformanceLimits.textAssemblies && effects.filter(e=>e.presetId==='scroll-progress').length<=motionPerformanceLimits.scrollIndicators && physics.length <= motionPerformanceLimits.physicsFields && physics.reduce((sum, e) => sum + (e.validatedControls.labels as string[]).length, 0) <= motionPerformanceLimits.physicsTags && effects.filter(e => e.presetId === 'breathing-glow').length <= motionPerformanceLimits.breathingButtons;
 }

@@ -42,7 +42,7 @@ it("shows only the twelve controlled assets, exposes compatibility and passes on
       onDragStart={drag}
     />,
   );
-  expect(container.querySelectorAll("[data-effect-id]")).toHaveLength(12);
+  expect(container.querySelectorAll("[data-effect-id]")).toHaveLength(20);
   expect(
     (screen.getByRole("button", { name: "依序顯示" }) as HTMLButtonElement)
       .disabled,

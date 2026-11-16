@@ -12,7 +12,8 @@
     "check:secrets": "node scripts/check-secrets.mjs",
     "generation:preflight": "tsx scripts/generation-preflight.ts",
     "dev:api": "NODE_USE_ENV_PROXY=1 tsx --env-file-if-exists=.env server/index.ts",
-    "motion:docs": "tsx scripts/generate-motion-docs.ts"
+    "motion:docs": "tsx scripts/generate-motion-docs.ts",
+    "check:motion-boundary": "tsx scripts/check-motion-boundary.ts"
   },
   "dependencies": {
     "openai": "^7.53.0",

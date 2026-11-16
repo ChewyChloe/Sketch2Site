@@ -6,7 +6,7 @@ export function MotionControlsFields({ id, values, onChange }: {
     onChange: (values: MotionControls) => void;
 }) {
     return <div className="motion-controls">{Object.entries(motionCatalog[id].controls).map(([key, c]) => {
-            const optionLabels: Record<string, string> = { smooth: '平順', linear: '等速', 'ease-out': '漸慢', 'in-view': '進入可視範圍', enter: '載入時', none: '無', subtle: '柔和', medium: '中等', forward: '正序', reverse: '倒序', fade: '淡入', 'slide-up': '向上滑入', scale: '縮放', gentle: '輕微', strong: '明顯', upward: '向上', downward: '向下', start: '起點', center: '置中', end: '終點', click: '點擊', hover: '懸停', 'top-right': '右上', 'top-left': '左上', 'bottom-right': '右下', 'bottom-left': '左下', x: '水平軸', y: '垂直軸' };
+            const optionLabels: Record<string, string> = { horizontal:'水平',vertical:'垂直',smooth: '平順', linear: '等速', 'ease-out': '漸慢', 'in-view': '進入可視範圍', enter: '載入時', none: '無', subtle: '柔和', medium: '中等', forward: '正序', reverse: '倒序', fade: '淡入', 'slide-up': '向上滑入', scale: '縮放', gentle: '輕微', strong: '明顯', upward: '向上', downward: '向下', start: '起點', center: '置中', end: '終點', click: '點擊', hover: '懸停', 'top-right': '右上', 'top-left': '左上', 'bottom-right': '右下', 'bottom-left': '左下', x: '水平軸', y: '垂直軸' };
             const value = values[key] ?? c.default ?? '';
             const change = (next: MotionControls[string]) => onChange({ ...values, [key]: next });
             const label = key === 'durationMs' ? (id === 'fade-in' ? '動畫時長（毫秒）' : motionCatalog[id].nameZh + '時長') : c.label;

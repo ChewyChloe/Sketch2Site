@@ -1,3 +1,5 @@
+import {serverMotionRegistry} from "../server/motionBriefs";
+import {extendedMotionFixture} from "./fixtures/extendedMotions";
 import {createServer} from "node:net";
 import { test, expect } from "@playwright/test";
 import {motionFixture,motionId} from "./fixtures/motions";
@@ -55,7 +57,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   );
   await page.getByRole("button", { name: "預覽", exact: true }).click();
   const input = structuredClone(demoPage);
-  const motions=motionFixture();motions.sections[0].children![0].level=2;input.sections.push(...motions.sections);
+  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections);
   const replaceImage = (nodes: typeof input.sections) =>
     nodes.forEach((n) => {
       if (n.type === "image") n.src = localRef;
@@ -89,6 +91,11 @@ z.extractall(root)
     archive,
     project,
   ]);
+  for(const filename of await readdir(join(project,'src'))){
+    const content=await readFile(join(project,'src',filename),'utf8');
+    expect(content).not.toContain('implementationBrief');expect(content).not.toContain('designIntent');
+    for(const spec of Object.values(serverMotionRegistry))expect(content).not.toContain(spec.implementationBrief);
+  }
   const runtime = await readFile(join(project, "src/PageRuntime.tsx"), "utf8");
   for (const forbidden of [
     "sessionId",
@@ -151,7 +158,7 @@ z.extractall(root)
     expect(
       await standalone.evaluate(() => Boolean((window as any).exportPwned)),
     ).toBe(false);
-    await expect(standalone.getByRole("img")).toBeVisible();
+    await expect(standalone.getByRole("img").first()).toBeVisible();
     const exportedMotion=(id:number)=>standalone.locator(`[data-page-id="${motionId(id)}"]`);
     await expect(exportedMotion(3)).toContainText("1,234.50");
     await expect(exportedMotion(4).locator('textPath')).toHaveCount(1);
@@ -160,6 +167,11 @@ z.extractall(root)
     await exportedMotion(8).getByRole('button',{name:'折頁切換'}).click();
     await expect(exportedMotion(8).getByText('使用者提供的下層內容')).toBeVisible();
     await expect(exportedMotion(10).getByRole('list')).toBeVisible();
+    for(const [id,target] of Object.entries(extended.sections[0].children!.filter(n=>n.effects.length).reduce((m,n)=>({...m,[n.effects[0].presetId]:n.id}),{} as Record<string,string>)))
+      await expect(standalone.locator(`[data-page-id="${target}"]`)).toHaveAttribute('data-effects',id);
+    const disclosure=standalone.locator(`[data-page-id="${extended.sections[0].children!.at(-1)!.id}"]`);
+    await disclosure.getByRole('button',{name:'展開內容'}).click();await expect(disclosure.getByText('展開後閱讀完整補充說明')).toBeVisible();
+    await disclosure.getByRole('button',{name:'收合內容'}).click();await expect(disclosure.getByText('展開後閱讀完整補充說明')).toBeHidden();
     await standalone.emulateMedia({reducedMotion:'no-preference'});
     await exportedMotion(10).scrollIntoViewIfNeeded();
     const exportedCanvas=exportedMotion(10).locator('canvas');await expect(exportedCanvas).toBeVisible();
@@ -171,7 +183,7 @@ z.extractall(root)
     await expect
       .poll(() =>
         standalone
-          .getByRole("img")
+          .getByRole("img").first()
           .evaluate((img: HTMLImageElement) => img.naturalWidth),
       )
       .toBeGreaterThan(0);

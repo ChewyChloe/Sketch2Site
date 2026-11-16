@@ -1,5 +1,19 @@
 # 狀態
 
+## 最新交付：二十種原創動畫與素材庫改善（2026-11-16）
+
+- DONE工程：原有12種實際路徑核對，新增8種（逐字聚合、重點描線、影像展幕、磁吸按鈕、按壓回饋、群組焦點轉移、區塊閱讀進度、詳情收合），合計20。正式規格與分類見ANIMATION_SPECS.md；前端metadata與後端生成指引分層。
+- DONE：原生示意、搜尋／情境篩選、相容拖放、必要參數、草稿標記、同Renderer、Patch／Undo／Redo／保存重載、獨立React匯出、Reduced Motion。沒有新增Renderer／Patch／資料庫格式或產品依賴。
+- PASS：184單元／整合、Typecheck／Build、check:secrets／check:motion-boundary、雙npm audit均0漏洞。新增八種各自真實拖放／修改／Undo／Redo／重載與獨立匯出Build已驗證；32項針對性Chromium回歸PASS。最終完整Chromium 103/103 PASS（2026-11-16），包含保存隊列回歸。
+- DONE：兩輪1440／768／375px Chromium互動與畫面審查，修正名稱低對比、英文搜尋／空結果、局部進度線、長文降級與鍵盤按壓復原。細節及可觀察限制見docs/MOTION_EXPANSION_REVIEW.md。工程通過不等於個人美感已認可。
+- 效能：逐字100字素／每頁12項，閱讀進度每頁8項；既有物理／呼吸預算保留。24標籤360幀平均16.69ms、最長33.4ms，離屏僅餘2回呼，量測保存在motion-performance.json；不宣稱實體手機或長時間記憶體已測。
+- DONE：修復草稿保存中忽略後續保存要求及成功狀態過早問題；單一串行隊列只合併明確保存，沒有新增自動保存。快捷鍵重跑6次及延遲完成通知的IndexedDB回歸PASS。
+- 安全／限制：付費API呼叫0，真實AI權限／生成品質與實際費用仍NOT TESTED；不複製第三方素材／Prompt／動畫程式碼。使用者雲端直連入口仍BLOCKED（平台無預覽轉送工具），沒有以公開隧道或部署繞過。
+- 證據：/workspace/backups/motion20-20261116/含兩輪三尺寸原圖／完整log／量測；恢復bundle位於/workspace/backups/Sketch2Site-motion20.bundle。未發現仍未修復的本輪P0／P1；實機手感與個人美感仍待人工評估。
+- 交付：只建立本地Commit與恢復備份，沒有Push／Merge／公開部署；遠端尚未同步本輪變更。完成本附件20種最低目標後停止，不擴充未驗證的展示卡片湊24種。
+
+以下保留先前交付紀錄。
+
 ## 最新修正：素材展示與影片對照
 
 - 使用者否決9ec45e4的整體美感：上一輪可讀性改善不能當作視覺驗收。產品美感仍PARTIAL，不宣稱完美。

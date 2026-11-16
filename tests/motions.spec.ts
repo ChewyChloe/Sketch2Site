@@ -62,7 +62,7 @@ test('review 2: controlled parameters, incompatible combinations, undo, reload a
     await page.getByRole('button', { name: '重做修改' }).click();
     await expect(page.getByLabel('位移（像素）')).toHaveValue('64');
     await openPanel(page, '動畫');
-    await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(12);
+    await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(20);
     await expect(page.getByRole('button', { name: '懸停光暈', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: '工具', exact: true }).click();
     await page.getByRole('button', { name: '瀏覽', exact: true }).click();
@@ -168,7 +168,7 @@ for (const width of [1440, 768, 375])
         await page.setViewportSize({ width, height: 1000 });
         await load(page);
         await openPanel(page, '動畫');
-        await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(12);
+        await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(20);
         await page.screenshot({ path: `test-results/motions-gallery-${width}.png` });
         await page.getByRole('button', { name: '重播物理標籤場示意' }).click();
         const asset = page.locator('#preview-inspector [data-effect-id="physics-tag-field"]');
@@ -183,7 +183,7 @@ for (const width of [1440, 768, 375])
         expect((await exit.boundingBox())!.height).toBeGreaterThanOrEqual(44);
         await exit.click();
         await expect(asset.getByRole('button',{name:'拖曳標籤',exact:true})).toBeVisible();
-        await expect(page.getByRole('button',{name:'收合示意'})).toHaveCount(0);
+        await expect(page.getByRole('button',{name:'收合示意',exact:true})).toHaveCount(0);
     });
 test('draft markers retain user-supplied faces and labels without running them on the canvas', async ({ page }) => {
     const calls: string[] = [];

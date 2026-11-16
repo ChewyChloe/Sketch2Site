@@ -1,10 +1,11 @@
+import {extendedMotionFixture} from "../tests/fixtures/extendedMotions";
 import {it,expect} from 'vitest';
 import {motionFixture} from '../tests/fixtures/motions';
 import {PageSchema} from './pageSpec';
 import {motionIds,motionCatalog,createMotion,targetReason,numericContent} from './motion';
 import {applyPatchBatch,createPageSession,indexNodes,travelPage} from './patch';
 it.each(motionIds)('versioned %s attaches, edits, rejects invalid data and survives Undo/Redo and serialization',id=>{
- const clean=structuredClone(motionFixture());const nodes=indexNodes(clean);for(const node of nodes.values())node.effects=[];
+ const clean=structuredClone(motionFixture());clean.sections[0].children!.push(...extendedMotionFixture().sections[0].children!);const nodes=indexNodes(clean);for(const node of nodes.values())node.effects=[];
  let state=createPageSession(clean);
  const target=[...nodes.values()].find(n=>!targetReason(n,id))!;
  const data=id==='count-up'?numericContent(target.content!)!:id==='flip-card'?{backText:'測試使用者背面'}:id==='fold-reveal'?{underText:'測試使用者下層'}:id==='physics-tag-field'?{labels:['測試標籤一','測試標籤二']}:{};

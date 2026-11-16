@@ -68,3 +68,14 @@ it('does not expose an unfinished preset as a usable versioned instance',()=>{
  try{motionCatalog['fold-reveal'].status='PARTIAL';expect(()=>createMotion('fold-reveal',demoPage.sections[0].id,{underText:'測試下層'})).toThrow();}
  finally{motionCatalog['fold-reveal'].status=previous;}
 });
+
+it('rejects overlapping text/interactive transforms and bounds expensive extended presets',async()=>{
+ const id=demoPage.sections[0].id;
+ const {combinationReason,withinMotionBudget,createMotion}=await import('./motion');
+ expect(combinationReason([{presetId:'letter-assembly'},{presetId:'count-up'}])).toBeTruthy();
+ expect(combinationReason([{presetId:'magnetic-control'},{presetId:'hover-lift'}])).toBeTruthy();
+ expect(combinationReason([{presetId:'focus-transfer'},{presetId:'disclosure-panel'}])).toBeTruthy();
+ expect(withinMotionBudget(Array.from({length:13},()=>createMotion('letter-assembly',id)))).toBe(false);
+ expect(withinMotionBudget(Array.from({length:9},()=>createMotion('scroll-progress',id)))).toBe(false);
+ expect(withinMotionBudget([createMotion('accent-stroke',id),createMotion('scroll-progress',id)])).toBe(true);
+});

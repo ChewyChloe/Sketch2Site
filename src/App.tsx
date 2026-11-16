@@ -105,6 +105,7 @@ export default function App() {
   } | null>(null);
   const state = useRef(history);
   state.current = history;
+  const saveActive = useRef(false), savePending = useRef<CanvasSpec | null>(null);
   const spec = history.present,
     node = spec.nodes.find((n) => n.id === selected),
     dirty = JSON.stringify(spec) !== saved;
@@ -312,19 +313,28 @@ export default function App() {
     report("已附加 " + effects[effect] + " · 草稿不播放動畫");
   }
   async function save() {
-    if (!ready || busy || loadError) return;
-    const snapshot = state.current.present;
+    if (!ready || loadError) return;
+    savePending.current = state.current.present;
+    if (saveActive.current) return;
+    saveActive.current = true;
     setBusy(true);
+    report("正在儲存草稿…");
     try {
-      await saveDraft(snapshot);
-      setSaved(JSON.stringify(snapshot));
+      while (savePending.current) {
+        const snapshot = savePending.current;
+        savePending.current = null;
+        await saveDraft(snapshot);
+        setSaved(JSON.stringify(snapshot));
+      }
       report("已儲存至本機");
     } catch {
+      savePending.current = null;
       report(
         "儲存失敗，可能空間不足或被瀏覽器封鎖。草稿仍保留於工作區，請檢查後重試。",
         true,
       );
     } finally {
+      saveActive.current = false;
       setBusy(false);
     }
   }

@@ -167,3 +167,9 @@ PhysicsTags的Canvas內部高度依真正CSS viewport重新建立（160–400px�
 
 ## 動畫素材展示布局
 App／Preview以data-panel公開目前工具頁籤給工作台CSS，只在桌面動畫頁籤加寬；AnimationLibrary使用容器查詢決定單雙欄。示意仍經PageSchema與既有PageRenderer；主題CSS全部限定asset-sample／asset-preview，不進入使用者PageSpec或React匯出。移除重複的EffectGlyph展示，以Registry的中英文名和category作metadata。Patch、Runtime、保存與生成流程均未變更。
+
+## 二十種受控動畫
+ExtendedMotion與既有MotionRuntime並列為同一PageRuntime的內部模組；正式頁面、素材示意及React匯出共用。新增文字字素聚合、底線、圖片裁切、受限磁吸、按壓、群組焦點、局部閱讀進度及內容收合。公開metadata包含previewMapping；私有生成指引仍只在server/motionBriefs。沒有新Renderer／Patch、DB升級或可執行資料。
+焦點與收合草稿卡片需兩行；materialize沿原內容換行產生子項，verifyPreservation比對完整原文及綁定效果。新增跨效果衝突與每頁資源上限；局部修改仍走Session／Revision／CAS。
+
+草稿手動保存以ref維持單一進行中的寫入與最新待保存快照；僅明確保存動作入隊，不因編輯自動保存。顯示保存中至隊列完成，避免舊成功訊息與busy期間丟失新要求；資料Schema及儲存交易合約不變。

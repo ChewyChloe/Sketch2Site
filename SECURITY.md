@@ -101,3 +101,7 @@ React ZIP只包含固定可信模板、原Renderer純Runtime、嚴格Schema及�
 
 ## 素材展示樣式修正
 素材舞台的背景、字級、分類標籤均為可信工作台原始碼，沒有新增使用者CSS／HTML輸入。PageSpec／CanvasSpec、Patch、Session與Revision驗證維持原合約；素材連結仍禁止外連，示意資料不寫入使用者頁面。沒有新增服務、第三方套件或付費API請求。
+
+## ExtendedMotion安全與資源界線
+新增八種效果只接受Registry的strict參數，反向輸入任意CSS／事件屬性等仍拒絕。互動操作只在目標根節點與直接子元件執行，保留穩定ID、原連結與內容；隱藏收合內容inert並處理焦點。移除效果、變更資料、卸載或Reduced Motion會清理事件、WAAPI及Observer。
+逐字上限100字素／每頁12項，長文靜態保留；局部進度每頁8項，沿用物理與呼吸預算。ExtendedMotion原始碼隨固定匯出模板提供；server-only briefs、Session與秘密不匯出。沒有新增依賴、素材外傳或付費API。

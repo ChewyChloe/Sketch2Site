@@ -9,6 +9,7 @@ import foldGeometrySource from "./foldGeometry.ts?raw";
 import physicsSource from "./physics.ts?raw";
 import physicsTagsSource from "./PhysicsTags.tsx?raw";
 import foldSource from "./FoldReveal.tsx?raw";
+import extendedMotionSource from "./ExtendedMotion.tsx?raw";
 import motionRuntimeSource from "./MotionRuntime.tsx?raw";
 import motionSource from "./motion.ts?raw";
 import motionCatalogSource from "./motionCatalog.ts?raw";
@@ -73,6 +74,7 @@ export async function exportProjectFiles(
     { path: "src/PageRuntime.tsx", content: runtime },
     { path: "src/pageSpec.ts", content: schema },
     { path: "src/motion.ts", content: motionSource },
+    { path: "src/ExtendedMotion.tsx", content: extendedMotionSource },
     { path: "src/MotionRuntime.tsx", content: motionRuntimeSource },
     { path: "src/physics.ts", content: physicsSource },
     { path: "src/PhysicsTags.tsx", content: physicsTagsSource },

@@ -8,10 +8,10 @@ for (const id of motionIds) {
 }
 for (const id of motionIds) {
     const d = serverMotionRegistry[id];
-    lines.push("", `## ${d.nameZh} / ${d.nameEn}`, "", `- Preset: \`${id}\` / version ${d.specVersion}`, `- 狀態：${d.status}`, `- 說明：${d.summary}`, `- 適用：${d.bestFor}`, `- targetType：${d.targetType.join("、")}`, `- interactionType：${d.interactionType.join("、")}`, `- techBase：${d.techBase}`, `- previewComponent：${d.previewComponent}`, `- tags：${d.tags.join("、")}`, `- rendererMapping：${d.rendererMapping}`, `- exportMapping：${d.exportMapping}`, "", "| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |", "| --- | --- | --- | --- | --- |");
+    lines.push("", `## ${d.nameZh} / ${d.nameEn}`, "", `- Preset: \`${id}\` / version ${d.specVersion}`, `- 狀態：${d.status}`, `- 說明：${d.summary}`, `- 適用：${d.bestFor}`, `- targetType：${d.targetType.join("、")}`, `- interactionType：${d.interactionType.join("、")}`, `- techBase：${d.techBase}`, `- previewMapping：${d.previewMapping}`, `- tags：${d.tags.join("、")}`, `- rendererMapping：${d.rendererMapping}`, `- exportMapping：${d.exportMapping}`, "", "| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |", "| --- | --- | --- | --- | --- |");
     for (const [key, c] of Object.entries(d.controls))
         lines.push(`| ${key} | ${c.label} | ${c.kind} | ${c.default === undefined ? "使用者必填" : JSON.stringify(c.default)} | ${c.options?.join(" / ") ?? `${c.min ?? ""}–${c.max ?? ""}${c.step ? `; step ${c.step}` : ""}`} |`);
     lines.push("", `**designIntent**：${d.designIntent}`, "", `**implementationBrief**：${d.implementationBrief}`, "", `**compatibilityRules**：${d.compatibilityRules}`, "", `**constraints**：${d.constraints.join("；")}`, "", `**reducedMotionFallback**：${d.reducedMotionFallback}`);
 }
 await writeFile("ANIMATION_SPECS.md", lines.join("\n") + "\n");
-console.log("Generated 12 motion specifications from the registry; no API invoked.");
+console.log(`Generated ${motionIds.length} motion specifications from the registry; no API invoked.`);

@@ -19,6 +19,14 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | flip-card | 雙面卡片 | DONE | 內容 | medium |
 | physics-tag-field | 物理標籤場 | DONE | 互動 | high |
 | fold-reveal | 折頁揭露 | DONE | 內容 | high |
+| letter-assembly | 逐字聚合 | DONE | 進場 | medium |
+| accent-stroke | 重點描線 | DONE | 內容 | low |
+| image-reveal | 影像展幕 | DONE | 進場 | low |
+| magnetic-control | 磁吸按鈕 | DONE | 互動 | medium |
+| press-feedback | 按壓回饋 | DONE | 互動 | low |
+| focus-transfer | 群組焦點轉移 | DONE | 互動 | medium |
+| scroll-progress | 區塊閱讀進度 | DONE | 資訊 | medium |
+| disclosure-panel | 詳情收合 | DONE | 內容 | medium |
 
 ## 淡入 / Fade In
 
@@ -29,10 +37,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：text、heading、paragraph、image、card、container、button、section、stack、grid
 - interactionType：on-enter、scroll-enter
 - techBase：Web Animations / CSS / Pointer Events
-- previewComponent：fade-in
+- previewMapping：fade-in
 - tags：進場、標題、段落與圖片
 - rendererMapping：fade-in
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -60,10 +68,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：text、heading、paragraph、image、card、container、button、section、stack、grid
 - interactionType：on-enter、scroll-enter
 - techBase：Web Animations / CSS / Pointer Events
-- previewComponent：slide-up
+- previewMapping：slide-up
 - tags：進場、介紹、圖片與卡片
 - rendererMapping：slide-up
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -92,10 +100,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：image、card、container、section、stack、grid
 - interactionType：on-enter
 - techBase：Web Animations / CSS / Pointer Events
-- previewComponent：scale-in
+- previewMapping：scale-in
 - tags：進場、圖片與重點區塊
 - rendererMapping：scale-in
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -122,10 +130,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：card、button、image、container、section、stack、grid
 - interactionType：hover、focus
 - techBase：Web Animations / CSS / Pointer Events
-- previewComponent：hover-lift
+- previewMapping：hover-lift
 - tags：互動、卡片、圖片與按鈕
 - rendererMapping：hover-lift
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -152,10 +160,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：button、card
 - interactionType：hover、focus
 - techBase：Web Animations / CSS / Pointer Events
-- previewComponent：hover-glow
+- previewMapping：hover-glow
 - tags：互動、按鈕與互動卡片
 - rendererMapping：hover-glow
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -182,10 +190,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：card、container、section、stack、grid
 - interactionType：on-enter、scroll-enter
 - techBase：Web Animations / CSS / Pointer Events
-- previewComponent：stagger-reveal
+- previewMapping：stagger-reveal
 - tags：進場、列表與作品群組
 - rendererMapping：stagger-reveal
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -213,10 +221,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：button
 - interactionType：idle-loop、hover、focus
 - techBase：CSS opacity keyframes
-- previewComponent：breathing-glow
+- previewMapping：breathing-glow
 - tags：互動、主要行動按鈕
 - rendererMapping：breathing-glow
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -244,10 +252,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：text、heading、paragraph
 - interactionType：on-enter、scroll-enter
 - techBase：SVG textPath / Web Animations
-- previewComponent：curved-path-text
+- previewMapping：curved-path-text
 - tags：內容、品牌標語與短標題
 - rendererMapping：curved-path-text
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -275,10 +283,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：text、heading、paragraph
 - interactionType：on-enter、scroll-enter
 - techBase：requestAnimationFrame / Intl.NumberFormat
-- previewComponent：count-up
+- previewMapping：count-up
 - tags：內容、已有的統計數字
 - rendererMapping：count-up
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -309,10 +317,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：card
 - interactionType：click、keyboard、hover
 - techBase：CSS 3D Transform
-- previewComponent：flip-card
+- previewMapping：flip-card
 - tags：內容、作品與詳情卡片
 - rendererMapping：flip-card
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -341,10 +349,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：card、container、section、stack、grid
 - interactionType：autoplay、drag、throw
 - techBase：Canvas 2D / fixed-step local solver
-- previewComponent：physics-tag-field
+- previewMapping：physics-tag-field
 - tags：互動、技能與分類標籤
 - rendererMapping：physics-tag-field
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -376,10 +384,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - targetType：card、container、section
 - interactionType：drag、click、keyboard
 - techBase：Pointer Events / clipped polygon / requestAnimationFrame
-- previewComponent：fold-reveal
+- previewMapping：fold-reveal
 - tags：內容、前後對照與介紹卡片
 - rendererMapping：fold-reveal
-- exportMapping：shared PageRuntime + MotionRuntime + motion CSS
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
@@ -399,3 +407,234 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 **constraints**：下層由使用者提供；拖曳保留偏移；快速反向不跳位；點擊與鍵盤有等效操作；只用自製遮罩與transform
 
 **reducedMotionFallback**：直接切換內容
+
+## 逐字聚合 / Letter Assembly
+
+- Preset: `letter-assembly` / version 1
+- 狀態：DONE
+- 說明：字元以短距離依序歸位，組成完整原文。
+- 適用：短標題與介紹文字
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：letter-assembly
+- tags：進場、短標題與介紹文字
+- rendererMapping：letter-assembly
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 600 | 200–1200; step 1 |
+| distancePx | 位移（像素） | number | 12 | 0–32; step 1 |
+| intervalMs | 字元間隔（毫秒） | number | 35 | 10–100; step 1 |
+
+**designIntent**：讓原文字素像短句的節拍依序歸位，完整語意始終可讀。
+
+**implementationBrief**：按字素建立可信呈現層，以distancePx、durationMs與intervalMs控制短距離位移及淡入；保留單份讀屏原文，總延遲限制1200ms，長文與reduced-motion直接顯示，不接收HTML。
+
+**compatibilityRules**：僅文字、標題與段落
+
+**constraints**：依字素切分，不拆散組合字；保留原文與讀屏順序；總延遲上限1200ms；長文靜態降級
+
+**reducedMotionFallback**：直接顯示完整原文
+
+## 重點描線 / Accent Stroke
+
+- Preset: `accent-stroke` / version 1
+- 狀態：DONE
+- 說明：主題色細線沿文字底部展開，提示閱讀重點。
+- 適用：重點標題與說明
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：accent-stroke
+- tags：內容、重點標題與說明
+- rendererMapping：accent-stroke
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 600 | 200–1200; step 1 |
+| thicknessPx | 線寬（像素） | number | 2 | 1–6; step 1 |
+
+**designIntent**：用一條克制的主題色線段提示原文重點，讓裝飾服從閱讀。
+
+**implementationBrief**：在文字底部建立不占布局且不攔截事件的可信裝飾層，以durationMs展開scaleX，線寬只讀thicknessPx；多行文字不遮字，reduced-motion顯示靜態線，不生成任意CSS或文案。
+
+**compatibilityRules**：僅文字、標題與段落
+
+**constraints**：使用既有主題色；裝飾線不遮字、不改布局；不新增或改寫原文
+
+**reducedMotionFallback**：顯示靜態底線
+
+## 影像展幕 / Image Reveal
+
+- Preset: `image-reveal` / version 1
+- 狀態：DONE
+- 說明：以單向展開的裁切範圍揭露完整圖片。
+- 適用：作品與介紹圖片
+- targetType：image
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：image-reveal
+- tags：進場、作品與介紹圖片
+- rendererMapping：image-reveal
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 700 | 200–1400; step 1 |
+| direction | 展開方向 | select | "horizontal" | horizontal / vertical |
+
+**designIntent**：讓影像像展幕一樣逐步顯露，終點呈現完整原圖。
+
+**implementationBrief**：只對既有圖片建立受控裁切進場；direction僅horizontal或vertical，時長讀durationMs，保持尺寸、比例與alt，進入視區只播一次；無動畫API或reduced-motion直接顯示並清理Observer與動畫。
+
+**compatibilityRules**：僅適用於圖片元件
+
+**constraints**：保留圖片比例與替代文字；只裁切、不變更來源；進場只播一次
+
+**reducedMotionFallback**：直接顯示完整圖片
+
+## 磁吸按鈕 / Magnetic Control
+
+- Preset: `magnetic-control` / version 1
+- 狀態：DONE
+- 說明：按鈕在有限範圍內跟隨指標，離開後回到原位。
+- 適用：主要操作按鈕
+- targetType：button
+- interactionType：pointer-move、hover、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：magnetic-control
+- tags：互動、主要操作按鈕
+- rendererMapping：magnetic-control
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| strengthPx | 吸附幅度（像素） | number | 6 | 0–12; step 1 |
+| responseMs | 回應時間（毫秒） | number | 180 | 80–400; step 1 |
+
+**designIntent**：在可預期的小範圍內回應指標，維持操作目標的穩定性。
+
+**implementationBrief**：僅按鈕以自身中心計算正規化指標偏移，向量長度限制strengthPx，依responseMs平滑回應；離開、取消與失焦回到原位，disabled、粗指標與reduced-motion停用位移，保留連結、鍵盤焦點與事件清理。
+
+**compatibilityRules**：僅按鈕；鍵盤與觸控不追蹤指標
+
+**constraints**：位移不超過設定幅度；不攔截連結或觸控捲動；離開、失焦與取消時歸位；disabled不播放
+
+**reducedMotionFallback**：保持原位，保留鍵盤焦點提示
+
+## 按壓回饋 / Press Feedback
+
+- Preset: `press-feedback` / version 1
+- 狀態：DONE
+- 說明：按下時輕微收縮，放開即回復。
+- 適用：按鈕與可操作卡片
+- targetType：button、card
+- interactionType：pointer-down、keyboard
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：press-feedback
+- tags：互動、按鈕與可操作卡片
+- rendererMapping：press-feedback
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| scale | 按壓比例 | number | 0.97 | 0.9–1; step 0.01 |
+| durationMs | 時長（毫秒） | number | 140 | 80–300; step 1 |
+
+**designIntent**：以短促收縮確認按壓，放開後回到原始尺寸，不承諾操作結果。
+
+**implementationBrief**：只在按鈕或卡片的有效按壓期間套用scale與durationMs；pointerup、pointercancel、blur及鍵盤釋放均復原，忽略重複按鍵和disabled，保持既有啟動語意，reduced-motion取消縮放並清理監聽。
+
+**compatibilityRules**：僅適用於按鈕與卡片
+
+**constraints**：pointerup與pointercancel均復原；鍵盤啟動有等效回饋；不新增導航或改變既有操作；disabled不播放
+
+**reducedMotionFallback**：取消縮放，保留原操作與焦點提示
+
+## 群組焦點轉移 / Focus Transfer
+
+- Preset: `focus-transfer` / version 1
+- 狀態：DONE
+- 說明：聚焦子項時降低其他子項亮度，指引群組閱讀。
+- 適用：多項內容群組
+- targetType：card、container、section、stack、grid
+- interactionType：hover、focus-within
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：focus-transfer
+- tags：互動、多項內容群組
+- rendererMapping：focus-transfer
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| inactiveOpacity | 非作用項透明度 | number | 0.5 | 0.3–1; step 0.05 |
+| durationMs | 時長（毫秒） | number | 200 | 100–500; step 1 |
+
+**designIntent**：讓群組中當前閱讀項更清楚，同時保留其餘內容的可見性。
+
+**implementationBrief**：要求至少兩個實際直接子元素；focus-within優先於hover，作用項opacity為1，其餘為inactiveOpacity，以durationMs過渡，離開群組全部復原；不移動焦點、不改DOM、不設inert，reduced-motion維持全部可見並清理事件。
+
+**compatibilityRules**：限至少兩個子元素的卡片、容器、區塊、堆疊或網格
+
+**constraints**：至少兩個實際直接子元素；鍵盤焦點優先於指標；離開群組後全部復原；不隱藏內容、不改DOM順序
+
+**reducedMotionFallback**：全部子項維持完整透明度
+
+## 區塊閱讀進度 / Scroll Progress
+
+- Preset: `scroll-progress` / version 1
+- 狀態：DONE
+- 說明：細線依區塊通過可視範圍的比例更新。
+- 適用：長內容與閱讀區塊
+- targetType：card、container、section、stack、grid
+- interactionType：scroll
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：scroll-progress
+- tags：資訊、長內容與閱讀區塊
+- rendererMapping：scroll-progress
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| thicknessPx | 線寬（像素） | number | 3 | 1–8; step 1 |
+
+**designIntent**：以區塊實際通過視區的程度提供安靜的閱讀位置提示，不假稱完成閱讀。
+
+**implementationBrief**：為容器建立主題色裝飾進度線，線寬只讀thicknessPx；依實際捲動根、視區與區塊尺寸計算並夾限0到1，以scaleX更新，resize重新量測；事件以RAF合併，離屏暫停，卸載清理，reduced-motion隱藏線，不劫持捲動。
+
+**compatibilityRules**：僅卡片、容器、區塊、堆疊或網格；不更改捲動行為
+
+**constraints**：進度限制在0到1；追蹤實際捲動容器與區塊尺寸；裝飾線不占布局、不攔截操作；卸載清理事件、Observer與RAF
+
+**reducedMotionFallback**：隱藏動態進度線，完整保留內容
+
+## 詳情收合 / Disclosure Panel
+
+- Preset: `disclosure-panel` / version 1
+- 狀態：DONE
+- 說明：保留首個子項作摘要，以明確操作展開或收合其餘內容。
+- 適用：卡片補充說明
+- targetType：card
+- interactionType：click、keyboard
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：disclosure-panel
+- tags：內容、卡片補充說明
+- rendererMapping：disclosure-panel
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 240 | 100–600; step 1 |
+
+**designIntent**：讓卡片先呈現摘要，再由使用者選擇查看原有補充內容。
+
+**implementationBrief**：僅卡片：首個實際子元素保留為摘要，執行時展開或收合其後所有子元素，durationMs控制高度過渡；提供獨立鍵盤可操作切換鈕及aria-expanded／aria-controls，收合前安全移回焦點，隱藏區域inert；無後續子項靜態降級，reduced-motion立即切換，不編造內容或巢狀互動。
+
+**compatibilityRules**：僅卡片；使用既有子元素，不要求額外內容字串
+
+**constraints**：首個子項始終顯示；執行時展開或收合第一項之後的實際子元素；使用aria-expanded與aria-controls；收合前移回內部焦點，隱藏內容不可操作；無後續子項時靜態顯示
+
+**reducedMotionFallback**：立即切換展開與收合，不播放過渡

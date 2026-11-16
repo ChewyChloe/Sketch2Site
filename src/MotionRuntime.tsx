@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState, type ReactNode, type CSSProperties } from 'react';
 import { motionNumber, motionDuration, type MotionInstance } from './motion';
 export function useReducedMotion() {
-    const [reduced, setReduced] = useState(() => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches);
-    useEffect(() => { const q = matchMedia('(prefers-reduced-motion: reduce)'), update = () => setReduced(q.matches); q.addEventListener('change', update); return () => q.removeEventListener('change', update); }, []);
+    const [reduced, setReduced] = useState(() => typeof matchMedia !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches);
+    useEffect(() => { if(typeof matchMedia !== 'function')return; const q = matchMedia('(prefers-reduced-motion: reduce)'), update = () => setReduced(q.matches); q.addEventListener('change', update); return () => q.removeEventListener('change', update); }, []);
     return reduced;
 }
 export function CountUp({ effect, original }: {

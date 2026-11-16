@@ -1,3 +1,5 @@
+import {motionIds,motionCatalog,createMotion} from "./motion";
+import {createNode} from "./spec";
 import {legacyMotion,type MotionInstance} from "./motion";
 import { it, expect } from "vitest";
 import { generationFixtures, mockLayout } from "../tests/fixtures/generation";
@@ -113,11 +115,18 @@ it("enforces supported explicit constraints without weakening PageSpec", () => {
   expect(() => materialize(canvas, plan)).toThrow();
 });
 
-import {createMotion} from './motion';
 it('materializes a versioned stagger marker into actual original lines without inventing children or text',()=>{
  const canvas=structuredClone(fixtures[0]),card=canvas.nodes.find(n=>n.type==='card')!;
  card.content='第一行原文\n第二行原文';card.effects=[createMotion('stagger-reveal',card.id,{direction:'reverse',revealStyle:'fade'})];
  const page=materialize(canvas,mockLayout(prepareIntent(canvas)));
  expect(indexNodes(page).get(card.id)!.children!.map(n=>n.content)).toEqual(['第一行原文','第二行原文']);
  expect(()=>verifyPreservation(canvas,page)).not.toThrow();
+});
+
+it.each(motionIds)('Mock layout preserves original source content and bound motion %s',id=>{
+ const kind=motionCatalog[id].targetType.find(t=>['text','heading','button','card','image'].includes(t))! as 'text'|'heading'|'button'|'card'|'image';
+ const n=createNode(kind,80,80);n.content=id==='count-up'?'128':kind==='card'?'使用者摘要\n使用者補充內容':'使用者原始內容';if(kind==='button')n.href='https://example.com';
+ n.effects=[createMotion(id,n.id,id==='count-up'?{endValue:128}:id==='flip-card'?{backText:'使用者背面'}:id==='fold-reveal'?{underText:'使用者下層'}:id==='physics-tag-field'?{labels:['使用者標籤']}: {})];
+ const canvas={...blank(),nodes:[n]};const snapshot=JSON.stringify(canvas);
+ const page=materialize(canvas,mockLayout(prepareIntent(canvas)));expect(()=>verifyPreservation(canvas,page)).not.toThrow();expect(indexNodes(page).get(n.id)!.effects).toEqual(n.effects);expect(JSON.stringify(canvas)).toBe(snapshot);
 });

@@ -243,7 +243,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         case "card":
           return make("card", {
             ...common,
-            children: (node.effects.some(e=>e.presetId==="stagger-reveal"&&e.presetVersion===1) ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content })),
+            children: (node.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel"].includes(e.presetId)&&e.presetVersion===1) ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content })),
           });
       }
     });
@@ -301,7 +301,7 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
         (n.type === "paragraph" &&
           (!parent ||
             sources.get(parent.id)?.type !== "card" ||
-            (parent.children?.length !== 1 && !sources.get(parent.id)?.effects.some(e=>e.presetId==="stagger-reveal"&&e.presetVersion===1))))
+            (parent.children?.length !== 1 && !sources.get(parent.id)?.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel"].includes(e.presetId)&&e.presetVersion===1))))
       )
         throw new GenerationError("INVALID_OUTPUT");
     }
@@ -331,7 +331,7 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
       )
         throw new GenerationError("INVALID_OUTPUT");
     } else {
-      const splitCard=source.type==="card"&&source.effects.some(e=>e.presetId==="stagger-reveal"&&e.presetVersion===1);
+      const splitCard=source.type==="card"&&source.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel"].includes(e.presetId)&&e.presetVersion===1);
       expectedContent.push(...(splitCard?source.content.split("\n"):[source.content]));
       const actual = n.type === "card" ? n.children?.map(c=>c.content).join("\n") : n.content;
       if (actual !== source.content)
