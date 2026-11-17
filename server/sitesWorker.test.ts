@@ -207,3 +207,10 @@ describe('Sites paid-test boundary (mock only)',()=>{
   expect(s.factory).not.toHaveBeenCalled();
  });
  });
+
+it('loads only exact server-approved sample while disabled, refuses configuration mismatch and unauthorized access',async()=>{
+ const s=await setup();s.env.SKETCH_AI_ENABLED='false';s.env.SKETCH_AI_TEST_APPROVED='false';
+ const r=await s.api(s.req('/api/generation/approved-draft'),s.env);expect(r.status).toBe(200);const data=await r.json();expect(await canvasHash(data.canvasSpec)).toBe(s.env.SKETCH_AI_TEST_CANVAS_SHA256);
+ expect((await s.api(new Request(origin+'/api/generation/approved-draft'),s.env)).status).toBe(403);
+ s.env.SKETCH_AI_TEST_CANVAS_SHA256='0'.repeat(64);expect((await s.api(s.req('/api/generation/approved-draft'),s.env)).status).toBe(503);expect(s.factory).not.toHaveBeenCalled();
+});

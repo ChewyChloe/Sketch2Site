@@ -1,3 +1,8 @@
+## 固定草稿載入保障（2026-11-17）
+- DONE：新增owner-only後端核准範例載入，先對照原runtime hash，再由免費check核對後寫入畫布；不接受新草稿白名單、不改hash／D1。
+- DONE：送出生成前同步建立CanvasSchema快照，避免status等待期間畫布變更；此為預防性修正，不宣稱歷史根因。
+- PASS：283項完整測試及新增快照測試、build與秘密掃描；UI本人操作待驗證。歷史差異欄位仍未知。AI維持false，無付費呼叫。
+
 ## 403免費診斷修復（2026-11-17）
 - DONE：owner／origin／CSRF／draft hash分支回傳固定安全代碼；不記錄token、Key、完整草稿。
 - DONE：CanvasSchema v1正規化後雜湊；核准fixture SHA256仍a1384324ce1429b60e980cb47b822fc88f15059c878cfc366f7929ba67947283。新增owner-only免費核對選單／端點，無Provider或額度寫入。

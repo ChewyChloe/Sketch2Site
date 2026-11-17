@@ -13,6 +13,7 @@ export async function requestGeneration(
 ) {
   if (import.meta.env.VITE_SITES_FRONTEND_ONLY === "true")
     throw new GenerationError("NOT_CONFIGURED");
+  canvasSpec=CanvasSchema.parse(structuredClone(canvasSpec)); // Snapshot before asynchronous status fetch.
   prepareIntent(canvasSpec);
   let status: Response;
   try {
@@ -80,4 +81,11 @@ export async function checkApprovedDraft(canvasSpec:CanvasSpec) {
  const response=await fetch('/api/generation/check',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Sketch-CSRF':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:CanvasSchema.parse(canvasSpec)})});
  const result=await response.json();
  if(!response.ok||result.code!=='DRAFT_APPROVED')throw new GenerationError(generationCodes.includes(result.code)?result.code:'UNAVAILABLE');
+}
+
+export async function loadApprovedDraft():Promise<CanvasSpec>{
+ const response=await fetch('/api/generation/approved-draft',{credentials:'same-origin',cache:'no-store'});
+ const data=await response.json();
+ if(!response.ok)throw new GenerationError(generationCodes.includes(data.code)?data.code:'UNAVAILABLE');
+ return CanvasSchema.parse(data.canvasSpec);
 }

@@ -16,3 +16,13 @@ it('reports draft mismatch without retrying',async()=>{
  await expect(checkApprovedDraft(generationFixtures()[0])).rejects.toMatchObject({code:'DRAFT_HASH_MISMATCH'});
  expect(fetch).toHaveBeenCalledTimes(2);
 });
+it('snapshots generation input before awaiting status so later editor changes do not alter sent draft',async()=>{
+ const {requestGeneration}=await import('./generationClient');
+ const canvas=generationFixtures()[0], original=JSON.stringify(canvas);let release!:(r:Response)=>void;
+ const status=new Promise<Response>(resolve=>{release=resolve;});let body='';
+ vi.stubGlobal('fetch',vi.fn().mockImplementationOnce(()=>status).mockImplementationOnce(async(_u,init)=>{body=init.body;return new Response(JSON.stringify({code:'DRAFT_HASH_MISMATCH'}),{status:403});}));
+ const pending=requestGeneration(canvas,new AbortController().signal);canvas.metadata.name='changed while awaiting';
+ release(new Response(JSON.stringify({configured:true,csrfToken:'a'.repeat(64)})));
+ await expect(pending).rejects.toMatchObject({code:'DRAFT_HASH_MISMATCH'});
+ expect(JSON.stringify(JSON.parse(body).canvasSpec)).toBe(original);
+});

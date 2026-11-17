@@ -1,3 +1,4 @@
+import {generationFixtures} from '../src/demoFixtures';
 import { z } from 'zod';
 import { CanvasSchema } from '../src/spec';
 import { GenerationError, prepareIntent, materialize, type GenerationCode } from '../src/generation';
@@ -71,6 +72,11 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
         const used = await env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE id = ?').bind(slot).first();
         return json({ configured: !used, csrfToken: used ? undefined : await csrf(c.apiKey!, user, url.origin, day) });
       } catch { return fail('NOT_CONFIGURED', 503); }
+    }
+    if (request.method === 'GET' && url.pathname === '/api/generation/approved-draft') {
+      const canvas=CanvasSchema.parse(generationFixtures()[0]);
+      if(await canvasHash(canvas)!==env.SKETCH_AI_TEST_CANVAS_SHA256)return fail('NOT_CONFIGURED',503);
+      return json({canvasSpec:canvas}); // Fixed sample only, never caller data or credentials.
     }
     if (request.method === 'GET' && url.pathname === '/api/generation/check') {
       if (!c.apiKey) return fail('NOT_CONFIGURED',503);
