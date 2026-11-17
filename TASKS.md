@@ -1,3 +1,8 @@
+## 免費成功與舊錯誤並存修復（2026-11-17）
+- DONE：確認App免費核對與核准載入成功未清除generationError，已清除，避免成功狀態並列歷史hash錯誤。這是可確認的UI缺陷，不宣稱歷史每個POST根因。
+- DONE：requestGeneration先固定快照，免費check同份快照通過後才查status與POST generation；check失敗不會送生成請求。後端白名單與額度不變。
+- PASS：285項測試（包含等待期間編輯仍兩份payload一致、free mismatch無generation POST）、build與secret scan。正式本人UI仍待驗證；AI關閉，D1未使用。
+
 ## 固定草稿載入保障（2026-11-17）
 - DONE：新增owner-only後端核准範例載入，先對照原runtime hash，再由免費check核對後寫入畫布；不接受新草稿白名單、不改hash／D1。
 - DONE：送出生成前同步建立CanvasSchema快照，避免status等待期間畫布變更；此為預防性修正，不宣稱歷史根因。

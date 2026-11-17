@@ -16,13 +16,18 @@ it('reports draft mismatch without retrying',async()=>{
  await expect(checkApprovedDraft(generationFixtures()[0])).rejects.toMatchObject({code:'DRAFT_HASH_MISMATCH'});
  expect(fetch).toHaveBeenCalledTimes(2);
 });
-it('snapshots generation input before awaiting status so later editor changes do not alter sent draft',async()=>{
+it('rejects a mismatched free preflight without ever posting generation',async()=>{
+ const {requestGeneration}=await import('./generationClient');const paths:string[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>{paths.push(url);return new Response(JSON.stringify(paths.length===1?{csrfToken:'a'.repeat(64)}:{code:'DRAFT_HASH_MISMATCH'}),{status:paths.length===1?200:403});}));
+ await expect(requestGeneration(generationFixtures()[0],new AbortController().signal)).rejects.toMatchObject({code:'DRAFT_HASH_MISMATCH'});
+ expect(paths).toEqual(['/api/generation/check','/api/generation/check']);
+});
+it('uses one canonical snapshot for free preflight and generation despite editor changes',async()=>{
  const {requestGeneration}=await import('./generationClient');
- const canvas=generationFixtures()[0], original=JSON.stringify(canvas);let release!:(r:Response)=>void;
- const status=new Promise<Response>(resolve=>{release=resolve;});let body='';
- vi.stubGlobal('fetch',vi.fn().mockImplementationOnce(()=>status).mockImplementationOnce(async(_u,init)=>{body=init.body;return new Response(JSON.stringify({code:'DRAFT_HASH_MISMATCH'}),{status:403});}));
- const pending=requestGeneration(canvas,new AbortController().signal);canvas.metadata.name='changed while awaiting';
- release(new Response(JSON.stringify({configured:true,csrfToken:'a'.repeat(64)})));
- await expect(pending).rejects.toMatchObject({code:'DRAFT_HASH_MISMATCH'});
- expect(JSON.stringify(JSON.parse(body).canvasSpec)).toBe(original);
+ const canvas=generationFixtures()[0],original=JSON.stringify(canvas),bodies:string[]=[];let release!:(r:Response)=>void;
+ const status=new Promise<Response>(resolve=>{release=resolve;});let count=0;
+ vi.stubGlobal('fetch',vi.fn(async(_url,init)=>{count++;if(init?.body)bodies.push(init.body);if(count===1)return status;if(count===2)return new Response(JSON.stringify({code:'DRAFT_APPROVED'}));if(count===3)return new Response(JSON.stringify({configured:true,csrfToken:'a'.repeat(64)}));return new Response(JSON.stringify({code:'UNAVAILABLE'}),{status:503});}));
+ const pending=requestGeneration(canvas,new AbortController().signal);canvas.metadata.name='changed while awaiting';release(new Response(JSON.stringify({csrfToken:'a'.repeat(64)})));
+ await expect(pending).rejects.toMatchObject({code:'UNAVAILABLE'});
+ expect(bodies).toHaveLength(2);for(const body of bodies)expect(JSON.stringify(JSON.parse(body).canvasSpec)).toBe(original);
 });

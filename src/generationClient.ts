@@ -15,6 +15,7 @@ export async function requestGeneration(
     throw new GenerationError("NOT_CONFIGURED");
   canvasSpec=CanvasSchema.parse(structuredClone(canvasSpec)); // Snapshot before asynchronous status fetch.
   prepareIntent(canvasSpec);
+  await checkApprovedDraft(canvasSpec); // Same immutable snapshot; failure cannot send generation POST.
   let status: Response;
   try {
     status = await fetch("/api/generation/status", {
