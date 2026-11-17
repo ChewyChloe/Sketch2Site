@@ -12,7 +12,7 @@ const slot = 'sites-ai-single-test-v1'; // Permanent across isolates, versions a
 const schema = z.object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema }).strict();
 const encoder = new TextEncoder();
 const hex = (buffer: ArrayBuffer) => [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, '0')).join('');
-export const canvasHash = async (canvas: unknown) => hex(await crypto.subtle.digest('SHA-256', encoder.encode(JSON.stringify(canvas))));
+export const canvasHash = async (canvas: unknown) => hex(await crypto.subtle.digest('SHA-256', encoder.encode(JSON.stringify(CanvasSchema.parse(canvas)))));
 const fail = (code: GenerationCode, status = 403) => json({ code }, status);
 function json(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'" } });
@@ -60,8 +60,9 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     const url = new URL(request.url), now = Date.now();
     // Dispatch authenticates these headers. Never trust them on an independently public Worker URL.
     const user = await authenticatedOwner(request,env);
-    if (!user || url.origin !== env.SKETCH_SITE_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site') return fail('FORBIDDEN');
-    if (request.headers.has('origin') && request.headers.get('origin') !== url.origin) return fail('FORBIDDEN');
+    if (!user) return fail('OWNER_REQUIRED');
+    if (url.origin !== env.SKETCH_SITE_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site') return fail('ORIGIN_INVALID');
+    if (request.headers.has('origin') && request.headers.get('origin') !== url.origin) return fail('ORIGIN_INVALID');
     const c = config(env, now);
     const day = Math.floor(now / 86400000);
     if (request.method === 'GET' && url.pathname === '/api/generation/status') {
@@ -71,22 +72,28 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
         return json({ configured: !used, csrfToken: used ? undefined : await csrf(c.apiKey!, user, url.origin, day) });
       } catch { return fail('NOT_CONFIGURED', 503); }
     }
-    if (request.method !== 'POST' || url.pathname !== '/api/generation') return fail('UNAVAILABLE', 404);
-    if (request.headers.get('origin') !== url.origin) return fail('FORBIDDEN');
-    if (!c.ready) return fail('NOT_CONFIGURED', 503);
+    if (request.method === 'GET' && url.pathname === '/api/generation/check') {
+      if (!c.apiKey) return fail('NOT_CONFIGURED',503);
+      return json({csrfToken:await csrf(c.apiKey,user,url.origin,day)});
+    }
+    const checkOnly=url.pathname === '/api/generation/check';
+    if (request.method !== 'POST' || (!checkOnly && url.pathname !== '/api/generation')) return fail('UNAVAILABLE', 404);
+    if (request.headers.get('origin') !== url.origin) return fail('ORIGIN_INVALID');
+    if ((!checkOnly && !c.ready) || !c.apiKey) return fail('NOT_CONFIGURED', 503);
     const token = request.headers.get('x-sketch-csrf') ?? '';
-    if (!/^[a-f0-9]{64}$/.test(token)) return fail('FORBIDDEN');
+    if (!/^[a-f0-9]{64}$/.test(token)) return fail('CSRF_INVALID');
     const matches = await Promise.all([day, day - 1].map(async d => {
       const expected = await csrf(c.apiKey!, user, url.origin, d);
       let difference = 0; for (let i = 0; i < 64; i++) difference |= expected.charCodeAt(i) ^ token.charCodeAt(i);
       return difference === 0;
     }));
-    if (!matches.some(Boolean)) return fail('FORBIDDEN');
+    if (!matches.some(Boolean)) return fail('CSRF_INVALID');
     let payload: z.infer<typeof schema>;
     try { payload = await readBody(request); prepareIntent(payload.canvasSpec); }
     catch { return fail('INVALID_INPUT', 400); }
     const hash = await canvasHash(payload.canvasSpec);
-    if (hash !== env.SKETCH_AI_TEST_CANVAS_SHA256) return fail('FORBIDDEN');
+    if (hash !== env.SKETCH_AI_TEST_CANVAS_SHA256) return fail('DRAFT_HASH_MISMATCH');
+    if(checkOnly) return json({code:'DRAFT_APPROVED',schemaVersion:1}); // No provider or quota access.
     const intent=prepareIntent(payload.canvasSpec);
     let provider:LayoutProvider, inputBound:number, reservedMicros:number;
     try {

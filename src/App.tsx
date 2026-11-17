@@ -1,3 +1,4 @@
+import {checkApprovedDraft} from "./generationClient";
 import {MotionControlsFields} from "./MotionControls";
 import type {MotionControls} from "./motionCatalog";
 import {motionCatalog,motionIds,createMotion,numericContent,combinationReason,targetReason,type MotionId,defaultControls} from "./motion";
@@ -615,6 +616,7 @@ export default function App() {
                 >
                   示範排版（非 AI）
                 </button>
+                <button disabled={generating || !ready} onClick={async()=>{try{await checkApprovedDraft(spec);report("核准草稿與安全驗證通過，未呼叫 AI。");}catch(e){report(e instanceof Error?e.message:"免費核對失敗，請停止測試。",true);}}}>核對付費測試草稿（免費）</button>
                 <div className="menu-label">示範草稿（非 AI）</div>
                 {demoFixtures
                   .filter((_, index) => index !== 2)

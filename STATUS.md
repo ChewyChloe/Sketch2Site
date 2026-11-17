@@ -1,3 +1,9 @@
+## 403免費診斷修復（2026-11-17）
+- DONE：owner／origin／CSRF／draft hash分支回傳固定安全代碼；不記錄token、Key、完整草稿。
+- DONE：CanvasSchema v1正規化後雜湊；核准fixture SHA256仍a1384324ce1429b60e980cb47b822fc88f15059c878cfc366f7929ba67947283。新增owner-only免費核對選單／端點，無Provider或額度寫入。
+- PASS：280項完整測試＋2項新增frontend測試、build、secret／motion boundary。歷史403根因仍無法從舊紀錄區分；目前瀏覽器草稿待本人免費核對，UI自動化NOT TESTED。
+- AI旗標false、billing gate false、expiry移除；保留D1永久額度與原模型／預算／零重試。無付費呼叫、無GitHub修改。
+
 ## 首次真實生成執行前中止（2026-11-17）
 - BLOCKED：已收到一次付費授權；私人權限、Secret、D1未使用額度與既有1791-token免費證明已核對。
 - 測試瀏覽器無法載入私人站（Browser Use could not read requirements），未建立本次owner登入／E2E前置條件，因此依使用者要求停止。

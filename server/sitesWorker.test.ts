@@ -185,3 +185,25 @@ describe('Sites paid-test boundary (mock only)',()=>{
   const r=await s.post();expect(r.status).toBeGreaterThanOrEqual(400);expect(s.factory).not.toHaveBeenCalled();
  });
 });
+
+ describe('safe free draft diagnostics',()=>{
+ it('distinguishes missing/invalid CSRF from changed draft, including with generation off',async()=>{
+  const s=await setup();s.env.SKETCH_AI_ENABLED='false';s.env.SKETCH_AI_TEST_APPROVED='false';
+  const state=await (await s.api(s.req('/api/generation/check'),s.env)).json();
+  const send=(canvas:unknown,token:string)=>s.api(s.req('/api/generation/check',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':token},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:canvas})}),s.env);
+  for(const token of ['', '0'.repeat(64)]){const r=await send(s.canvas,token);expect(r.status).toBe(403);expect(await r.json()).toEqual({code:'CSRF_INVALID'});}
+  const changed=structuredClone(s.canvas);changed.metadata.name+=' changed';
+  const mismatch=await send(changed,state.csrfToken);expect(mismatch.status).toBe(403);expect(await mismatch.json()).toEqual({code:'DRAFT_HASH_MISMATCH'});
+  const reordered=JSON.parse(JSON.stringify(s.canvas),(_k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).reverse()):v);
+  expect(await (await send(reordered,state.csrfToken)).json()).toEqual({code:'DRAFT_APPROVED',schemaVersion:1});
+  expect(s.factory).not.toHaveBeenCalled();
+  expect(await s.env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE id = ?').bind('sites-ai-single-test-v1').first()).toBeNull();
+ });
+ it('returns distinct codes on actual generation POST before provider or reservation',async()=>{
+  const s=await setup();
+  expect(await (await s.post({}, {'x-sketch-csrf':'0'.repeat(64)})).json()).toEqual({code:'CSRF_INVALID'});
+  const changed=structuredClone(s.canvas);changed.metadata.name+=' changed';
+  expect(await (await s.post({canvasSpec:changed})).json()).toEqual({code:'DRAFT_HASH_MISMATCH'});
+  expect(s.factory).not.toHaveBeenCalled();
+ });
+ });
