@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-17",
+  "status": "BLOCKED_BEFORE_ENABLE",
+  "reason": "Cloud browser could not navigate to private Site: Browser Use could not read requirements; owner browser session and E2E readiness not established.",
+  "paidResponsesCalls": 0,
+  "paidSlotUsed": false,
+  "actualTokens": null,
+  "actualApiCostUsd": 0,
+  "pageSpecValidation": "NOT TESTED",
+  "renderer": "NOT TESTED",
+  "screenshot": null,
+  "aiEnabled": false,
+  "testApproved": false,
+  "runtimeRevision": 4,
+  "nextStep": "Restore authenticated browser access; repeat free preflight before any enablement. Do not bypass identity or call provider directly."
+}

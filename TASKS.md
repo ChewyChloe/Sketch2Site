@@ -1,3 +1,8 @@
+## 首次真實生成執行前中止（2026-11-17）
+- BLOCKED：已收到一次付費授權；私人權限、Secret、D1未使用額度與既有1791-token免費證明已核對。
+- 測試瀏覽器無法載入私人站（Browser Use could not read requirements），未建立本次owner登入／E2E前置條件，因此依使用者要求停止。
+- 付費Responses呼叫0、費用US$0、D1額度未消耗；runtime revision4未改，兩個開關仍false。PageSpec／Renderer／截圖NOT TESTED。恢復驗收方式見docs/FIRST_LIVE_ATTEMPT_20261117.json。
+
 
 ## 線上修復結果（2026-11-17）
 - DONE：既有Sites私人第3版部署成功，env revision4；D1已綁定正式owner，實際Sites Key免費model／count為READY（1791 tokens、最高預留US$0.002272），paid slot0筆。
