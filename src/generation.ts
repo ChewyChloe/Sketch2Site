@@ -1,3 +1,4 @@
+import {structuredGroupMotions} from "./motion";
 import { z } from "zod";
 import { CanvasSchema, type CanvasSpec, type CanvasNode } from "./spec";
 import {
@@ -256,7 +257,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         case "card":
           return make("card", {
             ...common,
-            children: (node.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1) ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content })),
+            children: (node.effects.some(e=>structuredGroupMotions.includes(e.presetId as typeof structuredGroupMotions[number])) ? node.content.split("\n").map(content=>make("card",{children:[make("paragraph",{content})]})) : (node.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1) ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content }))),
           });
       }
     });
@@ -305,8 +306,13 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
   const nodes = new Map<string, PageNode>();
   const content: string[] = [];
 
+  const trustedGroupDescendants=new Set<string>();
+  const groupScan=(node:PageNode)=>{const source=sources.get(node.id);if(source?.type==='card'&&source.effects.some(e=>structuredGroupMotions.includes(e.presetId as typeof structuredGroupMotions[number]))){
+    const lines=source.content.split('\n');if(node.children?.length!==lines.length)throw new GenerationError('INVALID_OUTPUT');
+    node.children.forEach((child,i)=>{if(child.type!=='card'||child.effects.length||child.children?.length!==1||child.children[0].type!=='paragraph'||child.children[0].effects.length||child.children[0].content!==lines[i])throw new GenerationError('INVALID_OUTPUT');trustedGroupDescendants.add(child.id);trustedGroupDescendants.add(child.children[0].id);});
+  }node.children?.forEach(groupScan);};page.sections.forEach(groupScan);
   const walk = (n: PageNode, parent?: PageNode) => {
-    if (!sources.has(n.id)) {
+    if (!sources.has(n.id)&&!trustedGroupDescendants.has(n.id)) {
       if (
         !["section", "container", "stack", "grid", "paragraph"].includes(
           n.type,
@@ -345,9 +351,10 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
       )
         throw new GenerationError("INVALID_OUTPUT");
     } else {
-      const splitCard=source.type==="card"&&source.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1);
+      const structured=source.type==="card"&&source.effects.some(e=>structuredGroupMotions.includes(e.presetId as typeof structuredGroupMotions[number]));
+      const splitCard=structured||source.type==="card"&&source.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1);
       expectedContent.push(...(splitCard?source.content.split("\n"):[source.content]));
-      const actual = n.type === "card" ? n.children?.map(c=>c.content).join("\n") : n.content;
+      const actual = n.type === "card" ? n.children?.map(c=>structured?c.children?.[0].content:c.content).join("\n") : n.content;
       if (actual !== source.content)
         throw new GenerationError("INVALID_OUTPUT");
       if (

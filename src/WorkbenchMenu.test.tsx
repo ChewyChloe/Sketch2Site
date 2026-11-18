@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { WorkbenchMenu } from "./WorkbenchMenu";
 import { AnimationLibrary } from "./AnimationLibrary";
-afterEach(cleanup);
+beforeEach(()=>vi.spyOn(HTMLCanvasElement.prototype,"getContext").mockReturnValue(null));
+afterEach(()=>{cleanup();vi.restoreAllMocks();});
 it("closes secondary menus after actions, outside clicks and Escape with focus restored", () => {
   const action = vi.fn();
   const { container } = render(
@@ -32,7 +33,7 @@ it("closes secondary menus after actions, outside clicks and Escape with focus r
   expect(menu.open).toBe(false);
   expect(document.activeElement).toBe(summary);
 });
-it("shows all forty controlled assets, exposes compatibility and passes only a preset ID to drag handlers", () => {
+it("shows all sixty controlled assets, exposes compatibility and passes only a preset ID to drag handlers", () => {
   const choose = vi.fn(),
     drag = vi.fn();
   const { container } = render(
@@ -42,7 +43,7 @@ it("shows all forty controlled assets, exposes compatibility and passes only a p
       onDragStart={drag}
     />,
   );
-  expect(container.querySelectorAll("[data-effect-id]")).toHaveLength(40);
+  expect(container.querySelectorAll("[data-effect-id]")).toHaveLength(60);
   expect(
     (screen.getByRole("button", { name: "依序顯示" }) as HTMLButtonElement)
       .disabled,

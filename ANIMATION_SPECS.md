@@ -47,6 +47,26 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | svg-path-drawing | 路徑描繪 | DONE | 內容 | medium |
 | numeric-gauge-sweep | 數值儀表掃描 | DONE | 內容 | medium |
 | scroll-milestones | 區塊閱讀里程碑 | DONE | 資訊 | medium |
+| text-morph-transition | 文字形態轉換 | DONE | 內容 | high |
+| elastic-word-bounce | 彈性片語跳動 | DONE | 進場 | high |
+| text-spotlight-reveal | 聚光文字顯影 | DONE | 互動 | high |
+| typographic-stretch | 字體延展回彈 | DONE | 互動 | high |
+| cursor-trail-particles | 游標粒子軌跡 | DONE | 互動 | high |
+| cursor-image-follower | 游標圖片跟隨 | DONE | 互動 | high |
+| gooey-blob-merge | 黏性圓球融合 | DONE | 互動 | high |
+| directional-hover-wipe | 方向感應滑入 | DONE | 互動 | high |
+| spring-drag-snap | 彈性拖曳吸附 | DONE | 互動 | high |
+| pixel-dissolve | 像素消散 | DONE | 進場 | high |
+| shutter-lens-transition | 鏡頭快門 | DONE | 進場 | high |
+| glitch-slice-reveal | 切片故障顯影 | DONE | 進場 | high |
+| liquid-distortion-reveal | 液態扭曲顯影 | DONE | 進場 | high |
+| card-stack-shuffle | 卡片堆疊洗牌 | DONE | 互動 | high |
+| horizontal-scroll-gallery | 橫向捲動畫廊 | DONE | 資訊 | high |
+| sticky-section-morph | 固定區塊形態切換 | DONE | 資訊 | high |
+| scroll-image-sequence | 逐格圖片序列 | DONE | 資訊 | high |
+| pinned-story-panels | 分鏡敘事面板 | DONE | 資訊 | high |
+| particle-constellation | 粒子星座連線 | DONE | 互動 | high |
+| elastic-svg-morph | 彈性圖形變形 | DONE | 內容 | high |
 
 ## 淡入 / Fade In
 
@@ -1244,3 +1264,594 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 **constraints**：3到8個離散節點，只監控指定區塊與其實際捲動根；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
 
 **reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 文字形態轉換 / Text Morph Transition
+
+- Preset: `text-morph-transition` / version 1
+- 狀態：DONE
+- 說明：配對相同字素，連續移動至第二段使用者文字；支援不等長。
+- 適用：text、heading、paragraph
+- targetType：text、heading、paragraph
+- interactionType：click、keyboard、on-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：text-morph-transition
+- tags：內容、text、heading、paragraph
+- rendererMapping：text-morph-transition
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| toText | 目標文字 | text | 使用者必填 | 1–120 |
+| durationMs | 時長（毫秒） | number | 800 | 250–1600; step 1 |
+| trigger | 播放時機 | select | "click" | click / in-view |
+
+**designIntent**：配對相同字素，連續移動至第二段使用者文字；支援不等長。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控text-morph-transition Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：原文為來源內容，目標文由使用者明確提供；最多80個目標字素／120個來源字素；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 彈性片語跳動 / Elastic Word Bounce
+
+- Preset: `elastic-word-bounce` / version 1
+- 狀態：DONE
+- 說明：按中英文詞片段跳躍、拉伸、落地與壓縮回彈，不改原文。
+- 適用：text、heading、paragraph
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：elastic-word-bounce
+- tags：進場、text、heading、paragraph
+- rendererMapping：elastic-word-bounce
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| amplitudePx | 跳躍高度 | number | 18 | 4–32; step 1 |
+| elasticity | 彈性 | number | 0.6 | 0.1–1; step 0.1 |
+| staggerMs | 片語間隔 | number | 70 | 20–140; step 1 |
+| durationMs | 時長（毫秒） | number | 750 | 300–1400; step 1 |
+
+**designIntent**：按中英文詞片段跳躍、拉伸、落地與壓縮回彈，不改原文。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控elastic-word-bounce Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：Intl.Segmenter分詞，超量文字靜態保留；延遲最多900ms；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 聚光文字顯影 / Text Spotlight Reveal
+
+- Preset: `text-spotlight-reveal` / version 1
+- 狀態：DONE
+- 說明：局部文字遮罩由受控光圈揭露；結束恢復完整文字。
+- 適用：text、heading、paragraph
+- targetType：text、heading、paragraph
+- interactionType：hover、focus、on-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：text-spotlight-reveal
+- tags：互動、text、heading、paragraph
+- rendererMapping：text-spotlight-reveal
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| radiusPx | 光圈半徑 | number | 65 | 30–120; step 1 |
+| durationMs | 掃描時長（毫秒） | number | 1400 | 500–2500; step 1 |
+| trigger | 播放時機 | select | "in-view" | in-view / hover |
+
+**designIntent**：局部文字遮罩由受控光圈揭露；結束恢復完整文字。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控text-spotlight-reveal Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：單一目標局部遮罩，移出／失焦完整顯示，不追蹤全頁；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 字體延展回彈 / Typographic Stretch
+
+- Preset: `typographic-stretch` / version 1
+- 狀態：DONE
+- 說明：依指標與字元距離局部延展，不重排字距與換行。
+- 適用：text、heading、paragraph
+- targetType：text、heading、paragraph
+- interactionType：pointer-move、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：typographic-stretch
+- tags：互動、text、heading、paragraph
+- rendererMapping：typographic-stretch
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| maxScale | 最大延展比例 | number | 1.35 | 1.05–1.6; step 0.05 |
+| durationMs | 回彈時長（毫秒） | number | 240 | 100–500; step 1 |
+
+**designIntent**：依指標與字元距離局部延展，不重排字距與換行。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控typographic-stretch Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：最多80字素，scaleX最大1.6，保留原生換行；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 游標粒子軌跡 / Cursor Trail Particles
+
+- Preset: `cursor-trail-particles` / version 1
+- 狀態：DONE
+- 說明：指定區域內的速度感應粒子短暫消散，不做全頁追蹤。
+- 適用：card、container、section
+- targetType：card、container、section
+- interactionType：pointer-move
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：cursor-trail-particles
+- tags：互動、card、container、section
+- rendererMapping：cursor-trail-particles
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| maxParticles | 粒子上限 | number | 16 | 4–24; step 1 |
+| lifetimeMs | 存續時間（毫秒） | number | 550 | 200–900; step 1 |
+| sizePx | 粒子尺寸 | number | 4 | 2–8; step 1 |
+
+**designIntent**：指定區域內的速度感應粒子短暫消散，不做全頁追蹤。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控cursor-trail-particles Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：最多24粒子／900ms，只在目標內追蹤，觸控與Reduced Motion停用；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 游標圖片跟隨 / Cursor Image Follower
+
+- Preset: `cursor-image-follower` / version 1
+- 狀態：DONE
+- 說明：安全素材縮圖慣性跟隨指標，焦點與觸控使用固定縮圖。
+- 適用：text、heading、paragraph、button
+- targetType：text、heading、paragraph、button
+- interactionType：pointer-move、focus、touch
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：cursor-image-follower
+- tags：互動、text、heading、paragraph、button
+- rendererMapping：cursor-image-follower
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| image | 預覽圖片 | asset | 使用者必填 | – |
+| widthPx | 圖片寬度 | number | 100 | 60–160; step 1 |
+| responseMs | 慣性回應（毫秒） | number | 180 | 80–400; step 1 |
+
+**designIntent**：安全素材縮圖慣性跟隨指標，焦點與觸控使用固定縮圖。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控cursor-image-follower Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：只接受受控內建素材或本機PNG參照；不攔截點擊；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 黏性圓球融合 / Gooey Blob Merge
+
+- Preset: `gooey-blob-merge` / version 1
+- 狀態：DONE
+- 說明：局部SVG圓球透過有界黏性濾鏡融合後分離。
+- 適用：card、container、section
+- targetType：card、container、section
+- interactionType：click、keyboard
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：gooey-blob-merge
+- tags：互動、card、container、section
+- rendererMapping：gooey-blob-merge
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| balls | 圓球數量 | number | 3 | 2–5; step 1 |
+| durationMs | 時長（毫秒） | number | 1200 | 500–2200; step 1 |
+| radiusPx | 圓球半徑 | number | 15 | 10–24; step 1 |
+
+**designIntent**：局部SVG圓球透過有界黏性濾鏡融合後分離。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控gooey-blob-merge Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：2至5球，200×140局部SVG，有限次點擊播放；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 方向感應滑入 / Directional Hover Wipe
+
+- Preset: `directional-hover-wipe` / version 1
+- 狀態：DONE
+- 說明：依真實進出邊緣選擇四向遮罩，不固定同一方向。
+- 適用：button、card
+- targetType：button、card
+- interactionType：pointer-enter、pointer-leave、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：directional-hover-wipe
+- tags：互動、button、card
+- rendererMapping：directional-hover-wipe
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 260 | 120–600; step 1 |
+
+**designIntent**：依真實進出邊緣選擇四向遮罩，不固定同一方向。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控directional-hover-wipe Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：依實際邊緣四向偵測，鍵盤固定左側，遮罩pointer-events:none；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 彈性拖曳吸附 / Spring Drag & Snap
+
+- Preset: `spring-drag-snap` / version 1
+- 狀態：DONE
+- 說明：獨立拖曳把手限制範圍，放開回原位或吸附邊界。
+- 適用：card
+- targetType：card
+- interactionType：drag、keyboard、touch
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：spring-drag-snap
+- tags：互動、card
+- rendererMapping：spring-drag-snap
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| rangePx | 拖曳範圍 | number | 32 | 12–64; step 1 |
+| snap | 吸附位置 | select | "origin" | origin / edge |
+| durationMs | 回彈時長（毫秒） | number | 550 | 250–1000; step 1 |
+
+**designIntent**：獨立拖曳把手限制範圍，放開回原位或吸附邊界。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控spring-drag-snap Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：只在Runtime啟用獨立把手，最大64px；方向鍵移動、Home歸位；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 像素消散 / Pixel Dissolve
+
+- Preset: `pixel-dissolve` / version 1
+- 狀態：DONE
+- 說明：最多49個受控圖片區塊依不同方向消散或重新組合。
+- 適用：image
+- targetType：image
+- interactionType：on-enter、click
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：pixel-dissolve
+- tags：進場、image
+- rendererMapping：pixel-dissolve
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| tiles | 像素列數 | number | 5 | 3–7; step 1 |
+| durationMs | 時長（毫秒） | number | 900 | 300–1600; step 1 |
+| mode | 方向 | select | "reveal" | reveal / dissolve |
+
+**designIntent**：最多49個受控圖片區塊依不同方向消散或重新組合。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控pixel-dissolve Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：單一Canvas最多49區塊，最大640×480；同一張圖片不切成網路請求；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 鏡頭快門 / Shutter Lens Transition
+
+- Preset: `shutter-lens-transition` / version 1
+- 狀態：DONE
+- 說明：多片鏡頭葉片協同旋轉開合，完成移除遮擋。
+- 適用：image
+- targetType：image
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：shutter-lens-transition
+- tags：進場、image
+- rendererMapping：shutter-lens-transition
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| blades | 葉片數量 | number | 6 | 5–8; step 1 |
+| durationMs | 時長（毫秒） | number | 900 | 400–1800; step 1 |
+
+**designIntent**：多片鏡頭葉片協同旋轉開合，完成移除遮擋。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控shutter-lens-transition Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：5至8片受控SVG葉片，完成移除遮擋；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 切片故障顯影 / Glitch Slice Reveal
+
+- Preset: `glitch-slice-reveal` / version 1
+- 狀態：DONE
+- 說明：有限水平切片短距離錯位後回復，不閃爍或持續故障。
+- 適用：image
+- targetType：image
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：glitch-slice-reveal
+- tags：進場、image
+- rendererMapping：glitch-slice-reveal
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| slices | 切片數量 | number | 5 | 3–8; step 1 |
+| distancePx | 錯位幅度 | number | 8 | 3–16; step 1 |
+| durationMs | 時長（毫秒） | number | 550 | 300–800; step 1 |
+
+**designIntent**：有限水平切片短距離錯位後回復，不閃爍或持續故障。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控glitch-slice-reveal Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：3至8個切片，最多800ms，無高頻閃爍；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 液態扭曲顯影 / Liquid Distortion Reveal
+
+- Preset: `liquid-distortion-reveal` / version 1
+- 狀態：DONE
+- 說明：局部SVG位移濾鏡扭曲逐步歸零，結束清除濾鏡。
+- 適用：image、card、container
+- targetType：image、card、container
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：liquid-distortion-reveal
+- tags：進場、image、card、container
+- rendererMapping：liquid-distortion-reveal
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| intensity | 扭曲強度 | number | 18 | 6–30; step 1 |
+| durationMs | 恢復時長（毫秒） | number | 1000 | 400–1800; step 1 |
+
+**designIntent**：局部SVG位移濾鏡扭曲逐步歸零，結束清除濾鏡。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控liquid-distortion-reveal Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：來源表面最大720×500／360000px²，超量靜態降級；完成移除局部位移濾鏡；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 卡片堆疊洗牌 / Card Stack Shuffle
+
+- Preset: `card-stack-shuffle` / version 1
+- 狀態：DONE
+- 說明：3至5張真實卡片從重疊堆疊展開、交換視覺層級並歸位，資料順序不變。
+- 適用：card、container、section、stack、grid
+- targetType：card、container、section、stack、grid
+- interactionType：click、keyboard
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：card-stack-shuffle
+- tags：互動、card、container、section、stack、grid
+- rendererMapping：card-stack-shuffle
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 洗牌時長（毫秒） | number | 700 | 300–1300; step 1 |
+| distancePx | 展開幅度 | number | 40 | 20–60; step 1 |
+
+**designIntent**：3至5張真實卡片從重疊堆疊展開、交換視覺層級並歸位，資料順序不變。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控card-stack-shuffle Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：3至5張真實子卡，資料排序不變；隱藏卡片inert並可逐張操作；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 橫向捲動畫廊 / Horizontal Scroll Gallery
+
+- Preset: `horizontal-scroll-gallery` / version 1
+- 狀態：DONE
+- 說明：有界區塊內的垂直捲動對應橫向畫廊；手機改原生橫滑。
+- 適用：card、container、section、stack、grid
+- targetType：card、container、section、stack、grid
+- interactionType：scroll、touch
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：horizontal-scroll-gallery
+- tags：資訊、card、container、section、stack、grid
+- rendererMapping：horizontal-scroll-gallery
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| viewportHeightPx | 可視區高度 | number | 240 | 180–400; step 1 |
+| travel | 捲動區間倍數 | number | 2 | 1–4; step 1 |
+
+**designIntent**：有界區塊內的垂直捲動對應橫向畫廊；手機改原生橫滑。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控horizontal-scroll-gallery Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：有界區塊內原生垂直捲動映射橫移，不攔截全頁；手機原生橫滑；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 固定區塊形態切換 / Sticky Section Morph
+
+- Preset: `sticky-section-morph` / version 1
+- 狀態：DONE
+- 說明：限定捲動區間內的固定面板縮成中央圓角卡片，不跳動其他區塊。
+- 適用：card、container、section、stack、grid
+- targetType：card、container、section、stack、grid
+- interactionType：scroll
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：sticky-section-morph
+- tags：資訊、card、container、section、stack、grid
+- rendererMapping：sticky-section-morph
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| viewportHeightPx | 可視區高度 | number | 240 | 180–400; step 1 |
+| minScale | 最小比例 | number | 0.76 | 0.65–0.9; step 0.01 |
+| radiusPx | 最大圓角 | number | 28 | 8–40; step 1 |
+
+**designIntent**：限定捲動區間內的固定面板縮成中央圓角卡片，不跳動其他區塊。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控sticky-section-morph Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：固定區段只在有界區塊內，保留文件流與語意內容；手機直排；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 逐格圖片序列 / Scroll-Driven Image Sequence
+
+- Preset: `scroll-image-sequence` / version 1
+- 狀態：DONE
+- 說明：明確素材順序映射Frame Index，預載有限影格並保留失敗替代。
+- 適用：image
+- targetType：image
+- interactionType：scroll、progress-control
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：scroll-image-sequence
+- tags：資訊、image
+- rendererMapping：scroll-image-sequence
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| frames | 序列影格 | assets | 使用者必填 | 2–12 |
+| viewportHeightPx | 可視區高度 | number | 240 | 180–400; step 1 |
+
+**designIntent**：明確素材順序映射Frame Index，預載有限影格並保留失敗替代。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控scroll-image-sequence Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：明確2至12個影格，預載當前與下一張；失敗回原圖並提示；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 分鏡敘事面板 / Pinned Story Panels
+
+- Preset: `pinned-story-panels` / version 1
+- 狀態：DONE
+- 說明：2至5個真實分鏡在有界捲動視窗依進度切換，手機直排。
+- 適用：card、container、section、stack、grid
+- targetType：card、container、section、stack、grid
+- interactionType：scroll、progress-control
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：pinned-story-panels
+- tags：資訊、card、container、section、stack、grid
+- rendererMapping：pinned-story-panels
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| viewportHeightPx | 可視區高度 | number | 260 | 180–400; step 1 |
+| transitionMs | 轉場時長（毫秒） | number | 220 | 100–500; step 1 |
+
+**designIntent**：2至5個真實分鏡在有界捲動視窗依進度切換，手機直排。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控pinned-story-panels Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：2至5個真實子卡分鏡，有界區塊內固定；隱藏前移出焦點，手機／Reduced Motion直排；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 粒子星座連線 / Particle Constellation
+
+- Preset: `particle-constellation` / version 1
+- 狀態：DONE
+- 說明：單一Canvas中有限小點慢速移動並依距離連線，離屏／背景暫停。
+- 適用：card、container、section
+- targetType：card、container、section
+- interactionType：autoplay、pointer-move
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：particle-constellation
+- tags：互動、card、container、section
+- rendererMapping：particle-constellation
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| particles | 粒子數量 | number | 16 | 8–24; step 1 |
+| linkDistancePx | 連線距離 | number | 65 | 30–100; step 1 |
+| speed | 移動速度 | number | 0.35 | 0.1–0.8; step 0.05 |
+
+**designIntent**：單一Canvas中有限小點慢速移動並依距離連線，離屏／背景暫停。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控particle-constellation Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：最多24點／276候選連線，Canvas最大720×480、DPR最多2，離屏／背景暫停；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+## 彈性圖形變形 / Elastic SVG Morph
+
+- Preset: `elastic-svg-morph` / version 1
+- 狀態：DONE
+- 說明：相容的八段曲線座標真正變形，具有有限彈性回彈。
+- 適用：card、container、section
+- targetType：card、container、section
+- interactionType：click、keyboard
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：elastic-svg-morph
+- tags：內容、card、container、section
+- rendererMapping：elastic-svg-morph
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 變形時長（毫秒） | number | 900 | 400–1800; step 1 |
+| shape | 目標形狀 | select | "star" | star / rounded-square / organic |
+
+**designIntent**：相容的八段曲線座標真正變形，具有有限彈性回彈。生成只規劃來源布局，不能替換動畫或編造內容。
+
+**implementationBrief**：映射受控elastic-svg-morph Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。
+
+**compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
+
+**constraints**：8段相容二次曲線座標插值，不接受外部Path，彈性進度受限；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+
+**reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作

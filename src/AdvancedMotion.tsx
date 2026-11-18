@@ -6,7 +6,7 @@ const clamp = (v: number, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 const palette: Record<string, string> = { lime: '#b5ec74', amber: '#ffda79', sky: '#91d5ef', theme: 'var(--accent,#237552)' };
 const svgNS = 'http://www.w3.org/2000/svg';
 /** All resources belong to one mounted preset. No perpetual animation loops. */
-function resources(host: HTMLElement, reduced: boolean) {
+export function resources(host: HTMLElement, reduced: boolean) {
     const disposers: (() => void)[] = [], animations = new Set<Animation>(), transient = new Set<Animation>(), nodes = new Set<Element>();
     let visible = false, disposed = false;
     const listen = (target: EventTarget, name: string, fn: EventListener) => { target.addEventListener(name, fn, name === 'scroll' ? { passive: true } : undefined); disposers.push(() => target.removeEventListener(name, fn)); };
@@ -36,7 +36,7 @@ function resources(host: HTMLElement, reduced: boolean) {
     const property = (el: HTMLElement, key: string, value: string) => { const before = el.style.getPropertyValue(key), priority = el.style.getPropertyPriority(key); el.style.setProperty(key, value); disposers.push(() => before ? el.style.setProperty(key, before, priority) : el.style.removeProperty(key)); };
     const append = (el: Element) => { host.append(el); nodes.add(el); return el; };
     const remove = (el: Element) => { nodes.delete(el); el.getAnimations?.().forEach(a=>a.cancel()); el.remove(); };
-    return { listen, animate, entrance, property, append, remove, dispose() { disposed = true; nodes.forEach(el => el.remove()); nodes.clear(); io?.disconnect(); animations.forEach(a => a.cancel()); disposers.reverse().forEach(f => f()); } };
+    return { listen, animate, entrance, property, append, remove, isVisible:()=>visible&&!document.hidden, dispose() { disposed = true; nodes.forEach(el => el.remove()); nodes.clear(); io?.disconnect(); animations.forEach(a => a.cancel()); disposers.reverse().forEach(f => f()); } };
 }
 /** Plain text remains the only accessible/selectable source. Transient overlays are aria-hidden. */
 export function AdvancedText({ text, effect }: {
@@ -179,7 +179,7 @@ export function AdvancedText({ text, effect }: {
     }, [text, effect, reduced]);
     return <span ref={ref} className={'advanced-text ' + (effect.presetId === 'hand-drawn-highlight' ? 'advanced-highlight' : '')}><span className="advanced-text-source">{text}</span></span>;
 }
-function nearestScroller(host: HTMLElement) { let el: HTMLElement | null = host; while (el && !/(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY))
+export function nearestScroller(host: HTMLElement) { let el: HTMLElement | null = host; while (el && !/(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY))
     el = el.parentElement; return el; }
 export function useAdvancedMotion(node: PageNode, ref: RefObject<HTMLElement | null>) {
     const reduced = useReducedMotion();

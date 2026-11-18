@@ -1,3 +1,6 @@
+import {useCinematicMotion,cinematicTextIds} from "./CinematicMotion";
+import {CinematicText} from "./CinematicText";
+import {StoryGroup,CardShuffle,FrameSequence,storyGroupIds} from "./StoryMotion";
 import {useAdvancedMotion,AdvancedText,advancedTextIds} from "./AdvancedMotion";
 import {useExtendedMotion,LetterAssembly,AccentStroke,DisclosurePanel} from "./ExtendedMotion";
 import {FoldReveal} from "./FoldReveal";
@@ -63,6 +66,7 @@ function useAnimations(node:PageNode,ref:React.RefObject<HTMLElement|null>) {
   media.addEventListener("change",cancel);return ()=>{cancel();media.removeEventListener("change",cancel);};
  },[node,ref]);
 }
+const MotionPreview = createContext(false);
 const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
 function SafeImage({ node }: { node: PageNode }) {
   const urls = useContext(AssetUrls);
@@ -128,6 +132,8 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   useAnimations(node, ref);
   useExtendedMotion(node,ref);
   useAdvancedMotion(node,ref);
+  const motionUrls=useContext(AssetUrls),motionPreview=useContext(MotionPreview);
+  useCinematicMotion(node,ref,motionUrls);
   const entry = componentRegistry[node.type],
     Tag =
       node.type === "heading"
@@ -147,6 +153,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   },[breathing]);
   const assembly=node.effects.find(e=>e.presetId==="letter-assembly"),accent=node.effects.find(e=>e.presetId==="accent-stroke"),disclosure=node.effects.find(e=>e.presetId==="disclosure-panel");
   const advancedText=node.effects.find(e=>advancedTextIds.includes(e.presetId));
+  const cinematicText=node.effects.find(e=>cinematicTextIds.includes(e.presetId)),story=node.effects.find(e=>storyGroupIds.includes(e.presetId)),shuffle=node.effects.find(e=>e.presetId==="card-stack-shuffle"),sequence=node.effects.find(e=>e.presetId==="scroll-image-sequence");
   const children=node.children?.map(child=><RenderNode key={child.id} node={child}/>);
   const style = {
     "--breathing-cycle":(breathing?motionNumber(breathing,"cycleMs"):3200)+"ms",
@@ -191,9 +198,9 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
           }
         : {})}
     >
-      {node.type === "image" ? (
+      {sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
         <SafeImage key={node.src} node={node} />
-      ) : advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.content}
+      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.content}
     </Tag>
   );
 });
@@ -224,9 +231,11 @@ class RenderBoundary extends Component<
 export function PageRuntime({
   input,
   assetUrls = {},
+  motionPreview = false,
 }: {
   input: unknown;
   assetUrls?: Readonly<Record<string, string | null>>;
+  motionPreview?:boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const previous = useRef<PageSpec | undefined>(undefined);
@@ -251,7 +260,7 @@ export function PageRuntime({
   const page = result.page;
   const sources=new Map<string,PageNode>();const collect=(n:PageNode)=>{sources.set(n.id,n);n.children?.forEach(collect);};page.sections.forEach(collect);
   return (
-    <AssetUrls.Provider value={assetUrls}>
+    <AssetUrls.Provider value={assetUrls}><MotionPreview.Provider value={motionPreview}>
       <RenderBoundary resetKey={input}>
         <div
           ref={rootRef}
@@ -285,6 +294,6 @@ export function PageRuntime({
           {page.draftLayout?<div className="draft-layout" style={{aspectRatio:'1440 / 1200'}}>{[...page.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/12}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/12}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:page.sections.map(section=><RenderNode key={section.id} node={section}/>)}
         </div>
       </RenderBoundary>
-    </AssetUrls.Provider>
+    </MotionPreview.Provider></AssetUrls.Provider>
   );
 }

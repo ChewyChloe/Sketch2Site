@@ -1,3 +1,4 @@
+import {thirdFixture} from "./fixtures/cinematicMotions";
 import {advancedFixture} from "./fixtures/advancedMotions";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import {serverMotionRegistry} from "../server/motionBriefs";
@@ -59,7 +60,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   );
   await openWebsiteWorkspace(page);
   const input = structuredClone(demoPage);
-  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections);
+  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...thirdFixture().sections);
   const replaceImage = (nodes: typeof input.sections) =>
     nodes.forEach((n) => {
       if (n.type === "image") n.src = localRef;
@@ -122,6 +123,8 @@ z.extractall(root)
     maxBuffer: 1024 * 1024,
   });
   expect(await readdir(join(project, "node_modules"))).toContain("react");
+  expect(await readFile(join(project,"public/assets/sequence/frame-03.svg"),"utf8")).toContain("FRAME 03");
+  expect(await readFile(join(project,"public/assets/workspace.svg"),"utf8")).toContain("<svg");
   const previewPort=await new Promise<number>((resolve,reject)=>{const socket=createServer();socket.once('error',reject);socket.listen(0,'127.0.0.1',()=>{const address=socket.address();if(!address||typeof address==='string')return reject(new Error('missing preview port'));socket.close(()=>resolve(address.port));});});
   const service = spawn(
     "npm",
@@ -184,6 +187,12 @@ z.extractall(root)
     await exportedMotion(5).evaluate(el=>(el as HTMLElement).blur());
     await expect(exportedMotion(5)).toHaveAttribute("data-motion-paused","false");
     await expect.poll(()=>exportedMotion(5).evaluate(el=>el.getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect?.getComputedTiming().iterations===Infinity))).toBe(true);
+    for(const section of thirdFixture().sections){const node=section.children![0];await expect(standalone.locator(`[data-page-id="${node.id}"]`)).toHaveAttribute('data-effects',node.effects[0].presetId);}
+    const thirdNodes=thirdFixture().sections.map(s=>s.children![0]);
+    const morph=standalone.locator(`[data-page-id="${thirdNodes[0].id}"]`);await morph.getByRole('button',{name:'切換文字'}).click();await expect(morph.locator('.cin-text-source')).toHaveText('設計成真');
+    const sequence=standalone.locator(`[data-page-id="${thirdNodes[16].id}"]`);await sequence.scrollIntoViewIfNeeded();await sequence.getByLabel('序列影格進度').fill('100');await sequence.getByLabel('序列影格進度').dispatchEvent('input');await expect(sequence.locator('img')).toHaveAttribute('src',/frame-03.svg$/);await expect.poll(()=>sequence.locator('img').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
+    const follower=standalone.locator(`[data-page-id="${thirdNodes[5].id}"]`);await follower.focus();await expect(follower.locator('.cin-follower')).toHaveAttribute('data-visible','true');await expect.poll(()=>follower.locator('.cin-follower').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
+    const shape=standalone.locator(`[data-page-id="${thirdNodes[19].id}"]`),path=shape.locator('.cin-shape path'),beforeShape=await path.getAttribute('d');await shape.getByRole('button',{name:'變換圖形'}).click();await expect.poll(()=>path.getAttribute('d')).not.toBe(beforeShape);
     const advancedNodes=advancedFixture().sections[0].children!;
     const newRipple=standalone.locator(`[data-page-id="${advancedNodes[7].id}"]`);await newRipple.scrollIntoViewIfNeeded();await newRipple.evaluate(el=>el.addEventListener('click',event=>event.preventDefault()));await newRipple.focus();await newRipple.press('Enter');await expect(newRipple.locator('.advanced-ripple')).toHaveCount(1);await expect(newRipple.locator('.advanced-ripple')).toHaveCount(0);
     const newPan=standalone.locator(`[data-page-id="${advancedNodes[13].id}"]`);await newPan.scrollIntoViewIfNeeded();await expect.poll(()=>newPan.evaluate(el=>el.getAnimations({subtree:true}).some(a=>a.playState==='running'))).toBe(true);

@@ -1,14 +1,32 @@
+import {cinematicSample} from "./cinematicSamples";
 import {createMotion} from "./motion";
-import {advancedMotionIds,motionCatalog} from "./motionCatalog";
+import {cinematicMotionIds,advancedMotionIds,motionCatalog} from "./motionCatalog";
 import { WorkbenchIcon } from "./WorkbenchIcon";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { PageRenderer, animationRegistry } from "./PageRenderer";
 import { PageSchema, type effectIds } from "./pageSpec";
 import { effectLabels } from "./visualEditing";
 type EffectId = (typeof effectIds)[number];
 const descriptions=Object.fromEntries(Object.entries(motionCatalog).map(([id,d])=>[id,d.summary])) as Record<EffectId,string>;
-const motionFamily=(id:EffectId)=>{const index=advancedMotionIds.indexOf(id as typeof advancedMotionIds[number]);if(index>=0)return Math.floor(index/5);const d=motionCatalog[id];return d.targetType.every(t=>['text','heading','paragraph'].includes(t))?0:d.targetType.includes('button')&&!d.targetType.includes('container')?1:d.targetType.includes('image')||['flip-card','fold-reveal'].includes(id)?2:3;};
-const families=['文字動態 · Typography','按鈕與互動 · Interactions','圖片與卡片 · Images & Cards','捲動與版面 · Scroll & Layout'];
+const motionFamily=(id:EffectId)=>{const cinematic=cinematicMotionIds.indexOf(id as typeof cinematicMotionIds[number]);if(cinematic>=0)return cinematic<4?0:cinematic<9?1:cinematic<14?2:cinematic<18?3:4;const index=advancedMotionIds.indexOf(id as typeof advancedMotionIds[number]);if(index>=0)return Math.floor(index/5);const d=motionCatalog[id];return d.targetType.every(t=>['text','heading','paragraph'].includes(t))?0:d.targetType.includes('button')&&!d.targetType.includes('container')?1:d.targetType.includes('image')||['flip-card','fold-reveal'].includes(id)?2:3;};
+const families=['文字動態 · Typography','按鈕與互動 · Interactions','圖片與卡片 · Images & Cards','捲動與版面 · Scroll & Layout','實驗圖形 · Graphics'];
+function replayCinematic(root:HTMLElement,id:EffectId){
+                    if(!root.isConnected)return;
+                    if(['text-morph-transition','gooey-blob-merge','elastic-svg-morph','card-stack-shuffle'].includes(id))root.querySelector<HTMLButtonElement>('.motion-toggle')?.click();
+                    else if(['horizontal-scroll-gallery','sticky-section-morph','pinned-story-panels','scroll-image-sequence'].includes(id)){
+                      const viewport=root.querySelector<HTMLElement>('.story-native-gallery')??root.querySelector<HTMLElement>('.story-viewport,.sequence-scroll');if(viewport)viewport.scrollTo({top:viewport.scrollHeight,left:viewport.scrollWidth,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});
+                    }else if(id==='spring-drag-snap'){
+                      const handle=root.querySelector<HTMLElement>('.cin-drag-handle');if(handle){for(let n=0;n<4;n++)handle.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));handle.dispatchEvent(new KeyboardEvent('keydown',{key:'Home',bubbles:true}));}
+                    }else if(id==='cursor-trail-particles'){
+                      const target=root.querySelector<HTMLElement>('[data-effects~=cursor-trail-particles]');if(target){const box=target.getBoundingClientRect();for(let n=0;n<10;n++)target.dispatchEvent(new PointerEvent('pointermove',{pointerType:'mouse',clientX:box.left+10+n*Math.min(10,(box.width-20)/10),clientY:box.top+box.height/2,bubbles:true}));}
+                    }else if(['cursor-image-follower','directional-hover-wipe','typographic-stretch'].includes(id))root.querySelector<HTMLElement>('[tabindex="0"],a')?.focus({preventScroll:true});
+
+}
+function CinematicSample({id,replay}:{id:typeof cinematicMotionIds[number];replay:number}){
+ const [page]=useState(()=>cinematicSample(id)),ref=useRef<HTMLDivElement>(null);
+ useEffect(()=>{const element=ref.current;if(!replay||!element)return;if(typeof IntersectionObserver==='undefined'){replayCinematic(element,id);return;}const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer.disconnect();replayCinematic(element,id);}});observer.observe(element);return()=>observer.disconnect();},[id,replay]);
+ return <div ref={ref}><PageRenderer input={page} motionPreview/></div>;
+}
 function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
   const [ids] = useState(() =>
     Array.from({ length: 5 }, () => crypto.randomUUID()),
@@ -88,9 +106,10 @@ export function AnimationLibrary({
                 role="listitem"
                 key={id}
                 data-effect-id={id}
+                data-batch={cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?"third":"existing"}
                 data-category={motionCatalog[id].category}
                 data-compatibility={reason ? "unavailable" : "available"}
-                draggable={!disabled && !["flip-card","physics-tag-field","fold-reveal","focus-transfer","disclosure-panel","scroll-progress","magnetic-control","press-feedback"].includes(id)}
+                draggable={!disabled && !cinematicMotionIds.includes(id as typeof cinematicMotionIds[number]) && !["flip-card","physics-tag-field","fold-reveal","focus-transfer","disclosure-panel","scroll-progress","magnetic-control","press-feedback"].includes(id)}
                 onDragStart={(e) => {
                   if (disabled) {
                     e.preventDefault();
@@ -111,7 +130,7 @@ export function AnimationLibrary({
                 <div className="asset-preview" role="group" aria-label={effectLabels[id]+"效果示意"} onClickCapture={e=>{if((e.target as Element).closest("a"))e.preventDefault();}}>
                   <span className="asset-category">{motionCatalog[id].category}</span>
                   <div className="asset-sample">
-                    <EffectSample key={replay[id]??0} id={id} active={active === id} />
+                    {cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?<CinematicSample key={replay[id]??0} id={id as typeof cinematicMotionIds[number]} replay={replay[id]??0}/>:<EffectSample key={replay[id]??0} id={id} active={active === id} />}
                   </div>
                 </div>
                 <div className="asset-actions">

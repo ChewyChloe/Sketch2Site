@@ -1,3 +1,4 @@
+import {motionAssetRefs} from "./assetRef";
 import { useAssetUrls } from "./useAssetUrls";
 import { PageSchema } from "./pageSpec";
 import type { PageNode } from "./pageSpec";
@@ -14,15 +15,18 @@ export function PageRenderer({
   input,
   selectedId,
   onSelect,
+  motionPreview = false,
 }: {
   input: unknown;
   selectedId?: string | null;
+  motionPreview?:boolean;
   onSelect?: (id: string) => void;
 }) {
   const checked = useMemo(() => PageSchema.safeParse(input), [input]),
     refs: string[] = [];
   const walk = (node: PageNode) => {
     if (node.src) refs.push(node.src);
+    refs.push(...motionAssetRefs(node.effects));
     node.children?.forEach(walk);
   };
   if (checked.success) checked.data.sections.forEach(walk);
@@ -48,7 +52,7 @@ export function PageRenderer({
         }
       }}
     >
-      <PageRuntime input={input} assetUrls={urls} />
+      <PageRuntime input={input} assetUrls={urls} motionPreview={motionPreview} />
     </div>
   );
 }

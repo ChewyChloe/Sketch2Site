@@ -392,3 +392,6 @@ Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38�
 
 ## 歷史：Motion Spec規格階段（已由最新交付取代）
 起點7e6aa6fd96ace1b1b6eb329677d4a9fa9b2a6f8e，工作區原先乾淨。已讀新附件、現有文件及Registry／Patch／Renderer；參考網站僅市場概念，不再讀取或複製。已建立12種原創公開參數規格及後端單獨生成指引；ANIMATION_SPECS.md由Registry離線產生。前6個的新規格適配仍PARTIAL、後6個NOT STARTED，未冒充可用功能。接續做版本化參數／既有管線整合，不在單一效果完成時停等。最新附件禁止Push，覆蓋先前授權；只做本地提交，付費API0。
+
+## 2026-11-18：第三批20種動畫 DONE（本機）
+保留原40種，新增20種，共60種。素材庫即時示範／Replay／參數、Canvas持久化、Mock生成、Patch保留、共用Renderer與獨立React匯出完成。472單元PASS；Chromium147個不同案例分批驗證並重跑失敗修正，最後5個Replay／三尺寸／獨立匯出PASS，快捷鍵與重載15次重複PASS；Build及安全邊界檢查PASS。完整名稱、觸發、目標、限制及驗證見docs/THIRD_BATCH_MOTIONS.md。付費呼叫0，未改AI安全配置／D1，未Push／Merge／部署。線上仍是先前40種版本；本批本地提交SHA以git log -1為準。實機／其他瀏覽器／付費生成品質NOT TESTED。

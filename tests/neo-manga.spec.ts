@@ -5,7 +5,7 @@ for(const width of [1440,768,375])test(`neo manga workspace ${width}`,async({pag
  await expect(page.getByRole('navigation',{name:'工作台導覽'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/neo-canvas-${width}.png`,fullPage:true});
- await page.getByRole('button',{name:'動畫素材庫',exact:true}).click();await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(40);
+ await page.getByRole('button',{name:'動畫素材庫',exact:true}).click();await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(60);
  await page.screenshot({path:`test-results/neo-motion-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:'草稿',exact:true}).click();
  if(!await page.getByRole('button',{name:'新增文字',exact:true}).isVisible())await page.getByRole('tab',{name:'元件',exact:true}).click();

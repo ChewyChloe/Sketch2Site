@@ -192,3 +192,6 @@ server/lunaPolicy.ts固定價格／模型／token與完整payload上限；Provid
 
 ## 2026-11-18：進階動畫擴充
 公開Catalog保留20個舊ID，新增20個ID，共40種；MotionSchema版本及舊實例合約不變。AdvancedMotion由PageRuntime掛載，與既有ExtendedMotion分工，沒有第二套Renderer。文字呈現層保留原文並以Range量測實際字素／換行；多子項草稿卡片在materialize／verifyPreservation共用相同分行判斷。四個素材家族仍使用同一AnimationLibrary與原Apply／Patch路徑。exportProject複製同一AdvancedMotion與CSS；Runtime無Provider或私人後端依賴。完整資源限制、替代提案及驗證邊界見docs/ADVANCED_MOTIONS.md。
+
+## 第三批20種動畫（2026-11-18）
+Registry累計60種，原40種ID與版本保留。CinematicText／CinematicMotion／StoryMotion掛載同一PageRuntime並直接隨React匯出。typed imageSource／imageSource[]用於明確素材與2–12影格，Renderer與Export同時收集effects資產。Card群組沿用Canvas v1分行容器，materialize建立受控Card子項，verifyPreservation逐項核對來源，不新增自由群組Schema。局部scroll／pointer／SVG／Canvas效果各自有界，實際Renderer容器寬度決定行動降級。詳見docs/THIRD_BATCH_MOTIONS.md。

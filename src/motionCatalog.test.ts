@@ -1,6 +1,6 @@
 import { it, expect } from "vitest";
 import { motionIds, motionCatalog, motionControlSchemas, defaultControls } from "./motionCatalog";
-it("defines all twenty original motions with one controlled parameter source", () => {
+it("defines all versioned motions with one controlled parameter source", () => {
     expect(Object.keys(motionCatalog)).toEqual([...motionIds]);
     for (const id of motionIds) {
         const def = motionCatalog[id];

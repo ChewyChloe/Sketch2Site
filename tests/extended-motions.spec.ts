@@ -27,11 +27,11 @@ const transform = (target: Locator) => target.evaluate(el => {
     return { x: matrix.m41 + translate[0], y: matrix.m42 + (translate[1] ?? 0), scale: style.scale === 'none' ? matrix.a : Number.parseFloat(style.scale) };
 });
 
-test('library exposes forty effects and filters by name, identifier and category', async ({ page }) => {
+test('library exposes sixty effects and filters by name, identifier and category', async ({ page }) => {
     const check = await load(page);
     await openPanel(page, '動畫');
     const library = page.locator('#preview-inspector .animation-library'), assets = library.locator('[data-effect-id]');
-    await expect(assets).toHaveCount(40);
+    await expect(assets).toHaveCount(60);
     for (const id of effects) {
         await page.getByLabel('搜尋動畫').fill(id);
         await expect(assets).toHaveCount(1);
@@ -48,7 +48,7 @@ test('library exposes forty effects and filters by name, identifier and category
         for (const asset of await assets.all()) await expect(asset).toHaveAttribute('data-category', category);
     }
     await page.getByLabel('動畫使用情境').selectOption('');
-    await expect(assets).toHaveCount(40);
+    await expect(assets).toHaveCount(60);
     check();
 });
 
@@ -217,7 +217,7 @@ for (const round of [1, 2]) for (const width of [1440, 768, 375]) test(`review $
     await page.locator('.preview-scroll').evaluate(el=>{el.scrollTop=0;});
     await openPanel(page, '動畫');
     const library = page.locator('#preview-inspector .animation-library');
-    await expect(library.locator('[data-effect-id]')).toHaveCount(40);
+    await expect(library.locator('[data-effect-id]')).toHaveCount(60);
     await library.locator('[data-effect-id="fade-in"]').scrollIntoViewIfNeeded();
     await page.screenshot({ path: `test-results/extended-review${round}-gallery-upper-${width}.png` });
     const disclosure = library.locator('[data-effect-id="disclosure-panel"]');

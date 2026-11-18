@@ -278,3 +278,9 @@
 ## 自有Motion Spec Library（新附件，2026-11-12）
 - 歷史規劃（本輪已完成）：先完成12個原創結構化規格，整併6個舊效果並保留舊資料安全相容，再依序完成展示／高複雜度效果；僅有通過Renderer、Patch、預覽、匯出與測試者標記DONE。
 - 本輪附件明確禁止Push，覆蓋先前Push授權；不Merge／部署／付費模型。
+
+## 第三批動畫擴充（2026-11-18）
+- DONE：原40種向下相容＋20種不同Runtime，總60種；真實文字／圖片／Card群組及有界互動。
+- DONE：素材參數排序、IndexedDB、Mock生成／Patch保留、Renderer與60種獨立React匯出。
+- PASS：472單元、分批Chromium回歸及修正重跑、三尺寸Replay、離線匯出、Build／秘密及私人brief邊界。詳細證據見docs/THIRD_BATCH_MOTIONS.md。
+- NOT TESTED：實機／Safari／Firefox、付費模型品質、此批線上版本。依本次範圍只本地提交，不Push／Merge／部署，停止於交付。

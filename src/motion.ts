@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { advancedMotionIds, motionCatalog, motionIds, motionControlSchemas, defaultControls, type MotionId, type MotionControls } from "./motionCatalog";
-export { advancedMotionIds, motionCatalog, motionIds, defaultControls };
+import { cinematicMotionIds, advancedMotionIds, motionCatalog, motionIds, motionControlSchemas, defaultControls, type MotionId, type MotionControls } from "./motionCatalog";
+export { cinematicMotionIds, advancedMotionIds, motionCatalog, motionIds, defaultControls };
 export type { MotionId, MotionControls };
 export type MotionInstance = {
     presetId: MotionId;
@@ -72,6 +72,7 @@ export type MotionTarget = {
     content?: string;
     children?: unknown[];
 };
+export const structuredGroupMotions=["card-stack-shuffle","horizontal-scroll-gallery","pinned-story-panels"] as const;
 export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 = 1): string | null {
     if (version === 0)
         return id === 'stagger-reveal' && !target.children?.length && target.type !== 'card' ? '依序顯示需要子元件' : null;
@@ -80,6 +81,10 @@ export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 
         return '此效果不適用於目前元件。';
     if (['stagger-reveal','focus-transfer','disclosure-panel','card-deck-fan','layered-parallax','grid-diagonal-turn'].includes(id) && !(target.children ? target.children.length >= 2 : target.type === 'card' && (target.content ?? '').split('\n').filter(s => s.trim()).length >= 2))
         return '此效果需要至少兩個子元素；草稿卡片請填兩行內容。';
+    if(structuredGroupMotions.includes(id as typeof structuredGroupMotions[number])){
+        const items=target.children,lines=(target.content??'').split('\n');const count=items?.length??lines.length;
+        if(count<(id==='card-stack-shuffle'?3:2)||count>5||items?.some(n=>!n||typeof n!=='object'||!('type' in n)||n.type!=='card')||!items&&lines.some(line=>!line.trim()))return '需要'+(id==='card-stack-shuffle'?'3':'2')+'至5張真實子卡片；草稿卡片每行代表一張卡片。';
+    }
     if (id === 'numeric-gauge-sweep' && (!/^\s*(?:\d{1,3})(?:\.\d{1,4})?\s*[%％]?\s*$/.test(target.content ?? '') || !numericContent(target.content ?? '') || numericContent(target.content ?? '')!.endValue > 100)) return '儀表需使用0到100的真實數字或百分比。';
     if (id === 'count-up' && !numericContent(target.content ?? ''))
         return '數字遞增只適用於既有數字內容。';
@@ -108,20 +113,24 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
         return '互動內容效果一次只能套用一種。';
     if (ids.has('physics-tag-field') && ids.has('stagger-reveal'))
         return '物理標籤不能再套用逐項進場。';
-    if (['letter-assembly','accent-stroke','count-up','curved-path-text','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','kinetic-text-wave','numeric-gauge-sweep'].filter(id=>ids.has(id as MotionId)).length>1)
+    if (['letter-assembly','accent-stroke','count-up','curved-path-text','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','kinetic-text-wave','numeric-gauge-sweep','text-morph-transition','elastic-word-bounce','text-spotlight-reveal','typographic-stretch'].filter(id=>ids.has(id as MotionId)).length>1)
         return '文字呈現效果一次只能套用一種。';
     if(ids.has('magnetic-control') && ['hover-lift','slide-up','press-feedback'].some(id=>ids.has(id as MotionId)))
         return '磁吸回饋不能與其他位移或按壓效果重疊。';
-    const imageModes=['image-reveal','venetian-reveal','circular-mask-expansion','cinematic-image-pan'];
+    const imageModes=['image-reveal','venetian-reveal','circular-mask-expansion','cinematic-image-pan','pixel-dissolve','shutter-lens-transition','glitch-slice-reveal','liquid-distortion-reveal','scroll-image-sequence'];
     if(imageModes.filter(id=>ids.has(id as MotionId)).length>1)return '圖片動態一次只能使用一種，以保留完整遮罩與尺寸。';
     if(ids.has('perspective-tilt')&&['hover-lift','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '透視傾斜不能與其他根節點位移效果重疊。';
     const childrenModes=['card-deck-fan','layered-parallax','grid-diagonal-turn','stagger-reveal','focus-transfer','disclosure-panel','fold-reveal','flip-card','physics-tag-field'];
     if(['card-deck-fan','layered-parallax','grid-diagonal-turn'].some(id=>ids.has(id as MotionId)) && childrenModes.filter(id=>ids.has(id as MotionId)).length>1)return '子項動態或互動內容一次只能使用一種。';
+    const scene=effects.filter(e=>cinematicMotionIds.includes(e.presetId as typeof cinematicMotionIds[number]));
+    if(scene.length>1)return '第三批場景動態每個目標一次套用一種，避免遮罩或互動互相覆寫。';
+    if(scene.length&&['card-stack-shuffle','horizontal-scroll-gallery','sticky-section-morph','pinned-story-panels'].some(id=>ids.has(id as MotionId))&&effects.length>1)return '敘事群組必須獨立套用，避免改寫同一組子項。';
+    if(ids.has('spring-drag-snap')&&effects.length>1)return '拖曳吸附不可與其他位置效果同時套用。';
     return null;
 }
 /** Per-document resource limits, in addition to each preset's own bounds. */
 export const motionPerformanceLimits = { physicsFields: 3, physicsTags: 48, breathingButtons: 8, textAssemblies:12, scrollIndicators:8 } as const;
 export function withinMotionBudget(effects: readonly MotionInstance[]) {
     const physics = effects.filter(e => e.presetId === 'physics-tag-field');
-    return effects.filter(e=>advancedMotionIds.includes(e.presetId as typeof advancedMotionIds[number])).length<=24 && effects.filter(e=>e.presetId==='letter-assembly').length<=motionPerformanceLimits.textAssemblies && effects.filter(e=>e.presetId==='scroll-progress').length<=motionPerformanceLimits.scrollIndicators && physics.length <= motionPerformanceLimits.physicsFields && physics.reduce((sum, e) => sum + (e.validatedControls.labels as string[]).length, 0) <= motionPerformanceLimits.physicsTags && effects.filter(e => e.presetId === 'breathing-glow').length <= motionPerformanceLimits.breathingButtons;
+    return effects.filter(e=>['text-morph-transition','elastic-word-bounce','text-spotlight-reveal','typographic-stretch'].includes(e.presetId)).length<=8 && effects.filter(e=>cinematicMotionIds.includes(e.presetId as typeof cinematicMotionIds[number])).length<=20 && effects.filter(e=>e.presetId==="particle-constellation"||e.presetId==="cursor-trail-particles").length<=3 && effects.filter(e=>e.presetId==="gooey-blob-merge"||e.presetId==="liquid-distortion-reveal").length<=4 && effects.filter(e=>advancedMotionIds.includes(e.presetId as typeof advancedMotionIds[number])).length<=24 && effects.filter(e=>e.presetId==='letter-assembly').length<=motionPerformanceLimits.textAssemblies && effects.filter(e=>e.presetId==='scroll-progress').length<=motionPerformanceLimits.scrollIndicators && physics.length <= motionPerformanceLimits.physicsFields && physics.reduce((sum, e) => sum + (e.validatedControls.labels as string[]).length, 0) <= motionPerformanceLimits.physicsTags && effects.filter(e => e.presetId === 'breathing-glow').length <= motionPerformanceLimits.breathingButtons;
 }

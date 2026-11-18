@@ -385,6 +385,7 @@ export default function App() {
     const key = (e: KeyboardEvent) => {
       if (
         e.defaultPrevented ||
+        (e.target instanceof Element && Boolean(e.target.closest(".animation-library"))) ||
         !ready ||
         loadError ||
         drag.current ||
@@ -410,7 +411,7 @@ export default function App() {
         );
       } else if(mod&&['a','c','v','x','g'].includes(e.key.toLowerCase())){
         e.preventDefault();const k=e.key.toLowerCase();
-        if(k==='a'){setSelectedIds(spec.nodes.map(n=>n.id));setPrimarySelected(spec.nodes[0]?.id??null);report(`已選取 ${spec.nodes.length} 個元件。`);}
+        if(k==='a'){const current=state.current.present;setSelectedIds(current.nodes.map(n=>n.id));setPrimarySelected(current.nodes[0]?.id??null);report(`已選取 ${current.nodes.length} 個元件。`);}
         if(k==='c')copySelection();if(k==='x')copySelection(true);if(k==='v')void pasteSelection();
         if(k==='g'){const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(ids.length>=2||e.shiftKey){change(groupSelection(spec,ids,e.shiftKey));report(e.shiftKey?'已取消群組，可還原。':'已建立群組，可一起移動；Shift＋點選可多選。');}}
       } else if (mod && e.key.toLowerCase() === "d") {

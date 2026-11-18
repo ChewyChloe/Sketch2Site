@@ -1,6 +1,9 @@
+import cinematicMotionSource from "./CinematicMotion.tsx?raw";
+import cinematicTextSource from "./CinematicText.tsx?raw";
+import storyMotionSource from "./StoryMotion.tsx?raw";
 import advancedMotionSource from "./AdvancedMotion.tsx?raw";
 import assetSchema from "./assetRef.ts?raw";
-import { isLocalAsset } from "./assetRef";
+import { builtInAssets, motionAssetRefs, isLocalAsset } from "./assetRef";
 import { readAsset } from "./assets";
 import type { PageNode } from "./pageSpec";
 import { PageSchema } from "./pageSpec";
@@ -27,6 +30,7 @@ export async function exportProjectFiles(
   const refs = new Set<string>();
   const walk = (node: PageNode) => {
     if (node.src) refs.add(node.src);
+    motionAssetRefs(node.effects).forEach(ref=>refs.add(ref));
     node.children?.forEach(walk);
   };
   page.sections.forEach(walk);
@@ -77,6 +81,9 @@ export async function exportProjectFiles(
     { path: "src/motion.ts", content: motionSource },
     { path: "src/ExtendedMotion.tsx", content: extendedMotionSource },
     { path: "src/AdvancedMotion.tsx", content: advancedMotionSource },
+    { path: "src/CinematicMotion.tsx", content: cinematicMotionSource },
+    { path: "src/CinematicText.tsx", content: cinematicTextSource },
+    { path: "src/StoryMotion.tsx", content: storyMotionSource },
     { path: "src/MotionRuntime.tsx", content: motionRuntimeSource },
     { path: "src/physics.ts", content: physicsSource },
     { path: "src/PhysicsTags.tsx", content: physicsTagsSource },
@@ -102,15 +109,15 @@ export async function exportProjectFiles(
         content: new Uint8Array(await image.blob.arrayBuffer()),
       });
     }
-  if (refs.has("/assets/workspace.svg")) {
+  for(const builtin of builtInAssets)if (refs.has(builtin)) {
     const response = await fetch(
-      import.meta.env.BASE_URL + "assets/workspace.svg",
+      import.meta.env.BASE_URL + builtin.slice(1),
     );
     if (!response.ok) throw new Error("內建素材無法讀取。");
     const asset = await response.text();
     if (asset.length > 100000 || !asset.includes("<svg"))
       throw new Error("內建素材格式無效。");
-    files.push({ path: "public/assets/workspace.svg", content: asset });
+    files.push({ path: "public"+builtin, content: asset });
   }
   return files;
 }

@@ -126,3 +126,6 @@ Luna-only、Standard-only、max4096 output含reasoning、完整request<=16384 by
 所有新效果合計每頁最多24個；扇形最多12子項、網格最多24子項、視差最多3層／20px、漣漪最多3圈、鏡頭最多3次循環。WAAPI動畫於離屏及背景頁暫停，文字解碼最長3500ms，完成不再修改已解碼字素。清理Observer、事件、RAF、動畫與新增DOM；捲動被動監聽並以單一RAF合併更新。數值儀表只接受原始0–100數值／百分比，不改數字或編造統計。
 
 React匯出複製同一AdvancedMotion原始碼、Schema及CSS，不含Provider、內部brief、後端、秘密或編輯歷史。本次僅本機及Mock測試，不更動Runtime Secrets、帳務、D1額度或AI旗標，不推送／部署。
+
+## 第三批動畫安全邊界（2026-11-18）
+新增20種不接受任意HTML／JS／CSS／SVG path／外部圖片URL。圖片與影格只接受imageSource白名單及既有驗證本機素材；typed陣列transport後仍逐Preset strict驗證。新場景20、文字8、粒子場3、濾鏡場4個上限；粒子24、影格12、切片8、Canvas720×480／DPR2；超量安全拒絕或靜態降級。裝飾不截點擊、隱藏卡片inert、局部輸入與完整清理。保留原AI輸入／成本／權限／CSRF／D1安全限制；本批只有Mock與離線payload檢查，無付費呼叫、秘密或Runtime配置變更。匯出與前端私人brief邊界掃描PASS。

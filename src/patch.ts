@@ -97,7 +97,7 @@ export const PatchSchema = z.discriminatedUnion("operation", [
       targetId,
       payload: z.union([
         z.object({ effectId: z.enum(effectIds), parameters }).strict(),
-        z.object({ effectId: z.enum(effectIds), validatedControls: z.record(z.string().max(40), z.union([z.string().max(1000), z.number().finite(), z.boolean(), z.array(z.string().max(24)).max(24)])) }).strict(),
+        z.object({ effectId: z.enum(effectIds), validatedControls: z.record(z.string().max(40), z.union([z.string().max(1000), z.number().finite(), z.boolean(), z.array(z.string().max(24)).max(24), z.array(imageSource).min(2).max(12)])) }).strict(),
       ]),
     })
     .strict(),
