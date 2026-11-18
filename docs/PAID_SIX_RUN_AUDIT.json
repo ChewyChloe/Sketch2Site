@@ -1,0 +1,253 @@
+{
+  "date": "2026-11-18",
+  "scope": "Six real Provider requests using Codex Cloud HTTP Secret, plus recorded-response Chromium UI validation; formal hosted owner session not automated",
+  "model": "gpt-6-luna",
+  "serviceTier": "default",
+  "paidCalls": 6,
+  "retries": 0,
+  "approvedPerCallCapUsd": 0.01,
+  "approvedSixCallCapUsd": 0.06,
+  "calculatedTotalUsd": 0.00295255,
+  "effectsCovered": [
+    "accent-stroke",
+    "breathing-glow",
+    "count-up",
+    "curved-path-text",
+    "disclosure-panel",
+    "fade-in",
+    "flip-card",
+    "focus-transfer",
+    "fold-reveal",
+    "hover-glow",
+    "hover-lift",
+    "image-reveal",
+    "letter-assembly",
+    "magnetic-control",
+    "physics-tag-field",
+    "press-feedback",
+    "scale-in",
+    "scroll-progress",
+    "slide-up",
+    "stagger-reveal"
+  ],
+  "cases": [
+    {
+      "case": 0,
+      "name": "保留草稿布局",
+      "model": "gpt-6-luna",
+      "tier": "default",
+      "effects": [
+        "fade-in",
+        "slide-up",
+        "scale-in",
+        "hover-lift"
+      ],
+      "paidCalls": 1,
+      "inputTokens": 2154,
+      "reservedUsd": 0.002318,
+      "bytes": 8450,
+      "status": "PASS",
+      "usage": {
+        "inputTokens": 2154,
+        "outputTokens": 383,
+        "reasoningTokens": 93,
+        "cachedInputTokens": 0,
+        "estimatedCostUsd": 0.000460675,
+        "latencyMs": 0
+      },
+      "pageSpec": "PASS",
+      "effectsPreserved": "PASS",
+      "geometry": "EXACT_SOURCE_FRAME",
+      "review": {
+        "issue": "Default AI reflow discarded source positions",
+        "resolution": "Added validated draftLayout source frame; exact desktop x/y/width assertions pass"
+      },
+      "browserReplay": "PASS; real saved result, no additional paid calls",
+      "desktopScreenshot": "outputs/paid-six-audit/0/desktop.png",
+      "mobileScreenshot": "outputs/paid-six-audit/0/mobile.png"
+    },
+    {
+      "case": 1,
+      "name": "互動與曲線",
+      "model": "gpt-6-luna",
+      "tier": "default",
+      "effects": [
+        "hover-glow",
+        "stagger-reveal",
+        "breathing-glow",
+        "curved-path-text"
+      ],
+      "paidCalls": 1,
+      "inputTokens": 2233,
+      "reservedUsd": 0.002328,
+      "bytes": 8702,
+      "status": "PASS",
+      "usage": {
+        "inputTokens": 2233,
+        "outputTokens": 407,
+        "reasoningTokens": 118,
+        "cachedInputTokens": 0,
+        "estimatedCostUsd": 0.00048255,
+        "latencyMs": 0
+      },
+      "pageSpec": "PASS",
+      "effectsPreserved": "PASS",
+      "geometry": "EXACT_SOURCE_FRAME",
+      "review": {
+        "issue": "Accent tone produced white text on pale button",
+        "resolution": "Pinned contrasted button foreground/background; computed contrast >=4.5 passes"
+      },
+      "browserReplay": "PASS; real saved result, no additional paid calls",
+      "desktopScreenshot": "outputs/paid-six-audit/1/desktop.png",
+      "mobileScreenshot": "outputs/paid-six-audit/1/mobile.png"
+    },
+    {
+      "case": 2,
+      "name": "內容型動畫",
+      "model": "gpt-6-luna",
+      "tier": "default",
+      "effects": [
+        "count-up",
+        "flip-card",
+        "physics-tag-field",
+        "fold-reveal"
+      ],
+      "paidCalls": 1,
+      "inputTokens": 2382,
+      "reservedUsd": 0.002346,
+      "bytes": 9234,
+      "status": "PASS",
+      "usage": {
+        "inputTokens": 2382,
+        "outputTokens": 356,
+        "reasoningTokens": 67,
+        "cachedInputTokens": 0,
+        "estimatedCostUsd": 0.000475675,
+        "latencyMs": 0
+      },
+      "pageSpec": "PASS",
+      "effectsPreserved": "PASS",
+      "geometry": "EXACT_SOURCE_FRAME",
+      "review": {
+        "issue": "Interactive card dimensions diverged from source boxes",
+        "resolution": "Preserved source aspect/width/min-height without clipping interaction content"
+      },
+      "browserReplay": "PASS; real saved result, no additional paid calls",
+      "desktopScreenshot": "outputs/paid-six-audit/2/desktop.png",
+      "mobileScreenshot": "outputs/paid-six-audit/2/mobile.png"
+    },
+    {
+      "case": 3,
+      "name": "文字與圖片",
+      "model": "gpt-6-luna",
+      "tier": "default",
+      "effects": [
+        "letter-assembly",
+        "accent-stroke",
+        "image-reveal",
+        "magnetic-control"
+      ],
+      "paidCalls": 1,
+      "inputTokens": 2349,
+      "reservedUsd": 0.002342,
+      "bytes": 9121,
+      "status": "PASS",
+      "usage": {
+        "inputTokens": 2349,
+        "outputTokens": 368,
+        "reasoningTokens": 78,
+        "cachedInputTokens": 0,
+        "estimatedCostUsd": 0.00047755000000000003,
+        "latencyMs": 0
+      },
+      "pageSpec": "PASS",
+      "effectsPreserved": "PASS",
+      "geometry": "EXACT_SOURCE_FRAME",
+      "review": {
+        "issue": "Headings inflated and body text could be promoted",
+        "resolution": "Preserve-mode font scale and body semantics follow author; reflow remains explicit"
+      },
+      "browserReplay": "PASS; real saved result, no additional paid calls",
+      "desktopScreenshot": "outputs/paid-six-audit/3/desktop.png",
+      "mobileScreenshot": "outputs/paid-six-audit/3/mobile.png"
+    },
+    {
+      "case": 4,
+      "name": "群組與閱讀",
+      "model": "gpt-6-luna",
+      "tier": "default",
+      "effects": [
+        "press-feedback",
+        "focus-transfer",
+        "scroll-progress",
+        "disclosure-panel"
+      ],
+      "paidCalls": 1,
+      "inputTokens": 2500,
+      "reservedUsd": 0.002361,
+      "bytes": 9630,
+      "status": "PASS",
+      "usage": {
+        "inputTokens": 2500,
+        "outputTokens": 465,
+        "reasoningTokens": 176,
+        "cachedInputTokens": 0,
+        "estimatedCostUsd": 0.0005449249999999999,
+        "latencyMs": 0
+      },
+      "pageSpec": "PASS",
+      "effectsPreserved": "PASS",
+      "geometry": "REFLOW_BY_CHOICE",
+      "review": {
+        "issue": "No author choice between faithful and reflow layouts",
+        "resolution": "Added persisted layout choice; phone uses readable spatial-order single column"
+      },
+      "browserReplay": "PASS; real saved result, no additional paid calls",
+      "desktopScreenshot": "outputs/paid-six-audit/4/desktop.png",
+      "mobileScreenshot": "outputs/paid-six-audit/4/mobile.png"
+    },
+    {
+      "case": 5,
+      "name": "不規則多選群組",
+      "model": "gpt-6-luna",
+      "tier": "default",
+      "effects": [
+        "slide-up",
+        "image-reveal",
+        "hover-lift",
+        "press-feedback"
+      ],
+      "paidCalls": 1,
+      "inputTokens": 2326,
+      "reservedUsd": 0.002339,
+      "bytes": 9024,
+      "status": "PASS",
+      "usage": {
+        "inputTokens": 2326,
+        "outputTokens": 441,
+        "reasoningTokens": 151,
+        "cachedInputTokens": 0,
+        "estimatedCostUsd": 0.000511175,
+        "latencyMs": 0
+      },
+      "pageSpec": "PASS",
+      "effectsPreserved": "PASS",
+      "geometry": "EXACT_SOURCE_FRAME",
+      "review": {
+        "issue": "No multi-selection clipboard/group movement",
+        "resolution": "Added versioned safe clipboard, ID/link/effect remap, group persistence and bounded rigid movement"
+      },
+      "browserReplay": "PASS; real saved result, no additional paid calls",
+      "desktopScreenshot": "outputs/paid-six-audit/5/desktop.png",
+      "mobileScreenshot": "outputs/paid-six-audit/5/mobile.png"
+    }
+  ],
+  "checks": {
+    "unitIntegration": 297,
+    "motionBrowser": 32,
+    "paidReplay": 6,
+    "keyboard": "PASS",
+    "reactExport": "PASS including actual spatial-layout paid output",
+    "secretAndMotionBoundary": "PASS"
+  }
+}

@@ -3,9 +3,9 @@ import {generationFixtures} from '../src/demoFixtures';
 import {legacyMotion,type MotionInstance} from '../src/motion';
 import type {SitesEnv} from './sitesIdentity';
 export const MOTION_APPROVAL='portfolio-motion-v1';
-export function ownerDraftApproved(env:SitesEnv){return env.SKETCH_AI_DRAFT_POLICY==='owner-draft-v1';}
+export function ownerDraftApproved(env:SitesEnv){return ['owner-draft-v1','owner-draft-studio-review-v1'].includes(String(env.SKETCH_AI_DRAFT_POLICY));}
 export function motionApproved(env:SitesEnv){return env.SKETCH_AI_DRAFT_POLICY===MOTION_APPROVAL||ownerDraftApproved(env);}
-export function paidSlot(env:SitesEnv){return motionApproved(env)?'sites-ai-motion-test-v1':'sites-ai-single-test-v1';}
+export function paidSlot(env:SitesEnv){return env.SKETCH_AI_DRAFT_POLICY==='owner-draft-studio-review-v1'?'sites-ai-studio-review-v1':motionApproved(env)?'sites-ai-motion-test-v1':'sites-ai-single-test-v1';}
 export function approvedDraft(env:SitesEnv):CanvasSpec{
  const canvas=CanvasSchema.parse(generationFixtures()[0]);
  if(motionApproved(env)){

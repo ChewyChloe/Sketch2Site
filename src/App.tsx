@@ -1,3 +1,4 @@
+import {encodeNodes,decodeNodes,cloneNodes,deleteNodes,groupSelection,translateSelection} from "./canvasEditing";
 import {checkApprovedDraft,loadApprovedDraft} from "./generationClient";
 import {MotionControlsFields} from "./MotionControls";
 import type {MotionControls} from "./motionCatalog";
@@ -66,7 +67,15 @@ export default function App() {
     future: [],
   });
   const [linkDraft, setLinkDraft] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected,setPrimarySelected]=useState<string|null>(null);
+  const [selectedIds,setSelectedIds]=useState<string[]>([]);
+  const clipboard=useRef('');
+  function setSelected(id:string|null){setPrimarySelected(id);setSelectedIds(id?[id]:[]);}
+  function selectNode(id:string,additive=false){
+    const n=state.current.present.nodes.find(n=>n.id===id);
+    const ids=n?.groupId?state.current.present.nodes.filter(v=>v.groupId===n.groupId).map(v=>v.id):[id];
+    setPrimarySelected(id);setSelectedIds(prev=>additive?(prev.includes(id)?prev.filter(v=>!ids.includes(v)):[...new Set([...prev,...ids])]):ids);
+  }
   const [ready, setReady] = useState(false),
     [busy, setBusy] = useState(false),
     [loadError, setLoadError] = useState(false);
@@ -103,6 +112,7 @@ export default function App() {
   const board = useRef<HTMLDivElement>(null);
   const drag = useRef<{
     node: CanvasNode;
+    ids:string[];
     startX: number;
     startY: number;
     scale: number;
@@ -356,22 +366,20 @@ export default function App() {
     }
   }
   function remove() {
-    if (!selected) return;
-    change({ ...spec, nodes: spec.nodes.filter((n) => n.id !== selected) });
-    setSelected(null);
-    report("已刪除元件，可使用還原復原");
+    const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(!ids.length)return;
+    if(change(deleteNodes(spec,ids))){setSelected(null);report('已刪除選取元件，可還原。');}
   }
-  function duplicate() {
-    if (!node) return;
-    const copy = {
-      ...node,
-      id: crypto.randomUUID(),
-      x: Math.min(1440 - node.width, node.x + 24),
-      y: Math.min(1200 - node.height, node.y + 24),
-    };
-    change({ ...spec, nodes: [...spec.nodes, copy] });
-    setSelected(copy.id);
+  function copySelection(cut=false){
+    const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(!ids.length)return;
+    clipboard.current=encodeNodes(spec,ids);void navigator.clipboard?.writeText(clipboard.current).catch(()=>{});
+    if(cut)remove();else report(`已複製 ${ids.length} 個元件。`);
   }
+  async function pasteSelection(){
+    let value=clipboard.current;try{const text=await navigator.clipboard?.readText();if(text?.startsWith('Sketch2Site/CanvasNodes/v1:'))value=text;}catch{/* Internal clipboard remains available. */}
+    const nodes=decodeNodes(value);if(!nodes.length)return;
+    const copies=cloneNodes(nodes);const available=new Set([...state.current.present.nodes,...copies].map(n=>n.id));copies.forEach(n=>{if(n.href?.startsWith('#')&&!available.has(n.href.slice(1)))n.href=null;});if(change({...state.current.present,nodes:[...state.current.present.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));report(`已貼上 ${copies.length} 個元件，可還原。`);}
+  }
+  function duplicate(){const ids=selectedIds.length?selectedIds:selected?[selected]:[];const copies=cloneNodes(spec.nodes.filter(n=>ids.includes(n.id)));if(!copies.length)return;if(change({...spec,nodes:[...spec.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));}}
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
@@ -399,6 +407,11 @@ export default function App() {
         setHistory((h) =>
           e.shiftKey || e.key.toLowerCase() === "y" ? redo(h) : undo(h),
         );
+      } else if(mod&&['a','c','v','x','g'].includes(e.key.toLowerCase())){
+        e.preventDefault();const k=e.key.toLowerCase();
+        if(k==='a'){setSelectedIds(spec.nodes.map(n=>n.id));setPrimarySelected(spec.nodes[0]?.id??null);report(`已選取 ${spec.nodes.length} 個元件。`);}
+        if(k==='c')copySelection();if(k==='x')copySelection(true);if(k==='v')void pasteSelection();
+        if(k==='g'){const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(ids.length>=2||e.shiftKey){change(groupSelection(spec,ids,e.shiftKey));report(e.shiftKey?'已取消群組，可還原。':'已建立群組，可一起移動；Shift＋點選可多選。');}}
       } else if (mod && e.key.toLowerCase() === "d") {
         e.preventDefault();
         duplicate();
@@ -413,33 +426,8 @@ export default function App() {
         ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
       ) {
         e.preventDefault();
-        const step = e.shiftKey ? 10 : 1;
-        patch(node.id, {
-          x: Math.max(
-            0,
-            Math.min(
-              1440 - node.width,
-              node.x +
-                (e.key === "ArrowRight"
-                  ? step
-                  : e.key === "ArrowLeft"
-                    ? -step
-                    : 0),
-            ),
-          ),
-          y: Math.max(
-            0,
-            Math.min(
-              1200 - node.height,
-              node.y +
-                (e.key === "ArrowDown"
-                  ? step
-                  : e.key === "ArrowUp"
-                    ? -step
-                    : 0),
-            ),
-          ),
-        });
+        const step=e.shiftKey?10:1;
+        change(translateSelection(spec,selectedIds.length?selectedIds:[node.id],e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0,e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0));
       }
     };
     window.addEventListener("keydown", key);
@@ -494,8 +482,11 @@ export default function App() {
   function begin(e: React.PointerEvent, n: CanvasNode) {
     if (e.button !== 0 || !ready || loadError) return;
     e.stopPropagation();
-    setSelected(n.id);
-    drag.current = { node: n, startX: e.clientX, startY: e.clientY, scale };
+    e.preventDefault();
+    if(e.shiftKey){selectNode(n.id,true);return;}
+    const ids=selectedIds.includes(n.id)?selectedIds:(n.groupId?spec.nodes.filter(v=>v.groupId===n.groupId).map(v=>v.id):[n.id]);
+    setPrimarySelected(n.id);setSelectedIds(ids);
+    drag.current = { ids,node: n, startX: e.clientX, startY: e.clientY, scale };
     e.currentTarget.setPointerCapture(e.pointerId);
   }
   function move(e: React.PointerEvent) {
@@ -524,11 +515,12 @@ export default function App() {
     });
   }
   function finish() {
-    if (moving) patch(moving.id, { x: moving.x, y: moving.y });
+    if(moving&&drag.current)change(translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y));
     drag.current = null;
     setMoving(null);
   }
   const disabled = !ready || loadError;
+  const displayedNodes=moving&&drag.current?translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
   return (
     <>
       <header className={"topbar " + mode}>
@@ -588,6 +580,7 @@ export default function App() {
               預覽
             </button>
           </div>
+          {mode === "draft" && <label className="layout-choice" title="保留相對位置與尺寸；手機版自動單欄">生成布局<select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="preserve">保留草稿布局</option><option value="reflow">AI 自由重排</option></select></label>}
           {mode === "draft" && (
             <button
               className="primary"
@@ -608,6 +601,14 @@ export default function App() {
               >
                 {busy ? "儲存中…" : saved&&!dirty ? "已儲存" : "儲存草稿"}
               </button>
+              <WorkbenchMenu label="編輯">
+                <button disabled={!selectedIds.length} onClick={()=>copySelection()}>複製 · Ctrl/Cmd＋C</button>
+                <button disabled={!selectedIds.length} onClick={()=>copySelection(true)}>剪下 · Ctrl/Cmd＋X</button>
+                <button onClick={()=>void pasteSelection()}>貼上 · Ctrl/Cmd＋V</button>
+                <button onClick={()=>{setSelectedIds(spec.nodes.map(n=>n.id));setPrimarySelected(spec.nodes[0]?.id??null);}}>全選 · Ctrl/Cmd＋A</button>
+                <button disabled={selectedIds.length<2} onClick={()=>change(groupSelection(spec,selectedIds))}>群組 · Ctrl/Cmd＋G</button>
+                <button disabled={!selectedIds.length} onClick={()=>change(groupSelection(spec,selectedIds,true))}>解組 · Ctrl/Cmd＋Shift＋G</button>
+              </WorkbenchMenu>
               <WorkbenchMenu label="草稿選單">
                 <button onClick={()=>{setCandidate(null);setMode("preview");}}>開啟網站工作區</button>
                 <button
@@ -713,7 +714,7 @@ export default function App() {
               <div className="canvas-tools">
                 <div>
                   <strong>網站草稿</strong>
-                  <small>1440 × 1200</small>
+                  <small>1440 × 1200</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · Ctrl/Cmd＋G 群組</small>}
                 </div>
                 <div>
                   <button
@@ -791,22 +792,22 @@ export default function App() {
                         <p>草稿選單提供示範草稿與非 AI 排版。</p>
                       </div>
                     )}
-                    {spec.nodes.map((original) => {
-                      const n = moving?.id === original.id ? moving : original;
+                    {displayedNodes.map((n) => {
                       return (
                         <div
                           key={n.id}
                           role="button"
                           tabIndex={0}
                           aria-label={labels[n.type] + "：" + n.content}
-                          aria-pressed={selected === n.id}
+                          aria-pressed={selectedIds.includes(n.id)}
                           data-node-id={n.id}
+                          data-group-id={n.groupId}
                           data-draft-drop={draftEffect ? (draftDropReason(n,draftEffect) ? (draftHover===n.id?'invalid':undefined) : 'available') : undefined}
                           data-testid="canvas-node"
                           className={
                             "node " +
                             n.type +
-                            (selected === n.id ? " selected" : "")
+                            (selectedIds.includes(n.id) ? " selected" : "")
                           }
                           style={{
                             left: n.x,
@@ -814,8 +815,8 @@ export default function App() {
                             width: n.width,
                             height: n.height,
                           }}
-                          onFocus={() => setSelected(n.id)}
-                          onClick={() => setSelected(n.id)}
+                          onFocus={() => {if(!selectedIds.includes(n.id))selectNode(n.id);}}
+
                           onPointerDown={(e) => begin(e, n)}
                           onPointerMove={move}
                           onPointerUp={finish}

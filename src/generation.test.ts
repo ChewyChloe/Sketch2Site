@@ -130,3 +130,11 @@ it.each(motionIds)('Mock layout preserves original source content and bound moti
  const canvas={...blank(),nodes:[n]};const snapshot=JSON.stringify(canvas);
  const page=materialize(canvas,mockLayout(prepareIntent(canvas)));expect(()=>verifyPreservation(canvas,page)).not.toThrow();expect(indexNodes(page).get(n.id)!.effects).toEqual(n.effects);expect(JSON.stringify(canvas)).toBe(snapshot);
 });
+it('retains exact validated source geometry unless the author explicitly chooses reflow',()=>{
+ const canvas=generationFixtures()[3];const preserve=materialize(canvas,mockLayout(prepareIntent(canvas)));
+ expect(preserve.draftLayout?.items).toEqual(canvas.nodes.map(({id,x,y,width,height,zIndex})=>({id,x,y,width,height,zIndex})));
+ const reflow=structuredClone(canvas);reflow.metadata.layoutMode='reflow';expect(materialize(reflow,mockLayout(prepareIntent(reflow))).draftLayout).toBeUndefined();
+ const hostile=structuredClone(preserve);hostile.draftLayout!.items[0].x=1440;expect(PageSchema.safeParse(hostile).success).toBe(false);
+});
+
+it('preserve layout does not promote author body text into an unexpected heading',()=>{const canvas=generationFixtures()[0],intent=prepareIntent(canvas),layout=mockLayout(intent),text=canvas.nodes.find(n=>n.type==='text')!;layout.sections.flatMap(s=>s.items).find(n=>n.sourceId===text.id)!.presentation='heading';const result=materialize(canvas,layout);expect(indexNodes(result).get(text.id)!.type).toBe('paragraph');});

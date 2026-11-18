@@ -294,3 +294,21 @@
   .extended-magnetic { translate:none;transition:none; }
   .extended-press,.extended-press:not(:disabled):not([aria-disabled=true]):active,.extended-press:not(:disabled):not([aria-disabled=true])[data-extended-pressed=true] { scale:none;transition:none; }
 }
+
+/* Source geometry is validated numeric data, never model-supplied CSS. */
+.draft-layout{position:relative;width:100%;min-height:240px;isolation:isolate}
+.draft-placement{position:absolute;left:var(--draft-left);top:var(--draft-top);width:var(--draft-width);min-height:var(--draft-height)}
+.draft-placement>.page-node{width:100%;max-width:100%;margin:0}
+@container (max-width:600px){.draft-layout{aspect-ratio:auto!important;display:flex;flex-direction:column;gap:24px;padding:24px}.draft-placement{position:relative;left:auto;top:auto;width:100%;min-height:initial}}
+
+.rendered-page{container-type:inline-size}.draft-placement .page-heading{font-size:clamp(22px,3.3cqi,48px)}.draft-placement .page-image{max-height:100%;width:100%}
+/* Accent backgrounds must not override button foreground contrast. */
+.rendered-page .page-button.tone-accent,.rendered-page .page-button.tone-plain{background:var(--accent);color:#fff}
+.rendered-page .page-button:hover,.rendered-page .page-button:focus-visible{background:var(--ink);color:#fff}
+
+.rendered-page .draft-placement>.page-node{width:100%;max-width:100%;min-height:100%;text-align:start}.rendered-page .draft-placement>a.page-button{justify-content:center;text-align:center}
+@container(max-width:600px){.draft-placement{aspect-ratio:auto!important}.rendered-page .draft-placement>.page-node{min-height:initial}}
+/* Preserve author scale instead of inflating every source heading into a hero. */
+.rendered-page .draft-placement h1.page-heading,.rendered-page .draft-placement h2.page-heading,.rendered-page .draft-placement h3.page-heading{font-size:clamp(20px,2.23cqi,32px)}
+.rendered-page .draft-placement .page-paragraph{font-size:clamp(14px,1.67cqi,24px)}
+.rendered-page .draft-placement .page-card .page-paragraph{font-size:clamp(14px,1.12cqi,16px)}

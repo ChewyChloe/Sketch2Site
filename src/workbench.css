@@ -1282,3 +1282,20 @@ input[type="range"] {
 .image-feedback { font-size:13px;line-height:1.6;margin:12px 0; }
 .image-feedback[role="alert"],.sidebar [aria-invalid="true"] { color:var(--danger); }
 .sidebar input[aria-invalid="true"] { border-bottom-color:var(--danger); }
+/* Focused editor refresh: keep canvas dimensions and existing controls intact. */
+:root{--ui-bg:#eef2f1;--ui-panel:#ffffff;--ui-ink:#18332d;--ui-muted:#687d77;--ui-line:#dce5e1;--ui-hover:#f0f6f3;--ui-selected:#e4f2eb;--ui-accent:#146b51}
+.topbar{background:#15352c;color:#f0f7f3;min-height:64px;padding:10px 20px;border-bottom:0;box-shadow:0 2px 12px #102d2518;gap:16px}
+.topbar .brand h1{font-size:17px;letter-spacing:-.04em}.topbar .brand-mark{background:#c1ecd7;color:#15352c;border-radius:9px;width:32px;height:32px}.topbar .note{color:#b5d3c5;font-size:10px}
+.topbar .project-name{color:#f4faf7;background:#ffffff0a;border:1px solid #ffffff26;border-radius:8px;padding:6px 10px}
+.topbar button,.topbar summary{color:#e6f3ed;background:transparent;border-color:#ffffff26;border-radius:7px}.topbar button:hover,.topbar summary:hover{background:#ffffff12}.topbar button.primary{background:#bce7d0;color:#123d2d;border-color:#bce7d0;font-weight:700;padding-inline:18px}.topbar button.primary:hover{background:#d1f5e1}
+.topbar .workspace-modes{background:#0b261e;border-radius:9px;padding:3px}.topbar .workspace-modes button[aria-pressed=true]{background:#fff;color:#15352c;border-radius:6px}.topbar .workbench-menu-content{color:var(--ui-ink);background:#fff}.topbar .workbench-menu-content button{color:var(--ui-ink);background:#fff}
+.layout-choice{display:flex;align-items:center;gap:8px;color:#cce0d6;font-size:11px;white-space:nowrap}.layout-choice select{max-width:145px;background:#fff;color:#173e30;border:0;border-radius:7px;padding:7px 9px}
+.canvas-tools{background:#fff;border-bottom:1px solid var(--ui-line);padding-block:10px}.workspace{background:#edf2ef}.sidebar{background:#fff;border-left:1px solid #dce5e1;box-shadow:-4px 0 16px #143b2b05}.inspector-heading{padding:16px;font-size:13px;font-weight:700}.inspector-tabs{margin:0 14px 12px;padding:4px;background:#f0f5f2;border-radius:10px}.inspector-tabs button{border-radius:7px}.inspector-tabs [aria-selected=true]{background:#fff;color:#146b51;box-shadow:0 1px 5px #143b2b0c}
+.canvas-scroll{background-color:#edf2ef;background-image:radial-gradient(#c8d6cf .8px,transparent .8px);background-size:18px 18px}.canvas{box-shadow:0 10px 45px #143b2b0c;border:1px solid #dce5e1;border-radius:3px}.node{border-radius:9px}.node.selected{outline-color:#168463;box-shadow:0 0 0 4px #1684630d}.node-label{background:#e8f6ef;border-radius:5px;padding:1px 5px;color:#146b51}
+.workbench-feedback{font-size:12px;padding:8px 20px}.workbench-feedback:not(.error){background:#f6fbf8;color:#44715d}.workbench-feedback.error{background:#fff4f1;color:#a44132}
+@media(max-width:1100px){.topbar .brand .note{display:none}.layout-choice{font-size:0}.layout-choice select{font-size:12px;max-width:120px}.topbar{padding-inline:12px;gap:8px}.topbar .project-name{width:130px}}
+@media(max-width:800px){.layout-choice{display:none}.topbar{flex-wrap:wrap}.topbar .toolbar-actions{flex-wrap:wrap}.topbar .brand{flex:1}}
+
+.topbar input:disabled{opacity:1;color:#dcefe5}
+.topbar .project-name:disabled{-webkit-text-fill-color:#dcefe5;opacity:1}
+.selection-count{margin-left:12px;color:#146b51;font-weight:600}

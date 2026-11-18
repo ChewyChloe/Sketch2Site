@@ -248,9 +248,10 @@ describe('separate animation approval retains consumed first test',()=>{
 });
 
 describe('owner-signed current draft approval',()=>{
- it('accepts a newly added/moved card and animations, binds its exact hash and retains one permanent motion slot',async()=>{
+ it.each(['owner-draft-v1','owner-draft-studio-review-v1'])('accepts current draft once under %s without reopening historical slots',async policy=>{
   const {createNode}=await import('../src/spec');const {createMotion}=await import('../src/motion');
-  const s=await setup();s.env.SKETCH_AI_DRAFT_POLICY='owner-draft-v1';
+  const s=await setup();s.env.SKETCH_AI_DRAFT_POLICY=policy;
+  if(policy==='owner-draft-studio-review-v1')for(const id of ['sites-ai-single-test-v1','sites-ai-motion-test-v1'])await s.env.DB!.prepare('INSERT INTO sketch_ai_single_test (id,request_id,user_id,canvas_hash,reserved_micros,started_at,outcome) VALUES (?,?,?,?,?,?,?)').bind(id,crypto.randomUUID(),user,'historical',2272,Date.now(),'PASS').run();
   const canvas=structuredClone(s.canvas);canvas.nodes[0].x=200;const card=createNode('card',70,624);card.id=crypto.randomUUID();card.content='我的新卡片';card.effects=[createMotion('fade-in',card.id)];canvas.nodes.push(card);
   const state=await (await s.api(s.req('/api/generation/check'),s.env)).json();
   const send=(path:string,c=canvas,approval?:string)=>s.api(s.req(path,{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:c,...(approval?{draftApproval:approval}:{})})}),s.env);

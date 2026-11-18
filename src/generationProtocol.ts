@@ -1,1 +1,1 @@
-export const generationProtocol='owner-draft-20261118-v3';
+export const generationProtocol='studio-20261118-v4';

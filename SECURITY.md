@@ -1,3 +1,6 @@
+## 工作台剪貼簿與來源布局（2026-11-18）
+剪貼簿僅處理固定前綴＋strict NodeSchema，不執行HTML/JS；跨draft找不到的anchor清為null。groupId UUID不代表權限。draftLayout只接受bounded numeric source references，拒絕缺失ID、重複與祖孫重複placement；模型不能輸出CSS。新review固定單次D1 slot不重設歷史記錄。
+
 # 安全邊界
 Phase 5 新增本機生成後端與可選付費 Provider Adapter；金鑰可由後端秘密配置，真實 API 仍未啟用。資料留在瀏覽器 IndexedDB，CanvasSpec 手動儲存、PageSpec 自動保存；清除網站資料會刪除草稿，同來源其他程式可讀取。無雲端備份、多分頁衝突合併或帳號隔離。
 所有資料含本機讀取皆經 strict Zod Schema，限制節點／文字／數字／動畫／欄位，拒絕重複 ID、超界位置、不支援階層。React 文字插值，不使用 innerHTML、eval 或模型執行；URL 合約僅允許 HTTPS 或本頁 anchor。只有使用者明確按「生成網站」且後端已啟用時，必要結構化草稿才傳至 OpenAI；不傳整個專案或其他本機紀錄。外部圖片與網路資產尚未開放；Phase 2 的連結限制見下方。

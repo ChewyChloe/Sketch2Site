@@ -1,3 +1,11 @@
+## 六次真實生成與工作台修正（2026-11-18）
+- PASS：6次Luna Standard真實Provider請求，20/20個preset均至少1次，PageSpec／文字素材效果保留均通過，無retry；費用依usage合計US$0.00295255。每案有inputs／outputs／ledger／desktop與mobile截圖，docs/PAID_SIX_RUN_AUDIT.json記錄。
+- DONE：預設保留草稿布局；新增受控draftLayout數字frame，桌面保持x/y/width／source尺寸與閱讀順序，手機單欄。AI自由重排需明確選取。保留模式不提升正文為標題、不將每個標題放大hero；修復tone-accent按鈕對比。
+- DONE：草稿Ctrl/Cmd C/V/A/X/G，Shift G解組、Shift點選多選、整組拖曳／方向鍵、Undo/Redo。groupId可選欄位保存；剪貼簿ID／內部anchor／effects targets與groupId皆重建，刪除清除dangling anchors；輸入框維持native文字操作。提供編輯選單。
+- DONE：工作台色彩／層級／畫布點陣／工具列／側欄重新整理，不刪既有素材、IndexedDB、patch、export功能。
+- PASS：297項單元整合、32項全部動畫browser互動、6份真實response browser重播＋keyboard／export回歸；新spatial output可獨立npm ci／build。正式Sites owner瀏覽器未自動代登，模型測試與本機UI明確分開。
+- Runtime：新增僅一次studio review固定slot，不重設兩筆歷史PASS，不允許任意slot。仍owner-only、Luna default、max1／budget.01／zero retry；新ticket與exact count限制不變。
+
 ## 真正目前草稿核准修復（2026-11-18）
 - ROOT CAUSE：舊portfolio-motion-v1仍將非動畫欄位鎖死；使用者截圖有新增卡片／變更座標，必然hash不符，並非使用者操作錯誤。
 - DONE：owner-draft-v1經正式owner＋同源＋CSRF＋完整CanvasSchema／prepareIntent＋免費精確成本檢查後，為目前完整draft hash簽發owner／origin／10分鐘HMAC ticket。生成必須同hash、同owner、有效ticket與D1 READY proof；不再鎖示範，不接受前端自報權限。

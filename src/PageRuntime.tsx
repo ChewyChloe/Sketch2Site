@@ -246,6 +246,7 @@ export function PageRuntime({
       </p>
     );
   const page = result.page;
+  const sources=new Map<string,PageNode>();const collect=(n:PageNode)=>{sources.set(n.id,n);n.children?.forEach(collect);};page.sections.forEach(collect);
   return (
     <AssetUrls.Provider value={assetUrls}>
       <RenderBoundary resetKey={input}>
@@ -278,9 +279,7 @@ export function PageRuntime({
             }
           }}
         >
-          {page.sections.map((section) => (
-            <RenderNode key={section.id} node={section} />
-          ))}
+          {page.draftLayout?<div className="draft-layout" style={{aspectRatio:'1440 / 1200'}}>{[...page.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/12}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/12}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:page.sections.map(section=><RenderNode key={section.id} node={section}/>)}
         </div>
       </RenderBoundary>
     </AssetUrls.Provider>

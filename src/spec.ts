@@ -31,6 +31,7 @@ export const NodeSchema = z.preprocess(bindMotionInput,z
           a.length,
       ),
     parentId: z.string().uuid().nullable(),
+    groupId:z.string().uuid().optional(),
     assetId: imageSource.nullable(),
     href: href.nullable().optional(),
     zIndex: z.number().int().min(0).max(100),
@@ -42,6 +43,7 @@ export const CanvasSchema = z
     metadata: z
       .object({
         name: z.string().min(1).max(80),
+        layoutMode:z.enum(["preserve","reflow"]).optional(),
         width: z.literal(1440),
         height: z.literal(1200),
       })

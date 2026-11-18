@@ -1,3 +1,6 @@
+## 目前布局與編輯合約（2026-11-18，覆蓋歷史不使用座標的敘述）
+Canvas metadata.layoutMode可選preserve/reflow，缺省preserve；node.groupId可選UUID，僅為草稿共同移動群組，不擴大parent階層。materialize從可信已驗證Canvas重建draftLayout；不接受模型CSS。PageSchema驗證每個frame有對應ID、無重複／祖孫重疊，所有數字／bounds受限。PageRuntime只以frame引用的來源節點渲染桌面位置，手機按空間順序單欄；reflow保留原Flex/Grid。獨立React匯出共用相同Runtime與CSS。
+
 # 架構
 React 19 + TypeScript + Vite；Zod 4；IndexedDB；Vitest、Testing Library、Playwright。Node 24 LTS、npm lockfile，安裝使用 npm ci。原生 Pointer Events／HTML Drag and Drop，CSS Tokens 取代 Tailwind。Phase 2 以 Web Animations API + IntersectionObserver 與受控 CSS 實作動畫，不新增 Motion 或重複套件。
 

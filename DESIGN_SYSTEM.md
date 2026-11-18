@@ -1,3 +1,6 @@
+## 工作台更新（2026-11-18）
+深綠專案列、淺色編輯工具列、點陣canvas外圍、白色side inspector與一致圓角／焦點。預設保留草稿布局、手機單欄；AI自由重排明確選擇。編輯選單提供C/V/A/X/G與ShiftG，文字field保持原生快捷鍵。只在多選時顯示選取數量。
+
 # 設計系統
 編輯器工作台：暖灰底、白色面板、深色文字、綠色單一強調色。畫布為主、元件庫在右、工具列在頂。無行銷首頁、假統計或裝飾漸層。
 CSS :root 集中 Color、Typography、Spacing、Radius、Shadow、Border、Motion、Z-index tokens；8px 間距並允許 4px。系統字體支援繁中英文；正文 14px，畫布內容 16px。

@@ -133,7 +133,7 @@ export function prepareIntent(input: unknown) {
     })),
     candidateGroups: nodes.reduce<string[][]>((groups, n) => {
       const group = groups.find(
-        (g) => Math.abs(nodes.find((v) => v.id === g[0])!.y - n.y) <= 100,
+        (g) => {const first=nodes.find(v=>v.id===g[0])!;return n.groupId?first.groupId===n.groupId:!first.groupId&&Math.abs(first.y-n.y)<=100;},
       );
       if (group) group.push(n.id);
       else groups.push([n.id]);
@@ -230,7 +230,8 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         },
         effects: node.effects,
       };
-      switch (item.presentation) {
+      const presentation=canvas.metadata.layoutMode!=="reflow"&&node.type==="text"?"paragraph":item.presentation;
+      switch (presentation) {
         case "heading":
           return make("heading", {
             ...common,
@@ -284,6 +285,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
   const checked = PageSchema.safeParse({
     schemaVersion: 2,
     metadata: { title: canvas.metadata.name, language: "zh-Hant" },
+    ...(canvas.metadata.layoutMode!=='reflow'?{draftLayout:{width:1440,height:1200,items:canvas.nodes.map(({id,x,y,width,height,zIndex})=>({id,x,y,width,height,zIndex}))}}:{}),
     sections,
     typography: layout.typography,
     styles: layout.theme,
