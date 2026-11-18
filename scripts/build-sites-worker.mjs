@@ -29,7 +29,7 @@ if(!['GET','HEAD'].includes(request.method)) return new Response('Method not all
 const asset=assets[url.pathname==='/'?'/index.html':url.pathname];
 if(!asset)return new Response('Not found',{status:404,headers});
 const bytes=Uint8Array.from(atob(asset.body),c=>c.charCodeAt(0));
-return new Response(request.method==='HEAD'?null:bytes,{headers:{...headers,'Content-Type':asset.type,'Cache-Control':url.pathname.startsWith('/assets/')?'private, max-age=31536000, immutable':'private, no-cache'}});
+return new Response(request.method==='HEAD'?null:bytes,{headers:{...headers,'Content-Type':asset.type,'Cache-Control':url.pathname.startsWith('/assets/')?'private, max-age=31536000, immutable':'private, no-store'}});
 } catch { return new Response(JSON.stringify({code:'UNAVAILABLE'}),{status:503,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}}); }
 }};`;
 await rm('outputs/sites-artifact', { recursive:true, force:true });

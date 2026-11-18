@@ -1,3 +1,4 @@
+import {generationProtocol} from './generationProtocol';
 import {CanvasSchema} from "./spec";
 import {
   GenerationError,
@@ -78,6 +79,7 @@ export async function checkApprovedDraft(canvasSpec:CanvasSpec) {
  const status=await fetch('/api/generation/check',{credentials:'same-origin',cache:'no-store'});
  const state=await status.json();
  if(!status.ok)throw new GenerationError(generationCodes.includes(state.code)?state.code:'FORBIDDEN');
+ if(state.protocol!==generationProtocol)throw new GenerationError('VERSION_MISMATCH');
  if(!/^[a-f0-9]{64}$/.test(state.csrfToken??''))throw new GenerationError('CSRF_INVALID');
  const response=await fetch('/api/generation/check',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Sketch-CSRF':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:CanvasSchema.parse(canvasSpec)})});
  const result=await response.json();
@@ -88,5 +90,6 @@ export async function loadApprovedDraft():Promise<CanvasSpec>{
  const response=await fetch('/api/generation/approved-draft',{credentials:'same-origin',cache:'no-store'});
  const data=await response.json();
  if(!response.ok)throw new GenerationError(generationCodes.includes(data.code)?data.code:'UNAVAILABLE');
+ if(data.protocol!==generationProtocol)throw new GenerationError('VERSION_MISMATCH');
  return CanvasSchema.parse(data.canvasSpec);
 }

@@ -1,0 +1,25 @@
+{
+  "scope": "Existing backend Provider through Codex Cloud HTTP Secret; does not impersonate Sites owner or test Sites runtime identity",
+  "model": "gpt-6-luna",
+  "serviceTier": "default",
+  "maxOutputTokens": 4096,
+  "tools": 0,
+  "retries": 0,
+  "requestBytes": 9967,
+  "paidCalls": 1,
+  "inputTokens": 2600,
+  "reservedUsd": 0.002373,
+  "status": "LIVE_PROVIDER_PASS",
+  "usage": {
+    "inputTokens": 2600,
+    "outputTokens": 453,
+    "cachedInputTokens": 0,
+    "reasoningTokens": 104,
+    "calculatedCostUsd": 0.0005514249999999999
+  },
+  "pageSpec": "PASS",
+  "effectPreservation": "PASS",
+  "rendererReplay": "PASS; recorded real output in Chromium, no additional paid calls",
+  "liveSitesOwnerBrowser": "NOT VERIFIED; tool initialization and network access unavailable",
+  "calculatedCostUsd": 0.000551425
+}

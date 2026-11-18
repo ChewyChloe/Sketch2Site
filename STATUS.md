@@ -1,3 +1,10 @@
+## 真實動畫Provider付費自測（2026-11-18）
+- PASS：使用既有後端Provider與Cloud HTTP Secret獨立呼叫Luna Standard一次，input2600／output453（reasoning104）、cache0，依usage計算US$0.000551425，reserveUS$0.002373；無額外tools、retry0。CLI exclusive journal保留，不得重跑。
+- PASS：真實結果PageSpec／動畫完整保留驗證，錄製結果送入Chromium React預覽／保存重播通過；不是在Sites冒充owner。12項browser測試通過，287項單元整合＋1新增版本測試通過。
+- DONE：新增前後端protocol檢查與可見動畫測試版標記、首頁no-store，避免舊頁混用新後端；不推斷舊cache是唯一根因。
+- 限制：正式Sites owner瀏覽器未自動驗證，工具requirements錯誤且service-read probe網路不可用；service token沒有user identity，不繞過。舊D1 PASS保留，動畫slot未使用。
+- 安全metadata見docs/PAID_MOTION_SELFTEST_RESULT.json；真實render截圖outputs/motion-live-selftest/real-luna-render.png。付費呼叫總共1次，後續測試只重播結果。
+
 ## 動畫草稿獨立核准（2026-11-18）
 - DONE：定位DRAFT_HASH_MISMATCH為舊無動畫整份白名單。新增server/sitesDraftPolicy.ts；server-only portfolio-motion-v1核准只容許合法動畫層變更，其他文字／布局／素材仍對照原SHA；CanvasSchema／prepareIntent保留。
 - DONE：固定動畫獨立D1 slot sites-ai-motion-test-v1，原sites-ai-single-test-v1成功紀錄不重設；一次、零重試、budget<=.01、default Luna不變。新動畫精確free count與D1 READY proof須在同份request匹配，才可預留付費額度。

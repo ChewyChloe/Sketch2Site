@@ -1,3 +1,4 @@
+import {generationProtocol} from '../src/generationProtocol';
 import {approvedDraft,approvalBase,paidSlot,motionApproved} from './sitesDraftPolicy';
 import { z } from 'zod';
 import { CanvasSchema } from '../src/spec';
@@ -76,11 +77,11 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     if (request.method === 'GET' && url.pathname === '/api/generation/approved-draft') {
       const canvas=approvedDraft(env);
       if(await canvasHash(approvalBase(canvas,env))!==env.SKETCH_AI_TEST_CANVAS_SHA256)return fail('NOT_CONFIGURED',503);
-      return json({canvasSpec:canvas}); // Fixed sample only, never caller data or credentials.
+      return json({canvasSpec:canvas,protocol:generationProtocol}); // Fixed sample only, never caller data or credentials.
     }
     if (request.method === 'GET' && url.pathname === '/api/generation/check') {
       if (!c.apiKey) return fail('NOT_CONFIGURED',503);
-      return json({csrfToken:await csrf(c.apiKey,user,url.origin,day)});
+      return json({csrfToken:await csrf(c.apiKey,user,url.origin,day),protocol:generationProtocol});
     }
     const checkOnly=url.pathname === '/api/generation/check';
     if (request.method !== 'POST' || (!checkOnly && url.pathname !== '/api/generation')) return fail('UNAVAILABLE', 404);

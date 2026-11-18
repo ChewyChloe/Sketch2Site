@@ -1,3 +1,4 @@
+import {generationProtocol} from '../src/generationProtocol';
 import {
   createServer,
   type IncomingMessage,
@@ -93,6 +94,7 @@ export function createGenerationServer(options: Options = {}) {
         `sketch_generation_session=${id}; HttpOnly; SameSite=Strict; Path=/api/generation`,
       );
       return json(res, 200, {
+        protocol:generationProtocol,
         configured: Boolean(options.provider),
         csrfToken: sessions.get(id)!.csrf,
       });

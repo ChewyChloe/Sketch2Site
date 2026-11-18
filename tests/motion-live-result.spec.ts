@@ -1,0 +1,25 @@
+import {test,expect} from '@playwright/test';
+import {existsSync,readFileSync} from 'node:fs';
+const folder='outputs/motion-live-selftest';
+test('renders recorded real Luna response with six animations, saves it, and never calls a paid provider',async({page})=>{
+ test.skip(!existsSync(folder+'/page.json'),'Requires separately authorized one-time live integration result');
+ const canvas=JSON.parse(readFileSync(folder+'/canvas.json','utf8'));
+ const result=JSON.parse(readFileSync(folder+'/result.json','utf8'));
+ const generated=JSON.parse(readFileSync(folder+'/page.json','utf8'));
+ expect(result.status).toBe('LIVE_PROVIDER_PASS');
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');
+ await page.evaluate(async canvas=>new Promise<void>((resolve,reject)=>{const r=indexedDB.open('sketch2site',3);r.onsuccess=()=>{const d=r.result,t=d.transaction('drafts','readwrite');t.objectStore('drafts').put(canvas,'current');t.oncomplete=()=>{d.close();resolve();};t.onabort=()=>reject(t.error);};}),canvas);
+ await page.reload();await expect(page.getByRole('status')).toContainText('草稿已就緒');
+ let replayCount=0;
+ await page.route('**/api/generation',async route=>{replayCount++;const body=route.request().postDataJSON();expect(body.canvasSpec).toEqual(canvas);await route.fulfill({contentType:'application/json',body:JSON.stringify({requestId:body.requestId,page:generated,mode:'live',usage:{inputTokens:result.usage.inputTokens,outputTokens:result.usage.outputTokens,cachedInputTokens:result.usage.cachedInputTokens,reasoningTokens:result.usage.reasoningTokens,estimatedCostUsd:result.usage.calculatedCostUsd,latencyMs:0}})});});
+ await page.getByRole('button',{name:'生成網站',exact:true}).click();
+ await expect(page.getByRole('main',{name:'生成候選預覽'})).toBeVisible();
+ for(const n of canvas.nodes)await expect(page.locator('[data-page-id="'+n.id+'"]')).toBeVisible();
+ await page.getByRole('button',{name:'使用此版本',exact:true}).click();
+ await expect(page.getByRole('main',{name:'生成候選預覽'})).not.toBeVisible();
+ const saved=await page.evaluate(async()=>new Promise<any>((resolve,reject)=>{const r=indexedDB.open('sketch2site',3);r.onsuccess=()=>{const d=r.result,q=d.transaction('pages').objectStore('pages').get('local-project');q.onsuccess=()=>{d.close();resolve(q.result);};q.onerror=()=>reject(q.error);};}));
+ for(const n of canvas.nodes)expect(JSON.stringify(saved)).toContain(n.effects[0].presetId);
+ expect(replayCount).toBe(1);
+ await page.screenshot({path:'outputs/motion-live-selftest/real-luna-render.png',fullPage:true});
+});

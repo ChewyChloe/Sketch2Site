@@ -536,7 +536,7 @@ export default function App() {
           <span className="brand-mark" aria-hidden="true">
             S
           </span>
-          <h1>Sketch2Site</h1>
+          <h1>Sketch2Site</h1><small className="note">動畫生成測試版</small>
         </div>
         <span className="project-divider" aria-hidden="true">
           /
