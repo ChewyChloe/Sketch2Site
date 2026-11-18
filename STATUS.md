@@ -1,3 +1,10 @@
+## 20種進階動畫擴充（2026-11-18）
+- DONE：保留原20個Preset，淨新增20個不同機制，共40種。重複的磁吸／折角／交錯／數值遞增／閱讀進度提案改為聚光、扇形、對角翻入、儀表及里程碑；完整清單與原因見docs/ADVANCED_MOTIONS.md。
+- DONE：沿用MotionSchema／Canvas／PageSpec／Patch，整合四組Live Preview、參數、Apply／Remove、Undo／Redo、IndexedDB、Mock生成與共享React匯出。舊合法組合不放寬／不破壞；無新依賴。
+- PASS：385項單元整合；93項主Chromium回歸＋1項新波浪重播清理，20新效果逐項實際動作／參數／保存驗收，1440／768／375檢查。獨立匯出npm ci／build／離線互動通過；build:sites、secret及40項motion-boundary通過。
+- LIMIT：正式Provider的16384-byte完整輸入及8192 tokens限制保留。單獨20種請求均可離線建立；含全部20種的新壓力草稿可Mock生成，但正式完整request超限而拒絕，不繞過成本保護。
+- NOT TESTED：本輪付費模型品質、正式Sites與Safari／Firefox／實體裝置FPS。付費呼叫0，未動Key／帳務／D1／Runtime旗標、未推送或部署；線上仍為先前版本。
+
 ## Stitch Neo Manga 介面改版（2026-11-18）
 - DONE：依上傳設計套用黑色導覽／左右面板、螢光綠主操作、米白點陣畫布、三階段導覽、完整動畫庫及浮動工具列；窄螢幕屬性面板可操作。未執行參考HTML或新增外部CDN。
 - DONE：保留原畫布資料／位置、20種動畫、IndexedDB、局部修改、AI生成、React匯出與Ctrl/Cmd快捷鍵。外框改outline避免拖放偏移；元件庫與檢查器分離且重用原功能。

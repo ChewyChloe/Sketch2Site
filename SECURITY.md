@@ -119,3 +119,10 @@ D1額度在Provider前以固定主鍵原子保留，失敗／逾時／重新部�
 
 ## 2026-11-17 Luna單次安全合約更新
 Luna-only、Standard-only、max4096 output含reasoning、完整request<=16384 bytes、精確免費counter<=8192 input、30m cache-write最壞預留固定價格。Unknown count或D1 preflight proof不匹配就拒絕，沒有heuristic fallback。正式Sites dispatch身分與可信owner policy初始核對後固定於D1；不再接受env或browser提供owner ID作初始身分證明。保留原永久單次paid slot。owner背景model/count檢查只使用免費端點，不調generate、不自動重試或啟用。帳務確認為獨立false gate，兩個生成旗標仍false。新表不保存Key／Prompt／草稿原文；原生Secret值不輸出，根頁面不回傳任何preflight秘密。
+
+## 2026-11-18：20種進階動畫擴充
+新增20個唯一Preset沿用MotionSchema／targetId／strict controls與PageSchema、Patch scope驗證，不建立第二套動畫協定。顏色、SVG圖形、播放方向及排序均為枚舉；SVG path由原始碼固定，不接受外部SVG、CSS、HTML、JS或路徑字串。文字以字素及DOM Range量測；暫時呈現層aria-hidden，原文始終保留，超過100字素或12行靜態降級；resize取消過期量測。
+
+所有新效果合計每頁最多24個；扇形最多12子項、網格最多24子項、視差最多3層／20px、漣漪最多3圈、鏡頭最多3次循環。WAAPI動畫於離屏及背景頁暫停，文字解碼最長3500ms，完成不再修改已解碼字素。清理Observer、事件、RAF、動畫與新增DOM；捲動被動監聽並以單一RAF合併更新。數值儀表只接受原始0–100數值／百分比，不改數字或編造統計。
+
+React匯出複製同一AdvancedMotion原始碼、Schema及CSS，不含Provider、內部brief、後端、秘密或編輯歷史。本次僅本機及Mock測試，不更動Runtime Secrets、帳務、D1額度或AI旗標，不推送／部署。

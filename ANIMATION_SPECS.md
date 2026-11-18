@@ -27,6 +27,26 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | focus-transfer | 群組焦點轉移 | DONE | 互動 | medium |
 | scroll-progress | 區塊閱讀進度 | DONE | 資訊 | medium |
 | disclosure-panel | 詳情收合 | DONE | 內容 | medium |
+| character-decode | 字元解碼 | DONE | 進場 | medium |
+| split-line-assembly | 文字分行組合 | DONE | 進場 | medium |
+| rolling-characters | 滾輪文字 | DONE | 進場 | medium |
+| hand-drawn-highlight | 手繪螢光標記 | DONE | 內容 | medium |
+| kinetic-text-wave | 動態文字波浪 | DONE | 互動 | medium |
+| cursor-spotlight | 游標聚光 | DONE | 互動 | medium |
+| liquid-button-fill | 液態填充 | DONE | 互動 | medium |
+| radial-ink-ripple | 墨水漣漪 | DONE | 互動 | medium |
+| orbiting-icon | 環繞圖示 | DONE | 互動 | medium |
+| border-light-trace | 邊框光線流動 | DONE | 互動 | medium |
+| perspective-tilt | 透視傾斜 | DONE | 互動 | medium |
+| venetian-reveal | 百葉窗揭露 | DONE | 進場 | medium |
+| circular-mask-expansion | 圓形遮罩擴展 | DONE | 進場 | medium |
+| cinematic-image-pan | 電影式鏡頭移動 | DONE | 進場 | medium |
+| card-deck-fan | 卡片扇形展開 | DONE | 互動 | medium |
+| layered-parallax | 分層視差 | DONE | 資訊 | medium |
+| grid-diagonal-turn | 網格對角翻入 | DONE | 進場 | medium |
+| svg-path-drawing | 路徑描繪 | DONE | 內容 | medium |
+| numeric-gauge-sweep | 數值儀表掃描 | DONE | 內容 | medium |
+| scroll-milestones | 區塊閱讀里程碑 | DONE | 資訊 | medium |
 
 ## 淡入 / Fade In
 
@@ -638,3 +658,589 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 **constraints**：首個子項始終顯示；執行時展開或收合第一項之後的實際子元素；使用aria-expanded與aria-controls；收合前移回內部焦點，隱藏內容不可操作；無後續子項時靜態顯示
 
 **reducedMotionFallback**：立即切換展開與收合，不播放過渡
+
+## 字元解碼 / Character Decode
+
+- Preset: `character-decode` / version 1
+- 狀態：DONE
+- 說明：符號由左至右解出原文，已完成的字元保持穩定。
+- 適用：文字、標題與段落
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：character-decode
+- tags：進場、文字、標題與段落
+- rendererMapping：character-decode
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| decodeSpeedMs | 解碼速度（毫秒） | number | 45 | 20–100; step 1 |
+| characterDelayMs | 字元延遲（毫秒） | number | 35 | 10–80; step 1 |
+
+**designIntent**：符號由左至右解出原文，已完成的字元保持穩定。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的character-decode受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：最多100字素，最長3500ms，完成字元不再修改；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 文字分行組合 / Split Line Assembly
+
+- Preset: `split-line-assembly` / version 1
+- 狀態：DONE
+- 說明：依實際換行量測，以交替方向與逐行遮罩組合原文。
+- 適用：文字、標題與段落
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：split-line-assembly
+- tags：進場、文字、標題與段落
+- rendererMapping：split-line-assembly
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 650 | 200–1200; step 1 |
+| staggerMs | 行間隔（毫秒） | number | 100 | 30–180; step 1 |
+| distancePx | 位移（像素） | number | 22 | 4–40; step 1 |
+
+**designIntent**：依實際換行量測，以交替方向與逐行遮罩組合原文。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的split-line-assembly受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：最多100字素及12行，依Range量測真實換行；resize恢復原文；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 滾輪文字 / Rolling Characters
+
+- Preset: `rolling-characters` / version 1
+- 狀態：DONE
+- 說明：字元在獨立視窗中垂直滾動，最後保留可選取原文。
+- 適用：文字、標題與段落
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter、text-change
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：rolling-characters
+- tags：進場、文字、標題與段落
+- rendererMapping：rolling-characters
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 800 | 300–1400; step 1 |
+| staggerMs | 字元間隔（毫秒） | number | 25 | 10–60; step 1 |
+
+**designIntent**：字元在獨立視窗中垂直滾動，最後保留可選取原文。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的rolling-characters受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：最多100字素，最終保留原生可選文字；文字變更重播；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 手繪螢光標記 / Hand-Drawn Highlight
+
+- Preset: `hand-drawn-highlight` / version 1
+- 狀態：DONE
+- 說明：帶有輕微不規則邊緣的底色逐行劃過文字後方。
+- 適用：文字、標題與段落
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：hand-drawn-highlight
+- tags：內容、文字、標題與段落
+- rendererMapping：hand-drawn-highlight
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 700 | 200–1400; step 1 |
+| thickness | 標記厚度（百分比） | number | 55 | 20–85; step 1 |
+| color | 標記底色 | select | "lime" | lime / amber / sky |
+
+**designIntent**：帶有輕微不規則邊緣的底色逐行劃過文字後方。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的hand-drawn-highlight受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：不規則多行底色，受控調色盤並保留原文字色；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 動態文字波浪 / Kinetic Text Wave
+
+- Preset: `kinetic-text-wave` / version 1
+- 狀態：DONE
+- 說明：依字序傳遞有限的位移與旋轉，結束回原位。
+- 適用：文字、標題與段落
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter、hover、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：kinetic-text-wave
+- tags：互動、文字、標題與段落
+- rendererMapping：kinetic-text-wave
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 650 | 200–1200; step 1 |
+| amplitudePx | 波幅（像素） | number | 8 | 2–16; step 1 |
+| trigger | 播放時機 | select | "in-view" | in-view / hover |
+
+**designIntent**：依字序傳遞有限的位移與旋轉，結束回原位。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的kinetic-text-wave受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：最多100字素，有限波浪後回原位；hover可用focus及觸控啟動；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 游標聚光 / Cursor Spotlight
+
+- Preset: `cursor-spotlight` / version 1
+- 狀態：DONE
+- 說明：按鈕固定不動，局部柔光追蹤游標並於離開後消退。
+- 適用：操作按鈕
+- targetType：button
+- interactionType：pointer-move、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：cursor-spotlight
+- tags：互動、操作按鈕
+- rendererMapping：cursor-spotlight
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| radiusPx | 聚光半徑（像素） | number | 60 | 24–100; step 1 |
+| durationMs | 時長（毫秒） | number | 180 | 100–400; step 1 |
+
+**designIntent**：按鈕固定不動，局部柔光追蹤游標並於離開後消退。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的cursor-spotlight受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 液態填充 / Liquid Button Fill
+
+- Preset: `liquid-button-fill` / version 1
+- 狀態：DONE
+- 說明：弧形液面由底部升起，移開後退回，不改文字。
+- 適用：操作按鈕
+- targetType：button
+- interactionType：hover、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：liquid-button-fill
+- tags：互動、操作按鈕
+- rendererMapping：liquid-button-fill
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 420 | 150–800; step 1 |
+| color | 填充色 | select | "lime" | lime / amber / sky |
+
+**designIntent**：弧形液面由底部升起，移開後退回，不改文字。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的liquid-button-fill受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 墨水漣漪 / Radial Ink Ripple
+
+- Preset: `radial-ink-ripple` / version 1
+- 狀態：DONE
+- 說明：從實際按壓位置擴散柔和墨圈，完成後移除。
+- 適用：操作按鈕
+- targetType：button
+- interactionType：click、keyboard
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：radial-ink-ripple
+- tags：互動、操作按鈕
+- rendererMapping：radial-ink-ripple
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 550 | 200–900; step 1 |
+
+**designIntent**：從實際按壓位置擴散柔和墨圈，完成後移除。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的radial-ink-ripple受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：同時最多3圈，完成或卸載移除；鍵盤使用中心；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 環繞圖示 / Orbiting Icon
+
+- Preset: `orbiting-icon` / version 1
+- 狀態：DONE
+- 說明：受控箭頭沿一次短弧線移動，離開後回復。
+- 適用：操作按鈕
+- targetType：button
+- interactionType：hover、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：orbiting-icon
+- tags：互動、操作按鈕
+- rendererMapping：orbiting-icon
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 450 | 180–900; step 1 |
+| direction | 繞行方向 | select | "clockwise" | clockwise / counterclockwise |
+
+**designIntent**：受控箭頭沿一次短弧線移動，離開後回復。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的orbiting-icon受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 邊框光線流動 / Border Light Trace
+
+- Preset: `border-light-trace` / version 1
+- 狀態：DONE
+- 說明：細光線沿實際圓角邊框繞行一次，鍵盤聚焦同樣可見。
+- 適用：button、card
+- targetType：button、card
+- interactionType：hover、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：border-light-trace
+- tags：互動、button、card
+- rendererMapping：border-light-trace
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 900 | 300–1600; step 1 |
+| thicknessPx | 線寬（像素） | number | 2 | 1–3; step 1 |
+
+**designIntent**：細光線沿實際圓角邊框繞行一次，鍵盤聚焦同樣可見。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的border-light-trace受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 透視傾斜 / Perspective Tilt
+
+- Preset: `perspective-tilt` / version 1
+- 狀態：DONE
+- 說明：有限的雙軸透視回應游標，離開後回正。
+- 適用：卡片與圖片
+- targetType：card、image
+- interactionType：pointer-move
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：perspective-tilt
+- tags：互動、卡片與圖片
+- rendererMapping：perspective-tilt
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| maxAngle | 最大角度 | number | 5 | 1–8; step 1 |
+| responseMs | 回正時長（毫秒） | number | 250 | 100–500; step 1 |
+
+**designIntent**：有限的雙軸透視回應游標，離開後回正。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的perspective-tilt受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 百葉窗揭露 / Venetian Reveal
+
+- Preset: `venetian-reveal` / version 1
+- 狀態：DONE
+- 說明：水平條帶依序展開同一張圖片，最終沒有縫隙。
+- 適用：圖片與作品展示
+- targetType：image
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：venetian-reveal
+- tags：進場、圖片與作品展示
+- rendererMapping：venetian-reveal
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 850 | 300–1500; step 1 |
+| strips | 遮罩條數 | number | 6 | 3–10; step 1 |
+| direction | 播放方向 | select | "forward" | forward / reverse |
+
+**designIntent**：水平條帶依序展開同一張圖片，最終沒有縫隙。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的venetian-reveal受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 圓形遮罩擴展 / Circular Mask Expansion
+
+- Preset: `circular-mask-expansion` / version 1
+- 狀態：DONE
+- 說明：從中央或角落的圓形遮罩擴展成完整圖片。
+- 適用：圖片與作品展示
+- targetType：image
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：circular-mask-expansion
+- tags：進場、圖片與作品展示
+- rendererMapping：circular-mask-expansion
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 850 | 300–1500; step 1 |
+| origin | 圓心 | select | "center" | center / top-left / top-right / bottom-left / bottom-right |
+
+**designIntent**：從中央或角落的圓形遮罩擴展成完整圖片。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的circular-mask-expansion受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 電影式鏡頭移動 / Cinematic Image Pan
+
+- Preset: `cinematic-image-pan` / version 1
+- 狀態：DONE
+- 說明：固定畫框內緩慢推移與縮放，最多播放三次。
+- 適用：圖片與作品展示
+- targetType：image
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：cinematic-image-pan
+- tags：進場、圖片與作品展示
+- rendererMapping：cinematic-image-pan
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 6000 | 2500–10000; step 1 |
+| iterations | 播放次數 | number | 1 | 1–3; step 1 |
+| direction | 移動方向 | select | "forward" | forward / reverse |
+
+**designIntent**：固定畫框內緩慢推移與縮放，最多播放三次。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的cinematic-image-pan受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：最多3次循環，離屏及背景頁暫停；不複製圖片或增加網路請求；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 卡片扇形展開 / Card Deck Fan
+
+- Preset: `card-deck-fan` / version 1
+- 狀態：DONE
+- 說明：原有子卡片輕微向兩側旋開，離開後收回，內容始終可操作。
+- 適用：卡片與內容群組
+- targetType：card、container、section、stack、grid
+- interactionType：hover、focus-within
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：card-deck-fan
+- tags：互動、卡片與內容群組
+- rendererMapping：card-deck-fan
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| angle | 展開角度 | number | 4 | 1–7; step 1 |
+| distancePx | 展開距離（像素） | number | 8 | 2–12; step 1 |
+| durationMs | 時長（毫秒） | number | 320 | 150–700; step 1 |
+
+**designIntent**：原有子卡片輕微向兩側旋開，離開後收回，內容始終可操作。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的card-deck-fan受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：最多12個真實子項，無新內容或背面；位移受限且不產生捲軸；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 分層視差 / Layered Parallax
+
+- Preset: `layered-parallax` / version 1
+- 狀態：DONE
+- 說明：前三個原有內容層以不同的有限速度通過視區。
+- 適用：卡片與內容群組
+- targetType：card、container、section、stack、grid
+- interactionType：scroll
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：layered-parallax
+- tags：資訊、卡片與內容群組
+- rendererMapping：layered-parallax
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| distancePx | 最大位移（像素） | number | 12 | 2–20; step 1 |
+
+**designIntent**：前三個原有內容層以不同的有限速度通過視區。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的layered-parallax受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：最多3層，最大20px，不劫持捲動；每幀至多一次更新；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 網格對角翻入 / Grid Diagonal Turn
+
+- Preset: `grid-diagonal-turn` / version 1
+- 狀態：DONE
+- 說明：原有網格子項沿行列對角線依序作輕微透視翻入。
+- 適用：卡片與內容群組
+- targetType：card、container、section、stack、grid
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：grid-diagonal-turn
+- tags：進場、卡片與內容群組
+- rendererMapping：grid-diagonal-turn
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 600 | 250–1000; step 1 |
+| staggerMs | 對角間隔（毫秒） | number | 80 | 30–150; step 1 |
+| order | 展開順序 | select | "row" | row / column / center |
+
+**designIntent**：原有網格子項沿行列對角線依序作輕微透視翻入。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的grid-diagonal-turn受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：最多24子項同時動畫，依實測行列排序；最大延遲1000ms；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 路徑描繪 / SVG Path Drawing
+
+- Preset: `svg-path-drawing` / version 1
+- 狀態：DONE
+- 說明：安全的內建裝飾路徑以描線方式成形，不接受外部SVG。
+- 適用：卡片與內容群組
+- targetType：card、container、section、stack、grid
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：svg-path-drawing
+- tags：內容、卡片與內容群組
+- rendererMapping：svg-path-drawing
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 1000 | 300–1800; step 1 |
+| thicknessPx | 線寬（像素） | number | 2 | 1–5; step 1 |
+| color | 線條顏色 | select | "theme" | theme / lime / amber / sky |
+| shape | 圖形 | select | "curve" | curve / arrow / check |
+
+**designIntent**：安全的內建裝飾路徑以描線方式成形，不接受外部SVG。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的svg-path-drawing受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：只接受curve、arrow、check內建path，不接受外部SVG或腳本；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 數值儀表掃描 / Numeric Gauge Sweep
+
+- Preset: `numeric-gauge-sweep` / version 1
+- 狀態：DONE
+- 說明：真實百分比文字保持不變，半圓儀表由零掃描至該值。
+- 適用：文字、標題與段落
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：numeric-gauge-sweep
+- tags：內容、文字、標題與段落
+- rendererMapping：numeric-gauge-sweep
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 時長（毫秒） | number | 1000 | 300–1800; step 1 |
+
+**designIntent**：真實百分比文字保持不變，半圓儀表由零掃描至該值。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的numeric-gauge-sweep受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：僅原始0到100數值或百分比，數字不變、只掃描儀表；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
+
+## 區塊閱讀里程碑 / Scroll Milestones
+
+- Preset: `scroll-milestones` / version 1
+- 狀態：DONE
+- 說明：依指定區塊的閱讀位置，逐段點亮離散節點而非連續進度線。
+- 適用：卡片與內容群組
+- targetType：card、container、section、stack、grid
+- interactionType：scroll
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：scroll-milestones
+- tags：資訊、卡片與內容群組
+- rendererMapping：scroll-milestones
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| steps | 里程碑數量 | number | 5 | 3–8; step 1 |
+| orientation | 方向 | select | "horizontal" | horizontal / vertical |
+
+**designIntent**：依指定區塊的閱讀位置，逐段點亮離散節點而非連續進度線。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
+
+**implementationBrief**：使用已驗證的scroll-milestones受控Runtime與參數；逐字保留來源、合法目標及現有布局，不生成HTML、SVG或CSS字串；reduced-motion保留內容、離屏暫停並清理。
+
+**compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
+
+**constraints**：3到8個離散節點，只監控指定區塊與其實際捲動根；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+
+**reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { motionCatalog, motionIds, motionControlSchemas, defaultControls, type MotionId, type MotionControls } from "./motionCatalog";
-export { motionCatalog, motionIds, defaultControls };
+import { advancedMotionIds, motionCatalog, motionIds, motionControlSchemas, defaultControls, type MotionId, type MotionControls } from "./motionCatalog";
+export { advancedMotionIds, motionCatalog, motionIds, defaultControls };
 export type { MotionId, MotionControls };
 export type MotionInstance = {
     presetId: MotionId;
@@ -78,8 +78,9 @@ export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 
     const def = motionCatalog[id];
     if (!def.targetType.includes(target.type))
         return '此效果不適用於目前元件。';
-    if (['stagger-reveal','focus-transfer','disclosure-panel'].includes(id) && !(target.children ? target.children.length >= 2 : target.type === 'card' && (target.content ?? '').split('\n').filter(s => s.trim()).length >= 2))
+    if (['stagger-reveal','focus-transfer','disclosure-panel','card-deck-fan','layered-parallax','grid-diagonal-turn'].includes(id) && !(target.children ? target.children.length >= 2 : target.type === 'card' && (target.content ?? '').split('\n').filter(s => s.trim()).length >= 2))
         return '此效果需要至少兩個子元素；草稿卡片請填兩行內容。';
+    if (id === 'numeric-gauge-sweep' && (!/^\s*(?:\d{1,3})(?:\.\d{1,4})?\s*[%％]?\s*$/.test(target.content ?? '') || !numericContent(target.content ?? '') || numericContent(target.content ?? '')!.endValue > 100)) return '儀表需使用0到100的真實數字或百分比。';
     if (id === 'count-up' && !numericContent(target.content ?? ''))
         return '數字遞增只適用於既有數字內容。';
     return null;
@@ -107,15 +108,20 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
         return '互動內容效果一次只能套用一種。';
     if (ids.has('physics-tag-field') && ids.has('stagger-reveal'))
         return '物理標籤不能再套用逐項進場。';
-    if (['letter-assembly','accent-stroke','count-up','curved-path-text'].filter(id=>ids.has(id as MotionId)).length>1)
+    if (['letter-assembly','accent-stroke','count-up','curved-path-text','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','kinetic-text-wave','numeric-gauge-sweep'].filter(id=>ids.has(id as MotionId)).length>1)
         return '文字呈現效果一次只能套用一種。';
     if(ids.has('magnetic-control') && ['hover-lift','slide-up','press-feedback'].some(id=>ids.has(id as MotionId)))
         return '磁吸回饋不能與其他位移或按壓效果重疊。';
+    const imageModes=['image-reveal','venetian-reveal','circular-mask-expansion','cinematic-image-pan'];
+    if(imageModes.filter(id=>ids.has(id as MotionId)).length>1)return '圖片動態一次只能使用一種，以保留完整遮罩與尺寸。';
+    if(ids.has('perspective-tilt')&&['hover-lift','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '透視傾斜不能與其他根節點位移效果重疊。';
+    const childrenModes=['card-deck-fan','layered-parallax','grid-diagonal-turn','stagger-reveal','focus-transfer','disclosure-panel','fold-reveal','flip-card','physics-tag-field'];
+    if(['card-deck-fan','layered-parallax','grid-diagonal-turn'].some(id=>ids.has(id as MotionId)) && childrenModes.filter(id=>ids.has(id as MotionId)).length>1)return '子項動態或互動內容一次只能使用一種。';
     return null;
 }
 /** Per-document resource limits, in addition to each preset's own bounds. */
 export const motionPerformanceLimits = { physicsFields: 3, physicsTags: 48, breathingButtons: 8, textAssemblies:12, scrollIndicators:8 } as const;
 export function withinMotionBudget(effects: readonly MotionInstance[]) {
     const physics = effects.filter(e => e.presetId === 'physics-tag-field');
-    return effects.filter(e=>e.presetId==='letter-assembly').length<=motionPerformanceLimits.textAssemblies && effects.filter(e=>e.presetId==='scroll-progress').length<=motionPerformanceLimits.scrollIndicators && physics.length <= motionPerformanceLimits.physicsFields && physics.reduce((sum, e) => sum + (e.validatedControls.labels as string[]).length, 0) <= motionPerformanceLimits.physicsTags && effects.filter(e => e.presetId === 'breathing-glow').length <= motionPerformanceLimits.breathingButtons;
+    return effects.filter(e=>advancedMotionIds.includes(e.presetId as typeof advancedMotionIds[number])).length<=24 && effects.filter(e=>e.presetId==='letter-assembly').length<=motionPerformanceLimits.textAssemblies && effects.filter(e=>e.presetId==='scroll-progress').length<=motionPerformanceLimits.scrollIndicators && physics.length <= motionPerformanceLimits.physicsFields && physics.reduce((sum, e) => sum + (e.validatedControls.labels as string[]).length, 0) <= motionPerformanceLimits.physicsTags && effects.filter(e => e.presetId === 'breathing-glow').length <= motionPerformanceLimits.breathingButtons;
 }

@@ -1,3 +1,4 @@
+import {advancedFixture} from "./fixtures/advancedMotions";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import {serverMotionRegistry} from "../server/motionBriefs";
 import {extendedMotionFixture} from "./fixtures/extendedMotions";
@@ -58,7 +59,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   );
   await openWebsiteWorkspace(page);
   const input = structuredClone(demoPage);
-  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections);
+  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections);
   const replaceImage = (nodes: typeof input.sections) =>
     nodes.forEach((n) => {
       if (n.type === "image") n.src = localRef;
@@ -173,13 +174,22 @@ z.extractall(root)
     const disclosure=standalone.locator(`[data-page-id="${extended.sections[0].children!.at(-1)!.id}"]`);
     await disclosure.getByRole('button',{name:'展開內容'}).click();await expect(disclosure.getByText('展開後閱讀完整補充說明')).toBeVisible();
     await disclosure.getByRole('button',{name:'收合內容'}).click();await expect(disclosure.getByText('展開後閱讀完整補充說明')).toBeHidden();
+    for(const node of advancedFixture().sections[0].children!){const target=standalone.locator(`[data-page-id="${node.id}"]`);await expect(target).toHaveAttribute('data-effects',node.effects[0].presetId);}
     await standalone.emulateMedia({reducedMotion:'no-preference'});
     await exportedMotion(10).scrollIntoViewIfNeeded();
     const exportedCanvas=exportedMotion(10).locator('canvas');await expect(exportedCanvas).toBeVisible();
     await expect.poll(()=>exportedCanvas.evaluate((el:HTMLCanvasElement)=>el.getContext('2d')!.getImageData(0,0,el.width,el.height).data.some((v,i)=>i%4===3&&v>0))).toBe(true);
+    await standalone.mouse.move(0,0);
     await exportedMotion(5).scrollIntoViewIfNeeded();
+    await exportedMotion(5).evaluate(el=>(el as HTMLElement).blur());
+    await expect(exportedMotion(5)).toHaveAttribute("data-motion-paused","false");
     await expect.poll(()=>exportedMotion(5).evaluate(el=>el.getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect?.getComputedTiming().iterations===Infinity))).toBe(true);
+    const advancedNodes=advancedFixture().sections[0].children!;
+    const newRipple=standalone.locator(`[data-page-id="${advancedNodes[7].id}"]`);await newRipple.scrollIntoViewIfNeeded();await newRipple.evaluate(el=>el.addEventListener('click',event=>event.preventDefault()));await newRipple.focus();await newRipple.press('Enter');await expect(newRipple.locator('.advanced-ripple')).toHaveCount(1);await expect(newRipple.locator('.advanced-ripple')).toHaveCount(0);
+    const newPan=standalone.locator(`[data-page-id="${advancedNodes[13].id}"]`);await newPan.scrollIntoViewIfNeeded();await expect.poll(()=>newPan.evaluate(el=>el.getAnimations({subtree:true}).some(a=>a.playState==='running'))).toBe(true);
+    const newTrace=standalone.locator(`[data-page-id="${advancedNodes[9].id}"]`);await newTrace.focus();await expect(newTrace.locator('.advanced-border-svg')).toHaveCSS('opacity','1');
     await standalone.emulateMedia({reducedMotion:'reduce'});
+    await expect.poll(()=>newPan.evaluate(el=>el.getAnimations({subtree:true}).length)).toBe(0);
     await standalone.evaluate(()=>window.scrollTo(0,0));
     await expect
       .poll(() =>

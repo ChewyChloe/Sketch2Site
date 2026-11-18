@@ -189,3 +189,6 @@ D1 sketch_ai_single_test僅保存一次測試的ID、requestId、站內userId、
 
 ## 2026-11-17單次Luna安全準備
 server/lunaPolicy.ts固定價格／模型／token與完整payload上限；Provider用共用builder固定Standard／30m cache／無tools。Sites每次付費前必須免費精確計數並匹配D1完整請求proof，不再用heuristic授權。sitesIdentity.ts以dispatch正式登入＋可信owner policy首次綁定D1永久subject；sitesPreflight.ts只在owner頁面載入執行免費model metadata／token counting。新增兩張表不改sketch_ai_single_test。UI及儲存合約不變，詳見docs/LUNA_TEST_REPAIRS.md。
+
+## 2026-11-18：進階動畫擴充
+公開Catalog保留20個舊ID，新增20個ID，共40種；MotionSchema版本及舊實例合約不變。AdvancedMotion由PageRuntime掛載，與既有ExtendedMotion分工，沒有第二套Renderer。文字呈現層保留原文並以Range量測實際字素／換行；多子項草稿卡片在materialize／verifyPreservation共用相同分行判斷。四個素材家族仍使用同一AnimationLibrary與原Apply／Patch路徑。exportProject複製同一AdvancedMotion與CSS；Runtime無Provider或私人後端依賴。完整資源限制、替代提案及驗證邊界見docs/ADVANCED_MOTIONS.md。

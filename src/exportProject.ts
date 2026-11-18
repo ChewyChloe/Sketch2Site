@@ -1,3 +1,4 @@
+import advancedMotionSource from "./AdvancedMotion.tsx?raw";
 import assetSchema from "./assetRef.ts?raw";
 import { isLocalAsset } from "./assetRef";
 import { readAsset } from "./assets";
@@ -75,6 +76,7 @@ export async function exportProjectFiles(
     { path: "src/pageSpec.ts", content: schema },
     { path: "src/motion.ts", content: motionSource },
     { path: "src/ExtendedMotion.tsx", content: extendedMotionSource },
+    { path: "src/AdvancedMotion.tsx", content: advancedMotionSource },
     { path: "src/MotionRuntime.tsx", content: motionRuntimeSource },
     { path: "src/physics.ts", content: physicsSource },
     { path: "src/PhysicsTags.tsx", content: physicsTagsSource },

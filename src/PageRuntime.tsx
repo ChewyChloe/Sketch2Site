@@ -1,3 +1,4 @@
+import {useAdvancedMotion,AdvancedText,advancedTextIds} from "./AdvancedMotion";
 import {useExtendedMotion,LetterAssembly,AccentStroke,DisclosurePanel} from "./ExtendedMotion";
 import {FoldReveal} from "./FoldReveal";
 import {PhysicsTags} from "./PhysicsTags";
@@ -126,6 +127,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   const ref = useRef<HTMLElement>(null);
   useAnimations(node, ref);
   useExtendedMotion(node,ref);
+  useAdvancedMotion(node,ref);
   const entry = componentRegistry[node.type],
     Tag =
       node.type === "heading"
@@ -144,6 +146,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
     return ()=>{observer.disconnect();document.removeEventListener('visibilitychange',update);};
   },[breathing]);
   const assembly=node.effects.find(e=>e.presetId==="letter-assembly"),accent=node.effects.find(e=>e.presetId==="accent-stroke"),disclosure=node.effects.find(e=>e.presetId==="disclosure-panel");
+  const advancedText=node.effects.find(e=>advancedTextIds.includes(e.presetId));
   const children=node.children?.map(child=><RenderNode key={child.id} node={child}/>);
   const style = {
     "--breathing-cycle":(breathing?motionNumber(breathing,"cycleMs"):3200)+"ms",
@@ -190,7 +193,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
     >
       {node.type === "image" ? (
         <SafeImage key={node.src} node={node} />
-      ) : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.content}
+      ) : advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.content}
     </Tag>
   );
 });

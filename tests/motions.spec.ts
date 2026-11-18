@@ -63,7 +63,7 @@ test('review 2: controlled parameters, incompatible combinations, undo, reload a
     await page.getByRole('button', { name: '重做修改' }).click();
     await expect(page.getByLabel('位移（像素）')).toHaveValue('64');
     await openPanel(page, '動畫');
-    await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(20);
+    await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(40);
     await expect(page.getByRole('button', { name: '懸停光暈', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: '工具', exact: true }).click();
     await page.getByRole('button', { name: '瀏覽', exact: true }).click();
@@ -169,7 +169,7 @@ for (const width of [1440, 768, 375])
         await page.setViewportSize({ width, height: 1000 });
         await load(page);
         await openPanel(page, '動畫');
-        await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(20);
+        await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(40);
         await page.screenshot({ path: `test-results/motions-gallery-${width}.png` });
         await page.getByRole('button', { name: '重播物理標籤場示意' }).click();
         const asset = page.locator('#preview-inspector [data-effect-id="physics-tag-field"]');
