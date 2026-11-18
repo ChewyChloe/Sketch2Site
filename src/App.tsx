@@ -9,7 +9,7 @@ import { isLocalAsset } from "./assetRef";
 import { useAssetUrls, useAssetRefs } from "./useAssetUrls";
 import { AnimationLibrary } from "./AnimationLibrary";
 import { WorkbenchMenu } from "./WorkbenchMenu";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   blank,
   CanvasSchema,
@@ -61,6 +61,7 @@ export default function App() {
   } | null>(null);
   const [generationError, setGenerationError] = useState("");
   const [mode, setMode] = useState<"draft" | "preview">("draft");
+  const [motionFull,setMotionFull]=useState(false);
   const [history, setHistory] = useState<History>({
     past: [],
     present: blank(),
@@ -519,561 +520,8 @@ export default function App() {
     drag.current = null;
     setMoving(null);
   }
-  const disabled = !ready || loadError;
-  const displayedNodes=moving&&drag.current?translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
-  return (
-    <>
-      <header className={"topbar " + mode}>
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            S
-          </span>
-          <h1>Sketch2Site</h1><small className="note">目前草稿 AI 生成</small>
-        </div>
-        <span className="project-divider" aria-hidden="true">
-          /
-        </span>
-        <input
-          className="project-name"
-          aria-label="專案名稱"
-          title={spec.metadata.name}
-          value={spec.metadata.name}
-          maxLength={80}
-          disabled={disabled || mode === "preview"}
-          onChange={(e) => {
-            if (e.target.value.trim())
-              change({
-                ...spec,
-                metadata: { ...spec.metadata, name: e.target.value },
-              });
-          }}
-        />
-        <div
-          id="preview-app-actions"
-          className="preview-app-actions"
-          hidden={mode !== "preview" || Boolean(candidate)}
-        />
-        <div className="toolbar-actions">
-          <div className="workspace-modes" role="group" aria-label="工作區模式">
-            <button
-              aria-pressed={mode === "draft"}
-              disabled={accepting}
-              onClick={() => {
-                setCandidate(null);
-                setMode("draft");
-              }}
-            >
-              草稿
-            </button>
-            <button
-              aria-pressed={mode === "preview"}
-              disabled={accepting}
-              onClick={() => {
-                if(mode==="draft"&&spec.nodes.length&&!generating){
-                  if(!previewRef.current?.target()){setMode("preview");return;}
-                  const missing=spec.nodes.find(n=>n.type==="button"&&!n.href);
-                  if(missing){setSelected(missing.id);setTab("properties");setPanel(true);setGenerationError("請先為「"+missing.content+"」設定按鈕連結，再預覽。");return;}
-                  void generate(true,true);
-                }else setMode("preview");
-              }}
-            >
-              預覽
-            </button>
-          </div>
-          {mode === "draft" && <label className="layout-choice" title="保留相對位置與尺寸；手機版自動單欄">生成布局<select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="preserve">保留草稿布局</option><option value="reflow">AI 自由重排</option></select></label>}
-          {mode === "draft" && (
-            <button
-              className="primary"
-              disabled={disabled || generating || !spec.nodes.length}
-              title="生成時會將這份草稿的內容與布局傳送至 OpenAI"
-              onClick={() => void generate()}
-            >
-              {generating ? "生成中…" : "生成網站"}
-            </button>
-          )}
-          {mode === "draft" && (
-            <>
-              <button
-                disabled={busy || !ready || loadError}
-                title="儲存草稿（⌘ / Ctrl S）"
-                aria-label={busy?"儲存中…":"儲存草稿"}
-                onClick={() => void save()}
-              >
-                {busy ? "儲存中…" : saved&&!dirty ? "已儲存" : "儲存草稿"}
-              </button>
-              <WorkbenchMenu label="編輯">
-                <button disabled={!selectedIds.length} onClick={()=>copySelection()}>複製 · Ctrl/Cmd＋C</button>
-                <button disabled={!selectedIds.length} onClick={()=>copySelection(true)}>剪下 · Ctrl/Cmd＋X</button>
-                <button onClick={()=>void pasteSelection()}>貼上 · Ctrl/Cmd＋V</button>
-                <button onClick={()=>{setSelectedIds(spec.nodes.map(n=>n.id));setPrimarySelected(spec.nodes[0]?.id??null);}}>全選 · Ctrl/Cmd＋A</button>
-                <button disabled={selectedIds.length<2} onClick={()=>change(groupSelection(spec,selectedIds))}>群組 · Ctrl/Cmd＋G</button>
-                <button disabled={!selectedIds.length} onClick={()=>change(groupSelection(spec,selectedIds,true))}>解組 · Ctrl/Cmd＋Shift＋G</button>
-              </WorkbenchMenu>
-              <WorkbenchMenu label="草稿選單">
-                <button onClick={()=>{setCandidate(null);setMode("preview");}}>開啟網站工作區</button>
-                <button
-                  disabled={disabled || generating || !spec.nodes.length}
-                  onClick={() => void generate(true)}
-                >
-                  示範排版（非 AI）
-                </button>
-                <button disabled={generating || !ready} onClick={async()=>{if(dirty&&!window.confirm("載入核准測試草稿會取代目前草稿，可還原。是否繼續？"))return;try{const approved=await loadApprovedDraft();await checkApprovedDraft(approved);if(change(approved)){setGenerationError("");setCandidate(null);setSelected(null);report("已從後端載入並核對核准測試草稿，未呼叫 AI。");}}catch(e){report(e instanceof Error?e.message:"載入失敗，請停止測試。",true);}}}>載入核准測試草稿（免費）</button>
-                <button disabled={generating || !ready} onClick={async()=>{try{await checkApprovedDraft(spec);setGenerationError("");report("目前草稿與安全驗證通過，未呼叫 AI。");}catch(e){report(e instanceof Error?e.message:"免費核對失敗，請停止測試。",true);}}}>核對目前草稿（免費）</button>
-                <div className="menu-label">示範草稿（非 AI）</div>
-                {demoFixtures
-                  .filter((_, index) => index !== 2)
-                  .map((fixture) => (
-                    <button
-                      key={fixture.metadata.name}
-                      disabled={disabled || generating}
-                      onClick={() => {
-                        if (
-                          dirty &&
-                          !window.confirm(
-                            "載入示範會取代目前草稿，可使用還原復原。是否繼續？",
-                          )
-                        )
-                          return;
-                        if (change(fixture)) {
-                          setSelected(null);
-                          setPending(null);
-                          setMoving(null);
-                          drag.current = null;
-                          setCandidate(null);
-                          report("已載入示範草稿（非 AI），可還原。");
-                        }
-                      }}
-                    >
-                      載入{fixture.metadata.name}
-                    </button>
-                  ))}
-                <button
-                  disabled={!ready}
-                  onClick={() => {
-                    if (
-                      !dirty ||
-                      window.confirm(
-                        "尚有未儲存的修改，重新載入會捨棄這些修改。是否繼續？",
-                      )
-                    )
-                      void restore();
-                  }}
-                >
-                  重新載入
-                </button>
-              </WorkbenchMenu>
-            </>
-          )}
-        </div>
-      </header>
-      {generationError && (
-        <p role="alert" className="generation-notice">
-          {generationError}
-        </p>
-      )}
-      {generating && (
-        <p className="generation-notice" role="status">
-          正在生成，可繼續編輯；變更草稿後需重新生成。
-        </p>
-      )}
-      <input
-        hidden
-        type="file"
-        ref={imageInput}
-        accept="image/png,image/jpeg"
-        aria-label="匯入圖片檔案"
-        onChange={(e) => {
-          void importPicture(e.target.files?.[0]);
-          e.target.value = "";
-        }}
-      />
-      <div className="workspace">
-        <div
-          className="preview-host"
-          style={{
-            display: mode === "preview" && !candidate ? "flex" : "none",
-          }}
-        >
-          <Preview ref={previewRef} />
-        </div>
-        {mode === "preview" && candidate && (
-          <CandidatePreview
-            candidate={candidate.result}
-            previewOnly={candidate.previewOnly}
-            stale={candidate.canvasVersion !== canvasVersion.current}
-            onAccept={acceptCandidate}
-            onBack={() => {
-              setCandidate(null);
-              setMode("draft");
-            }}
-          />
-        )}
-        {mode === "draft" && (
-          <>
-            <main className="studio" aria-label="草稿工作區">
-              <div className="canvas-tools">
-                <div>
-                  <strong>網站草稿</strong>
-                  <small>1440 × 1200</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · Ctrl/Cmd＋G 群組</small>}
-                </div>
-                <div>
-                  <button
-                    disabled={disabled || !history.past.length}
-                    onClick={() => setHistory(undo)}
-                  >
-                    還原
-                  </button>
-                  <button
-                    disabled={disabled || !history.future.length}
-                    onClick={() => setHistory(redo)}
-                  >
-                    重做
-                  </button>
-                  <label>
-                    縮放{" "}
-                    <select
-                      aria-label="畫布縮放"
-                      value={scale}
-                      onChange={(e) => setScale(Number(e.target.value))}
-                    >
-                      {[0.4, 0.5, 0.6, 0.75, 1].map((s) => (
-                        <option key={s} value={s}>
-                          {s * 100}%
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button
-                    onClick={() => setPanel(!panel)}
-                    aria-expanded={panel}
-                  >
-                    {panel ? "收合側欄" : "展開側欄"}
-                  </button>
-                </div>
-              </div>
-              <div
-                className="canvas-scroll"
-                style={{ "--draft-scale": scale } as React.CSSProperties}
-              >
-                {draftEffect && <span className="draft-drop-hint" role="status">{draftHover && spec.nodes.find(n=>n.id===draftHover) ? (draftDropReason(spec.nodes.find(n=>n.id===draftHover)!,draftEffect) ?? "放開以附加動畫") : "拖到綠框元件以附加動畫；不會新增元件"}</span>}
-                <div
-                  className="canvas-wrap"
-                  style={{ width: 1440 * scale, height: 1200 * scale }}
-                >
-                  <div
-                    ref={board}
-                    className="canvas"
-                    data-testid="canvas"
-                    aria-label="草稿畫布"
-                    style={{
-                      width: 1440,
-                      height: 1200,
-                      transform: "scale(" + scale + ")",
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      const id=(e.target as HTMLElement).closest('[data-node-id]')?.getAttribute('data-node-id')??null;
-                      setDraftHover(id);
-                      if(draftEffect){const target=spec.nodes.find(n=>n.id===id);e.dataTransfer.dropEffect=target&&draftDropReason(target,draftEffect)?'none':'copy';}
-                    }}
-                    onDrop={drop}
-                    onPointerDown={(e) => {
-                      if (e.target === e.currentTarget) setSelected(null);
-                    }}
-                  >
-                    {!spec.nodes.length && (
-                      <div className="empty">
-                        <span className="empty-mark" aria-hidden="true">
-                          ＋
-                        </span>
-                        <h2>從一個想法開始</h2>
-                        <p>把右側元件拖進畫布，安排內容與位置。</p>
-                        <p>也可以點選元件新增，再拖曳調整。</p>
-                        <p>草稿選單提供示範草稿與非 AI 排版。</p>
-                      </div>
-                    )}
-                    {displayedNodes.map((n) => {
-                      return (
-                        <div
-                          key={n.id}
-                          role="button"
-                          tabIndex={0}
-                          aria-label={labels[n.type] + "：" + n.content}
-                          aria-pressed={selectedIds.includes(n.id)}
-                          data-node-id={n.id}
-                          data-group-id={n.groupId}
-                          data-draft-drop={draftEffect ? (draftDropReason(n,draftEffect) ? (draftHover===n.id?'invalid':undefined) : 'available') : undefined}
-                          data-testid="canvas-node"
-                          className={
-                            "node " +
-                            n.type +
-                            (selectedIds.includes(n.id) ? " selected" : "")
-                          }
-                          style={{
-                            left: n.x,
-                            top: n.y,
-                            width: n.width,
-                            height: n.height,
-                          }}
-                          onFocus={() => {if(!selectedIds.includes(n.id))selectNode(n.id);}}
-
-                          onPointerDown={(e) => begin(e, n)}
-                          onPointerMove={move}
-                          onPointerUp={finish}
-                          onPointerCancel={() => {
-                            drag.current = null;
-                            setMoving(null);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              setSelected(n.id);
-                              setTab("properties");
-                            }
-                          }}
-                        >
-                          {selected === n.id && (
-                            <span className="node-label">
-                              {labels[n.type]} · {Math.round(n.x)},{" "}
-                              {Math.round(n.y)}
-                            </span>
-                          )}
-                          {n.type === "image" &&
-                          isLocalAsset(n.assetId!) &&
-                          !imageUrls[n.assetId!] ? (
-                            <span>
-                              {imageUrls[n.assetId!] === null
-                                ? "找不到本機圖片，請重新匯入。"
-                                : "正在載入圖片…"}
-                            </span>
-                          ) : n.type === "image" ? (
-                            <img
-                              src={imageUrls[n.assetId!] || n.assetId!}
-                              loading="lazy"
-                              decoding="async"
-                              alt={n.content}
-                              draggable={false}
-                            />
-                          ) : (
-                            n.content
-                          )}
-                          <span className="effect-tags">
-                            {n.effects.map((f) => (
-                              <span key={f.presetId}>{effects[f.presetId]}</span>
-                            ))}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </main>
-            {panel && (
-              <aside
-                className={
-                  "sidebar" + (draftDragging ? " dragging-effect" : "")
-                }
-                style={{ width: panelWidth }}
-                aria-label="元件與屬性"
-                data-panel={tab}
-              >
-                <div className="side-head">
-                  <h2>設計工具</h2>
-                  <button
-                    className="draft-panel-close"
-                    aria-label="關閉草稿工具"
-                    onClick={() => setPanel(false)}
-                  >
-                    關閉
-                  </button>
-                  <small>{spec.nodes.length} / 100 元件</small>
-                </div>
-                <div
-                  className="tabs"
-                  role="tablist"
-                  aria-label="工具分類"
-                  onKeyDown={tabNavigation}
-                >
-                  <button
-                    role="tab"
-                    aria-selected={tab === "library"}
-                    tabIndex={tab === "library" ? 0 : -1}
-                    onClick={() => setTab("library")}
-                  >
-                    元件
-                  </button>
-                  <button
-                    role="tab"
-                    aria-selected={tab === "animations"}
-                    tabIndex={tab === "animations" ? 0 : -1}
-                    onClick={() => setTab("animations")}
-                  >
-                    動畫
-                  </button>
-                  <button
-                    role="tab"
-                    aria-label="編輯元素"
-                    aria-selected={tab === "properties"}
-                    tabIndex={tab === "properties" ? 0 : -1}
-                    onClick={() => setTab("properties")}
-                  >
-                    屬性
-                  </button>
-                </div>
-                {imageFeedback && <p className="image-feedback" role={imageError?"alert":undefined}>{imageFeedback}</p>}
-                {pending && (
-                  <div className="pending">
-                    <strong>{effects[pending]} · 選擇附加對象</strong>
-                    <select
-                      aria-label="動畫附加對象"
-                      value={target}
-                      onChange={(e) => setTarget(e.target.value)}
-                    >
-                      <option value="">選擇元件</option>
-                      {spec.nodes.map((n) => (
-                        <option key={n.id} value={n.id}>
-                          {labels[n.type]} · {n.content.slice(0, 20)}
-                        </option>
-                      ))}
-                    </select>
-                    {Object.values(motionCatalog[pending].controls).some(c=>c.required)&&<MotionControlsFields id={pending} values={pendingControls} onChange={setPendingControls}/>}
-                    <button
-                      disabled={!target}
-                      onClick={() => attach(pending, target, Object.values(motionCatalog[pending].controls).some(c=>c.required)?pendingControls:undefined)}
-                    >
-                      附加標記
-                    </button>{" "}
-                    <button onClick={() => setPending(null)}>取消</button>
-                  </div>
-                )}
-                {(tab === "library" || tab === "animations") && (
-                  <>
-                    <input
-                      type="search"
-                      aria-label="搜尋元件與動畫"
-                      placeholder={
-                        tab === "animations" ? "搜尋動畫…" : "搜尋元件…"
-                      }
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </>
-                )}
-                {tab === "library" ? (
-                  <>
-                    {search &&
-                      !Object.values(labels).some((t) => t.includes(search)) &&
-                      !Object.keys(labels).some((t) =>
-                        t.includes(search.toLowerCase()),
-                      ) &&
-                      !Object.values(effects).some((t) =>
-                        t.toLowerCase().includes(search.toLowerCase()),
-                      ) && (
-                        <p className="note">
-                          找不到符合的元件或動畫，請換個關鍵字。
-                        </p>
-                      )}
-                    <div className="library">
-                      <p className="library-intro">
-                        拖曳到畫布，或點一下新增。
-                      </p>
-                      <button
-                        className="import-image"
-                        disabled={disabled || importingImage}
-                        onClick={() => {
-                          imageTarget.current = null;
-                          imageInput.current?.click();
-                        }}
-                      >
-                        <WorkbenchIcon name="image" />
-                        {importingImage ? "正在匯入圖片…" : "匯入圖片"}
-                      </button>
-                      {(Object.keys(labels) as CanvasNode["type"][])
-                        .filter(
-                          (t) =>
-                            labels[t].includes(search) ||
-                            t.includes(search.toLowerCase()),
-                        )
-                        .map((t) => (
-                          <button
-                            key={t}
-                            draggable={!disabled}
-                            disabled={disabled || spec.nodes.length >= 100}
-                            onDragEnd={() => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);}}
-                            onDragStart={(e) => {
-                              setDraftDragging(true);
-                              e.dataTransfer.setData(
-                                dragType,
-                                JSON.stringify({ type: "component", value: t }),
-                              );
-                            }}
-                            onClick={() =>
-                              add(
-                                t,
-                                80 + (spec.nodes.length % 4) * 32,
-                                80 + (spec.nodes.length % 5) * 48,
-                              )
-                            }
-                            aria-label={"新增" + labels[t]}
-                          >
-                            <span className="glyph" aria-hidden="true">
-                              <WorkbenchIcon name={t} />
-                            </span>
-                            <span>
-                              <strong>{labels[t]}</strong>
-                              <small>
-                                {
-                                  {
-                                    text: "段落與文字說明",
-                                    button: "網站的行動入口",
-                                    card: "相關內容的集合",
-                                    heading: "頁面的主要標題",
-                                    image: "圖片與視覺素材",
-                                  }[t]
-                                }
-                              </small>
-                            </span>
-                            <WorkbenchIcon name="grip" />
-                          </button>
-                        ))}
-                    </div>
-                  </>
-                ) : tab === "animations" ? (
-                  <AnimationLibrary
-                    draft
-                    filter={search}
-                    disabled={disabled}
-                    selectedLabel={node ? labels[node.type] : undefined}
-                    compatibility={(id) =>
-                      node?.effects.some(
-                        (e) => e.presetId === id,
-                      )
-                        ? "已附加標記"
-                        : node ? targetReason(node,id) : null
-                    }
-                    onChoose={(id) => {
-                      const effect = id;
-                      if (node) attach(effect, node.id);
-                      else {
-                        setPending(effect);
-                        setTarget("");
-                      }
-                    }}
-                    onDragEnd={() => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);}}
-                    onDragStart={(id, data) => {
-                      setDraftDragging(true);
-                      setDraftEffect(id);
-                      data.setData(
-                        dragType,
-                        JSON.stringify({
-                          type: "effect",
-                          value: id,
-                        }),
-                      );
-                    }}
-                  />
-                ) : node ? (
+  const inspectorContent=(
+node ? (
                   <>
                     <div className="selected-component">
                       <span className="component-icon">
@@ -1211,7 +659,576 @@ export default function App() {
                   <p className="note">
                     先在畫布上選取一個元件，即可編輯內容、位置與動畫標記。
                   </p>
+                )
+  );
+  const disabled = !ready || loadError;
+  const displayedNodes=moving&&drag.current?translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
+  return (
+    <>
+      <header className={"topbar " + mode}>
+        <div className="brand">
+          <span className="brand-mark" aria-hidden="true">
+            S
+          </span>
+          <h1>Sketch2Site</h1><small className="note">VISUAL BUILDER</small>
+        </div>
+        <span className="project-divider" aria-hidden="true">
+          /
+        </span>
+        <input
+          className="project-name"
+          aria-label="專案名稱"
+          title={spec.metadata.name}
+          value={spec.metadata.name}
+          maxLength={80}
+          disabled={disabled || mode === "preview"}
+          onChange={(e) => {
+            if (e.target.value.trim())
+              change({
+                ...spec,
+                metadata: { ...spec.metadata, name: e.target.value },
+              });
+          }}
+        />
+        <div
+          id="preview-app-actions"
+          className="preview-app-actions"
+          hidden={mode !== "preview" || Boolean(candidate)}
+        />
+        <div className="toolbar-actions">
+          <div className="workspace-modes" role="group" aria-label="工作區模式">
+            <button
+              aria-label="草稿"
+              aria-pressed={mode === "draft"&&!motionFull}
+              disabled={accepting}
+              onClick={() => {
+                setCandidate(null);
+                setMode("draft");setMotionFull(false);
+              }}
+            >
+              <span className="neo-step">1.</span> 視覺畫布
+            </button>
+            <button aria-label="動畫素材庫" aria-pressed={mode==='draft'&&motionFull} disabled={accepting} onClick={()=>{setMode('draft');setMotionFull(true);setPanel(true);setTab('animations');}}><span className="neo-step">2.</span> 動畫素材庫</button>
+            <button
+              aria-label="預覽"
+              aria-pressed={mode === "preview"}
+              disabled={accepting}
+              onClick={() => {
+                if(mode==="draft"&&spec.nodes.length&&!generating){
+                  if(!previewRef.current?.target()){setMode("preview");return;}
+                  const missing=spec.nodes.find(n=>n.type==="button"&&!n.href);
+                  if(missing){setSelected(missing.id);setTab("properties");setPanel(true);setGenerationError("請先為「"+missing.content+"」設定按鈕連結，再預覽。");return;}
+                  void generate(true,true);
+                }else setMode("preview");
+              }}
+            >
+              <span className="neo-step">3.</span> 生成網站
+            </button>
+          </div>
+          {mode === "draft" && <label className="layout-choice" title="保留相對位置與尺寸；手機版自動單欄">生成布局<select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="preserve">保留草稿布局</option><option value="reflow">AI 自由重排</option></select></label>}
+          {mode === "draft" && (
+            <button
+              className="primary"
+              disabled={disabled || generating || !spec.nodes.length}
+              aria-label={generating?"生成中…":"生成網站"}
+              title="生成時會將這份草稿的內容與布局傳送至 OpenAI"
+              onClick={() => void generate()}
+            >
+              <span aria-hidden="true">ϟ</span> {generating ? "生成中…" : "生成網站"}
+            </button>
+          )}
+          {mode === "draft" && (
+            <>
+              <button
+                disabled={busy || !ready || loadError}
+                title="儲存草稿（⌘ / Ctrl S）"
+                aria-label={busy?"儲存中…":"儲存草稿"}
+                onClick={() => void save()}
+              >
+                {busy ? "儲存中…" : saved&&!dirty ? "已儲存" : "儲存草稿"}
+              </button>
+              <WorkbenchMenu label="編輯">
+                <button disabled={!selectedIds.length} onClick={()=>copySelection()}>複製 · Ctrl/Cmd＋C</button>
+                <button disabled={!selectedIds.length} onClick={()=>copySelection(true)}>剪下 · Ctrl/Cmd＋X</button>
+                <button onClick={()=>void pasteSelection()}>貼上 · Ctrl/Cmd＋V</button>
+                <button onClick={()=>{setSelectedIds(spec.nodes.map(n=>n.id));setPrimarySelected(spec.nodes[0]?.id??null);}}>全選 · Ctrl/Cmd＋A</button>
+                <button disabled={selectedIds.length<2} onClick={()=>change(groupSelection(spec,selectedIds))}>群組 · Ctrl/Cmd＋G</button>
+                <button disabled={!selectedIds.length} onClick={()=>change(groupSelection(spec,selectedIds,true))}>解組 · Ctrl/Cmd＋Shift＋G</button>
+              </WorkbenchMenu>
+              <WorkbenchMenu label="草稿選單">
+                <button onClick={()=>{setCandidate(null);setMode("preview");}}>開啟網站工作區</button>
+                <button
+                  disabled={disabled || generating || !spec.nodes.length}
+                  onClick={() => void generate(true)}
+                >
+                  示範排版（非 AI）
+                </button>
+                <button disabled={generating || !ready} onClick={async()=>{if(dirty&&!window.confirm("載入核准測試草稿會取代目前草稿，可還原。是否繼續？"))return;try{const approved=await loadApprovedDraft();await checkApprovedDraft(approved);if(change(approved)){setGenerationError("");setCandidate(null);setSelected(null);report("已從後端載入並核對核准測試草稿，未呼叫 AI。");}}catch(e){report(e instanceof Error?e.message:"載入失敗，請停止測試。",true);}}}>載入核准測試草稿（免費）</button>
+                <button disabled={generating || !ready} onClick={async()=>{try{await checkApprovedDraft(spec);setGenerationError("");report("目前草稿與安全驗證通過，未呼叫 AI。");}catch(e){report(e instanceof Error?e.message:"免費核對失敗，請停止測試。",true);}}}>核對目前草稿（免費）</button>
+                <div className="menu-label">示範草稿（非 AI）</div>
+                {demoFixtures
+                  .filter((_, index) => index !== 2)
+                  .map((fixture) => (
+                    <button
+                      key={fixture.metadata.name}
+                      disabled={disabled || generating}
+                      onClick={() => {
+                        if (
+                          dirty &&
+                          !window.confirm(
+                            "載入示範會取代目前草稿，可使用還原復原。是否繼續？",
+                          )
+                        )
+                          return;
+                        if (change(fixture)) {
+                          setSelected(null);
+                          setPending(null);
+                          setMoving(null);
+                          drag.current = null;
+                          setCandidate(null);
+                          report("已載入示範草稿（非 AI），可還原。");
+                        }
+                      }}
+                    >
+                      載入{fixture.metadata.name}
+                    </button>
+                  ))}
+                <button
+                  disabled={!ready}
+                  onClick={() => {
+                    if (
+                      !dirty ||
+                      window.confirm(
+                        "尚有未儲存的修改，重新載入會捨棄這些修改。是否繼續？",
+                      )
+                    )
+                      void restore();
+                  }}
+                >
+                  重新載入
+                </button>
+              </WorkbenchMenu>
+            </>
+          )}
+        </div>
+      </header>
+      {generationError && (
+        <p role="alert" className="generation-notice">
+          {generationError}
+        </p>
+      )}
+      {generating && (
+        <p className="generation-notice" role="status">
+          正在生成，可繼續編輯；變更草稿後需重新生成。
+        </p>
+      )}
+      <input
+        hidden
+        type="file"
+        ref={imageInput}
+        accept="image/png,image/jpeg"
+        aria-label="匯入圖片檔案"
+        onChange={(e) => {
+          void importPicture(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+      <nav className="neo-rail" aria-label="工作台導覽">
+        <div className="neo-rail-logo" aria-label="Sketch2Site">S2</div>
+        <button aria-label="開啟視覺畫布" aria-pressed={mode==='draft'&&!motionFull} onClick={()=>{setMode('draft');setMotionFull(false);setPanel(true);setTab('library');}}><WorkbenchIcon name="pen"/></button>
+        <button aria-label="開啟動畫素材庫" aria-pressed={mode==='draft'&&motionFull} onClick={()=>{setMode('draft');setMotionFull(true);setPanel(true);setTab('animations');}}><span aria-hidden="true">◎</span></button>
+        <button aria-label="開啟已保存網站" aria-pressed={mode==='preview'} onClick={()=>{setCandidate(null);setMode('preview');}}><WorkbenchIcon name="card"/></button>
+        <div className="neo-rail-bottom"><span className="neo-local-dot" title="本機工作台"/><button aria-label="切換工具面板" onClick={()=>setPanel(v=>!v)}><WorkbenchIcon name="select"/></button></div>
+      </nav>
+      <div style={{"--neo-library-width":`${panelWidth}px`} as CSSProperties} className={'workspace neo-workspace'+(mode==='draft'&&motionFull?' neo-motion-full':'')}>
+        <div
+          className="preview-host"
+          style={{
+            display: mode === "preview" && !candidate ? "flex" : "none",
+          }}
+        >
+          <Preview ref={previewRef} />
+        </div>
+        {mode === "preview" && candidate && (
+          <CandidatePreview
+            candidate={candidate.result}
+            previewOnly={candidate.previewOnly}
+            stale={candidate.canvasVersion !== canvasVersion.current}
+            onAccept={acceptCandidate}
+            onBack={() => {
+              setCandidate(null);
+              setMode("draft");
+            }}
+          />
+        )}
+        {mode === "draft" && (
+          <>
+            <main className="studio" aria-label="草稿工作區">
+              <div className="neo-context"><span><b>CANVAS //</b> {spec.metadata.name}</span><span><b>{Math.round(scale*100)}%</b> · {saved&&!dirty?'已儲存於本機':'本機草稿'}</span></div>
+              <div className="canvas-tools">
+                <div>
+                  <strong>網站草稿</strong>
+                  <small>1440 × 1200</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · Ctrl/Cmd＋G 群組</small>}
+                </div>
+                <div>
+                  <button
+                    disabled={disabled || !history.past.length}
+                    onClick={() => setHistory(undo)}
+                  >
+                    還原
+                  </button>
+                  <button
+                    disabled={disabled || !history.future.length}
+                    onClick={() => setHistory(redo)}
+                  >
+                    重做
+                  </button>
+                  <label>
+                    縮放{" "}
+                    <select
+                      aria-label="畫布縮放"
+                      value={scale}
+                      onChange={(e) => setScale(Number(e.target.value))}
+                    >
+                      {[0.4, 0.5, 0.6, 0.75, 1].map((s) => (
+                        <option key={s} value={s}>
+                          {s * 100}%
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    onClick={() => setPanel(!panel)}
+                    aria-expanded={panel}
+                  >
+                    {panel ? "收合側欄" : "展開側欄"}
+                  </button>
+                </div>
+              </div>
+              <div
+                className="canvas-scroll"
+                style={{ "--draft-scale": scale } as React.CSSProperties}
+              >
+                {draftEffect && <span className="draft-drop-hint" role="status">{draftHover && spec.nodes.find(n=>n.id===draftHover) ? (draftDropReason(spec.nodes.find(n=>n.id===draftHover)!,draftEffect) ?? "放開以附加動畫") : "拖到綠框元件以附加動畫；不會新增元件"}</span>}
+                <div
+                  className="canvas-wrap"
+                  style={{ width: 1440 * scale, height: 1200 * scale }}
+                >
+                  <div
+                    ref={board}
+                    className="canvas"
+                    data-testid="canvas"
+                    aria-label="草稿畫布"
+                    style={{
+                      width: 1440,
+                      height: 1200,
+                      transform: "scale(" + scale + ")",
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      const id=(e.target as HTMLElement).closest('[data-node-id]')?.getAttribute('data-node-id')??null;
+                      setDraftHover(id);
+                      if(draftEffect){const target=spec.nodes.find(n=>n.id===id);e.dataTransfer.dropEffect=target&&draftDropReason(target,draftEffect)?'none':'copy';}
+                    }}
+                    onDrop={drop}
+                    onPointerDown={(e) => {
+                      if (e.target === e.currentTarget) setSelected(null);
+                    }}
+                  >
+                    {!spec.nodes.length && (
+                      <div className="empty">
+                        <span className="empty-mark" aria-hidden="true">
+                          ＋
+                        </span>
+                        <h2>從一個想法開始</h2>
+                        <p>把左側元件拖進畫布，安排內容與位置。</p>
+                        <p>也可以點選元件新增，再拖曳調整。</p>
+                        <p>草稿選單提供示範草稿與非 AI 排版。</p>
+                      </div>
+                    )}
+                    {displayedNodes.map((n) => {
+                      return (
+                        <div
+                          key={n.id}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={labels[n.type] + "：" + n.content}
+                          aria-pressed={selectedIds.includes(n.id)}
+                          data-node-id={n.id}
+                          data-group-id={n.groupId}
+                          data-draft-drop={draftEffect ? (draftDropReason(n,draftEffect) ? (draftHover===n.id?'invalid':undefined) : 'available') : undefined}
+                          data-testid="canvas-node"
+                          className={
+                            "node " +
+                            n.type +
+                            (selectedIds.includes(n.id) ? " selected" : "")
+                          }
+                          style={{
+                            left: n.x,
+                            top: n.y,
+                            width: n.width,
+                            height: n.height,
+                          }}
+                          onFocus={() => {if(!selectedIds.includes(n.id))selectNode(n.id);}}
+
+                          onPointerDown={(e) => begin(e, n)}
+                          onPointerMove={move}
+                          onPointerUp={finish}
+                          onPointerCancel={() => {
+                            drag.current = null;
+                            setMoving(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelected(n.id);
+                              setTab("properties");
+                            }
+                          }}
+                        >
+                          {selected === n.id && (
+                            <span className="node-label">
+                              {labels[n.type]} · {Math.round(n.x)},{" "}
+                              {Math.round(n.y)}
+                            </span>
+                          )}
+                          {n.type === "image" &&
+                          isLocalAsset(n.assetId!) &&
+                          !imageUrls[n.assetId!] ? (
+                            <span>
+                              {imageUrls[n.assetId!] === null
+                                ? "找不到本機圖片，請重新匯入。"
+                                : "正在載入圖片…"}
+                            </span>
+                          ) : n.type === "image" ? (
+                            <img
+                              src={imageUrls[n.assetId!] || n.assetId!}
+                              loading="lazy"
+                              decoding="async"
+                              alt={n.content}
+                              draggable={false}
+                            />
+                          ) : (
+                            n.content
+                          )}
+                          <span className="effect-tags">
+                            {n.effects.map((f) => (
+                              <span key={f.presetId}>{effects[f.presetId]}</span>
+                            ))}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </main>
+            {panel && (
+              <aside
+                className={
+                  "sidebar" + (draftDragging ? " dragging-effect" : "")
+                }
+                style={{ width: panelWidth }}
+                aria-label="元件與屬性"
+                data-panel={tab}
+              >
+                <div className="side-head">
+                  <h2>{motionFull?'動態素材庫':'圖元素材'}</h2>
+                  <button
+                    className="draft-panel-close"
+                    aria-label="關閉草稿工具"
+                    onClick={() => setPanel(false)}
+                  >
+                    關閉
+                  </button>
+                  <small>{spec.nodes.length} / 100 元件</small>
+                </div>
+                <div
+                  className="tabs"
+                  role="tablist"
+                  aria-label="工具分類"
+                  onKeyDown={tabNavigation}
+                >
+                  <button
+                    role="tab"
+                    aria-selected={tab === "library"}
+                    tabIndex={tab === "library" ? 0 : -1}
+                    onClick={() => {setTab("library");setMotionFull(false);}}
+                  >
+                    元件
+                  </button>
+                  <button
+                    role="tab"
+                    aria-selected={tab === "animations"}
+                    tabIndex={tab === "animations" ? 0 : -1}
+                    onClick={() => {setTab("animations");setMotionFull(false);}}
+                  >
+                    動畫
+                  </button>
+                  <button
+                    role="tab"
+                    aria-label="編輯元素"
+                    aria-selected={tab === "properties"}
+                    tabIndex={tab === "properties" ? 0 : -1}
+                    onClick={() => setTab("properties")}
+                  >
+                    屬性
+                  </button>
+                </div>
+                {imageFeedback && <p className="image-feedback" role={imageError?"alert":undefined}>{imageFeedback}</p>}
+                {pending && (
+                  <div className="pending">
+                    <strong>{effects[pending]} · 選擇附加對象</strong>
+                    <select
+                      aria-label="動畫附加對象"
+                      value={target}
+                      onChange={(e) => setTarget(e.target.value)}
+                    >
+                      <option value="">選擇元件</option>
+                      {spec.nodes.map((n) => (
+                        <option key={n.id} value={n.id}>
+                          {labels[n.type]} · {n.content.slice(0, 20)}
+                        </option>
+                      ))}
+                    </select>
+                    {Object.values(motionCatalog[pending].controls).some(c=>c.required)&&<MotionControlsFields id={pending} values={pendingControls} onChange={setPendingControls}/>}
+                    <button
+                      disabled={!target}
+                      onClick={() => attach(pending, target, Object.values(motionCatalog[pending].controls).some(c=>c.required)?pendingControls:undefined)}
+                    >
+                      附加標記
+                    </button>{" "}
+                    <button onClick={() => setPending(null)}>取消</button>
+                  </div>
                 )}
+                {(tab === "library" || tab === "animations" || tab === "properties") && (
+                  <>
+                    <input
+                      type="search"
+                      aria-label="搜尋元件與動畫"
+                      placeholder={
+                        tab === "animations" ? "搜尋動畫…" : "搜尋元件…"
+                      }
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </>
+                )}
+                {tab !== "animations" ? (
+                  <>
+                    {search &&
+                      !Object.values(labels).some((t) => t.includes(search)) &&
+                      !Object.keys(labels).some((t) =>
+                        t.includes(search.toLowerCase()),
+                      ) &&
+                      !Object.values(effects).some((t) =>
+                        t.toLowerCase().includes(search.toLowerCase()),
+                      ) && (
+                        <p className="note">
+                          找不到符合的元件或動畫，請換個關鍵字。
+                        </p>
+                      )}
+                    <div className="library">
+                      <p className="library-intro">
+                        拖曳到畫布，或點一下新增。
+                      </p>
+                      <button
+                        className="import-image"
+                        disabled={disabled || importingImage}
+                        onClick={() => {
+                          imageTarget.current = null;
+                          imageInput.current?.click();
+                        }}
+                      >
+                        <WorkbenchIcon name="image" />
+                        {importingImage ? "正在匯入圖片…" : "匯入圖片"}
+                      </button>
+                      {(Object.keys(labels) as CanvasNode["type"][])
+                        .filter(
+                          (t) =>
+                            labels[t].includes(search) ||
+                            t.includes(search.toLowerCase()),
+                        )
+                        .map((t) => (
+                          <button
+                            key={t}
+                            draggable={!disabled}
+                            disabled={disabled || spec.nodes.length >= 100}
+                            onDragEnd={() => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);}}
+                            onDragStart={(e) => {
+                              setDraftDragging(true);
+                              e.dataTransfer.setData(
+                                dragType,
+                                JSON.stringify({ type: "component", value: t }),
+                              );
+                            }}
+                            onClick={() =>
+                              add(
+                                t,
+                                80 + (spec.nodes.length % 4) * 32,
+                                80 + (spec.nodes.length % 5) * 48,
+                              )
+                            }
+                            aria-label={"新增" + labels[t]}
+                          >
+                            <span className="glyph" aria-hidden="true">
+                              <WorkbenchIcon name={t} />
+                            </span>
+                            <span>
+                              <strong>{labels[t]}</strong>
+                              <small>
+                                {
+                                  {
+                                    text: "段落與文字說明",
+                                    button: "網站的行動入口",
+                                    card: "相關內容的集合",
+                                    heading: "頁面的主要標題",
+                                    image: "圖片與視覺素材",
+                                  }[t]
+                                }
+                              </small>
+                            </span>
+                            <WorkbenchIcon name="grip" />
+                          </button>
+                        ))}
+                    </div>
+                  </>
+                ) : tab === "animations" ? (
+                  <AnimationLibrary
+                    draft
+                    filter={search}
+                    disabled={disabled}
+                    selectedLabel={node ? labels[node.type] : undefined}
+                    compatibility={(id) =>
+                      node?.effects.some(
+                        (e) => e.presetId === id,
+                      )
+                        ? "已附加標記"
+                        : node ? targetReason(node,id) : null
+                    }
+                    onChoose={(id) => {
+                      const effect = id;
+                      if (node) attach(effect, node.id);
+                      else {
+                        setPending(effect);
+                        setTarget("");
+                      }
+                    }}
+                    onDragEnd={() => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);}}
+                    onDragStart={(id, data) => {
+                      setMotionFull(false);
+                      setDraftDragging(true);
+                      setDraftEffect(id);
+                      data.setData(
+                        dragType,
+                        JSON.stringify({
+                          type: "effect",
+                          value: id,
+                        }),
+                      );
+                    }}
+                  />
+                ) : null}
                 <details className="panel-preferences">
                   <summary>側欄寬度</summary>
                   <label className="field note">
@@ -1230,6 +1247,7 @@ export default function App() {
                 </details>
               </aside>
             )}
+            {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><div className="neo-inspector-head"><span>物件檢查器 <small>INSPECTOR</small></span><b>{node?'ACTIVE':'READY'}</b></div><div className="neo-inspector-tabs"><span>屬性</span><button onClick={()=>{setTab('animations');setPanel(true);setMotionFull(false);}}>加入動畫</button></div><div className="neo-inspector-body">{inspectorContent}</div><div className="neo-inspector-foot">{node?`${node.effects.length} 個動畫標記`:'選取元件以開始編輯'}<b>LOCAL</b></div></aside>}
           </>
         )}
       </div>

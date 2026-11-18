@@ -1,3 +1,9 @@
+## Stitch Neo Manga 介面改版（2026-11-18）
+- DONE：依上傳設計套用黑色導覽／左右面板、螢光綠主操作、米白點陣畫布、三階段導覽、完整動畫庫及浮動工具列；窄螢幕屬性面板可操作。未執行參考HTML或新增外部CDN。
+- DONE：保留原畫布資料／位置、20種動畫、IndexedDB、局部修改、AI生成、React匯出與Ctrl/Cmd快捷鍵。外框改outline避免拖放偏移；元件庫與檢查器分離且重用原功能。
+- PASS：299項單元整合；18項畫布／動畫拖放／快捷鍵／Mock生成瀏覽器測試；35項動畫與1440／768／375工作台驗收。build:sites、secret scan、motion boundary通過。
+- 本輪付費呼叫0，AI runtime／D1額度／私人存取不更動。正式擁有者瀏覽器未自動代登；UI驗收為本機Chromium與Mock API。
+
 ## 額外三次測試授權（2026-11-18）
 - DONE：新增固定owner-draft-three-20261118-v1 grant及3個永久D1 slot，runtime maxCalls=3；舊單次／動畫／review紀錄不刪不改。
 - PASS：30後端＋6前端相關Mock測試，涵蓋正好3次、第四次拒絕、重放拒絕、併發只接受1次且不消耗下一slot。單一INSERT SELECT以原子方式同時檢查重放、目前RESERVED及slot衝突；無migration或重設。
