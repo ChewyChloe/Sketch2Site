@@ -27,14 +27,14 @@ export async function requestGeneration(
   } catch {
     throw new GenerationError("UNAVAILABLE");
   }
-  let config: { configured?: boolean; csrfToken?: string };
+  let config: { configured?: boolean; csrfToken?: string; remainingCalls?:number; busy?:boolean };
   try {
     config = await status.json();
   } catch {
     throw new GenerationError("UNAVAILABLE");
   }
   if (!status.ok) { const code=(config as {code?:unknown}).code; throw new GenerationError(generationCodes.includes(code as never)?code as (typeof generationCodes)[number]:"FORBIDDEN"); }
-  if (!config.configured) throw new GenerationError("NOT_CONFIGURED");
+  if (!config.configured) throw new GenerationError(config.remainingCalls===0?"LIMIT":config.busy?"BUSY":"NOT_CONFIGURED");
   if (!/^[a-f0-9]{64}$/.test(config.csrfToken ?? ""))
     throw new GenerationError("CSRF_INVALID");
   const requestId = crypto.randomUUID();

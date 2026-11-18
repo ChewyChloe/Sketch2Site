@@ -1,5 +1,5 @@
 import {generationProtocol} from '../src/generationProtocol';
-import {approvedDraft,approvalBase,paidSlot,motionApproved,ownerDraftApproved} from './sitesDraftPolicy';
+import {approvedDraft,approvalBase,paidSlot,paidSlots,motionApproved,ownerDraftApproved} from './sitesDraftPolicy';
 import { z } from 'zod';
 import { CanvasSchema } from '../src/spec';
 import { GenerationError, prepareIntent, materialize, type GenerationCode } from '../src/generation';
@@ -29,13 +29,17 @@ async function validDraftApproval(token:string|undefined,key:string,user:string,
  const expiry=Number(token.split('.')[0]),now=Date.now();if(expiry<=now||expiry-now>600000)return false;
  const expected=await draftApproval(key,user,origin,hash,expiry);let delta=0;for(let i=0;i<expected.length;i++)delta|=expected.charCodeAt(i)^token.charCodeAt(i);return delta===0;
 }
+async function quotaState(env:SitesEnv){
+ const slots=paidSlots(env),rows=await Promise.all(slots.map(id=>env.DB!.prepare('SELECT id,outcome FROM sketch_ai_single_test WHERE id = ?').bind(id).first<{id:string;outcome:string}>()));
+ return {slots,remaining:rows.filter(r=>!r).length,active:rows.some(r=>r?.outcome==='RESERVED'),available:slots.find((_,i)=>!rows[i])};
+}
 function config(env: SitesEnv, now: number) {
   const strings:NodeJS.ProcessEnv={};
   for(const [key,value] of Object.entries(env))if(typeof value==='string')strings[key]=value;
   delete strings.SKETCH_AI_API_KEY; // Sites uses only the configured OPENAI_API_KEY runtime Secret.
   const c = configFromEnv(strings);
   const expires = Date.parse(String(env.SKETCH_AI_TEST_EXPIRES_AT ?? ''));
-  const ready = c.enabled && c.model===LUNA_MODEL && c.maxCalls === 1 && c.budgetUsd >= .002048 && c.budgetUsd <= .01 && !!env.DB &&
+  const ready = c.enabled && c.model===LUNA_MODEL && c.maxCalls === paidSlots(env).length && c.budgetUsd >= .002048 && c.budgetUsd <= .01 && !!env.DB &&
     c.inputRate===LUNA_RATES.input && c.outputRate===LUNA_RATES.output && c.cachedInputRate===LUNA_RATES.cachedInput &&
     Number(env.SKETCH_AI_CACHE_WRITE_USD_PER_MILLION)===LUNA_RATES.cacheWrite30m &&
     env.SKETCH_AI_BILLING_CONFIRMED === 'true' &&
@@ -72,13 +76,13 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     if (url.origin !== env.SKETCH_SITE_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site') return fail('ORIGIN_INVALID');
     if (request.headers.has('origin') && request.headers.get('origin') !== url.origin) return fail('ORIGIN_INVALID');
     const c = config(env, now);
-    const slot=paidSlot(env);
+    let slot=paidSlot(env);
     const day = Math.floor(now / 86400000);
     if (request.method === 'GET' && url.pathname === '/api/generation/status') {
       if (!c.ready) return json({ configured: false });
       try {
-        const used = await env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE id = ?').bind(slot).first();
-        return json({ configured: !used, csrfToken: used ? undefined : await csrf(c.apiKey!, user, url.origin, day) });
+        const q=await quotaState(env);const available=!!q.available&&!q.active;
+        return json({configured:available,remainingCalls:q.remaining,busy:q.active,csrfToken:available?await csrf(c.apiKey!,user,url.origin,day):undefined});
       } catch { return fail('NOT_CONFIGURED', 503); }
     }
     if (request.method === 'GET' && url.pathname === '/api/generation/approved-draft') {
@@ -122,7 +126,8 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     let provider:LayoutProvider, inputBound:number, reservedMicros:number;
     try {
       // Reject exact replays before even the free count request.
-      if(await env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE id = ?').bind(slot).first())return fail('LIMIT',429);
+      const q=await quotaState(env);if(q.active)return fail('BUSY',429);if(!q.available)return fail('LIMIT',429);slot=q.available;
+      if(await env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE request_id = ?').bind(payload.requestId).first())return fail('DUPLICATE',409);
       provider=providerFactory(c.apiKey!,LUNA_MODEL);
       const proof=await exactInputProof(provider,intent);
       inputBound=proof.inputTokens;reservedMicros=proof.reservedMicros;
@@ -132,8 +137,9 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     }catch{return fail('LIMIT',429);}
     if(reservedMicros>Math.floor(c.budgetUsd*1e6))return fail('LIMIT',429);
     try {
-      const claimed = await env.DB!.prepare('INSERT INTO sketch_ai_single_test (id, request_id, user_id, canvas_hash, reserved_micros, started_at, outcome) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING')
-        .bind(slot, payload.requestId, user, hash, reservedMicros, now, 'RESERVED').run();
+      const slots=paidSlots(env);
+      const claimed = await env.DB!.prepare(`INSERT INTO sketch_ai_single_test (id, request_id, user_id, canvas_hash, reserved_micros, started_at, outcome) SELECT ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM sketch_ai_single_test WHERE request_id = ?) AND NOT EXISTS (SELECT 1 FROM sketch_ai_single_test WHERE id IN (${slots.map(()=>'?').join(',')}) AND outcome = 'RESERVED') ON CONFLICT(id) DO NOTHING`)
+        .bind(slot,payload.requestId,user,hash,reservedMicros,now,'RESERVED',payload.requestId,...slots).run();
       if (claimed.meta.changes !== 1) return fail('LIMIT', 429);
     } catch { return fail('UNAVAILABLE', 503); } // Uncertain reservation never calls Provider.
     const controller = new AbortController();

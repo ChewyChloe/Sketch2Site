@@ -1,3 +1,8 @@
+## 額外三次測試授權（2026-11-18）
+- DONE：新增固定owner-draft-three-20261118-v1 grant及3個永久D1 slot，runtime maxCalls=3；舊單次／動畫／review紀錄不刪不改。
+- PASS：30後端＋6前端相關Mock測試，涵蓋正好3次、第四次拒絕、重放拒絕、併發只接受1次且不消耗下一slot。單一INSERT SELECT以原子方式同時檢查重放、目前RESERVED及slot衝突；無migration或重設。
+- DONE：status提供remainingCalls／busy，前端用完顯示LIMIT，生成中顯示BUSY。每次budget.01、Luna default、zero retry及正式owner／CSRF／draft ticket／exact count保留。本輪付費呼叫0。
+
 ## 六次真實生成與工作台修正（2026-11-18）
 - PASS：6次Luna Standard真實Provider請求，20/20個preset均至少1次，PageSpec／文字素材效果保留均通過，無retry；費用依usage合計US$0.00295255。每案有inputs／outputs／ledger／desktop與mobile截圖，docs/PAID_SIX_RUN_AUDIT.json記錄。
 - DONE：預設保留草稿布局；新增受控draftLayout數字frame，桌面保持x/y/width／source尺寸與閱讀順序，手機單欄。AI自由重排需明確選取。保留模式不提升正文為標題、不將每個標題放大hero；修復tone-accent按鈕對比。

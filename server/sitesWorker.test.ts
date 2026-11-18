@@ -270,3 +270,24 @@ describe('owner-signed current draft approval',()=>{
   expect(r.status).toBe(503);expect(await r.text()).not.toContain('draftApproval');expect(s.generate).not.toHaveBeenCalled();
  });
 });
+
+describe('explicit additional three-call grant',()=>{
+ it('allows exactly three sequential calls, rejects replays, and retains all historical slots',async()=>{
+  const s=await setup();s.env.SKETCH_AI_DRAFT_POLICY='owner-draft-three-20261118-v1';s.env.SKETCH_AI_MAX_CALLS='3';
+  for(const id of ['sites-ai-single-test-v1','sites-ai-motion-test-v1','sites-ai-studio-review-v1'])await s.env.DB!.prepare('INSERT INTO sketch_ai_single_test (id,request_id,user_id,canvas_hash,reserved_micros,started_at,outcome) VALUES (?,?,?,?,?,?,?)').bind(id,crypto.randomUUID(),user,'history',2272,Date.now(),'PASS').run();
+  const state=await (await s.status()).json();expect(state.remainingCalls).toBe(3);
+  const check=await s.api(s.req('/api/generation/check',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:s.canvas})}),s.env);const ticket=(await check.json()).draftApproval;
+  const send=(requestId:string)=>s.api(s.req('/api/generation',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId,canvasSpec:s.canvas,draftApproval:ticket})}),s.env);
+  const first=crypto.randomUUID();expect((await send(first)).status).toBe(200);expect((await send(first)).status).toBe(409);
+  expect((await (await s.status()).json()).remainingCalls).toBe(2);
+  expect((await send(crypto.randomUUID())).status).toBe(200);expect((await send(crypto.randomUUID())).status).toBe(200);
+  const final=await (await s.status()).json();expect(final.remainingCalls).toBe(0);expect(final.configured).toBe(false);expect((await send(crypto.randomUUID())).status).toBe(429);expect(s.generate).toHaveBeenCalledTimes(3);
+  for(const id of ['sites-ai-single-test-v1','sites-ai-motion-test-v1','sites-ai-studio-review-v1'])expect(await s.env.DB!.prepare('SELECT outcome FROM sketch_ai_single_test WHERE id = ?').bind(id).first()).toEqual({outcome:'PASS'});
+ });
+ it('atomically rejects concurrent submissions without spending the next slot',async()=>{
+  const s=await setup();s.env.SKETCH_AI_DRAFT_POLICY='owner-draft-three-20261118-v1';s.env.SKETCH_AI_MAX_CALLS='3';
+  const state=await (await s.status()).json();const check=await s.api(s.req('/api/generation/check',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:s.canvas})}),s.env);const ticket=(await check.json()).draftApproval;
+  const send=()=>s.api(s.req('/api/generation',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:s.canvas,draftApproval:ticket})}),s.env);
+  const results=await Promise.all([send(),send(),send(),send()]);expect(results.filter(r=>r.status===200)).toHaveLength(1);expect(s.generate).toHaveBeenCalledTimes(1);expect((await (await s.status()).json()).remainingCalls).toBe(2);
+ });
+});
