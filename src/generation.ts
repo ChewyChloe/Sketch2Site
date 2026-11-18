@@ -38,7 +38,7 @@ export const generationMessages: Record<GenerationCode, string> = {
   OWNER_REQUIRED: "請使用正式擁有者帳號登入私人網站。",
   ORIGIN_INVALID: "請從原本的私人網站操作，請求來源不符。",
   CSRF_INVALID: "安全驗證失敗（CSRF_INVALID），請停止測試並回報。",
-  DRAFT_HASH_MISMATCH: "草稿不符（DRAFT_HASH_MISMATCH），請從草稿選單重新載入個人作品集，勿修改。",
+  DRAFT_HASH_MISMATCH: "草稿不符（DRAFT_HASH_MISMATCH）：目前草稿超出已核准的測試範圍，請使用「載入核准測試草稿（免費）」。",
   FORBIDDEN: "無法驗證生成請求，請重新整理後重試。",
   DUPLICATE: "這次生成請求已處理，請重新發起。",
   UNAVAILABLE: "無法連線至生成服務，原版本已保留；可在草稿選單使用示範排版。",

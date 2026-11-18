@@ -284,3 +284,17 @@ test("透過既有元件庫建立標題、圖片與可操作按鈕再生成", as
   );
   await expect(page.getByRole("img", { name: "內建圖片示意" })).toBeVisible();
 });
+
+test('six animations survive generation, PageSpec validation, preview and persistence (Mock, no paid calls)',async({page})=>{
+ const {approvedDraft}=await import('../server/sitesDraftPolicy');
+ const canvas=approvedDraft({SKETCH_AI_DRAFT_POLICY:'portfolio-motion-v1'});
+ await seed(page,canvas);
+ await page.getByRole('button',{name:'生成網站',exact:true}).click();
+ await expect(page.getByRole('main',{name:'生成候選預覽'})).toBeVisible();
+ for(const n of canvas.nodes)await expect(page.locator('[data-page-id="'+n.id+'"]')).toBeVisible();
+ await page.getByRole('button',{name:'使用此版本',exact:true}).click();
+ await expect(page.getByRole('main',{name:'生成候選預覽'})).not.toBeVisible();
+ const saved=await savedPage(page) as any;
+ expect(JSON.stringify(saved)).toContain('hover-glow');expect(JSON.stringify(saved)).toContain('stagger-reveal');
+ await page.screenshot({path:'test-results/portfolio-six-animations-mock.png',fullPage:true});
+});

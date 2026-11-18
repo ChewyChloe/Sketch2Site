@@ -1,6 +1,5 @@
+import {approvedDraft,approvalBase} from './sitesDraftPolicy';
 import {GenerationError,prepareIntent} from '../src/generation';
-import {generationFixtures} from '../src/demoFixtures';
-import {CanvasSchema} from '../src/spec';
 import {buildLunaRequest,openAIProvider,type LayoutProvider,type Intent} from './provider';
 import {LUNA_MODEL,reserveLunaMicros} from './lunaPolicy';
 import {authenticatedOwner,type SitesEnv} from './sitesIdentity';
@@ -17,8 +16,8 @@ export async function warmOwnerPreflight(request:Request,env:SitesEnv,factory:(k
  if(!await authenticatedOwner(request,env))return;
  const key=typeof env.OPENAI_API_KEY==='string'?env.OPENAI_API_KEY:'';
  if(!key||!env.DB)return;
- const canvas=CanvasSchema.parse(generationFixtures()[0]);
- if(await sha256(JSON.stringify(canvas))!==env.SKETCH_AI_TEST_CANVAS_SHA256)return;
+ const canvas=approvedDraft(env);
+ if(await sha256(JSON.stringify(approvalBase(canvas,env)))!==env.SKETCH_AI_TEST_CANVAS_SHA256)return;
  const intent=prepareIntent(canvas),id=await sha256(JSON.stringify(buildLunaRequest(intent)));
  let claimed=false;
  try {

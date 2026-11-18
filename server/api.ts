@@ -71,7 +71,7 @@ export function createGenerationServer(options: Options = {}) {
       address !== "::ffff:127.0.0.1"
     )
       return failure(res, 403, "FORBIDDEN");
-    if (req.method === "GET" && req.url === "/api/generation/status") {
+    if (req.method === "GET" && (req.url === "/api/generation/status" || req.url === "/api/generation/check")) {
       for (const [key, s] of sessions)
         if (s.expires < Date.now()) sessions.delete(key);
       const existing = req.headers.cookie?.match(
@@ -97,7 +97,7 @@ export function createGenerationServer(options: Options = {}) {
         csrfToken: sessions.get(id)!.csrf,
       });
     }
-    if (req.url !== "/api/generation" || req.method !== "POST")
+    if ((req.url !== "/api/generation" && req.url !== "/api/generation/check") || req.method !== "POST")
       return json(res, 404, { code: "UNAVAILABLE" });
     const id = req.headers.cookie?.match(
       /(?:^|; )sketch_generation_session=([a-f0-9]{64})(?:;|$)/,
@@ -142,6 +142,7 @@ export function createGenerationServer(options: Options = {}) {
     } catch {
       return failure(res, 400, "INVALID_INPUT");
     }
+    if (req.url === "/api/generation/check") return json(res,200,{code:"DRAFT_APPROVED",schemaVersion:1}); // Local dev only; no provider or quota.
     if (!options.provider) return failure(res, 503, "NOT_CONFIGURED");
     if (used.has(request.requestId)) return failure(res, 409, "DUPLICATE");
     if (active >= 1) return failure(res, 429, "BUSY");

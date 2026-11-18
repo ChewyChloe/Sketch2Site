@@ -214,3 +214,35 @@ it('loads only exact server-approved sample while disabled, refuses configuratio
  expect((await s.api(new Request(origin+'/api/generation/approved-draft'),s.env)).status).toBe(403);
  s.env.SKETCH_AI_TEST_CANVAS_SHA256='0'.repeat(64);expect((await s.api(s.req('/api/generation/approved-draft'),s.env)).status).toBe(503);expect(s.factory).not.toHaveBeenCalled();
 });
+
+describe('separate animation approval retains consumed first test',()=>{
+ it('accepts legal animations without changing content whitelist; preserves all six effects in validated PageSpec',async()=>{
+  const {approvedDraft,approvalBase,paidSlot}=await import('./sitesDraftPolicy');
+  const {PageSchema}=await import('../src/pageSpec');const s=await setup();
+  // Already-consumed first test remains immutable.
+  await s.env.DB!.prepare('INSERT INTO sketch_ai_single_test (id,request_id,user_id,canvas_hash,reserved_micros,started_at,outcome) VALUES (?,?,?,?,?,?,?)').bind('sites-ai-single-test-v1',crypto.randomUUID(),user,'original',2272,Date.now(),'PASS').run();
+  s.env.SKETCH_AI_DRAFT_POLICY='portfolio-motion-v1';const animated=approvedDraft(s.env);
+  expect(await canvasHash(approvalBase(animated,s.env))).toBe(s.env.SKETCH_AI_TEST_CANVAS_SHA256);
+  expect(paidSlot(s.env)).toBe('sites-ai-motion-test-v1');
+  const state=await (await s.status()).json();
+  const send=(path:string,canvas=animated)=>s.api(s.req(path,{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:canvas})}),s.env);
+  expect(await (await send('/api/generation/check')).json()).toEqual({code:'DRAFT_APPROVED',schemaVersion:1});
+  const altered=structuredClone(animated);altered.nodes[0].content+=' unapproved';
+  expect(await (await send('/api/generation/check',altered)).json()).toEqual({code:'DRAFT_HASH_MISMATCH'});
+  const response=await send('/api/generation');expect(response.status).toBe(200);const result=await response.json();
+  expect(PageSchema.safeParse(result.page).success).toBe(true);
+  const all:any[]=[];const walk=(n:any)=>{all.push(n);n.children?.forEach(walk);};result.page.sections.forEach(walk);
+  for(const n of animated.nodes)expect(all.find(x=>x.id===n.id)?.effects).toEqual(n.effects);
+  expect((await send('/api/generation')).status).toBe(429);expect(s.generate).toHaveBeenCalledTimes(1);
+  expect(await s.env.DB!.prepare('SELECT outcome FROM sketch_ai_single_test WHERE id = ?').bind('sites-ai-single-test-v1').first()).toEqual({outcome:'PASS'});
+ });
+ it('does not allow motion with legacy approval or invalid targets, and never claims quota on invalid count',async()=>{
+  const {approvedDraft}=await import('./sitesDraftPolicy');const s=await setup();const animated=approvedDraft({...s.env,SKETCH_AI_DRAFT_POLICY:'portfolio-motion-v1'});
+  expect(await (await s.post({canvasSpec:animated})).json()).toEqual({code:'DRAFT_HASH_MISMATCH'});
+  s.env.SKETCH_AI_DRAFT_POLICY='portfolio-motion-v1';
+  const factory=()=>({generate:s.generate,countInputTokens:async()=>8193});const api=createSitesAPI(factory);
+  const state=await (await s.status()).json();const response=await api(s.req('/api/generation',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:animated})}),s.env);
+  expect(response.status).toBe(429);expect(s.generate).not.toHaveBeenCalled();
+  expect(await s.env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE id = ?').bind('sites-ai-motion-test-v1').first()).toBeNull();
+ });
+});

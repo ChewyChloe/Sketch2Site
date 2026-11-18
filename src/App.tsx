@@ -616,7 +616,7 @@ export default function App() {
                 >
                   示範排版（非 AI）
                 </button>
-                <button disabled={generating || !ready} onClick={async()=>{if(dirty&&!window.confirm("載入核准測試草稿會取代目前草稿，可還原。是否繼續？"))return;try{const approved=await loadApprovedDraft();await checkApprovedDraft(approved);if(change(approved)){setGenerationError("");setCandidate(null);setSelected(null);report("已從後端載入並核對核准草稿，未呼叫 AI。請勿修改。");}}catch(e){report(e instanceof Error?e.message:"載入失敗，請停止測試。",true);}}}>載入核准測試草稿（免費）</button>
+                <button disabled={generating || !ready} onClick={async()=>{if(dirty&&!window.confirm("載入核准測試草稿會取代目前草稿，可還原。是否繼續？"))return;try{const approved=await loadApprovedDraft();await checkApprovedDraft(approved);if(change(approved)){setGenerationError("");setCandidate(null);setSelected(null);report("已從後端載入並核對核准測試草稿，未呼叫 AI。");}}catch(e){report(e instanceof Error?e.message:"載入失敗，請停止測試。",true);}}}>載入核准測試草稿（免費）</button>
                 <button disabled={generating || !ready} onClick={async()=>{try{await checkApprovedDraft(spec);setGenerationError("");report("核准草稿與安全驗證通過，未呼叫 AI。");}catch(e){report(e instanceof Error?e.message:"免費核對失敗，請停止測試。",true);}}}>核對付費測試草稿（免費）</button>
                 <div className="menu-label">示範草稿（非 AI）</div>
                 {demoFixtures

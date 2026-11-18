@@ -1,4 +1,4 @@
-import {generationFixtures} from '../src/demoFixtures';
+import {approvedDraft,approvalBase,paidSlot,motionApproved} from './sitesDraftPolicy';
 import { z } from 'zod';
 import { CanvasSchema } from '../src/spec';
 import { GenerationError, prepareIntent, materialize, type GenerationCode } from '../src/generation';
@@ -9,7 +9,6 @@ import {authenticatedOwner,type SitesEnv} from './sitesIdentity';
 import {exactInputProof} from './sitesPreflight';
 export type {D1,SitesEnv} from './sitesIdentity';
 
-const slot = 'sites-ai-single-test-v1'; // Permanent across isolates, versions and deployments.
 const schema = z.object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema }).strict();
 const encoder = new TextEncoder();
 const hex = (buffer: ArrayBuffer) => [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -65,6 +64,7 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     if (url.origin !== env.SKETCH_SITE_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site') return fail('ORIGIN_INVALID');
     if (request.headers.has('origin') && request.headers.get('origin') !== url.origin) return fail('ORIGIN_INVALID');
     const c = config(env, now);
+    const slot=paidSlot(env);
     const day = Math.floor(now / 86400000);
     if (request.method === 'GET' && url.pathname === '/api/generation/status') {
       if (!c.ready) return json({ configured: false });
@@ -74,8 +74,8 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
       } catch { return fail('NOT_CONFIGURED', 503); }
     }
     if (request.method === 'GET' && url.pathname === '/api/generation/approved-draft') {
-      const canvas=CanvasSchema.parse(generationFixtures()[0]);
-      if(await canvasHash(canvas)!==env.SKETCH_AI_TEST_CANVAS_SHA256)return fail('NOT_CONFIGURED',503);
+      const canvas=approvedDraft(env);
+      if(await canvasHash(approvalBase(canvas,env))!==env.SKETCH_AI_TEST_CANVAS_SHA256)return fail('NOT_CONFIGURED',503);
       return json({canvasSpec:canvas}); // Fixed sample only, never caller data or credentials.
     }
     if (request.method === 'GET' && url.pathname === '/api/generation/check') {
@@ -98,8 +98,17 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     try { payload = await readBody(request); prepareIntent(payload.canvasSpec); }
     catch { return fail('INVALID_INPUT', 400); }
     const hash = await canvasHash(payload.canvasSpec);
-    if (hash !== env.SKETCH_AI_TEST_CANVAS_SHA256) return fail('DRAFT_HASH_MISMATCH');
-    if(checkOnly) return json({code:'DRAFT_APPROVED',schemaVersion:1}); // No provider or quota access.
+    if (await canvasHash(approvalBase(payload.canvasSpec,env)) !== env.SKETCH_AI_TEST_CANVAS_SHA256) return fail('DRAFT_HASH_MISMATCH');
+    if(checkOnly) {
+      if(motionApproved(env)) {
+        try {
+          const proof=await exactInputProof(providerFactory(c.apiKey!,LUNA_MODEL),prepareIntent(payload.canvasSpec));
+          if(!Number.isFinite(c.budgetUsd)||c.budgetUsd<=0||c.budgetUsd>.01||proof.reservedMicros>Math.floor(c.budgetUsd*1e6))return fail('LIMIT',429);
+          await env.DB!.prepare('INSERT INTO sketch_ai_preflight (id,outcome,input_tokens,reserved_micros,checked_at) VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET outcome=excluded.outcome,input_tokens=excluded.input_tokens,reserved_micros=excluded.reserved_micros,checked_at=excluded.checked_at').bind(proof.requestHash,'READY',proof.inputTokens,proof.reservedMicros,Date.now()).run();
+        }catch{return fail('NOT_CONFIGURED',503);}
+      }
+      return json({code:'DRAFT_APPROVED',schemaVersion:1}); // No generation or paid-quota access.
+    }
     const intent=prepareIntent(payload.canvasSpec);
     let provider:LayoutProvider, inputBound:number, reservedMicros:number;
     try {
