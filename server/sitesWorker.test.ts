@@ -246,3 +246,26 @@ describe('separate animation approval retains consumed first test',()=>{
   expect(await s.env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE id = ?').bind('sites-ai-motion-test-v1').first()).toBeNull();
  });
 });
+
+describe('owner-signed current draft approval',()=>{
+ it('accepts a newly added/moved card and animations, binds its exact hash and retains one permanent motion slot',async()=>{
+  const {createNode}=await import('../src/spec');const {createMotion}=await import('../src/motion');
+  const s=await setup();s.env.SKETCH_AI_DRAFT_POLICY='owner-draft-v1';
+  const canvas=structuredClone(s.canvas);canvas.nodes[0].x=200;const card=createNode('card',70,624);card.id=crypto.randomUUID();card.content='我的新卡片';card.effects=[createMotion('fade-in',card.id)];canvas.nodes.push(card);
+  const state=await (await s.api(s.req('/api/generation/check'),s.env)).json();
+  const send=(path:string,c=canvas,approval?:string)=>s.api(s.req(path,{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:c,...(approval?{draftApproval:approval}:{})})}),s.env);
+  const check=await send('/api/generation/check');expect(check.status).toBe(200);const approved=await check.json();expect(approved.draftApproval).toMatch(/^\d{13}\.[a-f0-9]{64}$/);expect(s.generate).not.toHaveBeenCalled();
+  expect(await (await send('/api/generation')).json()).toEqual({code:'DRAFT_APPROVAL_INVALID'});
+  const tampered=structuredClone(canvas);tampered.nodes[0].x++;expect(await (await send('/api/generation',tampered,approved.draftApproval)).json()).toEqual({code:'DRAFT_APPROVAL_INVALID'});
+  expect(await (await send('/api/generation',canvas,approved.draftApproval.replace(/.$/,'x'))).json()).toEqual({code:'DRAFT_APPROVAL_INVALID'});
+  expect((await send('/api/generation',canvas,approved.draftApproval)).status).toBe(200);expect(s.generate).toHaveBeenCalledTimes(1);
+  expect((await send('/api/generation',canvas,approved.draftApproval)).status).toBe(429);expect(s.generate).toHaveBeenCalledTimes(1);
+ });
+ it('does not issue a draft approval for unsafe data or failed token counting',async()=>{
+  const s=await setup();s.env.SKETCH_AI_DRAFT_POLICY='owner-draft-v1';
+  const state=await (await s.api(s.req('/api/generation/check'),s.env)).json();
+  const api=createSitesAPI(()=>({generate:s.generate,countInputTokens:async()=>8193}));
+  const r=await api(s.req('/api/generation/check',{method:'POST',headers:{origin,'content-type':'application/json','x-sketch-csrf':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:s.canvas})}),s.env);
+  expect(r.status).toBe(503);expect(await r.text()).not.toContain('draftApproval');expect(s.generate).not.toHaveBeenCalled();
+ });
+});

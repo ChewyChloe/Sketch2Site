@@ -1,5 +1,5 @@
 import {generationProtocol} from '../src/generationProtocol';
-import {approvedDraft,approvalBase,paidSlot,motionApproved} from './sitesDraftPolicy';
+import {approvedDraft,approvalBase,paidSlot,motionApproved,ownerDraftApproved} from './sitesDraftPolicy';
 import { z } from 'zod';
 import { CanvasSchema } from '../src/spec';
 import { GenerationError, prepareIntent, materialize, type GenerationCode } from '../src/generation';
@@ -10,7 +10,7 @@ import {authenticatedOwner,type SitesEnv} from './sitesIdentity';
 import {exactInputProof} from './sitesPreflight';
 export type {D1,SitesEnv} from './sitesIdentity';
 
-const schema = z.object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema }).strict();
+const schema = z.object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema, draftApproval:z.string().max(100).optional() }).strict();
 const encoder = new TextEncoder();
 const hex = (buffer: ArrayBuffer) => [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, '0')).join('');
 export const canvasHash = async (canvas: unknown) => hex(await crypto.subtle.digest('SHA-256', encoder.encode(JSON.stringify(CanvasSchema.parse(canvas)))));
@@ -18,9 +18,16 @@ const fail = (code: GenerationCode, status = 403) => json({ code }, status);
 function json(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'" } });
 }
-async function csrf(key: string, user: string, origin: string, day: number) {
+async function sign(key:string,message:string) {
   const secret = await crypto.subtle.importKey('raw', encoder.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  return hex(await crypto.subtle.sign('HMAC', secret, encoder.encode(`sketch-csrf-v1:${user}:${origin}:${day}`)));
+  return hex(await crypto.subtle.sign('HMAC', secret, encoder.encode(message)));
+}
+async function csrf(key:string,user:string,origin:string,day:number){return sign(key,`sketch-csrf-v1:${user}:${origin}:${day}`);}
+async function draftApproval(key:string,user:string,origin:string,hash:string,expires:number){return `${expires}.${await sign(key,`sketch-draft-v1:${user}:${origin}:${hash}:${expires}`)}`;}
+async function validDraftApproval(token:string|undefined,key:string,user:string,origin:string,hash:string){
+ if(!token||!/^\d{13}\.[a-f0-9]{64}$/.test(token))return false;
+ const expiry=Number(token.split('.')[0]),now=Date.now();if(expiry<=now||expiry-now>600000)return false;
+ const expected=await draftApproval(key,user,origin,hash,expiry);let delta=0;for(let i=0;i<expected.length;i++)delta|=expected.charCodeAt(i)^token.charCodeAt(i);return delta===0;
 }
 function config(env: SitesEnv, now: number) {
   const strings:NodeJS.ProcessEnv={};
@@ -99,7 +106,8 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     try { payload = await readBody(request); prepareIntent(payload.canvasSpec); }
     catch { return fail('INVALID_INPUT', 400); }
     const hash = await canvasHash(payload.canvasSpec);
-    if (await canvasHash(approvalBase(payload.canvasSpec,env)) !== env.SKETCH_AI_TEST_CANVAS_SHA256) return fail('DRAFT_HASH_MISMATCH');
+    if (!ownerDraftApproved(env)&&await canvasHash(approvalBase(payload.canvasSpec,env)) !== env.SKETCH_AI_TEST_CANVAS_SHA256) return fail('DRAFT_HASH_MISMATCH');
+    if(ownerDraftApproved(env)&&!checkOnly&&!await validDraftApproval(payload.draftApproval,c.apiKey!,user,url.origin,hash))return fail('DRAFT_APPROVAL_INVALID');
     if(checkOnly) {
       if(motionApproved(env)) {
         try {
@@ -108,7 +116,7 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
           await env.DB!.prepare('INSERT INTO sketch_ai_preflight (id,outcome,input_tokens,reserved_micros,checked_at) VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET outcome=excluded.outcome,input_tokens=excluded.input_tokens,reserved_micros=excluded.reserved_micros,checked_at=excluded.checked_at').bind(proof.requestHash,'READY',proof.inputTokens,proof.reservedMicros,Date.now()).run();
         }catch{return fail('NOT_CONFIGURED',503);}
       }
-      return json({code:'DRAFT_APPROVED',schemaVersion:1}); // No generation or paid-quota access.
+      return json({code:'DRAFT_APPROVED',schemaVersion:1,...(ownerDraftApproved(env)?{draftApproval:await draftApproval(c.apiKey!,user,url.origin,hash,Date.now()+600000)}:{})}); // Signed exact owner draft, no generation or paid-quota access.
     }
     const intent=prepareIntent(payload.canvasSpec);
     let provider:LayoutProvider, inputBound:number, reservedMicros:number;

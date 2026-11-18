@@ -16,7 +16,7 @@ export async function requestGeneration(
     throw new GenerationError("NOT_CONFIGURED");
   canvasSpec=CanvasSchema.parse(structuredClone(canvasSpec)); // Snapshot before asynchronous status fetch.
   prepareIntent(canvasSpec);
-  await checkApprovedDraft(canvasSpec); // Same immutable snapshot; failure cannot send generation POST.
+  const draftApproval=await checkApprovedDraft(canvasSpec); // Same immutable snapshot; failure cannot send generation POST.
   let status: Response;
   try {
     status = await fetch("/api/generation/status", {
@@ -48,7 +48,7 @@ export async function requestGeneration(
         "Content-Type": "application/json",
         "X-Sketch-CSRF": config.csrfToken!,
       },
-      body: JSON.stringify({ requestId, canvasSpec:CanvasSchema.parse(canvasSpec) }),
+      body: JSON.stringify({ requestId, canvasSpec:CanvasSchema.parse(canvasSpec),...(draftApproval?{draftApproval}:{}) }),
     });
   } catch {
     throw new GenerationError("UNAVAILABLE");
@@ -84,6 +84,7 @@ export async function checkApprovedDraft(canvasSpec:CanvasSpec) {
  const response=await fetch('/api/generation/check',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Sketch-CSRF':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:CanvasSchema.parse(canvasSpec)})});
  const result=await response.json();
  if(!response.ok||result.code!=='DRAFT_APPROVED')throw new GenerationError(generationCodes.includes(result.code)?result.code:'UNAVAILABLE');
+ return typeof result.draftApproval==='string'?result.draftApproval:undefined;
 }
 
 export async function loadApprovedDraft():Promise<CanvasSpec>{

@@ -5,9 +5,12 @@ import {prepareIntent,materialize,verifyPreservation} from '../src/generation';
 import {PageSchema} from '../src/pageSpec';
 import {openAIProvider,buildLunaRequest,validUsage} from '../server/provider';
 import {LUNA_MODEL,reserveLunaMicros,lunaUsageUsd} from '../server/lunaPolicy';
-const root='outputs/motion-live-selftest';await mkdir(root,{recursive:true});
+const custom=process.argv.includes('--custom-draft');
+const root=custom?'outputs/motion-custom-selftest':'outputs/motion-live-selftest';await mkdir(root,{recursive:true});
 if(process.argv.includes('--paid-once')&&existsSync(root+'/paid-once.json')){console.log(JSON.stringify({status:'ALREADY_ATTEMPTED_NO_RETRY'}));process.exit(1);}
-const canvas=approvedDraft({SKETCH_AI_DRAFT_POLICY:'portfolio-motion-v1'}),intent=prepareIntent(canvas);
+const canvas=approvedDraft({SKETCH_AI_DRAFT_POLICY:'portfolio-motion-v1'});
+if(custom){const {createNode}=await import('../src/spec');const {createMotion}=await import('../src/motion');canvas.metadata.name='我的動畫網站';canvas.nodes[0].x=200;const node=createNode('card',70,624);node.id='00000000-0000-4000-8000-000000009999';node.effects=[createMotion('fade-in',node.id)];canvas.nodes.push(node);}
+const intent=prepareIntent(canvas);
 const provider=openAIProvider(process.env.OPENAI_API_KEY??'',LUNA_MODEL);
 const report:Record<string,unknown>={scope:'Existing backend Provider through Codex Cloud HTTP Secret; does not impersonate Sites owner or test Sites runtime identity',model:LUNA_MODEL,serviceTier:'default',maxOutputTokens:4096,tools:0,retries:0,requestBytes:Buffer.byteLength(JSON.stringify(buildLunaRequest(intent))),paidCalls:0};
 try{

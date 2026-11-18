@@ -1,0 +1,24 @@
+{
+  "scope": "Existing backend Provider through Codex Cloud HTTP Secret; does not impersonate Sites owner or test Sites runtime identity",
+  "model": "gpt-6-luna",
+  "serviceTier": "default",
+  "maxOutputTokens": 4096,
+  "tools": 0,
+  "retries": 0,
+  "requestBytes": 10835,
+  "paidCalls": 1,
+  "inputTokens": 2876,
+  "reservedUsd": 0.002408,
+  "status": "LIVE_PROVIDER_PASS",
+  "usage": {
+    "inputTokens": 2876,
+    "outputTokens": 515,
+    "cachedInputTokens": 0,
+    "reasoningTokens": 124,
+    "calculatedCostUsd": 0.0006169249999999999
+  },
+  "pageSpec": "PASS",
+  "effectPreservation": "PASS",
+  "rendererReplay": "PASS",
+  "scenario": "Custom title, moved heading, new card at70,624, seven motion instances"
+}

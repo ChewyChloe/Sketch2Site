@@ -37,3 +37,9 @@ it('blocks a stale backend protocol before any draft or generation POST',async()
  const fetch=vi.fn(async()=>new Response(JSON.stringify({csrfToken:'a'.repeat(64)})));vi.stubGlobal('fetch',fetch);
  await expect(checkApprovedDraft(generationFixtures()[0])).rejects.toMatchObject({code:'VERSION_MISMATCH'});expect(fetch).toHaveBeenCalledTimes(1);
 });
+it('forwards the backend approval bound to the current draft instead of declaring a frontend hash',async()=>{
+ const {requestGeneration}=await import('./generationClient');let count=0,paidBody:any;
+ const ticket='1234567890123.'+'a'.repeat(64);
+ vi.stubGlobal('fetch',vi.fn(async(_u,init)=>{count++;if(count===1)return new Response(JSON.stringify({csrfToken:'a'.repeat(64),protocol:generationProtocol}));if(count===2)return new Response(JSON.stringify({code:'DRAFT_APPROVED',draftApproval:ticket}));if(count===3)return new Response(JSON.stringify({configured:true,csrfToken:'a'.repeat(64)}));paidBody=JSON.parse(init.body);return new Response(JSON.stringify({code:'LIMIT'}),{status:429});}));
+ await expect(requestGeneration(generationFixtures()[0],new AbortController().signal)).rejects.toMatchObject({code:'LIMIT'});expect(paidBody.draftApproval).toBe(ticket);expect(paidBody).not.toHaveProperty('ownerId');expect(count).toBe(4);
+});

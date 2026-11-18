@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {existsSync,readFileSync} from 'node:fs';
-const folder='outputs/motion-live-selftest';
+const folder=process.env.MOTION_RESULT_DIR??'outputs/motion-live-selftest';
 test('renders recorded real Luna response with six animations, saves it, and never calls a paid provider',async({page})=>{
  test.skip(!existsSync(folder+'/page.json'),'Requires separately authorized one-time live integration result');
  const canvas=JSON.parse(readFileSync(folder+'/canvas.json','utf8'));
@@ -21,5 +21,5 @@ test('renders recorded real Luna response with six animations, saves it, and nev
  const saved=await page.evaluate(async()=>new Promise<any>((resolve,reject)=>{const r=indexedDB.open('sketch2site',3);r.onsuccess=()=>{const d=r.result,q=d.transaction('pages').objectStore('pages').get('local-project');q.onsuccess=()=>{d.close();resolve(q.result);};q.onerror=()=>reject(q.error);};}));
  for(const n of canvas.nodes)expect(JSON.stringify(saved)).toContain(n.effects[0].presetId);
  expect(replayCount).toBe(1);
- await page.screenshot({path:'outputs/motion-live-selftest/real-luna-render.png',fullPage:true});
+ await page.screenshot({path:folder+'/real-luna-render.png',fullPage:true});
 });

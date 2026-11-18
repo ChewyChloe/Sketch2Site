@@ -1,1 +1,1 @@
-export const generationProtocol='motion-20261118-v2';
+export const generationProtocol='owner-draft-20261118-v3';
