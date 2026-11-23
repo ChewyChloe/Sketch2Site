@@ -1,3 +1,15 @@
+## 智慧排版、主題與區塊範本（2026-11-23）
+- DONE：PageSpec相容擴充選填theme（7組固定Token：經典綠／午夜／晨光／海洋／森林／極簡黑白／花園）、chrome（導覽列／頁尾）及section role（hero／features／gallery／content／cta）。舊頁面無theme時以經典綠呈現，不需遷移；匯出共用同一Runtime與CSS。
+- DONE：Layout v2（intro／items／outro／aside＋role／tone／theme／nav／footer），materialize同時接受v1／v2，來源保留驗證不變；模型仍不能提供文字。AI JSON Schema改用$ref，五份fixture請求8–11KB（上限16384）。
+- DONE：本機智慧排版（src/smartLayout.ts）依標題切段，自動推論首屏、特色卡片、圖庫、行動呼籲、側欄圖片與交錯底色，並依內容建議主題。新草稿預設「智慧排版」，舊草稿保留原模式。
+- DONE：AI未設定或後端無法連線時，「生成網站」改用本機智慧排版並明確標示「未呼叫 AI」；其他錯誤仍照常顯示。後端非JSON回應改報UNAVAILABLE。
+- DONE：候選預覽主題切換；已保存頁面「主題」選單走新set-theme Patch（只能錨定第一個區塊，可Undo/Redo、CAS保存）。
+- DONE：元件庫新增四種區塊範本（首屏介紹／三欄特色／圖片展示／行動呼籲），群組放在現有內容下方，空間不足明確提示。畫布新增「符合寬度」縮放並設為預設，修正右側被裁切；生成錯誤提示不再被左側欄遮住。
+- PASS：480單元整合（新增8項）、Typecheck、Build、check:secrets、motion boundary；E2E結果見下一行。
+- PARTIAL：完整Chromium E2E（238案）在本次commit時執行中，前35案PASS、0失敗；完成後若有失敗另行修正提交。
+- NOT TESTED：真實付費AI以v2 Schema的輸出品質（等待使用者提供Key）；Safari／Firefox／實機。
+- 恢復方式：分支claude/gallant-cerf-2vjpdm；npm ci後npm run dev，草稿選單載入示範或點元件庫區塊範本，再按「生成網站」。
+
 ## 20種進階動畫擴充（2026-11-18）
 - DONE：保留原20個Preset，淨新增20個不同機制，共40種。重複的磁吸／折角／交錯／數值遞增／閱讀進度提案改為聚光、扇形、對角翻入、儀表及里程碑；完整清單與原因見docs/ADVANCED_MOTIONS.md。
 - DONE：沿用MotionSchema／Canvas／PageSpec／Patch，整合四組Live Preview、參數、Apply／Remove、Undo／Redo、IndexedDB、Mock生成與共享React匯出。舊合法組合不放寬／不破壞；無新依賴。

@@ -45,8 +45,23 @@ export const styleSchema = z
     width: z.enum(["full", "content", "narrow"]).default("full"),
   })
   .strict();
+// Visual themes are fixed, reviewed token sets; never model-supplied CSS.
+export const themeIds = ["classic", "midnight", "sunrise", "ocean", "forest", "mono", "blossom"] as const;
+export type ThemeId = (typeof themeIds)[number];
+export const themeLabels: Record<ThemeId, string> = {
+  classic: "經典綠",
+  midnight: "午夜",
+  sunrise: "晨光",
+  ocean: "海洋",
+  forest: "森林",
+  mono: "極簡黑白",
+  blossom: "花園",
+};
+export const sectionRoles = ["hero", "features", "content", "gallery", "cta"] as const;
+export type SectionRole = (typeof sectionRoles)[number];
 export type PageNode = {
   id: string;
+  role?: SectionRole;
   type:
     | "section"
     | "container"
@@ -97,6 +112,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
       .object({
         ...common,
         type: z.literal("section"),
+        role: z.enum(sectionRoles).optional(),
         children: z.array(PageNodeSchema).max(100),
       })
       .strict(),
@@ -195,6 +211,8 @@ const PageObject = z
     draftLayout:z.object({width:z.literal(1440),height:z.literal(1200),items:z.array(z.object({id:z.string().uuid(),x:z.number().min(0).max(1440),y:z.number().min(0).max(1200),width:z.number().min(80).max(1440),height:z.number().min(40).max(1200),zIndex:z.number().int().min(0).max(100)}).strict()).min(1).max(40)}).strict().optional(),
     typography: z.enum(["sans", "serif"]),
     styles: z.enum(["neutral", "warm"]),
+    theme: z.enum(themeIds).optional(),
+    chrome: z.object({ nav: z.boolean(), footer: z.boolean() }).strict().optional(),
     responsive: z
       .object({
         mobileColumns: z.literal(1),

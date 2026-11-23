@@ -33,3 +33,7 @@ CanvasSpec v1 採相容擴充明確 heading／image／選填 href 與效果列�
 2026-11-09（Phase 5.1）：以 gpt-6-luna 作待核實候選，gpt-6.1-sol 只保留為另行授權選項，移除舊 gpt-4.1-mini 白名單。官方 SDK 型別列有名稱，但四個官方頁 CONNECT 403，不能把型別當作即時 API／Schema／推理／定價保證。因此新增 model review gate，未核對前停用，不猜測 reasoning.effort，不為更名升級已相容 SDK。
 授權預設一次：既有 limiter 改接後端可設定 1–5 次與必填且至多 $0.25 的預算，保留單次 $0.10／4096 output／30 秒／併發 1／零重試。旗標不是付費授權，先驗收第一份，失敗停止；不改帳務或付費試錯。
 保留原五份內容與凌亂幾何，只固定 UUID／anchor 並建立 SHA-256 manifest，避免正式評估輸入漂移。補記 cached／reasoning 與失敗用量，未知為 null；reasoning 不重複計費。正式品質分數不以 Mock 或假數字填滿；本輪真實呼叫 0、Phase 5.1 BLOCKED。
+
+
+2026-11-23（智慧排版）：使用者要求大幅改善輸出與編輯體驗並允許擴充架構。PageSpec以選填欄位擴充theme／chrome／role，不升版本，舊資料照常驗證；主題是程式內固定Token，不接受模型或使用者自訂CSS。導覽與頁尾文字只取頁面標題與既有標題，不編造內容。
+Layout v2與v1並存；模型只看v2 Schema。AI未設定時改用明確標示的本機排版，取代先前的死路錯誤；真正的AI失敗仍不替代。主題變更新增set-theme Patch並錨定第一區塊，以沿用既有scope驗證、Undo與CAS保存。畫布維持1440×1200，避免破壞fixture指紋與核准草稿hash。

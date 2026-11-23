@@ -57,7 +57,7 @@ for (const width of [1440, 768, 375])
       .filter({ hasText: "草稿選單" })
       .click();
     await page
-      .getByRole("button", { name: "示範排版（非 AI）", exact: true })
+      .getByRole("button", { name: "智慧排版（非 AI）", exact: true })
       .click();
     await page.getByRole("button", { name: "使用此版本", exact: true }).click();
     await page.getByRole("button", { name: "選取", exact: true }).click();

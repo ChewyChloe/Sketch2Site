@@ -76,12 +76,13 @@ export async function requestGeneration(
 
 // Owner-only free verification, available while generation is disabled. No token is persisted.
 export async function checkApprovedDraft(canvasSpec:CanvasSpec) {
- const status=await fetch('/api/generation/check',{credentials:'same-origin',cache:'no-store'});
- const state=await status.json();
- if(!status.ok)throw new GenerationError(generationCodes.includes(state.code)?state.code:'FORBIDDEN');
+ let status:Response,state:{code?:unknown;protocol?:unknown;csrfToken?:string};
+ // A missing or non-JSON backend is "unavailable", not an unexplained failure.
+ try{status=await fetch('/api/generation/check',{credentials:'same-origin',cache:'no-store'});state=await status.json();}catch{throw new GenerationError('UNAVAILABLE');}
+ if(!status.ok)throw new GenerationError(generationCodes.includes(state.code as never)?state.code as (typeof generationCodes)[number]:'FORBIDDEN');
  if(state.protocol!==generationProtocol)throw new GenerationError('VERSION_MISMATCH');
  if(!/^[a-f0-9]{64}$/.test(state.csrfToken??''))throw new GenerationError('CSRF_INVALID');
- const response=await fetch('/api/generation/check',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Sketch-CSRF':state.csrfToken},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:CanvasSchema.parse(canvasSpec)})});
+ const response=await fetch('/api/generation/check',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Sketch-CSRF':state.csrfToken!},body:JSON.stringify({requestId:crypto.randomUUID(),canvasSpec:CanvasSchema.parse(canvasSpec)})});
  const result=await response.json();
  if(!response.ok||result.code!=='DRAFT_APPROVED')throw new GenerationError(generationCodes.includes(result.code)?result.code:'UNAVAILABLE');
  return typeof result.draftApproval==='string'?result.draftApproval:undefined;

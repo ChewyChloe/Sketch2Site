@@ -60,7 +60,7 @@ for (const width of [1440, 768, 375])
     await page.keyboard.press("End");
     await expect(tabs.getByRole("tab", { name: "編輯元素" })).toBeFocused();
     await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-    await action(page, "示範排版（非 AI）");
+    await action(page, "智慧排版（非 AI）");
     await page.getByRole("button", { name: "使用此版本", exact: true }).click();
     await page.getByRole("button", { name: "選取", exact: true }).click();
     const h = page.locator(".preview-frame h1");

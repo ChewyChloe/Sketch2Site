@@ -284,3 +284,11 @@
 - DONE：素材參數排序、IndexedDB、Mock生成／Patch保留、Renderer與60種獨立React匯出。
 - PASS：472單元、分批Chromium回歸及修正重跑、三尺寸Replay、離線匯出、Build／秘密及私人brief邊界。詳細證據見docs/THIRD_BATCH_MOTIONS.md。
 - NOT TESTED：實機／Safari／Firefox、付費模型品質、此批線上版本。依本次範圍只本地提交，不Push／Merge／部署，停止於交付。
+
+## 智慧排版與主題（2026-11-23）
+- [x] DONE：PageSpec theme／chrome／section role與Renderer主題CSS（含匯出）。
+- [x] DONE：Layout v2、本機智慧排版引擎、AI未設定時明確標示的本機替代。
+- [x] DONE：AI prompt與v2 JSON Schema（未實際呼叫模型）。
+- [x] DONE：候選／已保存頁主題切換、區塊範本、畫布符合寬度縮放。
+- [ ] NOT STARTED：使用者提供Key後以真實模型驗收v2輸出品質。
+- [ ] NOT STARTED：畫布高度仍固定1200px，最多約四個範本區塊；放大需CanvasSpec遷移與fixture指紋更新。

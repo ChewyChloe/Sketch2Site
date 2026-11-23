@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { themeIds, themeLabels, type PageSpec, type ThemeId } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import type { CandidateResult } from "./demo";
 export default function CandidatePreview({
@@ -11,18 +12,21 @@ export default function CandidatePreview({
   candidate: CandidateResult;
   previewOnly?:boolean;
   stale: boolean;
-  onAccept: () => Promise<void>;
+  onAccept: (page: PageSpec) => Promise<void>;
   onBack: () => void;
 }) {
   const [mobile, setMobile] = useState(false),
-    [saving, setSaving] = useState(false);
+    [saving, setSaving] = useState(false),
+    [theme, setTheme] = useState<ThemeId>(candidate.page.theme ?? "classic");
+  // Theme is a reviewed token set; switching it never touches content.
+  const page = useMemo(() => ({ ...candidate.page, theme }), [candidate.page, theme]);
   return (
     <main className="preview-workspace" aria-label="生成候選預覽">
       <div className="preview-tools">
         <div>
           <strong>
             {previewOnly ? "草稿預覽（非 AI）" : candidate.mode === "demo"
-              ? "示範排版（非 AI）"
+              ? "智慧排版（非 AI）"
               : candidate.mode === "mock"
                 ? "測試生成（非 AI）"
                 : "生成候選版本"}
@@ -42,7 +46,7 @@ export default function CandidatePreview({
             onClick={async () => {
               setSaving(true);
               try {
-                await onAccept();
+                await onAccept(page);
               } finally {
                 setSaving(false);
               }
@@ -55,6 +59,21 @@ export default function CandidatePreview({
           </button>
         </div>
       </div>
+      <div className="theme-picker" role="radiogroup" aria-label="網站主題">
+        <span>主題</span>
+        {themeIds.map((id) => (
+          <button
+            key={id}
+            role="radio"
+            aria-checked={theme === id}
+            className={"theme-swatch theme-swatch-" + id}
+            onClick={() => setTheme(id)}
+          >
+            <i aria-hidden="true" />
+            {themeLabels[id]}
+          </button>
+        ))}
+      </div>
       {stale && (
         <p role="alert" className="preview-error">
           草稿已更新，請返回草稿重新生成。
@@ -62,7 +81,7 @@ export default function CandidatePreview({
       )}
       <div className="preview-scroll">
         <div className={"preview-frame " + (mobile ? "mobile" : "desktop")}>
-          <PageRenderer input={candidate.page} />
+          <PageRenderer input={page} />
         </div>
       </div>
     </main>

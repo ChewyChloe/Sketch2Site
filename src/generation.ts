@@ -5,6 +5,8 @@ import {
   PageSchema,
   EffectSchema,
   styleSchema,
+  themeIds,
+  sectionRoles,
   type PageNode,
   type PageSpec,
 } from "./pageSpec";
@@ -30,7 +32,7 @@ export const generationCodes = [
 ] as const;
 export type GenerationCode = (typeof generationCodes)[number];
 export const generationMessages: Record<GenerationCode, string> = {
-  NOT_CONFIGURED: "AI 尚未設定，可在草稿選單使用示範排版。",
+  NOT_CONFIGURED: "AI 尚未設定，可在草稿選單使用智慧排版。",
   INVALID_INPUT: "草稿無法生成：請檢查元素、按鈕連結與設計限制。",
   INVALID_OUTPUT: "生成失敗：結果未符合頁面或內容規則，原版本已保留。",
   REFUSED: "模型未提供布局，原版本已保留。",
@@ -46,7 +48,7 @@ export const generationMessages: Record<GenerationCode, string> = {
   DRAFT_HASH_MISMATCH: "草稿不符（DRAFT_HASH_MISMATCH）：目前草稿超出已核准的測試範圍，請使用「載入核准測試草稿（免費）」。",
   FORBIDDEN: "無法驗證生成請求，請重新整理後重試。",
   DUPLICATE: "這次生成請求已處理，請重新發起。",
-  UNAVAILABLE: "無法連線至生成服務，原版本已保留；可在草稿選單使用示範排版。",
+  UNAVAILABLE: "無法連線至生成服務，原版本已保留；可在草稿選單使用智慧排版。",
   STALE: "草稿或頁面已更新，請重新生成。",
 };
 export class GenerationError extends Error {
@@ -152,7 +154,7 @@ const ItemSchema = z
     tone: z.enum(["plain", "soft", "accent"]),
   })
   .strict();
-export const LayoutSchema = z
+export const LayoutV1Schema = z
   .object({
     version: z.literal(1),
     typography: z.enum(["sans", "serif"]),
@@ -172,9 +174,45 @@ export const LayoutSchema = z
       .max(20),
   })
   .strict();
+// v2 adds semantic section roles, a reviewed visual theme and page chrome.
+// intro/outro stack above/below the main group; aside becomes a side column.
+export const LayoutV2Schema = z
+  .object({
+    version: z.literal(2),
+    typography: z.enum(["sans", "serif"]),
+    theme: z.enum(themeIds),
+    nav: z.boolean(),
+    footer: z.boolean(),
+    sections: z
+      .array(
+        z
+          .object({
+            role: z.enum(sectionRoles),
+            tone: z.enum(["plain", "soft"]),
+            layout: z.enum(["stack", "grid"]),
+            columns: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+            gap: z.enum(["small", "medium", "large"]),
+            intro: z.array(ItemSchema).max(12),
+            items: z.array(ItemSchema).max(40),
+            outro: z.array(ItemSchema).max(12),
+            aside: z.array(ItemSchema).max(4),
+          })
+          .strict()
+          .refine((s) => s.intro.length + s.items.length + s.outro.length + s.aside.length > 0),
+      )
+      .min(1)
+      .max(20),
+  })
+  .strict();
+export const LayoutSchema = z.union([LayoutV1Schema, LayoutV2Schema]);
 export type Layout = z.infer<typeof LayoutSchema>;
-export const layoutJSONSchema = z.toJSONSchema(LayoutSchema, {
+export type LayoutV1 = z.infer<typeof LayoutV1Schema>;
+export type LayoutV2 = z.infer<typeof LayoutV2Schema>;
+export type LayoutItem = z.infer<typeof ItemSchema>;
+// The model only receives the v2 contract; v1 stays readable for old fixtures.
+export const layoutJSONSchema = z.toJSONSchema(LayoutV2Schema, {
   target: "draft-7",
+  reused: "ref",
 });
 export function materialize(canvasInput: unknown, output: unknown): PageSpec {
   const { canvas } = prepareIntent(canvasInput);
@@ -202,8 +240,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
     effects: [],
     ...props,
   });
-  const sections = layout.sections.map((section) => {
-    const items = section.items.map((item) => {
+  const build = (item: LayoutItem): PageNode => {
       const node = byId.get(item.sourceId);
       if (!node || seen.has(item.sourceId))
         throw new GenerationError("INVALID_OUTPUT");
@@ -260,17 +297,53 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
             children: (node.effects.some(e=>structuredGroupMotions.includes(e.presetId as typeof structuredGroupMotions[number])) ? node.content.split("\n").map(content=>make("card",{children:[make("paragraph",{content})]})) : (node.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1) ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content }))),
           });
       }
-    });
-    const group = make(section.layout, {
-      style: { ...defaultStyle, padding: "none", gap: section.gap },
-      children: items,
-      ...(section.layout === "grid" ? { columns: section.columns } : {}),
-    });
-    return make("section", {
-      style: { ...defaultStyle, padding: "large", gap: section.gap },
-      children: [make("container", { children: [group] })],
-    });
-  });
+      throw new GenerationError("INVALID_OUTPUT");
+  };
+  const stackStyle = (gap: "small" | "medium" | "large") => ({ ...defaultStyle, padding: "none" as const, gap });
+  // Adjacent buttons share a row; this wrapper carries no content of its own.
+  const withActions = (nodes: PageNode[]) =>
+    nodes.reduce<PageNode[]>((out, n) => {
+      const last = out.at(-1);
+      if (n.type === "button" && last?.type === "stack" && last.children?.every((c) => c.type === "button")) last.children.push(n);
+      else if (n.type === "button") out.push(make("stack", { style: stackStyle("small"), children: [n] }));
+      else out.push(n);
+      return out;
+    }, []);
+  const sections = layout.version === 1
+    ? layout.sections.map((section) => {
+        const group = make(section.layout, {
+          style: { ...defaultStyle, padding: "none", gap: section.gap },
+          children: section.items.map(build),
+          ...(section.layout === "grid" ? { columns: section.columns } : {}),
+        });
+        return make("section", {
+          style: { ...defaultStyle, padding: "large", gap: section.gap },
+          children: [make("container", { children: [group] })],
+        });
+      })
+    : layout.sections.map((section) => {
+        const intro = section.intro.map(build), items = section.items.map(build), outro = section.outro.map(build), aside = section.aside.map(build);
+        const group = items.length
+          ? make(section.layout, {
+              style: stackStyle(section.gap),
+              children: items,
+              ...(section.layout === "grid" ? { columns: section.columns } : {}),
+            })
+          : null;
+        const main = [
+          ...(intro.length ? [make("stack", { style: stackStyle("medium"), children: withActions(intro) })] : []),
+          ...(group ? [group] : []),
+          ...(outro.length ? [make("stack", { style: stackStyle("medium"), children: withActions(outro) })] : []),
+        ];
+        const body = aside.length
+          ? [make("grid", { columns: 2, style: stackStyle("large"), children: [make("stack", { style: stackStyle("large"), children: main }), make("stack", { style: stackStyle("medium"), children: aside })] })]
+          : main;
+        return make("section", {
+          role: section.role,
+          style: { ...defaultStyle, padding: "large", gap: section.gap, tone: section.tone },
+          children: [make("container", { style: stackStyle("large"), children: body })],
+        });
+      });
   if (seen.size !== canvas.nodes.length)
     throw new GenerationError("INVALID_OUTPUT");
   if (
@@ -289,7 +362,9 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
     ...(canvas.metadata.layoutMode!=='reflow'?{draftLayout:{width:1440,height:1200,items:canvas.nodes.map(({id,x,y,width,height,zIndex})=>({id,x,y,width,height,zIndex}))}}:{}),
     sections,
     typography: layout.typography,
-    styles: layout.theme,
+    ...(layout.version === 1
+      ? { styles: layout.theme }
+      : { styles: "neutral", theme: layout.theme, chrome: { nav: layout.nav, footer: layout.footer } }),
     responsive: { mobileColumns: 1, desktopColumns: 3 },
   });
   if (!checked.success) throw new GenerationError("INVALID_OUTPUT");

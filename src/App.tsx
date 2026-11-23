@@ -24,6 +24,8 @@ import {
 import { loadDraft, saveDraft } from "./storage";
 import Preview, { type PreviewHandle } from "./Preview";
 import CandidatePreview from "./CandidatePreview";
+import type { PageSpec } from "./pageSpec";
+import { blockTemplateIds, blockTemplateInfo, createBlock, type BlockTemplateId } from "./blockTemplates";
 import { createDemoCandidate, type CandidateResult } from "./demo";
 import { generationFixtures } from "./demoFixtures";
 import { tabNavigation } from "./tabNavigation";
@@ -40,6 +42,11 @@ const effects = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameE
 type Effect = keyof typeof effects;
 const dragType = "application/x-sketch2site";
 const demoFixtures = generationFixtures();
+// New drafts start in smart layout; stored drafts keep whatever mode they had.
+const freshDraft = (): CanvasSpec => {
+  const draft = blank();
+  return { ...draft, metadata: { ...draft.metadata, layoutMode: "reflow" } };
+};
 export default function App() {
   const imageInput = useRef<HTMLInputElement>(null),
     imageTarget = useRef<string | null>(null);
@@ -64,7 +71,7 @@ export default function App() {
   const [motionFull,setMotionFull]=useState(false);
   const [history, setHistory] = useState<History>({
     past: [],
-    present: blank(),
+    present: freshDraft(),
     future: [],
   });
   const [linkDraft, setLinkDraft] = useState("");
@@ -83,11 +90,27 @@ export default function App() {
   const [message, setMessage] = useState("正在讀取本機草稿…"),
     [error, setError] = useState(false);
   const [saved, setSaved] = useState(""),
-    [scale, setScale] = useState(0.6),
+    [zoom, setScale] = useState<number | "fit">("fit"),
+    [fitScale, setFitScale] = useState(0.6),
+    canvasScroll = useRef<HTMLDivElement>(null),
     [tab, setTab] = useState("library"),
     [search, setSearch] = useState("");
   const [panel, setPanel] = useState(() => window.innerWidth > 1000),
     [panelWidth, setPanelWidth] = useState(304);
+  const scale = zoom === "fit" ? fitScale : zoom;
+  // "Fit" tracks the visible canvas width (panels, window resizes).
+  useEffect(() => {
+    const el = canvasScroll.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const measure = () => {
+      const width = el.clientWidth - 48;
+      if (width > 0) setFitScale(Math.round(Math.max(0.2, Math.min(1, width / 1440)) * 1000) / 1000);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [mode]);
   const [draftDragging, setDraftDragging] = useState(false);
   const [draftEffect,setDraftEffect]=useState<Effect|null>(null),[draftHover,setDraftHover]=useState<string|null>(null);
   useEffect(() => {
@@ -152,9 +175,19 @@ export default function App() {
     setGenerating(true);
     setGenerationError("");
     try {
-      const result = demo
-        ? createDemoCandidate(spec)
-        : await requestGeneration(spec, controller.signal);
+      let usedLocal = demo;
+      let result;
+      if (demo) result = createDemoCandidate(spec);
+      else
+        try {
+          result = await requestGeneration(spec, controller.signal);
+        } catch (e) {
+          // Without a configured or reachable AI service, use the labelled local
+          // layout instead of a dead end. Other failures still surface as errors.
+          if (!(e instanceof GenerationError) || !["NOT_CONFIGURED", "UNAVAILABLE"].includes(e.code)) throw e;
+          result = createDemoCandidate(spec);
+          usedLocal = true;
+        }
       const latest = previewRef.current?.target();
       if (
         run !== generationRun.current ||
@@ -166,7 +199,9 @@ export default function App() {
         throw new GenerationError("STALE");
       report(
         result.mode !== "live"
-          ? "示範排版完成，未呼叫 AI。"
+          ? usedLocal && !demo
+            ? "AI 尚未設定，已改用本機智慧排版（未呼叫 AI）。"
+            : "智慧排版完成，未呼叫 AI。"
           : "草稿已送至 OpenAI，候選尚未儲存。",
       );
       setCandidate({ result, canvasVersion: version, target, previewOnly });
@@ -183,13 +218,13 @@ export default function App() {
       }
     }
   }
-  async function acceptCandidate() {
+  async function acceptCandidate(page: PageSpec = candidate!.result.page) {
     if (!candidate || candidate.canvasVersion !== canvasVersion.current) return;
     setAccepting(true);
     setGenerationError("");
     try {
       const result = await previewRef.current!.accept(
-        candidate.result.page,
+        page,
         candidate.target,
       );
       if (result.ok) setCandidate(null);
@@ -221,7 +256,7 @@ export default function App() {
     setReady(false);
     setLoadError(false);
     try {
-      const data = (await loadDraft()) ?? blank();
+      const data = (await loadDraft()) ?? freshDraft();
       setHistory({ past: [], present: data, future: [] });
       setSaved(JSON.stringify(data));
       setSelected(null);
@@ -320,6 +355,19 @@ export default function App() {
     change({ ...spec, nodes: [...spec.nodes, next] });
     setSelected(next.id);
     report("已新增" + labels[type]);
+  }
+  function addBlock(id: BlockTemplateId) {
+    if (!ready || loadError) return;
+    const nodes = createBlock(spec, id);
+    if (!nodes) {
+      report("畫布下方空間不足，請先整理或刪除部分元件。", true);
+      return;
+    }
+    if (change({ ...spec, nodes: [...spec.nodes, ...nodes] })) {
+      setSelected(nodes[0].id);
+      report("已新增區塊：" + blockTemplateInfo(id).label + "，點選文字即可修改。");
+      requestAnimationFrame(() => document.querySelector(`[data-node-id="${nodes[0].id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
+    }
   }
   function attach(effect: Effect, id: string, controls?:MotionControls) {
     const n = state.current.present.nodes.find((n) => n.id === id);
@@ -726,7 +774,7 @@ node ? (
               <span className="neo-step">3.</span> 生成網站
             </button>
           </div>
-          {mode === "draft" && <label className="layout-choice" title="保留相對位置與尺寸；手機版自動單欄">生成布局<select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="preserve">保留草稿布局</option><option value="reflow">AI 自由重排</option></select></label>}
+          {mode === "draft" && <label className="layout-choice" title="智慧排版：自動整理成 Hero、特色、圖庫等區塊；保留草稿位置：維持相對位置，手機單欄">生成布局<select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="reflow">智慧排版</option><option value="preserve">保留草稿位置</option></select></label>}
           {mode === "draft" && (
             <button
               className="primary"
@@ -762,7 +810,7 @@ node ? (
                   disabled={disabled || generating || !spec.nodes.length}
                   onClick={() => void generate(true)}
                 >
-                  示範排版（非 AI）
+                  智慧排版（非 AI）
                 </button>
                 <button disabled={generating || !ready} onClick={async()=>{if(dirty&&!window.confirm("載入核准測試草稿會取代目前草稿，可還原。是否繼續？"))return;try{const approved=await loadApprovedDraft();await checkApprovedDraft(approved);if(change(approved)){setGenerationError("");setCandidate(null);setSelected(null);report("已從後端載入並核對核准測試草稿，未呼叫 AI。");}}catch(e){report(e instanceof Error?e.message:"載入失敗，請停止測試。",true);}}}>載入核准測試草稿（免費）</button>
                 <button disabled={generating || !ready} onClick={async()=>{try{await checkApprovedDraft(spec);setGenerationError("");report("目前草稿與安全驗證通過，未呼叫 AI。");}catch(e){report(e instanceof Error?e.message:"免費核對失敗，請停止測試。",true);}}}>核對目前草稿（免費）</button>
@@ -781,7 +829,7 @@ node ? (
                           )
                         )
                           return;
-                        if (change(fixture)) {
+                        if (change(fixture.metadata.layoutMode ? fixture : { ...fixture, metadata: { ...fixture.metadata, layoutMode: "reflow" } })) {
                           setSelected(null);
                           setPending(null);
                           setMoving(null);
@@ -888,9 +936,10 @@ node ? (
                     縮放{" "}
                     <select
                       aria-label="畫布縮放"
-                      value={scale}
-                      onChange={(e) => setScale(Number(e.target.value))}
+                      value={zoom}
+                      onChange={(e) => setScale(e.target.value === "fit" ? "fit" : Number(e.target.value))}
                     >
+                      <option value="fit">符合寬度</option>
                       {[0.4, 0.5, 0.6, 0.75, 1].map((s) => (
                         <option key={s} value={s}>
                           {s * 100}%
@@ -907,6 +956,7 @@ node ? (
                 </div>
               </div>
               <div
+                ref={canvasScroll}
                 className="canvas-scroll"
                 style={{ "--draft-scale": scale } as React.CSSProperties}
               >
@@ -1144,6 +1194,27 @@ node ? (
                         <WorkbenchIcon name="image" />
                         {importingImage ? "正在匯入圖片…" : "匯入圖片"}
                       </button>
+                      <div className="block-templates" role="group" aria-label="區塊範本">
+                        <p className="library-subhead">區塊範本</p>
+                        {blockTemplateIds
+                          .filter((id) => blockTemplateInfo(id).label.includes(search))
+                          .map((id) => (
+                            <button
+                              key={id}
+                              className={"block-template block-template-" + id}
+                              disabled={disabled}
+                              aria-label={"新增區塊：" + blockTemplateInfo(id).label}
+                              onClick={() => addBlock(id)}
+                            >
+                              <span className="block-thumb" aria-hidden="true"><i /><i /><i /><i /></span>
+                              <span>
+                                <strong>{blockTemplateInfo(id).label}</strong>
+                                <small>{blockTemplateInfo(id).hint}</small>
+                              </span>
+                            </button>
+                          ))}
+                        <p className="library-subhead">單一元件</p>
+                      </div>
                       {(Object.keys(labels) as CanvasNode["type"][])
                         .filter(
                           (t) =>

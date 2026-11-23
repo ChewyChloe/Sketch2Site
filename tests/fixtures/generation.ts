@@ -1,8 +1,8 @@
 export { generationFixtures } from "../../src/demoFixtures";
-import type { Layout } from "../../src/generation";
+import type { Layout, LayoutV1 } from "../../src/generation";
 import type { Intent, LayoutProvider } from "../../server/provider";
 // Test-only planner, never imported by the production API. It is not evidence of AI quality.
-export function mockLayout(intent: Intent): Layout {
+export function mockLayout(intent: Intent): LayoutV1 {
   return {
     version: 1,
     typography: intent.canvas.constraints.includes("typography:serif")

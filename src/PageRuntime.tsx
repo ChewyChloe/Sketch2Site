@@ -178,6 +178,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       className={[
         "page-node",
         entry.className,
+        node.role ? "role-" + node.role : "",
         "gap-" + node.style.gap,
         "pad-" + node.style.padding,
         "align-" + node.style.align,
@@ -204,6 +205,34 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
     </Tag>
   );
 });
+// Navigation labels are the page's own section headings; no text is invented.
+function firstHeading(node: PageNode): PageNode | undefined {
+  if (node.type === "heading") return node;
+  for (const child of node.children ?? []) {
+    const found = firstHeading(child);
+    if (found) return found;
+  }
+  return undefined;
+}
+function PageNav({ page }: { page: PageSpec }) {
+  const links = page.sections
+    .filter((s) => s.role !== "hero")
+    .map((s) => ({ id: s.id, label: firstHeading(s)?.content }))
+    .filter((l): l is { id: string; label: string } => !!l.label && l.label.length <= 24)
+    .slice(0, 5);
+  return (
+    <header className="page-nav">
+      <a className="page-brand" href={"#page-" + page.sections[0].id}>{page.metadata.title}</a>
+      {links.length > 0 && (
+        <nav aria-label="頁面導覽">
+          {links.map((l) => (
+            <a key={l.id} href={"#page-" + l.id}>{l.label}</a>
+          ))}
+        </nav>
+      )}
+    </header>
+  );
+}
 class RenderBoundary extends Component<
   { children: ReactNode; resetKey: unknown },
   { failed: boolean }
@@ -270,6 +299,7 @@ export function PageRuntime({
             " theme-" +
             page.styles
           }
+          data-theme={page.theme ?? "classic"}
           lang={page.metadata.language}
           aria-label={page.metadata.title}
           style={
@@ -291,7 +321,7 @@ export function PageRuntime({
             }
           }}
         >
-          {page.draftLayout?<div className="draft-layout" style={{aspectRatio:'1440 / 1200'}}>{[...page.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/12}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/12}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:page.sections.map(section=><RenderNode key={section.id} node={section}/>)}
+          {page.draftLayout?<div className="draft-layout" style={{aspectRatio:'1440 / 1200'}}>{[...page.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/12}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/12}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:<>{page.chrome?.nav&&<PageNav page={page}/>}<main className="page-main">{page.sections.map(section=><RenderNode key={section.id} node={section}/>)}</main>{page.chrome?.footer&&<footer className="page-footer"><span>{page.metadata.title}</span><a href={"#page-"+page.sections[0].id}>回到頂端 ↑</a></footer>}</>}
         </div>
       </RenderBoundary>
     </MotionPreview.Provider></AssetUrls.Provider>

@@ -65,3 +65,24 @@ body{background:var(--neo-cream)}
 .animation-asset[data-batch=third] .asset-preview{height:300px}.animation-asset[data-batch=third] .asset-sample{max-width:100%}.animation-asset[data-batch=third] .asset-sample .page-paragraph{font-size:17px}.animation-asset[data-batch=third] .cin-gooey,.animation-asset[data-batch=third] .cin-shape{height:100px}.animation-asset[data-batch=third] .story-panel .page-paragraph{font-size:13px}.animation-asset[data-batch=third] .story-panel .page-heading{font-size:20px}.motion-assets ol{list-style:none;margin:8px 0;padding:0}.motion-assets li{display:flex;gap:4px;align-items:center;margin-bottom:6px}.motion-assets li>span{flex:1;font-size:11px}.motion-assets li>button{padding:3px 7px;min-height:28px}.motion-assets small{display:block;font-size:11px}
 .asset-sample [data-effects~="cursor-trail-particles"],.asset-sample [data-effects~="particle-constellation"]{min-height:180px;justify-content:center}
 .asset-sample .story-simple .story-viewport,.asset-sample .shuffle-static{max-height:210px;overflow:auto}
+/* Section templates: full-width rows with a tiny layout thumbnail. */
+.neo-workspace .library>.block-templates{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.neo-workspace .library-subhead{margin:6px 0 0;color:#8f948c;font-size:11px;font-weight:700;letter-spacing:.08em}
+.neo-workspace .block-template{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;background:#181b1e;border:1px solid #383d40;border-radius:14px;color:#f7f6f2;text-align:left;cursor:pointer}
+.neo-workspace .block-template:hover:not(:disabled){border-color:#10e560;background:#202923}
+.neo-workspace .block-template strong{display:block;font-size:13px}
+.neo-workspace .block-template small{display:block;color:#a3a8a0;font-size:11px;margin-top:2px}
+.block-thumb{flex:none;width:56px;height:40px;border-radius:6px;background:#0f1113;border:1px solid #2c3134;display:grid;gap:3px;padding:5px}
+.block-thumb i{display:block;border-radius:2px;background:#3a4044}
+.block-template-hero .block-thumb{grid-template-columns:1fr 1fr;grid-template-rows:2fr 1fr 1fr}
+.block-template-hero .block-thumb i:nth-child(1){background:#f7f6f2}.block-template-hero .block-thumb i:nth-child(3){background:#10e560;width:60%}.block-template-hero .block-thumb i:nth-child(4){grid-column:2;grid-row:1/4;background:#4b5357}
+.block-template-hero .block-thumb i:nth-child(2){grid-column:1}
+.block-template-features .block-thumb,.block-template-gallery .block-thumb{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 2fr}
+.block-template-features .block-thumb i:nth-child(1),.block-template-gallery .block-thumb i:nth-child(1){grid-column:1/-1;background:#f7f6f2;width:50%;justify-self:center}
+.block-template-gallery .block-thumb i:not(:first-child){background:#4b5357}
+.block-template-cta .block-thumb{background:#10e560;grid-template-rows:2fr 1fr 1fr;justify-items:center}
+.block-template-cta .block-thumb i{width:80%;background:#0f1113}.block-template-cta .block-thumb i:nth-child(3){width:40%;background:#f7f6f2}.block-template-cta .block-thumb i:nth-child(4){display:none}
+/* Generation notices sit beside the fixed rail like the topbar. */
+.generation-notice{margin-left:72px;padding:10px 20px;font-size:13px}
+.generation-notice[role=alert]{color:#9b2c22;background:#fff4f2;border-bottom:1px solid #f1c8c2}
+@media(max-width:760px){.generation-notice{margin-left:50px}}

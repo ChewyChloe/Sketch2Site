@@ -29,6 +29,7 @@ import { effectCompatible, effectIds, type PageNode } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import { validatePage } from "./pageSpec";
 import { applyPatchBatch, indexNodes, travelPage, type Change } from "./patch";
+import { themeIds, themeLabels } from "./pageSpec";
 function changeLabel(c: Change) {
   return c.property === "style.align"
     ? "對齊"
@@ -708,6 +709,28 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
           >
             重播動畫
           </button>
+        </WorkbenchMenu>
+        <WorkbenchMenu label="主題">
+          {themeIds.map((id) => {
+            const page = current.current.history.present;
+            return (
+              <button
+                key={id}
+                aria-pressed={(page.theme ?? "classic") === id}
+                className={"theme-swatch theme-swatch-" + id}
+                disabled={!ready || Boolean(loadError) || !page.sections[0]}
+                onClick={() =>
+                  patch(
+                    [{ operation: "set-theme", targetId: page.sections[0].id, payload: { theme: id } }],
+                    page.sections[0].id,
+                  )
+                }
+              >
+                <i aria-hidden="true" />
+                {themeLabels[id]}
+              </button>
+            );
+          })}
         </WorkbenchMenu>
         <span className="canvas-context">
           {mode === "pen"

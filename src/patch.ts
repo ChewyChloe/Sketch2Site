@@ -2,6 +2,7 @@ import {MotionSchema,LegacyEffectSchema,legacyMotion,updateMotion,type MotionId,
 import { imageSource } from "./assetRef";
 import { z } from "zod";
 import {
+  themeIds,
   PageSchema,
   EffectSchema,
   effectIds,
@@ -99,6 +100,14 @@ export const PatchSchema = z.discriminatedUnion("operation", [
         z.object({ effectId: z.enum(effectIds), parameters }).strict(),
         z.object({ effectId: z.enum(effectIds), validatedControls: z.record(z.string().max(40), z.union([z.string().max(1000), z.number().finite(), z.boolean(), z.array(z.string().max(24)).max(24), z.array(imageSource).min(2).max(12)])) }).strict(),
       ]),
+    })
+    .strict(),
+  z
+    .object({
+      // Page-wide visual theme. Anchored on the first section so scope checks still apply.
+      operation: z.literal("set-theme"),
+      targetId,
+      payload: z.object({ theme: z.enum(themeIds) }).strict(),
     })
     .strict(),
   z
@@ -249,6 +258,8 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
         after: next.effects.map((e) => e.presetId),
       });
   }
+  if ((before.theme ?? "classic") !== (after.theme ?? "classic") && after.sections[0])
+    changes.push({ targetId: after.sections[0].id, property: "theme", before: before.theme ?? "classic", after: after.theme ?? "classic" });
   return {
     changes,
     changedIds: [...new Set(changes.map((c) => c.targetId))],
@@ -260,6 +271,7 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
         typography: before.typography,
         styles: before.styles,
         responsive: before.responsive,
+        chrome: before.chrome,
       },
       {
         metadata: after.metadata,
@@ -267,6 +279,7 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
         typography: after.typography,
         styles: after.styles,
         responsive: after.responsive,
+        chrome: after.chrome,
       },
     ),
   };
@@ -276,6 +289,8 @@ function authorized(patch: Patch, change: Change): boolean {
   switch (patch.operation) {
     case "set-text":
       return change.property === "content";
+    case "set-theme":
+      return change.property === "theme";
     case "set-property":
       return change.property === patch.payload.property;
     case "set-style":
@@ -384,6 +399,7 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
       if(!node.effects.some(e=>e.presetId===p.payload.effectId))return "EFFECT_CONFLICT";
       try{return {...node,effects:node.effects.map(e=>e.presetId===p.payload.effectId?updateMotion(e,"validatedControls" in p.payload?p.payload.validatedControls:p.payload.parameters,!("validatedControls" in p.payload)):e)};}catch{return "INVALID_PATCH";}
     }
+    case "set-theme": return node;
     case "remove-effect": return !node.effects.some(e=>e.presetId===p.payload.effectId)?"EFFECT_CONFLICT":{...node,effects:node.effects.filter(e=>e.presetId!==p.payload.effectId)};
   }
 }
@@ -429,6 +445,11 @@ export function applyPatchBatch(
   for (const p of batch.patches) {
     const target = indexNodes(candidate).get(p.targetId);
     if (!target) return fail("TARGET_NOT_FOUND");
+    if (p.operation === "set-theme") {
+      if (candidate.sections[0]?.id !== target.id) return fail("PROPERTY_NOT_ALLOWED");
+      candidate = { ...candidate, theme: p.payload.theme };
+      continue;
+    }
     const updated = updateNode(target, p);
     if (typeof updated === "string") return fail(updated);
     const replace = (n: PageNode): PageNode => {
