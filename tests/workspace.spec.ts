@@ -20,6 +20,8 @@ async function drag(
 }
 test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ page }) => {
   await ready(page);
+  // Pixel expectations below are written for a fixed 60% zoom (default is now fit-width).
+  await page.getByLabel("畫布縮放").selectOption("0.6");
   const canvas = page.getByTestId("canvas");
   // Actual browser mouse drag from library into canvas.
   await page

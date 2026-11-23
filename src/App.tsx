@@ -63,6 +63,7 @@ export default function App() {
   const [candidate, setCandidate] = useState<{
     result: CandidateResult;
     previewOnly?:boolean;
+    aiFallback?:boolean;
     canvasVersion: number;
     target: { sessionId: string; revision: number };
   } | null>(null);
@@ -204,7 +205,7 @@ export default function App() {
             : "智慧排版完成，未呼叫 AI。"
           : "草稿已送至 OpenAI，候選尚未儲存。",
       );
-      setCandidate({ result, canvasVersion: version, target, previewOnly });
+      setCandidate({ result, canvasVersion: version, target, previewOnly, aiFallback: usedLocal && !demo });
       setMode("preview");
     } catch (e) {
       if (run === generationRun.current)
@@ -902,6 +903,7 @@ node ? (
           <CandidatePreview
             candidate={candidate.result}
             previewOnly={candidate.previewOnly}
+            aiFallback={candidate.aiFallback}
             stale={candidate.canvasVersion !== canvasVersion.current}
             onAccept={acceptCandidate}
             onBack={() => {

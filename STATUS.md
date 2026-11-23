@@ -6,8 +6,9 @@
 - DONE：候選預覽主題切換；已保存頁面「主題」選單走新set-theme Patch（只能錨定第一個區塊，可Undo/Redo、CAS保存）。
 - DONE：元件庫新增四種區塊範本（首屏介紹／三欄特色／圖片展示／行動呼籲），群組放在現有內容下方，空間不足明確提示。畫布新增「符合寬度」縮放並設為預設，修正右側被裁切；生成錯誤提示不再被左側欄遮住。
 - PASS：480單元整合（新增8項）、Typecheck、Build、check:secrets、motion boundary；E2E結果見下一行。
-- PARTIAL：完整Chromium E2E（238案）在本次commit時執行中，前35案PASS、0失敗；完成後若有失敗另行修正提交。
+- PASS／既有FAIL：完整Chromium E2E 238案：218 PASS、8 skipped、12 FAIL。同組測試在原始commit 60403f5重跑，其中9案原本就失敗（動畫庫品質×3、關閉Chromium恢復、手機預覽x=0、Phase6.1工作台×3、375設計檢查）。本輪造成的3案（縮放假設、AI未設定行為、拖曳像素）已修正並重跑PASS；375設計檢查也因手機工具列修正而PASS。其餘8案為既有問題，未處理。
 - NOT TESTED：真實付費AI以v2 Schema的輸出品質（等待使用者提供Key）；Safari／Firefox／實機。
+- 預覽：私人Artifact（前端單檔、無後端，生成網站會走本機智慧排版）。
 - 恢復方式：分支claude/gallant-cerf-2vjpdm；npm ci後npm run dev，草稿選單載入示範或點元件庫區塊範本，再按「生成網站」。
 
 ## 20種進階動畫擴充（2026-11-18）
