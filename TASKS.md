@@ -291,4 +291,6 @@
 - [x] DONE：AI prompt與v2 JSON Schema（未實際呼叫模型）。
 - [x] DONE：候選／已保存頁主題切換、區塊範本、畫布符合寬度縮放。
 - [ ] NOT STARTED：使用者提供Key後以真實模型驗收v2輸出品質。
-- [ ] NOT STARTED：畫布高度仍固定1200px，最多約四個範本區塊；放大需CanvasSpec遷移與fixture指紋更新。
+- [x] DONE：畫布自動延長至4800px。
+- [x] DONE：價目表與常見問題區塊；介面減量。
+- [ ] NOT STARTED：表單（需後端或第三方接收端，待決定）。

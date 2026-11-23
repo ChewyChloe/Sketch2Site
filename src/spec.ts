@@ -12,13 +12,14 @@ export const Effect = z.enum([
   "hover-lift",
   "stagger-reveal",
 ]);
+export const canvasMaxHeight = 4800;
 export const Kind = z.enum(["text", "button", "card", "heading", "image"]);
 export const NodeSchema = z.preprocess(bindMotionInput,z
   .object({
     id: z.string().uuid(),
     type: Kind,
     x: z.number().min(0).max(1440),
-    y: z.number().min(0).max(1200),
+    y: z.number().min(0).max(canvasMaxHeight),
     width: z.number().min(80).max(1440),
     height: z.number().min(40).max(1200),
     content: z.string().max(2000),
@@ -45,7 +46,8 @@ export const CanvasSchema = z
         name: z.string().min(1).max(80),
         layoutMode:z.enum(["preserve","reflow"]).optional(),
         width: z.literal(1440),
-        height: z.literal(1200),
+        // Taller pages grow in 600px steps; existing drafts stay at 1200.
+        height: z.number().int().min(1200).max(canvasMaxHeight),
       })
       .strict(),
     nodes: z.array(NodeSchema).max(100),
@@ -160,6 +162,7 @@ export function createNode(
   type: CanvasNode["type"],
   x: number,
   y: number,
+  canvasHeight = 1200,
 ): CanvasNode {
   const width =
       type === "heading"
@@ -173,7 +176,7 @@ export function createNode(
     id: crypto.randomUUID(),
     type,
     x: Math.max(0, Math.min(1440 - width, x)),
-    y: Math.max(0, Math.min(1200 - height, y)),
+    y: Math.max(0, Math.min(canvasHeight - height, y)),
     width,
     height,
     content: {

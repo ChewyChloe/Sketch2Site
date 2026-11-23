@@ -1,5 +1,4 @@
 import {encodeNodes,decodeNodes,cloneNodes,deleteNodes,groupSelection,translateSelection} from "./canvasEditing";
-import {checkApprovedDraft,loadApprovedDraft} from "./generationClient";
 import {MotionControlsFields} from "./MotionControls";
 import type {MotionControls} from "./motionCatalog";
 import {motionCatalog,motionIds,createMotion,numericContent,combinationReason,targetReason,type MotionId,defaultControls} from "./motion";
@@ -359,12 +358,13 @@ export default function App() {
   }
   function addBlock(id: BlockTemplateId) {
     if (!ready || loadError) return;
-    const nodes = createBlock(spec, id);
-    if (!nodes) {
-      report("畫布下方空間不足，請先整理或刪除部分元件。", true);
+    const block = createBlock(spec, id);
+    if (!block) {
+      report("畫布已達上限，請先刪除部分元件。", true);
       return;
     }
-    if (change({ ...spec, nodes: [...spec.nodes, ...nodes] })) {
+    const { nodes, height } = block;
+    if (change({ ...spec, metadata: { ...spec.metadata, height }, nodes: [...spec.nodes, ...nodes] })) {
       setSelected(nodes[0].id);
       report("已新增區塊：" + blockTemplateInfo(id).label + "，點選文字即可修改。");
       requestAnimationFrame(() => document.querySelector(`[data-node-id="${nodes[0].id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
@@ -427,9 +427,9 @@ export default function App() {
   async function pasteSelection(){
     let value=clipboard.current;try{const text=await navigator.clipboard?.readText();if(text?.startsWith('Sketch2Site/CanvasNodes/v1:'))value=text;}catch{/* Internal clipboard remains available. */}
     const nodes=decodeNodes(value);if(!nodes.length)return;
-    const copies=cloneNodes(nodes);const available=new Set([...state.current.present.nodes,...copies].map(n=>n.id));copies.forEach(n=>{if(n.href?.startsWith('#')&&!available.has(n.href.slice(1)))n.href=null;});if(change({...state.current.present,nodes:[...state.current.present.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));report(`已貼上 ${copies.length} 個元件，可還原。`);}
+    const copies=cloneNodes(nodes,24,24,state.current.present.metadata.height);const available=new Set([...state.current.present.nodes,...copies].map(n=>n.id));copies.forEach(n=>{if(n.href?.startsWith('#')&&!available.has(n.href.slice(1)))n.href=null;});if(change({...state.current.present,nodes:[...state.current.present.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));report(`已貼上 ${copies.length} 個元件，可還原。`);}
   }
-  function duplicate(){const ids=selectedIds.length?selectedIds:selected?[selected]:[];const copies=cloneNodes(spec.nodes.filter(n=>ids.includes(n.id)));if(!copies.length)return;if(change({...spec,nodes:[...spec.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));}}
+  function duplicate(){const ids=selectedIds.length?selectedIds:selected?[selected]:[];const copies=cloneNodes(spec.nodes.filter(n=>ids.includes(n.id)),24,24,spec.metadata.height);if(!copies.length)return;if(change({...spec,nodes:[...spec.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));}}
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
@@ -558,7 +558,7 @@ export default function App() {
         Math.max(
           0,
           Math.min(
-            1200 - d.node.height,
+            state.current.present.metadata.height - d.node.height,
             d.node.y + (e.clientY - d.startY) / d.scale,
           ),
         ),
@@ -772,10 +772,10 @@ node ? (
                 }else setMode("preview");
               }}
             >
-              <span className="neo-step">3.</span> 生成網站
+              <span className="neo-step">3.</span> 預覽
             </button>
           </div>
-          {mode === "draft" && <label className="layout-choice" title="智慧排版：自動整理成 Hero、特色、圖庫等區塊；保留草稿位置：維持相對位置，手機單欄">生成布局<select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="reflow">智慧排版</option><option value="preserve">保留草稿位置</option></select></label>}
+          {mode === "draft" && <label className="layout-choice" title="智慧排版：自動整理成首屏、特色、價目表等區塊；保留草稿位置：維持相對位置，手機單欄"><select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="reflow">智慧排版</option><option value="preserve">保留草稿位置</option></select></label>}
           {mode === "draft" && (
             <button
               className="primary"
@@ -813,8 +813,6 @@ node ? (
                 >
                   智慧排版（非 AI）
                 </button>
-                <button disabled={generating || !ready} onClick={async()=>{if(dirty&&!window.confirm("載入核准測試草稿會取代目前草稿，可還原。是否繼續？"))return;try{const approved=await loadApprovedDraft();await checkApprovedDraft(approved);if(change(approved)){setGenerationError("");setCandidate(null);setSelected(null);report("已從後端載入並核對核准測試草稿，未呼叫 AI。");}}catch(e){report(e instanceof Error?e.message:"載入失敗，請停止測試。",true);}}}>載入核准測試草稿（免費）</button>
-                <button disabled={generating || !ready} onClick={async()=>{try{await checkApprovedDraft(spec);setGenerationError("");report("目前草稿與安全驗證通過，未呼叫 AI。");}catch(e){report(e instanceof Error?e.message:"免費核對失敗，請停止測試。",true);}}}>核對目前草稿（免費）</button>
                 <div className="menu-label">示範草稿（非 AI）</div>
                 {demoFixtures
                   .filter((_, index) => index !== 2)
@@ -883,13 +881,6 @@ node ? (
           e.target.value = "";
         }}
       />
-      <nav className="neo-rail" aria-label="工作台導覽">
-        <div className="neo-rail-logo" aria-label="Sketch2Site">S2</div>
-        <button aria-label="開啟視覺畫布" aria-pressed={mode==='draft'&&!motionFull} onClick={()=>{setMode('draft');setMotionFull(false);setPanel(true);setTab('library');}}><WorkbenchIcon name="pen"/></button>
-        <button aria-label="開啟動畫素材庫" aria-pressed={mode==='draft'&&motionFull} onClick={()=>{setMode('draft');setMotionFull(true);setPanel(true);setTab('animations');}}><span aria-hidden="true">◎</span></button>
-        <button aria-label="開啟已保存網站" aria-pressed={mode==='preview'} onClick={()=>{setCandidate(null);setMode('preview');}}><WorkbenchIcon name="card"/></button>
-        <div className="neo-rail-bottom"><span className="neo-local-dot" title="本機工作台"/><button aria-label="切換工具面板" onClick={()=>setPanel(v=>!v)}><WorkbenchIcon name="select"/></button></div>
-      </nav>
       <div style={{"--neo-library-width":`${panelWidth}px`} as CSSProperties} className={'workspace neo-workspace'+(mode==='draft'&&motionFull?' neo-motion-full':'')}>
         <div
           className="preview-host"
@@ -915,11 +906,11 @@ node ? (
         {mode === "draft" && (
           <>
             <main className="studio" aria-label="草稿工作區">
-              <div className="neo-context"><span><b>CANVAS //</b> {spec.metadata.name}</span><span><b>{Math.round(scale*100)}%</b> · {saved&&!dirty?'已儲存於本機':'本機草稿'}</span></div>
+              
               <div className="canvas-tools">
                 <div>
                   <strong>網站草稿</strong>
-                  <small>1440 × 1200</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · Ctrl/Cmd＋G 群組</small>}
+                  <small>1440 × {spec.metadata.height}</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · Ctrl/Cmd＋G 群組</small>}
                 </div>
                 <div>
                   <button
@@ -965,7 +956,7 @@ node ? (
                 {draftEffect && <span className="draft-drop-hint" role="status">{draftHover && spec.nodes.find(n=>n.id===draftHover) ? (draftDropReason(spec.nodes.find(n=>n.id===draftHover)!,draftEffect) ?? "放開以附加動畫") : "拖到綠框元件以附加動畫；不會新增元件"}</span>}
                 <div
                   className="canvas-wrap"
-                  style={{ width: 1440 * scale, height: 1200 * scale }}
+                  style={{ width: 1440 * scale, height: spec.metadata.height * scale }}
                 >
                   <div
                     ref={board}
@@ -974,7 +965,7 @@ node ? (
                     aria-label="草稿畫布"
                     style={{
                       width: 1440,
-                      height: 1200,
+                      height: spec.metadata.height,
                       transform: "scale(" + scale + ")",
                     }}
                     onDragOver={(e) => {
@@ -994,9 +985,7 @@ node ? (
                           ＋
                         </span>
                         <h2>從一個想法開始</h2>
-                        <p>把左側元件拖進畫布，安排內容與位置。</p>
-                        <p>也可以點選元件新增，再拖曳調整。</p>
-                        <p>草稿選單提供示範草稿與非 AI 排版。</p>
+                        <p>點左側「區塊範本」快速搭出頁面，或拖入單一元件。</p>
                       </div>
                     )}
                     {displayedNodes.map((n) => {
@@ -1321,7 +1310,7 @@ node ? (
                 </details>
               </aside>
             )}
-            {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><div className="neo-inspector-head"><span>物件檢查器 <small>INSPECTOR</small></span><b>{node?'ACTIVE':'READY'}</b></div><div className="neo-inspector-tabs"><span>屬性</span><button onClick={()=>{setTab('animations');setPanel(true);setMotionFull(false);}}>加入動畫</button></div><div className="neo-inspector-body">{inspectorContent}</div><div className="neo-inspector-foot">{node?`${node.effects.length} 個動畫標記`:'選取元件以開始編輯'}<b>LOCAL</b></div></aside>}
+            {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><div className="neo-inspector-head"><span>物件檢查器</span></div><div className="neo-inspector-tabs"><button onClick={()=>{setTab('animations');setPanel(true);setMotionFull(false);}}>加入動畫</button></div><div className="neo-inspector-body">{inspectorContent}</div></aside>}
           </>
         )}
       </div>

@@ -440,7 +440,7 @@
 .rendered-page[data-theme] .page-main > .page-section.pad-large { padding: clamp(56px, 7cqi, 104px) clamp(20px, 4cqi, 48px); }
 .rendered-page[data-theme] .page-main > .page-section { background: var(--pg-page); }
 .rendered-page[data-theme] .page-main > .page-section.tone-soft { background: var(--pg-soft); }
-.rendered-page[data-theme] .page-main > .page-section > .page-container > .page-stack > .page-heading:first-child + .page-paragraph { color: var(--muted); font-size: 1.08em; }
+.rendered-page[data-theme] .page-main > .page-section:not(.role-cta) > .page-container > .page-stack > .page-heading:first-child + .page-paragraph { color: var(--muted); font-size: 1.08em; }
 
 /* Buttons */
 .rendered-page[data-theme] .page-button,
@@ -510,3 +510,21 @@
 .rendered-page[data-theme] .page-main > .page-section.role-cta .page-heading,
 .rendered-page[data-theme] .page-main > .page-section.role-cta .page-paragraph { color: var(--pg-accent-ink); }
 .rendered-page[data-theme] .page-main > .page-section.role-cta .page-paragraph { opacity: .88; }
+
+/* Multi-line cards: first line is the title, the rest supporting text. */
+.rendered-page[data-theme] .page-card > .page-paragraph:first-child:not(:only-child) { font-weight: 700; font-size: 1.1em; color: var(--ink); }
+.rendered-page[data-theme] .page-card > .page-paragraph + .page-paragraph { color: var(--muted); }
+.rendered-page[data-theme] .page-card:has(> .page-paragraph + .page-paragraph) { gap: 6px; }
+
+/* Pricing: the second line is the price. */
+.rendered-page .role-pricing .page-grid { align-items: stretch; }
+.rendered-page[data-theme] .role-pricing .page-card { padding: clamp(24px, 2.6cqi, 36px); gap: 10px; }
+.rendered-page[data-theme] .role-pricing .page-card > .page-paragraph:nth-child(2) { color: var(--ink); font-size: clamp(28px, 3cqi, 40px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.rendered-page[data-theme] .role-pricing .page-grid > .page-card:nth-child(2):not(:last-child) { border: 2px solid var(--accent); box-shadow: var(--pg-shadow-lg); }
+
+/* FAQ: question and answer rows instead of boxes. */
+.rendered-page .role-faq .page-container { max-width: 860px; }
+.rendered-page[data-theme] .role-faq .page-stack > .page-card { background: transparent; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; padding: 20px 0; }
+.rendered-page[data-theme] .role-faq .page-stack > .page-card:first-child { border-top: 1px solid var(--line); }
+.rendered-page[data-theme] .role-faq .page-card > .page-paragraph:first-child { font-size: 1.08em; }
+.rendered-page[data-theme] .role-faq .page-stack:has(> .page-card) { gap: 0; }

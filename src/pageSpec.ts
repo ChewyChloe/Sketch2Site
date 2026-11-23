@@ -57,7 +57,7 @@ export const themeLabels: Record<ThemeId, string> = {
   mono: "極簡黑白",
   blossom: "花園",
 };
-export const sectionRoles = ["hero", "features", "content", "gallery", "cta"] as const;
+export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "cta"] as const;
 export type SectionRole = (typeof sectionRoles)[number];
 export type PageNode = {
   id: string;
@@ -208,7 +208,7 @@ const PageObject = z
       })
       .strict(),
     sections: z.array(PageNodeSchema).min(1).max(30),
-    draftLayout:z.object({width:z.literal(1440),height:z.literal(1200),items:z.array(z.object({id:z.string().uuid(),x:z.number().min(0).max(1440),y:z.number().min(0).max(1200),width:z.number().min(80).max(1440),height:z.number().min(40).max(1200),zIndex:z.number().int().min(0).max(100)}).strict()).min(1).max(40)}).strict().optional(),
+    draftLayout:z.object({width:z.literal(1440),height:z.number().int().min(1200).max(4800),items:z.array(z.object({id:z.string().uuid(),x:z.number().min(0).max(1440),y:z.number().min(0).max(4800),width:z.number().min(80).max(1440),height:z.number().min(40).max(1200),zIndex:z.number().int().min(0).max(100)}).strict()).min(1).max(40)}).strict().optional(),
     typography: z.enum(["sans", "serif"]),
     styles: z.enum(["neutral", "warm"]),
     theme: z.enum(themeIds).optional(),
@@ -249,7 +249,7 @@ const PageObject = z
         ctx.addIssue({ code: "custom", message: "最外層必須是區塊" });
       walk(section, 0);
     }
-    if(page.draftLayout){const placed=new Set<string>();for(const item of page.draftLayout.items){if(!ids.has(item.id)||placed.has(item.id)||item.x+item.width>1440||item.y+item.height>1200)ctx.addIssue({code:'custom',message:'草稿布局無效'});placed.add(item.id);}for(const id of placed)if(parents.get(id)?.some(p=>placed.has(p)))ctx.addIssue({code:'custom',message:'布局來源不可包含重複子樹'});}
+    if(page.draftLayout){const placed=new Set<string>();for(const item of page.draftLayout.items){if(!ids.has(item.id)||placed.has(item.id)||item.x+item.width>1440||item.y+item.height>page.draftLayout.height)ctx.addIssue({code:'custom',message:'草稿布局無效'});placed.add(item.id);}for(const id of placed)if(parents.get(id)?.some(p=>placed.has(p)))ctx.addIssue({code:'custom',message:'布局來源不可包含重複子樹'});}
     if(!withinMotionBudget(motions))ctx.addIssue({code:"custom",message:"動畫數量超過效能上限"});
     if (links.some((id) => !ids.has(id)))
       ctx.addIssue({ code: "custom", message: "找不到連結目標" });

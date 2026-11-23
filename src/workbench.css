@@ -1299,3 +1299,7 @@ input[type="range"] {
 .topbar input:disabled{opacity:1;color:#dcefe5}
 .topbar .project-name:disabled{-webkit-text-fill-color:#dcefe5;opacity:1}
 .selection-count{margin-left:12px;color:#146b51;font-weight:600}
+/* Element list: indent by nesting; layout wrappers read as quiet structure. */
+.element-browser li button { padding-left: calc(8px + min(var(--depth, 0), 4) * 12px); }
+.element-browser li.structural button { color: var(--muted); font-size: 12px; min-height: 30px; }
+.element-browser li.structural button span { opacity: .7; }

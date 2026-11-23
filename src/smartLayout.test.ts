@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blank, CanvasSchema, type CanvasSpec } from "./spec";
-import { createBlock, blockTemplateIds } from "./blockTemplates";
+import { createBlock, blockTemplateIds, type BlockTemplateId } from "./blockTemplates";
 import { smartLayout, suggestTheme } from "./smartLayout";
 import { materialize, verifyPreservation, LayoutSchema, layoutJSONSchema } from "./generation";
 import { generationFixtures } from "./demoFixtures";
@@ -8,24 +8,35 @@ import { createDemoCandidate } from "./demo";
 import { PageSchema, type PageNode } from "./pageSpec";
 import { applyPatchBatch, createPageSession } from "./patch";
 
-function templatedDraft(name = "咖啡小店"): CanvasSpec {
+function templatedDraft(name = "咖啡小店", ids: readonly BlockTemplateId[] = ["hero", "features", "gallery", "cta"]): CanvasSpec {
   let spec: CanvasSpec = { ...blank(), metadata: { ...blank().metadata, name, layoutMode: "reflow" } };
-  for (const id of blockTemplateIds) {
-    const nodes = createBlock(spec, id);
-    expect(nodes).not.toBeNull();
-    spec = { ...spec, nodes: [...spec.nodes, ...nodes!] };
+  for (const id of ids) {
+    const block = createBlock(spec, id);
+    expect(block).not.toBeNull();
+    spec = { ...spec, metadata: { ...spec.metadata, height: block!.height }, nodes: [...spec.nodes, ...block!.nodes] };
   }
   return CanvasSchema.parse(spec);
 }
 const roles = (sections: PageNode[]) => sections.map((s) => s.role);
 
 describe("block templates", () => {
-  it("adds valid grouped nodes below existing content and refuses when the canvas is full", () => {
-    const spec = templatedDraft();
-    expect(spec.nodes).toHaveLength(15);
-    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(4);
+  it("adds valid grouped nodes below existing content and grows the canvas", () => {
+    const spec = templatedDraft("咖啡小店", blockTemplateIds);
+    expect(spec.nodes).toHaveLength(23);
+    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(6);
+    expect(spec.metadata.height).toBeGreaterThan(1200);
+    expect(spec.metadata.height % 600).toBe(0);
     expect(spec.nodes.every((n) => n.type !== "button" || n.href?.startsWith("#"))).toBe(true);
-    expect(createBlock(spec, "hero")).toBeNull();
+  });
+  it("refuses a block once the canvas reaches its maximum height", () => {
+    let spec = templatedDraft("頁面", ["hero"]);
+    for (let i = 0; i < 40; i++) {
+      const block = createBlock(spec, "faq");
+      if (!block) break;
+      spec = CanvasSchema.parse({ ...spec, metadata: { ...spec.metadata, height: block.height }, nodes: [...spec.nodes, ...block.nodes] });
+    }
+    expect(spec.metadata.height).toBeLessThanOrEqual(4800);
+    expect(createBlock(spec, "faq")).toBeNull();
   });
 });
 
@@ -74,6 +85,40 @@ describe("smart local layout", () => {
     extra.sections[0].intro[0].content = "已有100萬名客戶";
     expect(() => materialize(spec, extra)).toThrow();
     expect(JSON.stringify(layoutJSONSchema)).toContain('"theme"');
+  });
+});
+
+describe("pricing, FAQ and tall canvases", () => {
+  it("detects pricing and FAQ sections and keeps card text line by line", () => {
+    const spec = templatedDraft("頁面", ["hero", "pricing", "faq", "cta"]);
+    expect(spec.metadata.height).toBeGreaterThan(1200);
+    const layout = smartLayout(spec);
+    expect(layout.sections.map((s) => s.role)).toEqual(["hero", "pricing", "faq", "cta"]);
+    expect(layout.sections[2].layout).toBe("stack");
+    const page = materialize(spec, layout);
+    expect(() => verifyPreservation(spec, page)).not.toThrow();
+    const pricing = page.sections[1];
+    const card = JSON.stringify(pricing);
+    expect(card).toContain('"content":"NT$ 290 / 月"');
+  });
+  it("does not treat ordinary words containing 元 as prices", () => {
+    let spec = templatedDraft("頁面", ["hero", "features"]);
+    spec = { ...spec, nodes: spec.nodes.map((n) => (n.type === "card" ? { ...n, content: "多元課程\n每堂一元化設計" } : n)) };
+    expect(smartLayout(spec).sections[1].role).toBe("features");
+  });
+  it("keeps draft geometry for tall canvases in preserve mode", () => {
+    let spec = templatedDraft("頁面", ["hero", "features", "pricing", "faq", "cta"]);
+    spec = { ...spec, metadata: { ...spec.metadata, layoutMode: "preserve" } };
+    const page = materialize(spec, smartLayout(spec));
+    expect(page.draftLayout?.height).toBe(spec.metadata.height);
+    expect(Math.max(...page.draftLayout!.items.map((i) => i.y))).toBeGreaterThan(1200);
+  });
+  it("rejects out-of-range canvas heights and nodes below the canvas", () => {
+    const spec = templatedDraft();
+    expect(CanvasSchema.safeParse({ ...spec, metadata: { ...spec.metadata, height: 9600 } }).success).toBe(false);
+    expect(CanvasSchema.safeParse({ ...spec, metadata: { ...spec.metadata, height: 600 } }).success).toBe(false);
+    const low = { ...spec, nodes: [{ ...spec.nodes[0], y: spec.metadata.height }] };
+    expect(CanvasSchema.safeParse(low).success).toBe(false);
   });
 });
 

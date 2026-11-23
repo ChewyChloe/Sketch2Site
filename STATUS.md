@@ -1,3 +1,10 @@
+## 加大畫布、價目表／FAQ與介面減量（2026-11-23）
+- DONE：CanvasSpec高度改為1200–4800（600遞增），新增區塊超出時自動延長；舊草稿與fixture維持1200，指紋與核准hash不變。生成、draftLayout、Renderer、拖曳／貼上／方向鍵邊界皆跟隨高度。
+- DONE：新增「價目表」「常見問題」區塊範本與pricing／faq section role。本機排版依價格格式與問句自動辨識；智慧排版下卡片每行拆成段落，第一行為標題、價目第二行為價格。保存驗證改為比對逐行內容，不放寬文字來源。AI prompt同步。
+- DONE：刪除重複／無用介面：左側直欄（與步驟分頁、收合側欄重複）、畫布上方CANVAS列、檢查器英文INSPECTOR／READY／LOCAL與假分頁、草稿選單的「核對目前草稿」「載入核准測試草稿」（生成時已自動核對）、「生成布局」標籤；步驟3改名「預覽」以符合實際功能；空白畫布說明縮為一句；已保存網站元件清單依層級縮排並淡化版面容器、移除重複名稱。
+- NOT STARTED：表單需要接收資料的後端或第三方服務，未做假表單，待使用者決定。
+- PASS：486單元、Build、secret、motion boundary；完整E2E 219 PASS／8 skipped／11 FAIL，其中neo-manga×3因移除側欄已更新並重跑PASS；其餘8案為原始commit即失敗的既有問題（手機預覽案現改在畫布高度343<350失敗，較原本更後段）。
+
 ## 智慧排版、主題與區塊範本（2026-11-23）
 - DONE：PageSpec相容擴充選填theme（7組固定Token：經典綠／午夜／晨光／海洋／森林／極簡黑白／花園）、chrome（導覽列／頁尾）及section role（hero／features／gallery／content／cta）。舊頁面無theme時以經典綠呈現，不需遷移；匯出共用同一Runtime與CSS。
 - DONE：Layout v2（intro／items／outro／aside＋role／tone／theme／nav／footer），materialize同時接受v1／v2，來源保留驗證不變；模型仍不能提供文字。AI JSON Schema改用$ref，五份fixture請求8–11KB（上限16384）。

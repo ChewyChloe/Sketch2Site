@@ -63,6 +63,8 @@ export function segmentDraft(canvas: CanvasSpec): CanvasNode[][] {
   return segments.filter((s) => s.length).map((s) => s.sort(byReading));
 }
 
+const pricePattern = /(NT\$|US\$|\$|＄|¥|€)\s*[\d,]+|[\d,]+\s*(元|圓)|免費|\/\s*(月|年|次|人)|每(月|年)/;
+
 function columnsFor(count: number): 1 | 2 | 3 {
   if (count <= 1) return 1;
   if (count === 2 || count === 4) return 2;
@@ -102,8 +104,17 @@ function planSegment(segment: CanvasNode[], index: number, isLast: boolean, titl
   const images = segment.filter((n) => n.type === "image");
   const intro = (n: CanvasNode, align: LayoutItem["align"]) => (n === heading ? head(n, 2, align) : item(n, { align }));
 
+  // Cards whose lines carry prices read as plans; cards opening with a question read as FAQ.
+  const priced = cards.filter((n) => pricePattern.test(n.content)).length;
+  const questions = cards.filter((n) => /[?？]\s*$/.test(n.content.split("\n")[0])).length;
+  if (cards.length >= 2 && questions * 2 > cards.length) {
+    const s = base("faq");
+    for (const n of before) s.intro.push(intro(n, "start"));
+    for (const n of after) (n.type === "card" ? s.items : s.outro).push(item(n));
+    return [s];
+  }
   if (cards.length >= 2) {
-    const s = base("features");
+    const s = base(priced * 2 > cards.length ? "pricing" : "features");
     s.layout = "grid";
     s.columns = columnsFor(cards.length);
     const centered = !!heading;

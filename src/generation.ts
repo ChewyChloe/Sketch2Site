@@ -120,9 +120,9 @@ export function prepareIntent(input: unknown) {
       ...n,
       normalized: {
         x: n.x / 1440,
-        y: n.y / 1200,
+        y: n.y / canvas.metadata.height,
         width: n.width / 1440,
-        height: n.height / 1200,
+        height: n.height / canvas.metadata.height,
       },
       nearest: nodes
         .filter((v) => v.id !== n.id)
@@ -294,7 +294,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         case "card":
           return make("card", {
             ...common,
-            children: (node.effects.some(e=>structuredGroupMotions.includes(e.presetId as typeof structuredGroupMotions[number])) ? node.content.split("\n").map(content=>make("card",{children:[make("paragraph",{content})]})) : (node.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1) ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content }))),
+            children: (node.effects.some(e=>structuredGroupMotions.includes(e.presetId as typeof structuredGroupMotions[number])) ? node.content.split("\n").map(content=>make("card",{children:[make("paragraph",{content})]})) : (node.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1)||(layout.version===2&&canvas.metadata.layoutMode==="reflow") ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content }))),
           });
       }
       throw new GenerationError("INVALID_OUTPUT");
@@ -359,7 +359,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
   const checked = PageSchema.safeParse({
     schemaVersion: 2,
     metadata: { title: canvas.metadata.name, language: "zh-Hant" },
-    ...(canvas.metadata.layoutMode!=='reflow'?{draftLayout:{width:1440,height:1200,items:canvas.nodes.map(({id,x,y,width,height,zIndex})=>({id,x,y,width,height,zIndex}))}}:{}),
+    ...(canvas.metadata.layoutMode!=='reflow'?{draftLayout:{width:1440,height:canvas.metadata.height,items:canvas.nodes.map(({id,x,y,width,height,zIndex})=>({id,x,y,width,height,zIndex}))}}:{}),
     sections,
     typography: layout.typography,
     ...(layout.version === 1
@@ -393,10 +393,9 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
           n.type,
         ) ||
         n.effects.length ||
+        // Card text may be split into one paragraph per line; the joined text is checked below.
         (n.type === "paragraph" &&
-          (!parent ||
-            sources.get(parent.id)?.type !== "card" ||
-            (parent.children?.length !== 1 && !sources.get(parent.id)?.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1))))
+          (!parent || sources.get(parent.id)?.type !== "card"))
       )
         throw new GenerationError("INVALID_OUTPUT");
     }
@@ -428,7 +427,8 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
     } else {
       const structured=source.type==="card"&&source.effects.some(e=>structuredGroupMotions.includes(e.presetId as typeof structuredGroupMotions[number]));
       const splitCard=structured||source.type==="card"&&source.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1);
-      expectedContent.push(...(splitCard?source.content.split("\n"):[source.content]));
+      const lineSplit=splitCard||(source.type==="card"&&(n.children?.length??0)>1);
+      expectedContent.push(...(lineSplit?source.content.split("\n"):[source.content]));
       const actual = n.type === "card" ? n.children?.map(c=>structured?c.children?.[0].content:c.content).join("\n") : n.content;
       if (actual !== source.content)
         throw new GenerationError("INVALID_OUTPUT");

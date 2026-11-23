@@ -203,7 +203,12 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   }, [ready, persistence.restored]);
   const page = session.history.present,
     nodes = indexNodes(page),
+    depths = new Map<string, number>(),
     node = selected ? nodes.get(selected) : undefined;
+  {
+    const walk = (n: PageNode, d: number) => { depths.set(n.id, d); n.children?.forEach((c) => walk(c, d + 1)); };
+    page.sections.forEach((n) => walk(n, 0));
+  }
   const [effectDurations, setEffectDurations] = useState<
     Record<string, string>
   >({});
@@ -936,16 +941,19 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                 <h2>頁面元件</h2>
                 <ul>
                   {[...nodes.values()].map((n) => (
-                    <li key={n.id}>
+                    <li
+                      key={n.id}
+                      // Layout wrappers stay selectable (columns, spacing) but read as structure.
+                      className={["section", "container", "grid", "stack"].includes(n.type) ? "structural" : undefined}
+                      style={{ "--depth": depths.get(n.id) ?? 0 } as React.CSSProperties}
+                    >
                       <button
                         data-component-id={n.id}
                         aria-pressed={selectedIds.includes(n.id)}
                         onClick={() => setSelected(n.id)}
                       >
                         <small>{nodeLabels[n.type]}</small>
-                        <span>
-                          {n.content?.slice(0, 36) || nodeLabels[n.type]}
-                        </span>
+                        {(n.content || n.alt) && <span>{(n.content || n.alt)!.slice(0, 36)}</span>}
                       </button>
                     </li>
                   ))}
