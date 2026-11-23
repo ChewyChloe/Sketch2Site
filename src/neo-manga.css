@@ -99,3 +99,6 @@ body{background:var(--neo-cream)}
 .block-template-contact .block-thumb i:nth-child(3){grid-column:2;grid-row:1/4;background:transparent;border:1px solid #6b7377}
 .block-template-contact .block-thumb i:nth-child(4){display:none}
 .node.form{padding:10px;overflow:hidden}.form-sketch{display:grid;gap:6px;width:100%}.form-sketch>span{display:grid;gap:2px}.form-sketch small{font-size:11px;color:#52584d}.form-sketch i{display:block;height:22px;border:1px solid #c9ccc4;border-radius:4px;background:#fff}.form-sketch b{justify-self:start;font-size:11px;background:#0d0e11;color:#fff;padding:4px 10px;border-radius:4px}
+/* Inline text editing: the textarea takes the node's own type and box. */
+.node .inline-editor{position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;margin:0;padding:6px 10px;overflow:auto;border:0;outline:2px solid #10e560;outline-offset:0;border-radius:inherit;background:#fffffff2;color:#0d0e11;font:inherit;line-height:inherit;letter-spacing:inherit;text-align:inherit;resize:none;z-index:3;cursor:text}
+.node.button .inline-editor{background:#0d0e11;color:#fff;text-align:center}

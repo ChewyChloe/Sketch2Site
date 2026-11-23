@@ -76,6 +76,10 @@ export default function App() {
     future: [],
   });
   const [linkDraft, setLinkDraft] = useState("");
+  // Inline text editing on the canvas (double-click a node).
+  const [editing, setEditing] = useState<string | null>(null),
+    [editDraft, setEditDraft] = useState(""),
+    editCancelled = useRef(false);
   const [selected,setPrimarySelected]=useState<string|null>(null);
   const [selectedIds,setSelectedIds]=useState<string[]>([]);
   const clipboard=useRef('');
@@ -531,8 +535,36 @@ export default function App() {
       report("無法辨識拖曳內容，請從元件庫重試。", true);
     }
   }
+  function startEditing(n: CanvasNode) {
+    if (!ready || loadError || disabled) return;
+    if (n.type === "image") {
+      // Double-clicking a picture opens the replace-image picker instead.
+      imageTarget.current = n.id;
+      imageInput.current?.click();
+      return;
+    }
+    setPrimarySelected(n.id);
+    setSelectedIds([n.id]);
+    setEditing(n.id);
+    setEditDraft(n.content);
+  }
+  function stopEditing(commit: boolean) {
+    const id = editing;
+    setEditing(null);
+    if (!commit || !id) return;
+    const n = state.current.present.nodes.find((v) => v.id === id);
+    if (!n || n.content === editDraft) return;
+    const single = n.type === "heading" || n.type === "button";
+    const value = single ? editDraft.replace(/\n+/g, " ").trim() : editDraft;
+    if ((single || n.type === "form") && !value.trim()) {
+      report(labels[n.type] + "不能是空白，已保留原文字。", true);
+      return;
+    }
+    if (!patch(id, { content: n.type === "button" ? value.slice(0, 120) : value.slice(0, 2000) }))
+      report("內容無法套用，已保留原文字。", true);
+  }
   function begin(e: React.PointerEvent, n: CanvasNode) {
-    if (e.button !== 0 || !ready || loadError) return;
+    if (e.button !== 0 || !ready || loadError || editing === n.id) return;
     e.stopPropagation();
     e.preventDefault();
     if(e.shiftKey){selectNode(n.id,true);return;}
@@ -1037,6 +1069,7 @@ node ? (
                             height: n.height,
                           }}
                           onFocus={() => {if(!selectedIds.includes(n.id))selectNode(n.id);}}
+                          onDoubleClick={(e) => { e.stopPropagation(); startEditing(n); }}
 
                           onPointerDown={(e) => begin(e, n)}
                           onPointerMove={move}
@@ -1074,6 +1107,25 @@ node ? (
                               decoding="async"
                               alt={n.content}
                               draggable={false}
+                            />
+                          ) : editing === n.id ? (
+                            <textarea
+                              className="inline-editor"
+                              aria-label={"編輯" + labels[n.type] + "文字"}
+                              autoFocus
+                              value={editDraft}
+                              maxLength={n.type === "button" ? 120 : 2000}
+                              onChange={(e) => setEditDraft(e.target.value)}
+                              onFocus={(e) => e.currentTarget.select()}
+                              onBlur={() => { stopEditing(!editCancelled.current); editCancelled.current = false; }}
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onDoubleClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => {
+                                e.stopPropagation();
+                                if (e.key === "Escape") { e.preventDefault(); editCancelled.current = true; (e.currentTarget.parentElement as HTMLElement)?.focus(); }
+                                // Headings and buttons are one line: Enter saves. Longer text: Ctrl/Cmd+Enter saves.
+                                else if (e.key === "Enter" && !e.nativeEvent.isComposing && ((n.type === "heading" || n.type === "button") ? !e.shiftKey : e.ctrlKey || e.metaKey)) { e.preventDefault(); e.currentTarget.blur(); }
+                              }}
                             />
                           ) : n.type === "form" ? (
                             <span className="form-sketch">
@@ -1357,6 +1409,7 @@ node ? (
 
           {mode === "draft" && (
             <span className="shortcuts">
+              <span>雙擊編輯文字</span>
               <span>⌘ / Ctrl Z 還原</span>
               <span>Delete 刪除</span>
               <span>方向鍵微調</span>
