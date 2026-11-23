@@ -129,3 +129,7 @@ React匯出複製同一AdvancedMotion原始碼、Schema及CSS，不含Provider�
 
 ## 第三批動畫安全邊界（2026-11-18）
 新增20種不接受任意HTML／JS／CSS／SVG path／外部圖片URL。圖片與影格只接受imageSource白名單及既有驗證本機素材；typed陣列transport後仍逐Preset strict驗證。新場景20、文字8、粒子場3、濾鏡場4個上限；粒子24、影格12、切片8、Canvas720×480／DPR2；超量安全拒絕或靜態降級。裝飾不截點擊、隱藏卡片inert、局部輸入與完整清理。保留原AI輸入／成本／權限／CSRF／D1安全限制；本批只有Mock與離線payload檢查，無付費呼叫、秘密或Runtime配置變更。匯出與前端私人brief邊界掃描PASS。
+
+
+## 表單（2026-11-23）
+表單資料只會由匯出／發布後的網站直接POST到使用者設定的公開https接收網址（第三方服務，例如Formspree），Sketch2Site不經手、不儲存。接收網址沿用既有href白名單驗證並禁止頁內錨點；生成驗證會拒絕任何改動欄位或網址的結果。編輯器與候選預覽一律不送出。使用者需自行確認接收服務的隱私條款。

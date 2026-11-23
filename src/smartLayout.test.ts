@@ -22,11 +22,12 @@ const roles = (sections: PageNode[]) => sections.map((s) => s.role);
 describe("block templates", () => {
   it("adds valid grouped nodes below existing content and grows the canvas", () => {
     const spec = templatedDraft("咖啡小店", blockTemplateIds);
-    expect(spec.nodes).toHaveLength(23);
-    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(6);
+    expect(spec.nodes).toHaveLength(26);
+    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(7);
     expect(spec.metadata.height).toBeGreaterThan(1200);
     expect(spec.metadata.height % 600).toBe(0);
     expect(spec.nodes.every((n) => n.type !== "button" || n.href?.startsWith("#"))).toBe(true);
+    expect(spec.nodes.find((n) => n.type === "form")?.href).toBeNull();
   });
   it("refuses a block once the canvas reaches its maximum height", () => {
     let spec = templatedDraft("頁面", ["hero"]);
@@ -119,6 +120,36 @@ describe("pricing, FAQ and tall canvases", () => {
     expect(CanvasSchema.safeParse({ ...spec, metadata: { ...spec.metadata, height: 600 } }).success).toBe(false);
     const low = { ...spec, nodes: [{ ...spec.nodes[0], y: spec.metadata.height }] };
     expect(CanvasSchema.safeParse(low).success).toBe(false);
+  });
+});
+
+describe("contact form", () => {
+  const withEndpoint = (spec: CanvasSpec, href: string) => ({ ...spec, nodes: spec.nodes.map((n) => (n.type === "form" ? { ...n, href } : n)) });
+  it("blocks generation until the form has an https endpoint", () => {
+    const spec = templatedDraft("頁面", ["hero", "contact"]);
+    expect(() => createDemoCandidate(spec)).toThrow(/接收網址/);
+    expect(CanvasSchema.safeParse(withEndpoint(spec, "#" + spec.nodes[0].id)).success).toBe(false);
+    expect(CanvasSchema.safeParse(withEndpoint(spec, "http://example.com/f")).success).toBe(false);
+  });
+  it("builds a contact section with the form beside its copy", () => {
+    const spec = CanvasSchema.parse(withEndpoint(templatedDraft("頁面", ["hero", "contact"]), "https://formspree.io/f/abc123"));
+    const layout = smartLayout(spec);
+    expect(layout.sections.map((s) => s.role)).toEqual(["hero", "contact"]);
+    expect(layout.sections[1].aside[0].presentation).toBe("form");
+    const page = materialize(spec, layout);
+    expect(() => verifyPreservation(spec, page)).not.toThrow();
+    const form = JSON.stringify(page.sections[1]);
+    expect(form).toContain('"type":"form"');
+    expect(form).toContain("https://formspree.io/f/abc123");
+  });
+  it("rejects forms whose endpoint or fields were altered", () => {
+    const spec = CanvasSchema.parse(withEndpoint(templatedDraft("頁面", ["hero", "contact"]), "https://formspree.io/f/abc123"));
+    const page = materialize(spec, smartLayout(spec));
+    const swap = (fn: (n: PageNode) => PageNode) => ({ ...page, sections: page.sections.map(function walk(n: PageNode): PageNode { const next = n.type === "form" ? fn(n) : n; return next.children ? { ...next, children: next.children.map(walk) } : next; }) });
+    expect(() => verifyPreservation(spec, swap((n) => ({ ...n, href: "https://evil.example.com/collect" })))).toThrow();
+    expect(() => verifyPreservation(spec, swap((n) => ({ ...n, content: n.content + "\n信用卡號碼" })))).toThrow();
+    expect(PageSchema.safeParse(swap((n) => ({ ...n, href: "javascript:alert(1)" }))).success).toBe(false);
+    expect(PageSchema.safeParse(swap((n) => ({ ...n, content: Array(9).fill("欄位").join("\n") }))).success).toBe(false);
   });
 });
 

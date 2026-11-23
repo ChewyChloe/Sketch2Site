@@ -104,6 +104,16 @@ function planSegment(segment: CanvasNode[], index: number, isLast: boolean, titl
   const images = segment.filter((n) => n.type === "image");
   const intro = (n: CanvasNode, align: LayoutItem["align"]) => (n === heading ? head(n, 2, align) : item(n, { align }));
 
+  const forms = segment.filter((n) => n.type === "form");
+  if (forms.length) {
+    // Contact: heading and copy beside the form; any other media follows.
+    const s = base("contact");
+    const [first, ...more] = forms;
+    s.aside.push(item(first));
+    for (const n of segment) if (n !== first) (n.type === "form" ? s.items : n.type === "image" || n.type === "card" ? s.outro : s.intro).push(n.type === "form" ? item(n) : intro(n, "start"));
+    void more;
+    return [s];
+  }
   // Cards whose lines carry prices read as plans; cards opening with a question read as FAQ.
   const priced = cards.filter((n) => pricePattern.test(n.content)).length;
   const questions = cards.filter((n) => /[?？]\s*$/.test(n.content.split("\n")[0])).length;

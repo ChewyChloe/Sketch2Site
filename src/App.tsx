@@ -36,6 +36,7 @@ const labels = {
   card: "卡片",
   heading: "標題",
   image: "圖片",
+  form: "表單",
 };
 const effects = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameEn])) as Record<MotionId,string>;
 type Effect = keyof typeof effects;
@@ -649,6 +650,30 @@ node ? (
                         <small>支援公開 HTTPS 網址或頁面中的元素連結。</small>
                       </label>
                     )}
+                    {node.type === "form" && (
+                      <label className="field">
+                        表單接收網址
+                        <input
+                          aria-label="表單接收網址"
+                          placeholder="https://formspree.io/f/…"
+                          value={linkDraft}
+                          onChange={(e) => {setLinkDraft(e.target.value);setLinkError("");}}
+                          onBlur={() => {
+                            if (!patch(node.id, { href: linkDraft.trim() || null })) {
+                              setLinkError("請貼上有效的公開 HTTPS 接收網址。輸入已保留，尚未套用。");
+                              report("接收網址尚未套用，請修正。", true);
+                            } else {setLinkError("");if(linkError)report("接收網址已更新，草稿尚未儲存。");}
+                          }}
+                          aria-invalid={Boolean(linkError)}
+                          aria-describedby={linkError?"draft-form-error":undefined}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                          }}
+                        />
+                        {linkError && <small id="draft-form-error" role="alert">{linkError}</small>}
+                        <small>在 Formspree 等服務建立表單後，貼上它提供的網址。內容欄每行是一個欄位。</small>
+                      </label>
+                    )}
                     <h3 className="property-section-title">位置與尺寸</h3>
                     <div className="pair">
                       {(["x", "y", "width", "height"] as const).map((k) => (
@@ -1050,6 +1075,13 @@ node ? (
                               alt={n.content}
                               draggable={false}
                             />
+                          ) : n.type === "form" ? (
+                            <span className="form-sketch">
+                              {n.content.split("\n").map((field, i) => (
+                                <span key={i}><small>{field}</small><i /></span>
+                              ))}
+                              <b>送出</b>
+                            </span>
                           ) : (
                             n.content
                           )}
@@ -1247,6 +1279,7 @@ node ? (
                                     card: "相關內容的集合",
                                     heading: "頁面的主要標題",
                                     image: "圖片與視覺素材",
+                                    form: "收集訪客留言",
                                   }[t]
                                 }
                               </small>

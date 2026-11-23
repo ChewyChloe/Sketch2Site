@@ -67,6 +67,52 @@ function useAnimations(node:PageNode,ref:React.RefObject<HTMLElement|null>) {
  },[node,ref]);
 }
 const MotionPreview = createContext(false);
+// Forms submit only on a published/exported site; editor previews never send data.
+export const FormLive = createContext(true);
+function fieldType(label: string) {
+  if (/mail|信箱|郵件/i.test(label)) return "email";
+  if (/電話|手機|phone|tel/i.test(label)) return "tel";
+  if (/訊息|留言|內容|備註|問題|說明|需求|message/i.test(label)) return "textarea";
+  return "text";
+}
+function SiteForm({ node }: { node: PageNode }) {
+  const live = useContext(FormLive);
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "failed" | "preview">("idle");
+  const fields = node.content!.split("\n");
+  return (
+    <form
+      action={node.href}
+      method="POST"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!live) return setState("preview");
+        const form = e.currentTarget;
+        setState("sending");
+        try {
+          const response = await fetch(node.href!, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } });
+          setState(response.ok ? "sent" : "failed");
+          if (response.ok) form.reset();
+        } catch {
+          setState("failed");
+        }
+      }}
+    >
+      {fields.map((field, i) => {
+        const id = "form-" + node.id + "-" + i, type = fieldType(field);
+        return (
+          <label key={i} htmlFor={id} className="page-form-field">
+            <span>{field}</span>
+            {type === "textarea" ? <textarea id={id} name={field} rows={4} required /> : <input id={id} name={field} type={type} required autoComplete={type === "email" ? "email" : type === "tel" ? "tel" : undefined} />}
+          </label>
+        );
+      })}
+      <button type="submit" className="page-button" disabled={state === "sending"}>{state === "sending" ? "送出中…" : "送出"}</button>
+      <p className="page-form-status" role="status" aria-live="polite">
+        {state === "sent" ? "已送出，謝謝你的留言。" : state === "failed" ? "送出失敗，請稍後再試。" : state === "preview" ? "預覽中不會送出；匯出網站後才會寄到接收網址。" : ""}
+      </p>
+    </form>
+  );
+}
 const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
 function SafeImage({ node }: { node: PageNode }) {
   const urls = useContext(AssetUrls);
@@ -126,6 +172,7 @@ export const componentRegistry: Record<PageNode["type"], RegistryEntry> = {
   card: { tag: "article", className: "page-card" },
   stack: { tag: "div", className: "page-stack" },
   grid: { tag: "div", className: "page-grid" },
+  form: { tag: "div", className: "page-form" },
 };
 export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   const ref = useRef<HTMLElement>(null);
@@ -199,7 +246,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
           }
         : {})}
     >
-      {sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
+      {node.type==="form"?<SiteForm node={node}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
         <SafeImage key={node.src} node={node} />
       ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.content}
     </Tag>

@@ -13,7 +13,7 @@ export const Effect = z.enum([
   "stagger-reveal",
 ]);
 export const canvasMaxHeight = 4800;
-export const Kind = z.enum(["text", "button", "card", "heading", "image"]);
+export const Kind = z.enum(["text", "button", "card", "heading", "image", "form"]);
 export const NodeSchema = z.preprocess(bindMotionInput,z
   .object({
     id: z.string().uuid(),
@@ -71,8 +71,10 @@ export const CanvasSchema = z
         (n.type !== "image" && n.assetId !== null)
       )
         ctx.addIssue({ code: "custom", message: "Invalid asset" });
-      if (n.type !== "button" && n.href != null)
+      if (n.type !== "button" && n.type !== "form" && n.href != null)
         ctx.addIssue({ code: "custom", message: "Unexpected link" });
+      if (n.type === "form" && n.href?.startsWith("#"))
+        ctx.addIssue({ code: "custom", message: "Form endpoint must be https" });
       if (n.href?.startsWith("#") && !ids.has(n.href.slice(1)))
         ctx.addIssue({ code: "custom", message: "Unknown link target" });
       // The editor still supports flat nodes only.
@@ -185,11 +187,12 @@ export function createNode(
       card: "卡片標題\n補充內容與說明",
       heading: "網站標題",
       image: "內建圖片示意",
+      form: "姓名\nEmail\n訊息",
     }[type],
     effects: [],
     parentId: null,
     assetId: type === "image" ? localAssets[0] : null,
-    ...(type === "button" ? { href: null } : {}),
+    ...(type === "button" || type === "form" ? { href: null } : {}),
     zIndex: 0,
   };
 }

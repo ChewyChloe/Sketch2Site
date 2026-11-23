@@ -450,7 +450,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
     const patches: unknown[] = [
       { operation: "set-style", targetId: node.id, payload: { align } },
     ];
-    if (["heading", "paragraph", "button"].includes(node.type))
+    if (["heading", "paragraph", "button", "form"].includes(node.type))
       patches.push({
         operation: "set-text",
         targetId: node.id,
@@ -1064,17 +1064,19 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                       apply();
                     }}
                   >
-                    {["heading", "paragraph", "button"].includes(node.type) && (
+                    {["heading", "paragraph", "button", "form"].includes(node.type) && (
                       <label className="field">
-                        {node.type === "heading" ? "標題文字" : "文字"}
+                        {node.type === "heading" ? "標題文字" : node.type === "form" ? "表單欄位（每行一個）" : "文字"}
                         <textarea
                           aria-label={
-                            node.type === "heading" ? "標題文字" : "文字"
+                            node.type === "heading" ? "標題文字" : node.type === "form" ? "表單欄位" : "文字"
                           }
                           value={text}
                           maxLength={
                             node.type === "button"
                               ? 120
+                              : node.type === "form"
+                                ? 600
                               : node.type === "paragraph"
                                 ? 4000
                                 : 2000

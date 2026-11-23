@@ -68,5 +68,6 @@ export const nodeLabels: Record<PageNode["type"], string> = {
   image: "圖片",
   card: "卡片",
   stack: "堆疊",
+  form: "表單",
   grid: "網格",
 };

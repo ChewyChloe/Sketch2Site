@@ -1,3 +1,10 @@
+## 聯絡表單（2026-11-23）
+- DONE：新元件「表單」與「聯絡表單」區塊範本：內容每行一個欄位，另設第三方https接收網址（例如Formspree）。欄位依名稱推斷email／tel／多行文字，全部必填。
+- DONE：匯出網站以fetch POST FormData到接收網址，依實際回應顯示「已送出」或「送出失敗」；編輯器內所有預覽一律不送出並提示。未設定接收網址、使用頁內錨點或非https時拒絕生成，不產生假表單。
+- DONE：PageSpec form節點、contact section role（表單放側欄）、保存驗證比對欄位與接收網址、Patch可改欄位與網址、AI prompt與Schema同步。
+- PASS：491單元整合（含3項表單送出／失敗／預覽不送出）、Build、secret、motion boundary；完整E2E 222 PASS／8 skipped／8 FAIL，8案皆為原始commit即失敗的既有問題，無新回歸；匯出專案建置測試通過。
+- NOT TESTED：對真實Formspree帳號實際送出（需使用者自行建立表單取得網址）。
+
 ## 加大畫布、價目表／FAQ與介面減量（2026-11-23）
 - DONE：CanvasSpec高度改為1200–4800（600遞增），新增區塊超出時自動延長；舊草稿與fixture維持1200，指紋與核准hash不變。生成、draftLayout、Renderer、拖曳／貼上／方向鍵邊界皆跟隨高度。
 - DONE：新增「價目表」「常見問題」區塊範本與pricing／faq section role。本機排版依價格格式與問句自動辨識；智慧排版下卡片每行拆成段落，第一行為標題、價目第二行為價格。保存驗證改為比對逐行內容，不放寬文字來源。AI prompt同步。

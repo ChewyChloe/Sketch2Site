@@ -14,6 +14,7 @@ export function WorkbenchIcon({
     | "image"
     | "card"
     | "button"
+    | "form"
     | "check"
     | "search";
 }) {
@@ -37,6 +38,12 @@ export function WorkbenchIcon({
       <>
         <rect x="2" y="6" width="20" height="12" rx="3" />
         <path d="M7 12h10m-3-3 3 3-3 3" />
+      </>
+    ),
+    form: (
+      <>
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M7 8h10M7 12h10M7 16h4" />
       </>
     ),
     check: <path d="m5 12 4 4L19 6" />,

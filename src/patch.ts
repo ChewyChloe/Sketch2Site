@@ -361,14 +361,14 @@ export function createPageSession(input: unknown): PageSession {
 function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
   switch (p.operation) {
     case "set-text":
-      return ["heading", "paragraph", "button"].includes(node.type)
+      return ["heading", "paragraph", "button", "form"].includes(node.type)
         ? { ...node, content: p.payload.content }
         : "PROPERTY_NOT_ALLOWED";
     case "set-property": {
       const { property, value } = p.payload;
       const allowed = {
         level: ["heading"],
-        href: ["button"],
+        href: ["button", "form"],
         src: ["image"],
         alt: ["image"],
         columns: ["grid"],

@@ -3,7 +3,7 @@ import { useAssetUrls } from "./useAssetUrls";
 import { PageSchema } from "./pageSpec";
 import type { PageNode } from "./pageSpec";
 import { useEffect, useRef, useMemo } from "react";
-import { PageRuntime } from "./PageRuntime";
+import { PageRuntime, FormLive } from "./PageRuntime";
 import { componentIdFromElement } from "./pageSpec";
 import "./preview.css";
 export {
@@ -52,7 +52,9 @@ export function PageRenderer({
         }
       }}
     >
-      <PageRuntime input={input} assetUrls={urls} motionPreview={motionPreview} />
+      <FormLive.Provider value={false}>
+        <PageRuntime input={input} assetUrls={urls} motionPreview={motionPreview} />
+      </FormLive.Provider>
     </div>
   );
 }

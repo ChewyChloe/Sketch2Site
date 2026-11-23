@@ -2,7 +2,7 @@ import { canvasMaxHeight, createNode, type CanvasNode, type CanvasSpec } from ".
 
 // Starter sections for the draft canvas. They are ordinary, editable canvas
 // nodes (placeholder copy the user replaces), grouped so they move together.
-export type BlockTemplateId = "hero" | "features" | "gallery" | "pricing" | "faq" | "cta";
+export type BlockTemplateId = "hero" | "features" | "gallery" | "pricing" | "faq" | "contact" | "cta";
 
 type Part = [CanvasNode["type"], string, number, number, number, number];
 
@@ -60,6 +60,16 @@ const templates: Record<BlockTemplateId, { label: string; hint: string; height: 
       ["card", "需要會寫程式嗎？\n不需要，拖拉元件就能完成草稿。", 80, 88, 1280, 76],
       ["card", "可以用自己的圖片嗎？\n可以，匯入 PNG 或 JPEG 即可。", 80, 176, 1280, 76],
       ["card", "完成後怎麼上線？\n下載 React 專案後，部署到任何靜態網站服務。", 80, 264, 1280, 76],
+    ],
+  },
+  contact: {
+    label: "聯絡表單",
+    hint: "標題、說明與留言表單",
+    height: 320,
+    parts: [
+      ["heading", "與我們聯絡", 80, 0, 480, 72],
+      ["text", "留下你的問題，我們會盡快回覆。", 80, 88, 480, 64],
+      ["form", "姓名\nEmail\n訊息", 640, 0, 640, 320],
     ],
   },
   cta: {

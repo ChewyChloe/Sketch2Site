@@ -57,7 +57,7 @@ export const themeLabels: Record<ThemeId, string> = {
   mono: "極簡黑白",
   blossom: "花園",
 };
-export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "cta"] as const;
+export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta"] as const;
 export type SectionRole = (typeof sectionRoles)[number];
 export type PageNode = {
   id: string;
@@ -68,6 +68,7 @@ export type PageNode = {
     | "heading"
     | "paragraph"
     | "button"
+    | "form"
     | "image"
     | "card"
     | "stack"
@@ -166,6 +167,15 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         type: z.literal("button"),
         content: z.string().min(1).max(120),
         href,
+      })
+      .strict(),
+    z
+      .object({
+        ...common,
+        // Field labels, one per line; submissions go to a third-party https endpoint.
+        type: z.literal("form"),
+        content: z.string().min(1).max(600).refine((v) => v.split("\n").length <= 8 && v.split("\n").every((l) => l.trim().length > 0 && l.length <= 40), "表單欄位無效"),
+        href: href.refine((v) => !v.startsWith("#"), "表單接收網址無效"),
       })
       .strict(),
     z

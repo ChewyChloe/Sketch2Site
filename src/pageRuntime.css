@@ -528,3 +528,15 @@
 .rendered-page[data-theme] .role-faq .page-stack > .page-card:first-child { border-top: 1px solid var(--line); }
 .rendered-page[data-theme] .role-faq .page-card > .page-paragraph:first-child { font-size: 1.08em; }
 .rendered-page[data-theme] .role-faq .page-stack:has(> .page-card) { gap: 0; }
+
+/* Forms: real fields posted to the page's configured https endpoint. */
+.page-form form { display: grid; gap: 16px; width: 100%; }
+.page-form-field { display: grid; gap: 6px; font-size: 14px; font-weight: 600; color: var(--ink); }
+.page-form-field input, .page-form-field textarea { font: inherit; font-weight: 400; color: var(--ink); background: var(--panel, #fff); border: 1px solid var(--line); border-radius: min(var(--radius), 12px); padding: 12px 14px; min-height: 44px; width: 100%; box-sizing: border-box; }
+.page-form-field textarea { resize: vertical; min-height: 120px; }
+.page-form-field input:focus-visible, .page-form-field textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.page-form button.page-button { justify-self: start; cursor: pointer; font: inherit; font-weight: 650; }
+.page-form button.page-button:disabled { opacity: .6; cursor: progress; }
+.page-form-status { margin: 0; min-height: 1.5em; font-size: 14px; color: var(--muted); }
+.rendered-page .role-contact .page-grid, .rendered-page .role-contact .page-container > .page-stack { align-items: start; }
+.rendered-page[data-theme] .role-contact .page-form { background: var(--panel); border: 1px solid var(--line); border-radius: var(--pg-radius-lg); box-shadow: var(--pg-shadow); padding: clamp(20px, 3cqi, 36px); }

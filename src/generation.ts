@@ -53,10 +53,12 @@ export const generationMessages: Record<GenerationCode, string> = {
 };
 export class GenerationError extends Error {
   code: GenerationCode;
-  constructor(code: GenerationCode, reason?: "BUTTON_LINK" | "GROUP_EFFECT") {
+  constructor(code: GenerationCode, reason?: "BUTTON_LINK" | "GROUP_EFFECT" | "FORM_ENDPOINT") {
     super(
       reason === "BUTTON_LINK"
         ? "請先設定每個按鈕的有效連結。"
+        : reason === "FORM_ENDPOINT"
+        ? "請先為表單設定接收網址（例如 Formspree 的 https 網址）。"
         : reason === "GROUP_EFFECT"
           ? "依序出現動畫目前只能附加至卡片。"
           : generationMessages[code],
@@ -90,6 +92,8 @@ export function prepareIntent(input: unknown) {
     throw new GenerationError("INVALID_INPUT");
   if (canvas.nodes.some((n) => n.type === "button" && !n.href))
     throw new GenerationError("INVALID_INPUT", "BUTTON_LINK");
+  if (canvas.nodes.some((n) => n.type === "form" && (!n.href || n.href.startsWith("#"))))
+    throw new GenerationError("INVALID_INPUT", "FORM_ENDPOINT");
   for (const n of canvas.nodes)
     if (
       (n.type === "button" &&
@@ -147,7 +151,7 @@ export function prepareIntent(input: unknown) {
 const ItemSchema = z
   .object({
     sourceId: z.string().uuid(),
-    presentation: z.enum(["heading", "paragraph", "button", "image", "card"]),
+    presentation: z.enum(["heading", "paragraph", "button", "image", "card", "form"]),
     headingLevel: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     width: z.enum(["full", "content", "narrow"]),
     align: z.enum(["start", "center", "end"]),
@@ -251,6 +255,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         button: ["button"],
         image: ["image"],
         card: ["card"],
+        form: ["form"],
       };
       if (!(allowed[node.type] as string[]).includes(item.presentation))
         throw new GenerationError("INVALID_OUTPUT");
@@ -285,6 +290,8 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
             content: node.content,
             href: node.href!,
           });
+        case "form":
+          return make("form", { ...common, content: node.content, href: node.href! });
         case "image":
           return make("image", {
             ...common,
@@ -413,6 +420,7 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
       button: ["button"],
       image: ["image"],
       card: ["card"],
+      form: ["form"],
     };
     if (n && !(types[source.type] as string[]).includes(n.type))
       throw new GenerationError("INVALID_OUTPUT");
@@ -433,8 +441,8 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
       if (actual !== source.content)
         throw new GenerationError("INVALID_OUTPUT");
       if (
-        source.type === "button" &&
-        (n.type !== "button" || n.href !== source.href)
+        (source.type === "button" || source.type === "form") &&
+        (n.type !== source.type || n.href !== source.href)
       )
         throw new GenerationError("INVALID_OUTPUT");
     }

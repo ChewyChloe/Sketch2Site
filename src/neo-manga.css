@@ -94,3 +94,8 @@ body{background:var(--neo-cream)}
 .block-template-faq .block-thumb{grid-template-rows:repeat(4,1fr)}
 .block-template-faq .block-thumb i:nth-child(1){background:#f7f6f2;width:45%}
 .block-template-faq .block-thumb i:not(:first-child){height:2px;align-self:end;background:#6b7377}
+.block-template-contact .block-thumb{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr}
+.block-template-contact .block-thumb i:nth-child(1){background:#f7f6f2}.block-template-contact .block-thumb i:nth-child(2){grid-row:2}
+.block-template-contact .block-thumb i:nth-child(3){grid-column:2;grid-row:1/4;background:transparent;border:1px solid #6b7377}
+.block-template-contact .block-thumb i:nth-child(4){display:none}
+.node.form{padding:10px;overflow:hidden}.form-sketch{display:grid;gap:6px;width:100%}.form-sketch>span{display:grid;gap:2px}.form-sketch small{font-size:11px;color:#52584d}.form-sketch i{display:block;height:22px;border:1px solid #c9ccc4;border-radius:4px;background:#fff}.form-sketch b{justify-self:start;font-size:11px;background:#0d0e11;color:#fff;padding:4px 10px;border-radius:4px}
