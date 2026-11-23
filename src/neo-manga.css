@@ -86,3 +86,5 @@ body{background:var(--neo-cream)}
 .generation-notice{margin-left:72px;padding:10px 20px;font-size:13px}
 .generation-notice[role=alert]{color:#9b2c22;background:#fff4f2;border-bottom:1px solid #f1c8c2}
 @media(max-width:760px){.generation-notice{margin-left:50px}}
+/* Phones: the canvas toolbar (incl. 收合側欄) stays reachable above the panel overlay. */
+@media(max-width:760px){.neo-workspace .canvas-tools{z-index:18}.neo-workspace .sidebar{padding-bottom:96px}}

@@ -299,7 +299,7 @@ export function PageRuntime({
             " theme-" +
             page.styles
           }
-          data-theme={page.theme ?? "classic"}
+          data-theme={page.theme}
           lang={page.metadata.language}
           aria-label={page.metadata.title}
           style={

@@ -156,7 +156,11 @@ test("key 缺失、生成失敗與返回草稿都保留原內容", async ({ page
     }),
   );
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("AI 尚未設定");
+  // Without AI the draft gets a clearly labelled local layout, never saved automatically.
+  await expect(page.getByText("智慧排版（非 AI）", { exact: true })).toBeVisible();
+  await expect(page.getByText("AI 尚未設定，已改用本機智慧排版（未呼叫 AI）。")).toBeAttached();
+  expect(await savedPage(page)).toBeUndefined();
+  await page.getByRole("button", { name: "返回草稿", exact: true }).click();
   await expect(page.getByTestId("canvas-node")).toHaveCount(
     fixtures[0].nodes.length,
   );
