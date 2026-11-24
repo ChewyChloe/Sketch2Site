@@ -129,7 +129,9 @@ function planSegment(segment: CanvasNode[], index: number, isLast: boolean, titl
     s.layout = "grid";
     s.columns = columnsFor(cards.length);
     const centered = !!heading;
-    for (const n of before) s.intro.push(intro(n, centered && n.type !== "image" ? "center" : "start"));
+    // Plans read best centred; feature lists read like an article, left-aligned.
+    const pricing = priced * 2 > cards.length;
+    for (const n of before) s.intro.push(intro(n, centered && pricing && n.type !== "image" ? "center" : "start"));
     for (const n of after) {
       if (n.type === "card") s.items.push(item(n));
       else s.outro.push(item(n, { align: "start" }));
@@ -144,7 +146,7 @@ function planSegment(segment: CanvasNode[], index: number, isLast: boolean, titl
     for (const n of segment) {
       if (n.type === "image") s.items.push(item(n));
       else if (n.type === "button") s.outro.push(item(n));
-      else s.intro.push(intro(n, "center"));
+      else s.intro.push(intro(n, "start"));
     }
     return [s];
   }

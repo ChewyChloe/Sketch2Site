@@ -114,7 +114,23 @@ function SiteForm({ node }: { node: PageNode }) {
   );
 }
 const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
+// The built-in sample image stands for "a picture goes here": show a calm, theme-tinted
+// frame with its description instead of repeating the same mock screenshot everywhere.
+// Only themed (generated) pages use the frame; images with motion keep the real <img>.
+const sampleImage = "/assets/workspace.svg";
+const ThemedPage = createContext(false);
 function SafeImage({ node }: { node: PageNode }) {
+  const themed = useContext(ThemedPage);
+  if (themed && node.src === sampleImage && !node.effects.length)
+    return (
+      <div className="page-image-placeholder" role="img" aria-label={node.alt}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m4 18 5-5 4 4 3-3 4 4" /></svg>
+        <span>{node.alt}</span>
+      </div>
+    );
+  return <LoadedImage node={node} />;
+}
+function LoadedImage({ node }: { node: PageNode }) {
   const urls = useContext(AssetUrls);
   const [failed, setFailed] = useState(false),
     [attempt, setAttempt] = useState(0);
@@ -226,6 +242,8 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
         "page-node",
         entry.className,
         node.role ? "role-" + node.role : "",
+        // Long display headings get a smaller size so they do not break mid-word.
+        node.type === "heading" && (node.content?.length ?? 0) > 9 ? "is-long" : "",
         "gap-" + node.style.gap,
         "pad-" + node.style.padding,
         "align-" + node.style.align,
@@ -375,7 +393,7 @@ export function PageRuntime({
   };
   const sources=new Map<string,PageNode>();const collect=(n:PageNode)=>{sources.set(n.id,n);n.children?.forEach(collect);};current.sections.forEach(collect);
   return (
-    <AssetUrls.Provider value={assetUrls}><MotionPreview.Provider value={motionPreview}>
+    <AssetUrls.Provider value={assetUrls}><MotionPreview.Provider value={motionPreview}><ThemedPage.Provider value={!!page.theme}>
       <RenderBoundary resetKey={input}>
         <div
           ref={rootRef}
@@ -416,6 +434,6 @@ export function PageRuntime({
           {current.draftLayout?<div className="draft-layout" style={{aspectRatio:`1440 / ${current.draftLayout.height}`}}>{[...current.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/current.draftLayout!.height*100}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/current.draftLayout!.height*100}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:<>{(page.chrome?.nav||page.subpages?.length)&&<PageNav page={page} view={sub?.id ?? null} sections={current.sections}/>}<main className="page-main">{current.sections.map(section=><RenderNode key={section.id} node={section}/>)}</main>{page.chrome?.footer&&<footer className="page-footer"><span>{page.metadata.title}</span><a href={"#page-"+current.sections[0].id}>回到頂端 ↑</a></footer>}</>}
         </div>
       </RenderBoundary>
-    </MotionPreview.Provider></AssetUrls.Provider>
+    </ThemedPage.Provider></MotionPreview.Provider></AssetUrls.Provider>
   );
 }

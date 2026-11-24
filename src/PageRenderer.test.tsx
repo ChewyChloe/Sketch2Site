@@ -71,3 +71,11 @@ it("skips registry work for unchanged nodes when a sibling is updated", () => {
     });
   }
 });
+
+it("shows the built-in sample image as a labelled frame on themed pages", () => {
+  const still = (n: PageNode): PageNode => ({ ...n, effects: [], ...(n.children ? { children: n.children.map(still) } : {}) });
+  render(<PageRenderer input={{ ...demoPage, theme: "ocean", sections: demoPage.sections.map(still) }} />);
+  const sample = screen.getByRole("img");
+  expect(sample.className).toBe("page-image-placeholder");
+  expect(sample.getAttribute("aria-label")).toBeTruthy();
+});

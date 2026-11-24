@@ -36,5 +36,5 @@ test("double-click edits text in place; Enter / Ctrl+Enter save, Escape cancels,
   // Undo returns to the template text.
   await page.locator(".canvas-tools").getByRole("button", { name: "還原", exact: true }).click();
   await page.locator(".canvas-tools").getByRole("button", { name: "還原", exact: true }).click();
-  await expect(heading).toContainText("準備好開始了嗎？");
+  await expect(heading).toContainText("最後，請訪客做一件事");
 });

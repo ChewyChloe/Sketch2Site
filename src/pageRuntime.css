@@ -473,7 +473,7 @@
 .rendered-page .role-hero .page-image img { box-shadow: var(--pg-shadow-lg); }
 .rendered-page .role-features .page-grid { align-items: stretch; counter-reset: feature; }
 .rendered-page .role-features .page-grid > .page-card { counter-increment: feature; position: relative; gap: 10px; transition: transform .2s ease, box-shadow .2s ease; }
-.rendered-page .role-features .page-grid > .page-card::before { content: counter(feature, decimal-leading-zero); display: block; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--accent); }
+.rendered-page .role-features .page-grid > .page-card::before { content: ""; display: block; width: 28px; height: 4px; border-radius: 2px; background: var(--accent); margin-bottom: 6px; }
 .rendered-page .role-features .page-grid > .page-card:hover { transform: translateY(-3px); }
 .rendered-page .role-gallery .page-image img { aspect-ratio: 4 / 3; object-fit: cover; }
 .rendered-page .role-gallery .page-grid { align-items: stretch; }
@@ -540,3 +540,69 @@
 .page-form-status { margin: 0; min-height: 1.5em; font-size: 14px; color: var(--muted); }
 .rendered-page .role-contact .page-grid, .rendered-page .role-contact .page-container > .page-stack { align-items: start; }
 .rendered-page[data-theme] .role-contact .page-form { background: var(--panel); border: 1px solid var(--line); border-radius: var(--pg-radius-lg); box-shadow: var(--pg-shadow); padding: clamp(20px, 3cqi, 36px); }
+
+/* ===== Visual polish pass ===== */
+/* Hero: calmer headline, larger media, consistent photo crop. */
+.rendered-page .role-hero h1.page-heading { font-size: clamp(34px, 4.4cqi, 62px); line-height: 1.12; letter-spacing: -0.03em; }
+.rendered-page .role-hero .page-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); }
+.rendered-page .role-hero .page-image img { aspect-ratio: 4 / 3; object-fit: cover; }
+.rendered-page[data-theme] .page-main > .page-section.role-hero.pad-large { padding-block: clamp(56px, 6.5cqi, 104px); }
+/* Steadier rhythm between sections. */
+.rendered-page[data-theme] .page-main > .page-section.pad-large { padding-block: clamp(48px, 5.6cqi, 84px); }
+.rendered-page[data-theme] .page-main > .page-section .page-container > .page-stack > .page-heading:first-child { margin-bottom: 4px; }
+/* Feature cards: lighter, no numbering. */
+.rendered-page[data-theme] .role-features .page-card { box-shadow: none; }
+.rendered-page[data-theme] .role-features .page-card:hover { box-shadow: var(--pg-shadow); }
+/* Image placeholder: theme-tinted frame instead of a repeated mock screenshot. */
+.page-image-placeholder { display: grid; place-items: center; align-content: center; gap: 10px; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--pg-radius-lg, 12px); color: color-mix(in srgb, var(--accent) 70%, var(--ink)); background:
+  radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
+  radial-gradient(90% 80% at 100% 100%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+  color-mix(in srgb, var(--accent) 6%, var(--panel, #fff)); border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line, #ddd)); }
+.page-image-placeholder svg { width: 40px; height: 40px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
+.page-image-placeholder span { font-size: 14px; font-weight: 600; letter-spacing: .02em; opacity: .85; padding: 0 12px; text-align: center; }
+.rendered-page .role-gallery .page-image-placeholder { aspect-ratio: 4 / 3; }
+@container (max-width: 800px) { .rendered-page .role-hero .page-grid { grid-template-columns: minmax(0, 1fr); } }
+.rendered-page .role-hero h1.page-heading.is-long { font-size: clamp(30px, 3.5cqi, 48px); }
+.rendered-page .page-heading { text-wrap: pretty; }
+
+/* ===== Calm layer (2026-11-24): rules from docs/DESIGN.md =====
+   One accent for actions only; flat section bands instead of gradient glows;
+   hairline cards without shadows; one soft shadow only under hero photos;
+   a 17px body with CJK-friendly leading; 8px spacing rhythm. */
+.rendered-page[data-theme] { --pg-hero: var(--pg-page); --pg-shadow: none; --pg-radius-lg: 18px; font-size: 17px; }
+.rendered-page[data-theme="forest"] { --pg-radius-lg: 6px; }
+.rendered-page[data-theme="mono"] { --pg-radius-lg: 0px; --pg-shadow-lg: none; }
+.rendered-page[data-theme="blossom"] { --pg-radius-lg: 22px; }
+.rendered-page[data-theme] .page-paragraph { line-height: 1.7; }
+.rendered-page[data-theme] .page-heading { line-height: 1.22; letter-spacing: -0.02em; font-weight: var(--pg-heading-weight); }
+.rendered-page[data-theme] h2.page-heading { font-size: clamp(26px, 2.8cqi, 40px); }
+.rendered-page[data-theme] h3.page-heading { font-size: clamp(19px, 1.7cqi, 22px); }
+.rendered-page[data-theme] .page-main > .page-section.pad-large { padding-block: clamp(56px, 6.4cqi, 96px); }
+.rendered-page[data-theme] .page-main > .page-section.role-hero.pad-large { padding-block: clamp(64px, 7.2cqi, 112px); }
+/* Buttons: filled accent, no glow; a small press response instead of a lift. */
+.rendered-page[data-theme] .page-button,
+.rendered-page[data-theme] .page-button.tone-plain,
+.rendered-page[data-theme] .page-button.tone-accent,
+.rendered-page[data-theme] .role-cta .page-button,
+.rendered-page[data-theme] .role-cta .page-button.tone-plain,
+.rendered-page[data-theme] .role-cta .page-button.tone-accent { box-shadow: none; padding: 12px 24px; font-weight: 600; transition: filter .15s ease, transform .1s ease; }
+.rendered-page[data-theme] .page-button:hover,
+.rendered-page[data-theme] .page-button:focus-visible { transform: none; filter: brightness(1.1); }
+.rendered-page[data-theme] .page-button:active { transform: scale(.97); }
+.rendered-page[data-theme] .page-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.rendered-page[data-theme] .role-cta .page-button:focus-visible { outline-color: var(--pg-accent-ink); }
+/* Cards: hairline only. Hierarchy comes from type, not decoration. */
+.rendered-page[data-theme] .page-card,
+.rendered-page[data-theme] .role-features .page-card:hover { box-shadow: none; }
+.rendered-page .role-features .page-grid > .page-card::before { content: none; }
+.rendered-page[data-theme] .role-features .page-grid > .page-card:hover { transform: none; }
+.rendered-page[data-theme] .role-pricing .page-grid > .page-card:nth-child(2):not(:last-child) { box-shadow: none; }
+.rendered-page[data-theme] .role-contact .page-form { box-shadow: none; }
+/* The hero photo is the only element that gets depth. */
+.rendered-page[data-theme] .role-hero .page-image img { box-shadow: 0 18px 40px rgb(0 0 0 / .12); }
+.rendered-page[data-theme="mono"] .role-hero .page-image img { box-shadow: none; }
+/* Image placeholder: flat tint with a hairline, no glow. */
+.rendered-page .page-image-placeholder { background: var(--accent-soft, #eef1ef); border: 1px solid var(--line, #dde3df); }
+.rendered-page[data-theme="mono"] .page-image-placeholder { color: #111; }
+/* Headings break at punctuation first (keeps CJK words whole), any character only if a line would overflow. */
+.rendered-page[data-theme] .page-heading { word-break: keep-all; overflow-wrap: anywhere; text-wrap: pretty; }
