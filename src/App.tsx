@@ -24,6 +24,7 @@ import {
 import { loadDraft, saveDraft } from "./storage";
 import Preview, { type PreviewHandle } from "./Preview";
 import CandidatePreview from "./CandidatePreview";
+import HomePage from "./HomePage";
 import type { PageSpec } from "./pageSpec";
 import { localAssets } from "./pageSpec";
 import { blockTemplateIds, blockTemplateInfo, createBlock, type BlockTemplateId } from "./blockTemplates";
@@ -70,7 +71,7 @@ export default function App() {
     target: { sessionId: string; revision: number };
   } | null>(null);
   const [generationError, setGenerationError] = useState("");
-  const [mode, setMode] = useState<"draft" | "preview">("draft");
+  const [mode, setMode] = useState<"draft" | "preview" | "home">("draft");
   const [motionFull,setMotionFull]=useState(false);
   const [history, setHistory] = useState<History>({
     past: [],
@@ -367,6 +368,17 @@ export default function App() {
     change({ ...spec, nodes: [...spec.nodes, next] });
     setSelected(next.id);
     report("已新增" + labels[type]);
+  }
+  function loadDemo(fixture: CanvasSpec) {
+    if (dirty && !window.confirm("載入示範會取代目前草稿，可使用還原復原。是否繼續？")) return false;
+    if (!change(fixture.metadata.layoutMode ? fixture : { ...fixture, metadata: { ...fixture.metadata, layoutMode: "reflow" } })) return false;
+    setSelected(null);
+    setPending(null);
+    setMoving(null);
+    drag.current = null;
+    setCandidate(null);
+    report("已載入示範草稿（非 AI），可還原。");
+    return true;
   }
   function addBlock(id: BlockTemplateId) {
     if (!ready || loadError) return;
@@ -783,12 +795,16 @@ node ? (
   return (
     <>
       <header className={"topbar " + mode}>
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            S
-          </span>
-          <h1>Sketch2Site</h1><small className="note">VISUAL BUILDER</small>
-        </div>
+        <button
+          className="brand home-link"
+          aria-label="Sketch2Site 首頁"
+          aria-current={mode === "home" ? "page" : undefined}
+          disabled={accepting}
+          onClick={() => { setCandidate(null); setMotionFull(false); setMode("home"); }}
+        >
+          <span className="brand-mark" aria-hidden="true">S2</span>
+          <span className="brand-name">Sketch2Site</span>
+        </button>
         <span className="project-divider" aria-hidden="true">
           /
         </span>
@@ -887,23 +903,7 @@ node ? (
                     <button
                       key={fixture.metadata.name}
                       disabled={disabled || generating}
-                      onClick={() => {
-                        if (
-                          dirty &&
-                          !window.confirm(
-                            "載入示範會取代目前草稿，可使用還原復原。是否繼續？",
-                          )
-                        )
-                          return;
-                        if (change(fixture.metadata.layoutMode ? fixture : { ...fixture, metadata: { ...fixture.metadata, layoutMode: "reflow" } })) {
-                          setSelected(null);
-                          setPending(null);
-                          setMoving(null);
-                          drag.current = null;
-                          setCandidate(null);
-                          report("已載入示範草稿（非 AI），可還原。");
-                        }
-                      }}
+                      onClick={() => void loadDemo(fixture)}
                     >
                       載入{fixture.metadata.name}
                     </button>
@@ -957,6 +957,18 @@ node ? (
         >
           <Preview ref={previewRef} />
         </div>
+        {mode === "home" && (
+          <HomePage
+            draft={spec}
+            savedState={!spec.nodes.length && !dirty ? "empty" : dirty ? "unsaved" : "saved"}
+            motionCount={motionIds.length}
+            demos={demoFixtures.filter((_, index) => index !== 2)}
+            onOpenDraft={() => { setMotionFull(false); setMode("draft"); }}
+            onOpenSite={() => setMode("preview")}
+            onOpenLibrary={() => { setMode("draft"); setMotionFull(true); setPanel(true); setTab("animations"); }}
+            onLoadDemo={(demo) => { if (loadDemo(demo)) { setMotionFull(false); setMode("draft"); } }}
+          />
+        )}
         {mode === "preview" && candidate && (
           <CandidatePreview
             candidate={candidate.result}

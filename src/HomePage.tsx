@@ -1,0 +1,153 @@
+import type { CanvasSpec } from "./spec";
+import { themeIds, themeLabels } from "./pageSpec";
+import { blockTemplateIds, blockTemplateInfo } from "./blockTemplates";
+
+// Product home: real workspace data only (no invented statistics or accounts).
+export default function HomePage({
+  draft,
+  savedState,
+  motionCount,
+  demos,
+  onOpenDraft,
+  onOpenSite,
+  onOpenLibrary,
+  onLoadDemo,
+}: {
+  draft: CanvasSpec;
+  savedState: "saved" | "unsaved" | "empty";
+  motionCount: number;
+  demos: CanvasSpec[];
+  onOpenDraft: () => void;
+  onOpenSite: () => void;
+  onOpenLibrary: () => void;
+  onLoadDemo: (demo: CanvasSpec) => void;
+}) {
+  const kinds = new Set(draft.nodes.map((n) => n.type)).size;
+  return (
+    <main className="home-page" aria-label="Sketch2Site 首頁">
+      <section className="home-hero">
+        <div className="home-hero-copy">
+          <p className="home-eyebrow">視覺化網站工作台</p>
+          <h1>把草圖，變成可以上線的網站。</h1>
+          <p className="home-lead">
+            在畫布上擺出標題、圖片與按鈕，Sketch2Site 幫你整理成首屏、特色、價目表等區塊，套上主題與動畫，最後匯出獨立的 React 專案。
+          </p>
+          <div className="home-actions">
+            <button className="home-primary" onClick={onOpenDraft}>
+              {draft.nodes.length ? "繼續編輯草稿" : "開始畫草稿"}
+            </button>
+            <button className="home-secondary" onClick={onOpenLibrary}>
+              瀏覽動畫素材庫
+            </button>
+          </div>
+        </div>
+        <div className="home-hero-art" aria-hidden="true">
+          <div className="art-sketch">
+            <i className="a1" /><i className="a2" /><i className="a3" /><i className="a4" /><i className="a5" />
+          </div>
+          <span className="art-arrow">→</span>
+          <div className="art-site">
+            <b /><i className="s1" /><i className="s2" /><i className="s3" />
+            <span><i /><i /><i /></span>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section" aria-labelledby="home-workspace">
+        <h2 id="home-workspace">我的工作區</h2>
+        <div className="home-workspace">
+          <article className="home-card home-draft">
+            <DraftThumb draft={draft} />
+            <div className="home-card-body">
+              <h3>{draft.metadata.name}</h3>
+              <p className="home-meta">
+                {draft.nodes.length ? `${draft.nodes.length} 個元件 · ${kinds} 種類型` : "空白草稿"} · 1440 × {draft.metadata.height}
+              </p>
+              <p className={"home-state state-" + savedState}>
+                {savedState === "saved" ? "已儲存於這個瀏覽器" : savedState === "unsaved" ? "有尚未儲存的修改" : "尚未開始"}
+              </p>
+              <button className="home-primary" onClick={onOpenDraft}>開啟草稿</button>
+            </div>
+          </article>
+          <article className="home-card">
+            <div className="home-card-icon" aria-hidden="true">◧</div>
+            <div className="home-card-body">
+              <h3>已確認的網站</h3>
+              <p>預覽生成後確認的頁面，局部修改文字、主題與動畫，再匯出 React 專案。</p>
+              <button className="home-secondary" onClick={onOpenSite}>開啟網站工作區</button>
+            </div>
+          </article>
+          <article className="home-card">
+            <div className="home-card-icon" aria-hidden="true">◎</div>
+            <div className="home-card-body">
+              <h3>動畫素材庫</h3>
+              <p>{motionCount} 種動畫，可直接試玩，拖到元件上就能套用。</p>
+              <button className="home-secondary" onClick={onOpenLibrary}>開啟素材庫</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section className="home-section" aria-labelledby="home-demos">
+        <h2 id="home-demos">從範例開始</h2>
+        <p className="home-note">載入範例會取代目前草稿，可以用「還原」復原。</p>
+        <div className="home-demos">
+          {demos.map((demo) => (
+            <button key={demo.metadata.name} className="home-demo" onClick={() => onLoadDemo(demo)}>
+              <DraftThumb draft={demo} />
+              <span>{demo.metadata.name}</span>
+              <small>{demo.nodes.length} 個元件</small>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="home-section" aria-labelledby="home-steps">
+        <h2 id="home-steps">怎麼運作</h2>
+        <ol className="home-steps">
+          <li><b>畫草稿</b><span>拖入元件或區塊範本，位置不必精準。</span></li>
+          <li><b>生成網站</b><span>智慧排版整理成完整頁面；設定 AI 後也可交給模型。</span></li>
+          <li><b>調整風格</b><span>切換主題、附加動畫、雙擊直接改字。</span></li>
+          <li><b>匯出上線</b><span>下載 React + TypeScript 專案，部署到任何靜態主機。</span></li>
+        </ol>
+      </section>
+
+      <section className="home-section" aria-labelledby="home-features">
+        <h2 id="home-features">你可以用到的</h2>
+        <div className="home-features">
+          <div>
+            <h3>區塊範本</h3>
+            <p>{blockTemplateIds.map((id) => blockTemplateInfo(id).label).join("、")}</p>
+          </div>
+          <div>
+            <h3>{themeIds.length} 套主題</h3>
+            <p>{themeIds.map((id) => themeLabels[id]).join("、")}</p>
+          </div>
+          <div>
+            <h3>聯絡表單</h3>
+            <p>接上 Formspree 等服務，匯出的網站就能收到留言。</p>
+          </div>
+          <div>
+            <h3>資料留在本機</h3>
+            <p>草稿與圖片只存在這個瀏覽器，不會上傳。</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+// Miniature of the draft drawn from the real node geometry.
+function DraftThumb({ draft }: { draft: CanvasSpec }) {
+  // Crop to the drawn content so a short draft does not sit in a sea of blank canvas.
+  const bottom = draft.nodes.reduce((m, n) => Math.max(m, n.y + n.height), 0);
+  const height = Math.min(draft.metadata.height, Math.max(720, bottom + 80));
+  return (
+    <svg className="home-thumb" viewBox={`0 0 1440 ${height}`} preserveAspectRatio="xMidYMin meet" aria-hidden="true">
+      <rect width="1440" height={height} rx="24" className="thumb-bg" />
+      {draft.nodes.map((n) => (
+        <rect key={n.id} x={n.x} y={n.y} width={n.width} height={n.height} rx="10" className={"thumb-" + n.type} />
+      ))}
+    </svg>
+  );
+}
