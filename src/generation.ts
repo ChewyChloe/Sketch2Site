@@ -1,5 +1,5 @@
 import {structuredGroupMotions} from "./motion";
-import { moodThemes } from "./brief";
+import { moodThemes, withFocusFirst } from "./brief";
 import { z } from "zod";
 import { CanvasSchema, type CanvasSpec, type CanvasNode } from "./spec";
 import {
@@ -329,7 +329,13 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
           children: [make("container", { children: [group] })],
         });
       })
-    : layout.sections.map((section) => {
+    : withFocusFirst(layout.sections, canvas.metadata.brief?.focus).map((section) => {
+        // One text alignment per section: headings, paragraphs and buttons follow the heading.
+        const textual = (i: LayoutItem) => ["heading", "paragraph", "button"].includes(i.presentation);
+        const all = [...section.intro, ...section.items, ...section.outro];
+        const lead = all.find((i) => i.presentation === "heading") ?? all.find(textual);
+        const align = (list: LayoutItem[]) => (lead ? list.map((i) => (textual(i) ? { ...i, align: lead.align } : i)) : list);
+        section = { ...section, intro: align(section.intro), items: align(section.items), outro: align(section.outro) };
         const intro = section.intro.map(build), items = section.items.map(build), outro = section.outro.map(build), aside = section.aside.map(build);
         const group = items.length
           ? make(section.layout, {

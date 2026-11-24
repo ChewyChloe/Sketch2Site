@@ -33,6 +33,20 @@ export const focusRoles: Record<string, SectionRole[]> = {
   活動資訊: ["features", "content"],
 };
 
+/** Moves the first section matching the brief's focus right after the opening section. */
+export function withFocusFirst<T extends { role: SectionRole }>(sections: T[], focus: string | undefined): T[] {
+  const out = [...sections];
+  for (const role of focusRoles[focus ?? ""] ?? []) {
+    const at = out.findIndex((s, i) => i > 1 && s.role === role);
+    if (at > 1) {
+      const [moved] = out.splice(at, 1);
+      out.splice(1, 0, moved);
+      break;
+    }
+  }
+  return out;
+}
+
 // Short phrases offered as greyed-out continuations while typing the note.
 const common = [
   "主色想用學校的藍色",

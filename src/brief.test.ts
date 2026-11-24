@@ -46,3 +46,27 @@ describe("brief in local layout", () => {
     expect(CanvasSchema.safeParse({ ...draft(), metadata: { ...draft().metadata, brief: { ...emptyBrief, details: "字".repeat(601) } } }).success).toBe(false);
   });
 });
+
+describe("deterministic rules applied to any layout plan", () => {
+  it("aligns a section's text with its heading and moves the brief's focus up, even if the plan disagrees", async () => {
+    const { materialize } = await import("./generation");
+    let spec: CanvasSpec = { ...blank(), metadata: { ...blank().metadata, name: "頁面", layoutMode: "reflow", brief: { audience: "", purpose: "", mood: "溫暖", focus: "價格", note: "" } } };
+    for (const id of ["hero", "features", "pricing"] as const) {
+      const block = createBlock(spec, id)!;
+      spec = { ...spec, metadata: { ...spec.metadata, height: block.height }, nodes: [...spec.nodes, ...block.nodes] };
+    }
+    spec = CanvasSchema.parse(spec);
+    const plan = smartLayout(spec);
+    // Simulate a model that centres the hero copy under a left heading and keeps pricing last.
+    const hero = plan.sections[0];
+    const scrambled = { ...plan, theme: "mono" as const, sections: [hero, plan.sections.find((s) => s.role === "features")!, plan.sections.find((s) => s.role === "pricing")!] };
+    scrambled.sections[0] = { ...hero, intro: hero.intro.map((i) => (i.presentation === "heading" ? i : { ...i, align: "center" as const })) };
+    const page = materialize(spec, scrambled);
+    expect(page.theme).toBe("sunrise");
+    expect(page.sections.map((s) => s.role)).toEqual(["hero", "pricing", "features"]);
+    const aligns = new Set<string>();
+    const walk = (n: { type: string; style: { align: string }; children?: unknown[] }) => { if (["heading", "paragraph", "button"].includes(n.type)) aligns.add(n.style.align); (n.children as typeof n[] | undefined)?.forEach(walk); };
+    walk(page.sections[0] as never);
+    expect([...aligns]).toEqual(["start"]);
+  });
+});

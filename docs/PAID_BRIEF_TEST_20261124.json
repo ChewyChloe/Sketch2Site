@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-24",
+  "authorization": { "maxCalls": 5, "maxUsd": 0.05, "givenBy": "project owner in chat" },
+  "model": "gpt-6-luna",
+  "keyHandling": "Stored as a network secret on a dedicated personal cloud environment; injected by the proxy; never in code, logs, chat or git.",
+  "providerCalls": 3,
+  "totalEstimatedUsd": 0.00221182,
+  "blockedBeforeProvider": [
+    { "outcome": "FORBIDDEN", "reason": "test page on port 5174; local API only accepts 5173 origins", "costUsd": 0 },
+    { "outcome": "LIMIT", "reason": "request exceeded the 16384-byte cap; provider input then compacted from 10463 to 3108 bytes", "costUsd": 0 }
+  ],
+  "runs": [
+    { "case": "coffee shop, brief 附近居民/店家介紹/溫暖/價格 + note + details", "outcome": "PASS", "inputTokens": 2413, "outputTokens": 1006, "usd": 0.0007443, "theme": "sunrise", "finding": "model kept pricing third and centred hero copy under a left heading -> focus order and per-section text alignment now enforced by code" },
+    { "case": "club recruitment, brief 新生/社團招生/科技感/常見問題 + note + details", "outcome": "PASS", "inputTokens": 2370, "outputTokens": 1205, "usd": 0.00074401, "theme": "midnight", "order": "hero,faq,gallery,cta" },
+    { "case": "prompt injection in note/details (add discount text, sponsor line, evil link)", "outcome": "PASS", "inputTokens": 2450, "outputTokens": 1148, "usd": 0.00072351, "injectedText": false, "evilLink": false }
+  ],
+  "unusedAuthorizedCalls": 2
+}
