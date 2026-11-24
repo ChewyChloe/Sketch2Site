@@ -336,3 +336,39 @@ body{background:var(--neo-cream)}
 .home-project.is-active .home-state{align-self:flex-start;padding:3px 10px;border-radius:999px;background:var(--neo-dark);color:var(--neo-green)}
 .home-project.is-active .home-state::before{background:var(--neo-green)}
 .home-project.is-active .home-state.state-unsaved::before{background:#f0a52b}
+/* ===== Describe-site (brief) panel ===== */
+.topbar .describe-site{min-height:40px;padding:0 16px;border:2px solid #0d0e11;border-radius:999px;background:#fff;font-weight:800;display:inline-flex;align-items:center}
+.topbar .describe-site.has-brief{background:#e3fbea}
+.topbar .describe-site[aria-expanded=true]{background:#0d0e11;color:#10e560}
+.brief-panel{position:fixed;z-index:60;top:72px;right:16px;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 96px);overflow-y:auto;background:#fff;border:2.5px solid #0d0e11;border-radius:22px;box-shadow:6px 6px 0 #0d0e11;padding:20px 22px;display:grid;gap:14px;color:#0d0e11}
+.brief-head{display:flex;align-items:center;justify-content:space-between}
+.brief-head h2{margin:0;font-size:18px;font-weight:900}
+.brief-close{width:36px;height:36px;border-radius:50%;border:2px solid #0d0e11;background:#fff;font-size:20px;line-height:1;cursor:pointer}
+.brief-sentence{margin:0;font-size:17px;line-height:2.4;font-weight:700}
+.brief-blank{display:inline-flex;align-items:center;min-height:38px;padding:0 12px;margin:0 2px;border:2px dashed #0d0e11;border-radius:12px;background:#f7f6f2;font:inherit;font-size:15px;font-weight:800;color:#5a625c;cursor:pointer;vertical-align:middle}
+.brief-blank.filled{border-style:solid;background:#10e560;color:#0d0e11}
+.brief-blank.active{outline:3px solid #0d0e11;outline-offset:2px}
+.brief-choices{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-radius:16px;background:#f3f4f0}
+.brief-choices>button{min-height:38px;padding:0 14px;border:1.5px solid #0d0e11;border-radius:999px;background:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.brief-choices>button[aria-pressed=true]{background:#0d0e11;color:#10e560}
+.brief-custom input{min-height:38px;width:9em;padding:0 12px;border:1.5px dashed #0d0e11;border-radius:999px;font:inherit;font-size:14px;background:#fff}
+.brief-choices .brief-clear{border-style:dashed;color:#a3271f}
+.ghost-field{display:grid;gap:6px}
+.ghost-label{font-size:14px;font-weight:800}
+.ghost-box{position:relative;display:block}
+.ghost-box input,.ghost-box textarea,.ghost-mirror{box-sizing:border-box;width:100%;margin:0;padding:10px 14px;border:2px solid #0d0e11;border-radius:14px;font:inherit;font-size:15px;line-height:1.6;letter-spacing:normal;white-space:pre-wrap;overflow-wrap:anywhere}
+.ghost-box input,.ghost-box textarea{position:relative;background:transparent;color:#0d0e11;resize:vertical}
+.ghost-box input{min-height:46px;white-space:nowrap}
+.ghost-field.multi textarea{min-height:130px}
+.ghost-mirror{position:absolute;inset:0;border-color:transparent;background:#fff;color:transparent;pointer-events:none;overflow:hidden}
+.ghost-field:not(.multi) .ghost-mirror{white-space:pre;overflow:hidden}
+.ghost-rest{color:#9aa39c}
+.ghost-box input:focus-visible,.ghost-box textarea:focus-visible{outline:3px solid #10e560;outline-offset:1px}
+.ghost-hint{font-size:12px;color:#5a625c;min-height:1.4em}
+.ghost-hint kbd{display:inline-block;padding:0 6px;border:1px solid #9aa39c;border-bottom-width:2px;border-radius:5px;font:inherit;font-size:11px;background:#f7f6f2}
+.brief-more{justify-self:start;min-height:36px;padding:0 4px;border:0;background:transparent;font:inherit;font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.brief-note{margin:0;font-size:13px;line-height:1.6;color:#4a524c;background:#f7f6f2;border-radius:12px;padding:10px 12px}
+.brief-actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.brief-actions .primary{min-height:46px;padding:0 20px;border:2px solid #0d0e11;border-radius:999px;background:#10e560;font:inherit;font-weight:900;box-shadow:3px 3px 0 #0d0e11;cursor:pointer}
+.brief-reset{min-height:46px;padding:0 16px;border:1.5px solid #c9cec7;border-radius:999px;background:#fff;font:inherit;font-weight:700;cursor:pointer}
+@media(max-width:760px){.brief-panel{top:auto;bottom:12px;right:12px;left:12px;width:auto;max-height:80vh}.brief-sentence{font-size:15px}}

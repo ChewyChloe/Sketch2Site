@@ -1,4 +1,5 @@
 import {structuredGroupMotions} from "./motion";
+import { moodThemes } from "./brief";
 import { z } from "zod";
 import { CanvasSchema, type CanvasSpec, type CanvasNode } from "./spec";
 import {
@@ -371,7 +372,12 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
     typography: layout.typography,
     ...(layout.version === 1
       ? { styles: layout.theme }
-      : { styles: "neutral", theme: layout.theme, chrome: { nav: layout.nav, footer: layout.footer } }),
+      : {
+          styles: "neutral",
+          // An explicit mood choice in the brief always decides the theme, whoever planned the layout.
+          theme: moodThemes[canvas.metadata.brief?.mood ?? ""] ?? layout.theme,
+          chrome: { nav: layout.nav, footer: layout.footer },
+        }),
     responsive: { mobileColumns: 1, desktopColumns: 3 },
   });
   if (!checked.success) throw new GenerationError("INVALID_OUTPUT");

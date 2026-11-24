@@ -1,6 +1,7 @@
 import type { CanvasNode, CanvasSpec } from "./spec";
 import type { LayoutItem, LayoutV2 } from "./generation";
 import type { ThemeId } from "./pageSpec";
+import { focusRoles, moodThemes } from "./brief";
 
 // Deterministic, local layout planner (no model). It reads the draft's reading
 // order and element types to infer page sections, then hands a v2 layout plan to
@@ -171,6 +172,17 @@ export function smartLayout(canvas: CanvasSpec): LayoutV2 {
   // A draft with no title at all still gets a calm opening instead of a bare hero.
   if (!sections.some((s) => s.intro.some((i) => i.headingLevel === 1 && i.presentation === "heading")) && sections[0]?.role === "hero")
     sections[0] = { ...sections[0], role: "content" };
+  // The brief's focus moves the matching section right after the opening one.
+  const brief = canvas.metadata.brief;
+  const wanted = brief ? focusRoles[brief.focus] ?? [] : [];
+  for (const role of wanted) {
+    const at = sections.findIndex((s, i) => i > 1 && s.role === role);
+    if (at > 1) {
+      const [moved] = sections.splice(at, 1);
+      sections.splice(1, 0, moved);
+      break;
+    }
+  }
   const forceStack = canvas.constraints.includes("layout:stack");
   const forceGrid = canvas.constraints.includes("layout:grid");
   // Start with a soft band so the first section separates from the hero.
@@ -191,7 +203,7 @@ export function smartLayout(canvas: CanvasSpec): LayoutV2 {
   return {
     version: 2,
     typography: canvas.constraints.includes("typography:serif") ? "serif" : "sans",
-    theme: suggestTheme(canvas),
+    theme: (brief && moodThemes[brief.mood]) || suggestTheme(canvas),
     nav: sections.length >= 3,
     footer: true,
     sections,

@@ -47,6 +47,15 @@ export const CanvasSchema = z
       .object({
         name: z.string().min(1).max(80),
         layoutMode:z.enum(["preserve","reflow"]).optional(),
+        // The user's short description for generation (fill-in blanks + an optional note).
+        brief: z.object({
+          audience: z.string().trim().max(20),
+          purpose: z.string().trim().max(20),
+          mood: z.string().trim().max(20),
+          focus: z.string().trim().max(20),
+          note: z.string().trim().max(100),
+          details: z.string().trim().max(600).optional(),
+        }).strict().optional(),
         // Pages of a multi-page site, in order; the first is the home page.
         pages: z.array(z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(30) }).strict()).min(1).max(10).optional(),
         width: z.literal(1440),
