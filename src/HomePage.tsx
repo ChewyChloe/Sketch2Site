@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { HomeNav, WhySection, StepsSection, Showcase, HomeFaq } from "./HomeSections";
+import { starterDrafts } from "./starters";
 import type { CanvasSpec } from "./spec";
 import type { ProjectSummary } from "./projects";
-import { themeIds, themeLabels } from "./pageSpec";
-import { blockTemplateIds, blockTemplateInfo } from "./blockTemplates";
 
 // Product home: real workspace data only (no invented statistics or accounts).
 export default function HomePage({
@@ -34,8 +34,10 @@ export default function HomePage({
     remove: (id: string) => Promise<void>;
   };
 }) {
+  const templates = useMemo(() => [...starterDrafts(), ...demos], [demos]);
   return (
     <main className="home-page" aria-label="Sketch2Site 首頁">
+      <HomeNav />
       <section className="home-hero">
         <div className="home-hero-copy">
           <p className="home-eyebrow">視覺化網站工作台</p>
@@ -84,51 +86,10 @@ export default function HomePage({
         </div>
       </section>
 
-      <section className="home-section" aria-labelledby="home-demos">
-        <h2 id="home-demos">從範例開始</h2>
-        <p className="home-note">範例會建立成新專案，不影響現有的專案。</p>
-        <div className="home-demos">
-          {demos.map((demo) => (
-            <button key={demo.metadata.name} className="home-demo" onClick={() => onLoadDemo(demo)}>
-              <DraftThumb draft={demo} />
-              <span>{demo.metadata.name}</span>
-              <small>{demo.nodes.length} 個元件</small>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="home-section" aria-labelledby="home-steps">
-        <h2 id="home-steps">怎麼運作</h2>
-        <ol className="home-steps">
-          <li><b>畫草稿</b><span>拖入元件或區塊範本，位置不必精準。</span></li>
-          <li><b>生成網站</b><span>智慧排版整理成完整頁面；設定 AI 後也可交給模型。</span></li>
-          <li><b>調整風格</b><span>切換主題、附加動畫、雙擊直接改字。</span></li>
-          <li><b>匯出上線</b><span>下載 React + TypeScript 專案，部署到任何靜態主機。</span></li>
-        </ol>
-      </section>
-
-      <section className="home-section" aria-labelledby="home-features">
-        <h2 id="home-features">你可以用到的</h2>
-        <div className="home-features">
-          <div>
-            <h3>區塊範本</h3>
-            <p>{blockTemplateIds.map((id) => blockTemplateInfo(id).label).join("、")}</p>
-          </div>
-          <div>
-            <h3>{themeIds.length} 套主題</h3>
-            <p>{themeIds.map((id) => themeLabels[id]).join("、")}</p>
-          </div>
-          <div>
-            <h3>聯絡表單</h3>
-            <p>接上 Formspree 等服務，匯出的網站就能收到留言。</p>
-          </div>
-          <div>
-            <h3>資料留在本機</h3>
-            <p>草稿與圖片只存在這個瀏覽器，不會上傳。</p>
-          </div>
-        </div>
-      </section>
+      <WhySection />
+      <StepsSection />
+      <Showcase templates={templates} onUse={onLoadDemo} />
+      <HomeFaq />
     </main>
   );
 }

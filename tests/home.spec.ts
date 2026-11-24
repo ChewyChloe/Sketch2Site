@@ -11,11 +11,17 @@ for (const width of [1440, 375])
     const home = page.getByRole("main", { name: "Sketch2Site 首頁" });
     await expect(home.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(home.getByRole("heading", { name: "我的工作區" })).toBeVisible();
-    await expect(home.locator(".home-demo")).toHaveCount(4);
-    await expect(home.locator(".home-steps li")).toHaveCount(4);
+    await expect(home.locator(".showcase-card")).toHaveCount(7);
+    await expect(home.locator(".showcase-card .rendered-page")).toHaveCount(7);
+    await expect(home.locator(".why-card")).toHaveCount(3);
+    await expect(home.locator(".steps-track li")).toHaveCount(4);
+    await home.getByRole("tab", { name: "我是來看網站的人" }).click();
+    await expect(home.locator(".steps-track li").first()).toContainText("手機電腦都好讀");
+    await home.getByText("我的資料存在哪裡？").click();
+    await expect(home.getByText("不會上傳")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     // An example becomes a new project and opens on the canvas.
-    await home.locator(".home-demo").first().click();
+    await home.getByRole("article", { name: "範本：個人作品集" }).getByRole("button", { name: /用這個範本開始/ }).click();
     await expect(page.getByTestId("canvas-node")).toHaveCount(6);
     await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
     await expect(home.locator(".home-project")).toHaveCount(2);

@@ -46,6 +46,8 @@ const effects = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameE
 type Effect = keyof typeof effects;
 const dragType = "application/x-sketch2site";
 const demoFixtures = generationFixtures();
+// Example drafts offered on the home page (the product fixture is reserved for generation checks).
+const homeDemos = demoFixtures.filter((_, index) => index !== 2);
 // New drafts start in smart layout; stored drafts keep whatever mode they had.
 const freshDraft = (): CanvasSpec => {
   const draft = blank();
@@ -1011,7 +1013,7 @@ node ? (
             draft={spec}
             savedState={!spec.nodes.length && !dirty ? "empty" : dirty ? "unsaved" : "saved"}
             motionCount={motionIds.length}
-            demos={demoFixtures.filter((_, index) => index !== 2)}
+            demos={homeDemos}
             onOpenDraft={() => { setMotionFull(false); setMode("draft"); }}
             onOpenSite={() => setMode("preview")}
             onOpenLibrary={() => { setMode("draft"); setMotionFull(true); setPanel(true); setTab("animations"); }}
