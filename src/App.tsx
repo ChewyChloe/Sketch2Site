@@ -25,6 +25,7 @@ import { loadDraft, saveDraft } from "./storage";
 import Preview, { type PreviewHandle } from "./Preview";
 import CandidatePreview from "./CandidatePreview";
 import HomePage from "./HomePage";
+import { listProjects, openProject, createProject, renameProject, duplicateProject, deleteProject, projectSwitch, type ProjectSummary } from "./projects";
 import type { PageSpec } from "./pageSpec";
 import { localAssets } from "./pageSpec";
 import { blockTemplateIds, blockTemplateInfo, createBlock, type BlockTemplateId } from "./blockTemplates";
@@ -253,7 +254,7 @@ export default function App() {
   }, [node?.id, node?.href]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
-      if (candidate) {
+      if (candidate && !projectSwitch.reloading) {
         event.preventDefault();
         event.returnValue = "";
       }
@@ -369,6 +370,54 @@ export default function App() {
     setSelected(next.id);
     report("已新增" + labels[type]);
   }
+  // ---- Projects (home workspace) ----
+  const [projects, setProjects] = useState<ProjectSummary[] | null>(null);
+  const refreshProjects = async () => {
+    try { setProjects(await listProjects()); } catch { setProjects([]); report("無法讀取專案清單，請重新整理。", true); }
+  };
+  useEffect(() => { if (mode === "home" && ready) void refreshProjects(); }, [mode, ready]);
+  // Save the open draft (if changed) before any switch, then reload into the target project.
+  async function switchProjects(work: () => Promise<unknown>) {
+    try {
+      if (dirty) await saveDraft(state.current.present);
+      await work();
+      projectSwitch.reloading = true;
+      location.reload();
+    } catch (e) {
+      report(e instanceof Error ? e.message : "專案操作失敗，目前草稿已保留。", true);
+      void refreshProjects();
+    }
+  }
+  const projectActions = {
+    open: (id: string) => {
+      if (projects?.find((p) => p.id === id)?.active) { setMotionFull(false); setMode("draft"); return; }
+      void switchProjects(() => openProject(id));
+    },
+    create: (from?: CanvasSpec) => void switchProjects(() => createProject(from ? from.metadata.name : "未命名草稿", from)),
+    rename: async (id: string, name: string) => {
+      try {
+        await renameProject(id, name);
+        if (projects?.find((p) => p.id === id)?.active && name.trim()) change({ ...state.current.present, metadata: { ...state.current.present.metadata, name: name.trim().slice(0, 80) } });
+        await refreshProjects();
+      } catch (e) { report(e instanceof Error ? e.message : "改名失敗。", true); }
+    },
+    duplicate: async (id: string) => {
+      try {
+        if (dirty && projects?.find((p) => p.id === id)?.active) await save();
+        await duplicateProject(id);
+        await refreshProjects();
+        report("已建立副本。");
+      } catch (e) { report(e instanceof Error ? e.message : "複製失敗。", true); }
+    },
+    remove: async (id: string) => {
+      try {
+        const wasActive = await deleteProject(id);
+        if (wasActive) { projectSwitch.reloading = true; location.reload(); return; }
+        await refreshProjects();
+        report("已刪除專案。");
+      } catch (e) { report(e instanceof Error ? e.message : "刪除失敗。", true); }
+    },
+  };
   function loadDemo(fixture: CanvasSpec) {
     if (dirty && !window.confirm("載入示範會取代目前草稿，可使用還原復原。是否繼續？")) return false;
     if (!change(fixture.metadata.layoutMode ? fixture : { ...fixture, metadata: { ...fixture.metadata, layoutMode: "reflow" } })) return false;
@@ -510,7 +559,7 @@ export default function App() {
   });
   useEffect(() => {
     const warn = (e: BeforeUnloadEvent) => {
-      if (dirty) {
+      if (dirty && !projectSwitch.reloading) {
         e.preventDefault();
         e.returnValue = "";
       }
@@ -966,7 +1015,9 @@ node ? (
             onOpenDraft={() => { setMotionFull(false); setMode("draft"); }}
             onOpenSite={() => setMode("preview")}
             onOpenLibrary={() => { setMode("draft"); setMotionFull(true); setPanel(true); setTab("animations"); }}
-            onLoadDemo={(demo) => { if (loadDemo(demo)) { setMotionFull(false); setMode("draft"); } }}
+            onLoadDemo={(demo) => projectActions.create(demo)}
+            projects={projects}
+            actions={projectActions}
           />
         )}
         {mode === "preview" && candidate && (

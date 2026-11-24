@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { CanvasSpec } from "./spec";
+import type { ProjectSummary } from "./projects";
 import { themeIds, themeLabels } from "./pageSpec";
 import { blockTemplateIds, blockTemplateInfo } from "./blockTemplates";
 
@@ -12,6 +14,8 @@ export default function HomePage({
   onOpenSite,
   onOpenLibrary,
   onLoadDemo,
+  projects,
+  actions,
 }: {
   draft: CanvasSpec;
   savedState: "saved" | "unsaved" | "empty";
@@ -21,8 +25,15 @@ export default function HomePage({
   onOpenSite: () => void;
   onOpenLibrary: () => void;
   onLoadDemo: (demo: CanvasSpec) => void;
+  projects: ProjectSummary[] | null;
+  actions: {
+    open: (id: string) => void;
+    create: (from?: CanvasSpec) => void;
+    rename: (id: string, name: string) => Promise<void>;
+    duplicate: (id: string) => Promise<void>;
+    remove: (id: string) => Promise<void>;
+  };
 }) {
-  const kinds = new Set(draft.nodes.map((n) => n.type)).size;
   return (
     <main className="home-page" aria-label="Sketch2Site 首頁">
       <section className="home-hero">
@@ -54,43 +65,28 @@ export default function HomePage({
       </section>
 
       <section className="home-section" aria-labelledby="home-workspace">
-        <h2 id="home-workspace">我的工作區</h2>
-        <div className="home-workspace">
-          <article className="home-card home-draft">
-            <DraftThumb draft={draft} />
-            <div className="home-card-body">
-              <h3>{draft.metadata.name}</h3>
-              <p className="home-meta">
-                {draft.nodes.length ? `${draft.nodes.length} 個元件 · ${kinds} 種類型` : "空白草稿"} · 1440 × {draft.metadata.height}
-              </p>
-              <p className={"home-state state-" + savedState}>
-                {savedState === "saved" ? "已儲存於這個瀏覽器" : savedState === "unsaved" ? "有尚未儲存的修改" : "尚未開始"}
-              </p>
-              <button className="home-primary" onClick={onOpenDraft}>開啟草稿</button>
-            </div>
-          </article>
-          <article className="home-card">
-            <div className="home-card-icon" aria-hidden="true">◧</div>
-            <div className="home-card-body">
-              <h3>已確認的網站</h3>
-              <p>預覽生成後確認的頁面，局部修改文字、主題與動畫，再匯出 React 專案。</p>
-              <button className="home-secondary" onClick={onOpenSite}>開啟網站工作區</button>
-            </div>
-          </article>
-          <article className="home-card">
-            <div className="home-card-icon" aria-hidden="true">◎</div>
-            <div className="home-card-body">
-              <h3>動畫素材庫</h3>
-              <p>{motionCount} 種動畫，可直接試玩，拖到元件上就能套用。</p>
-              <button className="home-secondary" onClick={onOpenLibrary}>開啟素材庫</button>
-            </div>
-          </article>
+        <div className="home-section-head">
+          <h2 id="home-workspace">我的工作區</h2>
+          <div className="home-quick">
+            <button className="home-link-button" onClick={onOpenSite}>開啟網站工作區</button>
+            <button className="home-link-button" onClick={onOpenLibrary}>動畫素材庫（{motionCount}）</button>
+          </div>
+        </div>
+        <p className="home-note">專案存在這個瀏覽器；切換專案前會自動儲存目前的草稿。</p>
+        <div className="home-projects" aria-busy={projects === null}>
+          <button className="home-new" onClick={() => actions.create()}>
+            <span aria-hidden="true">＋</span>
+            新增專案
+          </button>
+          {projects?.map((p) => (
+            <ProjectCard key={p.id} project={p} unsaved={p.active && savedState === "unsaved"} live={p.active ? draft : p.draft} actions={actions} onOpen={p.active ? onOpenDraft : undefined} />
+          ))}
         </div>
       </section>
 
       <section className="home-section" aria-labelledby="home-demos">
         <h2 id="home-demos">從範例開始</h2>
-        <p className="home-note">載入範例會取代目前草稿，可以用「還原」復原。</p>
+        <p className="home-note">範例會建立成新專案，不影響現有的專案。</p>
         <div className="home-demos">
           {demos.map((demo) => (
             <button key={demo.metadata.name} className="home-demo" onClick={() => onLoadDemo(demo)}>
@@ -149,5 +145,66 @@ function DraftThumb({ draft }: { draft: CanvasSpec }) {
         <rect key={n.id} x={n.x} y={n.y} width={n.width} height={n.height} rx="10" className={"thumb-" + n.type} />
       ))}
     </svg>
+  );
+}
+
+function ProjectCard({
+  project,
+  live,
+  unsaved,
+  actions,
+  onOpen,
+}: {
+  project: ProjectSummary;
+  live: CanvasSpec;
+  unsaved: boolean;
+  actions: { open: (id: string) => void; rename: (id: string, name: string) => Promise<void>; duplicate: (id: string) => Promise<void>; remove: (id: string) => Promise<void> };
+  onOpen?: () => void;
+}) {
+  const [renaming, setRenaming] = useState(false),
+    [name, setName] = useState(live.metadata.name),
+    [confirmDelete, setConfirmDelete] = useState(false);
+  const updated = new Date(project.updatedAt);
+  return (
+    <article className={"home-project" + (project.active ? " is-active" : "")} aria-label={"專案：" + live.metadata.name}>
+      <button className="home-project-open" onClick={() => (onOpen ? onOpen() : actions.open(project.id))} aria-label={"開啟 " + live.metadata.name}>
+        <DraftThumb draft={live} />
+      </button>
+      <div className="home-project-body">
+        {renaming ? (
+          <form
+            className="home-rename"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void actions.rename(project.id, name).then(() => setRenaming(false));
+            }}
+          >
+            <input aria-label="專案名稱" value={name} maxLength={80} autoFocus onChange={(e) => setName(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { setName(live.metadata.name); setRenaming(false); } }} />
+            <button type="submit">儲存</button>
+          </form>
+        ) : (
+          <h3>{live.metadata.name}</h3>
+        )}
+        <p className="home-meta">
+          {live.nodes.length ? `${live.nodes.length} 個元件` : "空白草稿"}
+          {project.hasPage ? " · 已有網站" : ""} · {updated.toLocaleDateString("zh-TW", { month: "numeric", day: "numeric" })} 更新
+        </p>
+        {project.active && <p className={"home-state " + (unsaved ? "state-unsaved" : "state-saved")}>{unsaved ? "目前開啟 · 有尚未儲存的修改" : "目前開啟"}</p>}
+        {confirmDelete ? (
+          <div className="home-project-actions" role="group" aria-label="確認刪除">
+            <span className="home-danger-text">確定刪除？無法復原</span>
+            <button className="home-danger" onClick={() => void actions.remove(project.id)}>刪除</button>
+            <button onClick={() => setConfirmDelete(false)}>取消</button>
+          </div>
+        ) : (
+          <div className="home-project-actions">
+            <button className="home-primary small" onClick={() => (onOpen ? onOpen() : actions.open(project.id))}>開啟</button>
+            <button onClick={() => { setName(live.metadata.name); setRenaming(true); }}>改名</button>
+            <button onClick={() => void actions.duplicate(project.id)}>複製</button>
+            <button onClick={() => setConfirmDelete(true)}>刪除</button>
+          </div>
+        )}
+      </div>
+    </article>
   );
 }
