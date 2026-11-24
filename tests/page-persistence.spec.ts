@@ -1,3 +1,4 @@
+import path from "node:path";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import {
   pageAction,
@@ -294,7 +295,9 @@ test("關閉 Chromium 程序後使用同一隔離 profile 可恢復已保存頁�
     args: ["--no-sandbox"],
     viewport: { width: 1440, height: 1000 },
   };
-  const profile = testInfo.outputPath("profile");
+  // ASCII-only path: Chromium's IndexedDB hangs in profiles whose path contains
+  // non-ASCII characters on some Linux setups, and the test title is Chinese.
+  const profile = path.join(testInfo.project.outputDir, `persistent-profile-${testInfo.workerIndex}-${Date.now()}`);
   const first = await chromium.launchPersistentContext(profile, options);
   try {
     const p = await first.newPage();

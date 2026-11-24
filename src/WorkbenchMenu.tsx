@@ -19,9 +19,23 @@ export function WorkbenchMenu({
         ref.current.querySelector("summary")?.focus();
       }
     };
+    // Keep the open dropdown inside the viewport (menus near a screen edge would open off-screen).
+    const place = () => {
+      const menu = ref.current, content = menu?.querySelector<HTMLElement>(".workbench-menu-content");
+      if (!menu?.open || !content) return;
+      content.style.left = "";
+      content.style.right = "";
+      const box = content.getBoundingClientRect();
+      if (box.left < 8) { content.style.left = "0"; content.style.right = "auto"; }
+      if (content.getBoundingClientRect().right > innerWidth - 8) { content.style.left = "auto"; content.style.right = "0"; }
+    };
+    ref.current?.addEventListener("toggle", place);
+    window.addEventListener("resize", place);
     document.addEventListener("pointerdown", outside);
     document.addEventListener("keydown", escape);
     return () => {
+      ref.current?.removeEventListener("toggle", place);
+      window.removeEventListener("resize", place);
       document.removeEventListener("pointerdown", outside);
       document.removeEventListener("keydown", escape);
     };

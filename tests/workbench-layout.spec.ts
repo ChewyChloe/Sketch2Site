@@ -110,7 +110,8 @@ for (const width of [1440, 768, 375])
     expect(selected.controlsOverflow).toBe(false);
     expect(selected.horizontalOverflow).toBe(false);
     expect(selected.contextBar).toBeLessThanOrEqual(49);
-    expect(selected.canvasTop).toBeLessThanOrEqual(110);
+    // Phones need a second top-bar row for the step tabs (added in the Nov 18 redesign).
+    expect(selected.canvasTop).toBeLessThanOrEqual(width < 760 ? 160 : 110);
     expect(selected.canvasHeight).toBeGreaterThan(800);
     await page.screenshot({ path: `test-results/phase61-${width}.png` });
     if (selected.panelOpen)

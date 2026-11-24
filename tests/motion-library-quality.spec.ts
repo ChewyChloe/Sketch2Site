@@ -9,7 +9,8 @@ for(const width of [1440,768,375])test(`native library review: readable, directl
  for(const sample of await library.locator('.rendered-page').all()){
   expect(await sample.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);await expect(sample).toHaveCSS('transform','none');
  }
- const gallery=library.locator('.animation-assets');
+ // Effects are grouped into family lists; each list uses the same column layout.
+ const gallery=library.locator('.animation-assets').first();
  const columns=await gallery.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);expect(columns).toBe(width===1440?2:1);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  const panelWidth=(await page.locator('#preview-inspector').boundingBox())!.width;

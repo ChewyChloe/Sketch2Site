@@ -25,6 +25,7 @@ import { loadDraft, saveDraft } from "./storage";
 import Preview, { type PreviewHandle } from "./Preview";
 import CandidatePreview from "./CandidatePreview";
 import type { PageSpec } from "./pageSpec";
+import { localAssets } from "./pageSpec";
 import { blockTemplateIds, blockTemplateInfo, createBlock, type BlockTemplateId } from "./blockTemplates";
 import { createDemoCandidate, type CandidateResult } from "./demo";
 import { generationFixtures } from "./demoFixtures";
@@ -77,6 +78,7 @@ export default function App() {
     future: [],
   });
   const [linkDraft, setLinkDraft] = useState("");
+  const [brokenImages, setBrokenImages] = useState<ReadonlySet<string>>(new Set());
   // Inline text editing on the canvas (double-click a node).
   const [editing, setEditing] = useState<string | null>(null),
     [editDraft, setEditDraft] = useState(""),
@@ -1140,13 +1142,21 @@ node ? (
                                 ? "找不到本機圖片，請重新匯入。"
                                 : "正在載入圖片…"}
                             </span>
+                          ) : n.type === "image" && (n.assetId === localAssets[0] || brokenImages.has(n.id + n.assetId)) ? (
+                            // The built-in sample (and any image that fails to load) shows as an empty frame to fill.
+                            <span className="image-placeholder" role="img" aria-label={n.content + "（尚未放入圖片）"}>
+                              <WorkbenchIcon name="image" />
+                              <strong>{n.content}</strong>
+                              <small>雙擊替換圖片</small>
+                            </span>
                           ) : n.type === "image" ? (
                             <img
-                              src={imageUrls[n.assetId!] || n.assetId!}
+                              src={imageUrls[n.assetId!] || import.meta.env.BASE_URL + n.assetId!.slice(1)}
                               loading="lazy"
                               decoding="async"
                               alt={n.content}
                               draggable={false}
+                              onError={() => setBrokenImages((prev) => new Set(prev).add(n.id + n.assetId))}
                             />
                           ) : editing === n.id ? (
                             <textarea
@@ -1343,7 +1353,7 @@ node ? (
                             disabled={disabled || spec.nodes.length >= 100}
                             onDragEnd={() => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);}}
                             onDragStart={(e) => {
-                              setDraftDragging(true);
+                              setTimeout(() => setDraftDragging(true), 0);
                               e.dataTransfer.setData(
                                 dragType,
                                 JSON.stringify({ type: "component", value: t }),
@@ -1410,7 +1420,7 @@ node ? (
                     onDragEnd={() => {setDraftDragging(false);setDraftEffect(null);setDraftHover(null);}}
                     onDragStart={(id, data) => {
                       setMotionFull(false);
-                      setDraftDragging(true);
+                      setTimeout(() => setDraftDragging(true), 0);
                       setDraftEffect(id);
                       data.setData(
                         dragType,

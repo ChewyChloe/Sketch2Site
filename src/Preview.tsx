@@ -714,8 +714,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
           >
             重播動畫
           </button>
-        </WorkbenchMenu>
-        <WorkbenchMenu label="主題">
+          <div className="menu-label">主題</div>
           {themeIds.map((id) => {
             const page = current.current.history.present;
             return (
@@ -984,9 +983,11 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                   }
                 }}
                 onDragStart={(id, data) => {
-                  setDraggedEffect(id);
                   data.setData(effectMime, id);
                   data.effectAllowed = "copy";
+                  // Slide the panel away only after the drag has started; moving the
+                  // source during dragstart makes the browser cancel the drag.
+                  setTimeout(() => setDraggedEffect(id), 0);
                 }}
                 onDragEnd={() => setDraggedEffect(null)}
               />

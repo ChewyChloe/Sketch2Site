@@ -117,3 +117,29 @@ body{background:var(--neo-cream)}
 .asset-choose>svg{align-self:center}
 .animation-asset .motion-replay{display:inline-flex;align-items:center;justify-content:center;flex:none;height:32px;min-height:0;padding:0 14px;line-height:1;border-radius:999px}
 .canvas-marquee{position:absolute;z-index:50;pointer-events:none;border:2px solid #10e560;background:#10e5601f;border-radius:2px}
+/* Image placeholder frame on the draft canvas (sample image or failed load). */
+.image-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1.5px dashed #a9b2ab;border-radius:6px;color:#5b665f;text-align:center;padding:8px;overflow:hidden;
+  background-color:#f3f5f1;background-image:linear-gradient(45deg,#e7ebe5 25%,transparent 25%,transparent 75%,#e7ebe5 75%),linear-gradient(45deg,#e7ebe5 25%,transparent 25%,transparent 75%,#e7ebe5 75%);background-size:24px 24px;background-position:0 0,12px 12px}
+.image-placeholder svg{width:28px;height:28px;color:#6b776f}
+.image-placeholder strong{font-size:14px;font-weight:600;color:#2d3832;background:#f3f5f1e6;padding:0 6px;border-radius:4px}
+.image-placeholder small{font-size:11px;color:#6b776f;background:#f3f5f1e6;padding:0 6px;border-radius:4px}
+/* Full library: one preview height for every card so rows line up. */
+.neo-motion-full .animation-asset .asset-preview,.neo-motion-full .animation-asset[data-effect-id] .asset-preview{height:300px}
+.neo-motion-full .animation-assets{align-items:start}
+/* Card actions keep a 44px touch target; apply pill and replay share it. */
+.asset-choose{min-height:44px}
+.animation-asset .asset-apply,.animation-asset .motion-replay{height:44px}
+/* Slimmer top bar: more room for the canvas and page preview. */
+.topbar{min-height:62px;padding-block:8px}
+.topbar button.primary{min-height:44px;padding-block:0;display:inline-flex;align-items:center;gap:6px}
+.topbar .project-name{height:42px}
+@media(max-width:760px){.topbar{min-height:0}}
+.topbar .workspace-modes{padding:3px;min-height:0;box-sizing:border-box;height:44px;align-items:center}
+.topbar .workspace-modes button{min-height:34px;height:34px;padding-block:0;display:inline-flex;align-items:center}
+/* Phone top bar: name and page actions share the first row, step tabs the second. */
+@media(max-width:760px){
+  .topbar{flex-wrap:wrap;row-gap:8px;column-gap:8px}
+  .topbar .project-name{flex:1 1 140px;width:auto;min-width:0;height:40px}
+  .topbar .preview-app-actions{flex:0 1 auto;width:auto;min-width:0;justify-content:flex-end}
+  .topbar .toolbar-actions{flex-basis:100%}
+}
