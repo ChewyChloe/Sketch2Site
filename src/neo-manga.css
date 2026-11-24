@@ -229,7 +229,7 @@ body{background:var(--neo-cream)}
 .home-new span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--neo-green);border:2px solid var(--neo-dark);font-size:24px}
 .home-new:hover{background:#fff}
 .home-project{display:flex;flex-direction:column;background:#fff;border:2px solid var(--neo-dark);border-radius:22px;overflow:hidden;min-width:0}
-.home-project.is-active{box-shadow:5px 5px 0 var(--neo-green),5px 5px 0 2px var(--neo-dark)}
+.home-project.is-active{box-shadow:none}
 .home-project-open{display:block;padding:12px 12px 0;border:0;background:transparent;cursor:pointer}
 .home-project-open .home-thumb{max-height:160px}
 .home-project-open:focus-visible{outline:3px solid var(--neo-green);outline-offset:-3px}
@@ -332,3 +332,7 @@ body{background:var(--neo-cream)}
 .page-tab-rename input{min-height:36px;width:140px;padding:0 10px;border:2px solid #0d0e11;border-radius:12px;font:inherit;font-size:14px;font-weight:700}
 /* Page links in generated multi-page sites */
 .page-nav nav a[aria-current=page]{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:6px}
+/* Open project: marked by its label only, no coloured shadow. */
+.home-project.is-active .home-state{align-self:flex-start;padding:3px 10px;border-radius:999px;background:var(--neo-dark);color:var(--neo-green)}
+.home-project.is-active .home-state::before{background:var(--neo-green)}
+.home-project.is-active .home-state.state-unsaved::before{background:#f0a52b}
