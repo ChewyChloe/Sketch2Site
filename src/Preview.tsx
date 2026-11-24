@@ -29,7 +29,7 @@ import { effectCompatible, effectIds, type PageNode } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import { validatePage } from "./pageSpec";
 import { applyPatchBatch, indexNodes, travelPage, type Change } from "./patch";
-import { themeIds, themeLabels } from "./pageSpec";
+import { themeIds, themeLabels, allSections } from "./pageSpec";
 function changeLabel(c: Change) {
   return c.property === "style.align"
     ? "對齊"
@@ -207,7 +207,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
     node = selected ? nodes.get(selected) : undefined;
   {
     const walk = (n: PageNode, d: number) => { depths.set(n.id, d); n.children?.forEach((c) => walk(c, d + 1)); };
-    page.sections.forEach((n) => walk(n, 0));
+    allSections(page).forEach((n) => walk(n, 0));
   }
   const [effectDurations, setEffectDurations] = useState<
     Record<string, string>

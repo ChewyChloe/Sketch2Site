@@ -261,19 +261,22 @@ function firstHeading(node: PageNode): PageNode | undefined {
   }
   return undefined;
 }
-function PageNav({ page }: { page: PageSpec }) {
-  const links = page.sections
+function PageNav({ page, view, sections }: { page: PageSpec; view: string | null; sections: PageNode[] }) {
+  // Multi-page sites list their pages; single pages list their own section headings.
+  const pages = page.subpages?.length && page.home ? [{ id: page.home.id, label: page.home.title }, ...page.subpages.map((p) => ({ id: p.id, label: p.title }))] : null;
+  const current = view ?? page.home?.id ?? null;
+  const links = pages ?? sections
     .filter((s) => s.role !== "hero")
     .map((s) => ({ id: s.id, label: firstHeading(s)?.content }))
     .filter((l): l is { id: string; label: string } => !!l.label && l.label.length <= 24)
     .slice(0, 5);
   return (
     <header className="page-nav">
-      <a className="page-brand" href={"#page-" + page.sections[0].id}>{page.metadata.title}</a>
+      <a className="page-brand" href={"#page-" + (page.home?.id ?? sections[0].id)}>{page.metadata.title}</a>
       {links.length > 0 && (
-        <nav aria-label="頁面導覽">
+        <nav aria-label={pages ? "網站頁面" : "頁面導覽"}>
           {links.map((l) => (
-            <a key={l.id} href={"#page-" + l.id}>{l.label}</a>
+            <a key={l.id} href={"#page-" + l.id} aria-current={pages && l.id === current ? "page" : undefined}>{l.label}</a>
           ))}
         </nav>
       )}
@@ -315,6 +318,27 @@ export function PageRuntime({
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const previous = useRef<PageSpec | undefined>(undefined);
+  // Current page of a multi-page site. Published sites mirror it in the URL hash.
+  const live = useContext(FormLive);
+  const viewFromHash = () => (live ? location.hash.match(/^#view-([0-9a-f-]{36})$/)?.[1] ?? null : null);
+  const [view, setView] = useState<string | null>(viewFromHash);
+  const pendingScroll = useRef<string | null>(null);
+  useEffect(() => {
+    if (!live) return;
+    const sync = () => setView(viewFromHash());
+    addEventListener("hashchange", sync);
+    return () => removeEventListener("hashchange", sync);
+  }, [live]);
+  useEffect(() => {
+    const id = pendingScroll.current;
+    pendingScroll.current = null;
+    const target = id ? rootRef.current?.querySelector<HTMLElement>('[id="page-' + id + '"]') : null;
+    if (target) {
+      target.scrollIntoView({ behavior: "instant", block: "start" });
+      target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
+    } else if (id === "") rootRef.current?.scrollIntoView({ behavior: "instant", block: "start" });
+  }, [view]);
   const result = useMemo(() => {
     const checked = validatePage(input);
     return checked.ok
@@ -334,7 +358,22 @@ export function PageRuntime({
       </p>
     );
   const page = result.page;
-  const sources=new Map<string,PageNode>();const collect=(n:PageNode)=>{sources.set(n.id,n);n.children?.forEach(collect);};page.sections.forEach(collect);
+  const sub = page.subpages?.find((p) => p.id === view);
+  const current = sub ? { sections: sub.sections, draftLayout: sub.draftLayout } : { sections: page.sections, draftLayout: page.draftLayout };
+  const pageOf = (nodeId: string) => {
+    const has = (list: PageNode[]) => { const stack = [...list]; while (stack.length) { const n = stack.pop()!; if (n.id === nodeId) return true; stack.push(...(n.children ?? [])); } return false; };
+    if (has(page.sections)) return null;
+    return page.subpages?.find((p) => has(p.sections))?.id ?? undefined;
+  };
+  const go = (pageId: string | null, scrollTo: string) => {
+    pendingScroll.current = scrollTo;
+    if (live) {
+      const hash = pageId ? "#view-" + pageId : "";
+      if (location.hash !== hash) history.pushState(null, "", hash || location.pathname + location.search);
+    }
+    setView(pageId);
+  };
+  const sources=new Map<string,PageNode>();const collect=(n:PageNode)=>{sources.set(n.id,n);n.children?.forEach(collect);};current.sections.forEach(collect);
   return (
     <AssetUrls.Provider value={assetUrls}><MotionPreview.Provider value={motionPreview}>
       <RenderBoundary resetKey={input}>
@@ -359,6 +398,12 @@ export function PageRuntime({
             const href = link?.getAttribute("href");
             if (href?.startsWith("#page-")) {
               e.preventDefault();
+              const id = href.slice(6);
+              // Links to another page, or to an element on another page, switch pages first.
+              if (page.home && id === page.home.id) { go(null, ""); return; }
+              if (page.subpages?.some((p) => p.id === id)) { go(id, ""); return; }
+              const owner = pageOf(id);
+              if (owner !== undefined && owner !== (sub?.id ?? null)) { go(owner, id); return; }
               const target = e.currentTarget.querySelector<HTMLElement>(
                 '[id="' + href.slice(1) + '"]',
               );
@@ -368,7 +413,7 @@ export function PageRuntime({
             }
           }}
         >
-          {page.draftLayout?<div className="draft-layout" style={{aspectRatio:`1440 / ${page.draftLayout.height}`}}>{[...page.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/page.draftLayout!.height*100}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/page.draftLayout!.height*100}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:<>{page.chrome?.nav&&<PageNav page={page}/>}<main className="page-main">{page.sections.map(section=><RenderNode key={section.id} node={section}/>)}</main>{page.chrome?.footer&&<footer className="page-footer"><span>{page.metadata.title}</span><a href={"#page-"+page.sections[0].id}>回到頂端 ↑</a></footer>}</>}
+          {current.draftLayout?<div className="draft-layout" style={{aspectRatio:`1440 / ${current.draftLayout.height}`}}>{[...current.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/current.draftLayout!.height*100}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/current.draftLayout!.height*100}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:<>{(page.chrome?.nav||page.subpages?.length)&&<PageNav page={page} view={sub?.id ?? null} sections={current.sections}/>}<main className="page-main">{current.sections.map(section=><RenderNode key={section.id} node={section}/>)}</main>{page.chrome?.footer&&<footer className="page-footer"><span>{page.metadata.title}</span><a href={"#page-"+current.sections[0].id}>回到頂端 ↑</a></footer>}</>}
         </div>
       </RenderBoundary>
     </MotionPreview.Provider></AssetUrls.Provider>

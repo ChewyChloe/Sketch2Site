@@ -6,7 +6,7 @@ import assetSchema from "./assetRef.ts?raw";
 import { builtInAssets, motionAssetRefs, isLocalAsset } from "./assetRef";
 import { readAsset } from "./assets";
 import type { PageNode } from "./pageSpec";
-import { PageSchema } from "./pageSpec";
+import { PageSchema, allSections } from "./pageSpec";
 import { zipProject, type ProjectFile } from "./archive";
 import notices from "../THIRD_PARTY_NOTICES.md?raw";
 import foldGeometrySource from "./foldGeometry.ts?raw";
@@ -33,7 +33,7 @@ export async function exportProjectFiles(
     motionAssetRefs(node.effects).forEach(ref=>refs.add(ref));
     node.children?.forEach(walk);
   };
-  page.sections.forEach(walk);
+  allSections(page).forEach(walk);
   const files: ProjectFile[] = [
     { path: "package.json", content: manifest },
     { path: "THIRD_PARTY_NOTICES.md", content: notices },

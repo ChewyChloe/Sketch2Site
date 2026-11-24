@@ -1,0 +1,39 @@
+import { test, expect } from "@playwright/test";
+test("multi-page site: page tabs, page links, accept, reload and delete", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await page.getByRole("button", { name: "新增區塊：首屏介紹" }).click();
+  await page.getByRole("button", { name: "＋ 新增頁面" }).click();
+  await expect(page.getByTestId("canvas-node")).toHaveCount(0); // new page starts empty
+  await page.getByRole("tab", { name: "第 2 頁" }).dblclick();
+  await page.getByLabel("頁面名稱").fill("價目與報名");
+  await page.getByLabel("頁面名稱").press("Enter");
+  await page.getByRole("button", { name: "新增區塊：價目表" }).click();
+  await page.getByRole("tab", { name: "首頁" }).click();
+  await expect(page.getByTestId("canvas-node")).toHaveCount(4);
+  await page.locator('[data-testid="canvas-node"].button').click();
+  await page.getByLabel("連到頁面").selectOption({ label: "價目與報名" });
+  await page.getByRole("button", { name: "儲存草稿" }).click();
+  await page.getByRole("button", { name: "生成網站", exact: true }).click();
+  const site = page.locator(".preview-frame .rendered-page:visible").first();
+  await expect(site.locator(".page-nav nav a")).toHaveText(["首頁", "價目與報名"]);
+  await site.getByRole("link", { name: "立即了解" }).click();
+  await expect(site.getByRole("heading", { name: "方案與價格" })).toBeVisible();
+  await expect(site.locator('.page-nav a[aria-current="page"]')).toHaveText("價目與報名");
+  await page.getByRole("button", { name: "使用此版本", exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole("status")).toContainText("草稿");
+  await page.locator(".workbench-menu > summary").filter({ hasText: "草稿選單" }).click();
+  await page.getByRole("button", { name: "開啟網站工作區", exact: true }).click();
+  const saved = page.locator(".preview-frame .rendered-page:visible").first();
+  await expect(saved.locator(".page-nav nav a")).toHaveText(["首頁", "價目與報名"]);
+  await saved.locator(".page-nav nav a", { hasText: "價目與報名" }).click();
+  await expect(saved.getByRole("heading", { name: "方案與價格" })).toBeVisible();
+  // Delete the second page from the draft (two-step, undoable).
+  await page.getByRole("button", { name: "草稿", exact: true }).click();
+  await page.getByRole("tab", { name: "價目與報名" }).click();
+  await page.getByRole("button", { name: "刪除頁面：價目與報名" }).click();
+  await page.getByRole("button", { name: "刪除此頁" }).click();
+  await expect(page.getByRole("tab")).toHaveText(["首頁", "元件", "動畫", "屬性"]);
+  await expect(page.getByTestId("canvas-node")).toHaveCount(4);
+});

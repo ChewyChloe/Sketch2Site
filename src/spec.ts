@@ -33,6 +33,8 @@ export const NodeSchema = z.preprocess(bindMotionInput,z
       ),
     parentId: z.string().uuid().nullable(),
     groupId:z.string().uuid().optional(),
+    // Page of a multi-page draft; absent means the first page.
+    pageId: z.string().uuid().optional(),
     assetId: imageSource.nullable(),
     href: href.nullable().optional(),
     zIndex: z.number().int().min(0).max(100),
@@ -45,6 +47,8 @@ export const CanvasSchema = z
       .object({
         name: z.string().min(1).max(80),
         layoutMode:z.enum(["preserve","reflow"]).optional(),
+        // Pages of a multi-page site, in order; the first is the home page.
+        pages: z.array(z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(30) }).strict()).min(1).max(10).optional(),
         width: z.literal(1440),
         // Taller pages grow in 600px steps; existing drafts stay at 1200.
         height: z.number().int().min(1200).max(canvasMaxHeight),
@@ -57,6 +61,9 @@ export const CanvasSchema = z
   .superRefine((v, ctx) => {
     if(!withinMotionBudget(v.nodes.flatMap(n=>n.effects)))ctx.addIssue({code:"custom",message:"動畫數量超過效能上限"});
     const ids = new Set(v.nodes.map((n) => n.id));
+    const pageIds = new Set((v.metadata.pages ?? []).map((p) => p.id));
+    if (pageIds.size !== (v.metadata.pages ?? []).length || [...pageIds].some((id) => ids.has(id)))
+      ctx.addIssue({ code: "custom", message: "Duplicate page IDs" });
     if (ids.size !== v.nodes.length)
       ctx.addIssue({ code: "custom", message: "Duplicate IDs" });
     for (const n of v.nodes) {
@@ -75,8 +82,10 @@ export const CanvasSchema = z
         ctx.addIssue({ code: "custom", message: "Unexpected link" });
       if (n.type === "form" && n.href?.startsWith("#"))
         ctx.addIssue({ code: "custom", message: "Form endpoint must be https" });
-      if (n.href?.startsWith("#") && !ids.has(n.href.slice(1)))
+      if (n.href?.startsWith("#") && !ids.has(n.href.slice(1)) && !pageIds.has(n.href.slice(1)))
         ctx.addIssue({ code: "custom", message: "Unknown link target" });
+      if (n.pageId !== undefined && !pageIds.has(n.pageId))
+        ctx.addIssue({ code: "custom", message: "Unknown page" });
       // The editor still supports flat nodes only.
       if (n.parentId !== null)
         ctx.addIssue({
@@ -205,3 +214,20 @@ export const undo = undoHistory<CanvasSpec>;
 export const redo = redoHistory<CanvasSpec>;
 
 export { PageSchema } from "./pageSpec";
+
+/** Page of a node in a multi-page draft (first page when unset). */
+export function pageOfNode(spec: CanvasSpec, node: Pick<CanvasNode, "pageId">): string | null {
+  return node.pageId ?? spec.metadata.pages?.[0]?.id ?? null;
+}
+/** The draft limited to one page, as a single-page draft (used for layout and generation). */
+export function pageDraft(spec: CanvasSpec, pageId: string | null): CanvasSpec {
+  const pages = spec.metadata.pages;
+  if (!pages) return spec;
+  const page = pages.find((p) => p.id === pageId) ?? pages[0];
+  const { pages: _pages, ...metadata } = spec.metadata;
+  return {
+    ...spec,
+    metadata: { ...metadata, name: spec.metadata.name },
+    nodes: spec.nodes.filter((n) => pageOfNode(spec, n) === page.id).map(({ pageId: _p, ...n }) => n),
+  };
+}

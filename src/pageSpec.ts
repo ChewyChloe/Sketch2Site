@@ -208,6 +208,7 @@ function withinBudget(input: unknown): boolean {
   };
   return walk(input, 0);
 }
+const DraftLayoutSchema = z.object({width:z.literal(1440),height:z.number().int().min(1200).max(4800),items:z.array(z.object({id:z.string().uuid(),x:z.number().min(0).max(1440),y:z.number().min(0).max(4800),width:z.number().min(80).max(1440),height:z.number().min(40).max(1200),zIndex:z.number().int().min(0).max(100)}).strict()).min(1).max(40)}).strict();
 const PageObject = z
   .object({
     schemaVersion: z.literal(2),
@@ -218,7 +219,23 @@ const PageObject = z
       })
       .strict(),
     sections: z.array(PageNodeSchema).min(1).max(30),
-    draftLayout:z.object({width:z.literal(1440),height:z.number().int().min(1200).max(4800),items:z.array(z.object({id:z.string().uuid(),x:z.number().min(0).max(1440),y:z.number().min(0).max(4800),width:z.number().min(80).max(1440),height:z.number().min(40).max(1200),zIndex:z.number().int().min(0).max(100)}).strict()).min(1).max(40)}).strict().optional(),
+    draftLayout: DraftLayoutSchema.optional(),
+    // The first page's identity when a site has more pages.
+    home: z.object({ id: z.string().uuid(), title: z.string().min(1).max(30) }).strict().optional(),
+    // Additional pages of a multi-page site; each is a list of sections like the first page.
+    subpages: z
+      .array(
+        z
+          .object({
+            id: z.string().uuid(),
+            title: z.string().min(1).max(30),
+            sections: z.array(PageNodeSchema).min(1).max(30),
+            draftLayout: DraftLayoutSchema.optional(),
+          })
+          .strict(),
+      )
+      .max(9)
+      .optional(),
     typography: z.enum(["sans", "serif"]),
     styles: z.enum(["neutral", "warm"]),
     theme: z.enum(themeIds).optional(),
@@ -239,7 +256,7 @@ const PageObject = z
     let count = 0;
     const walk = (n: PageNode, depth: number,ancestors:string[]=[]) => {
       parents.set(n.id,ancestors);
-      if (++count > 200 || depth > 10)
+      if (++count > 400 || depth > 10)
         ctx.addIssue({ code: "custom", message: "頁面層級或元件數量超出限制" });
       if (ids.has(n.id))
         ctx.addIssue({ code: "custom", message: "元件 ID 重複" });
@@ -254,14 +271,28 @@ const PageObject = z
       if (n.href?.startsWith("#")) links.push(n.href.slice(1));
       n.children?.forEach((c) => walk(c, depth + 1,[...ancestors,n.id]));
     };
-    for (const section of page.sections) {
-      if (section.type !== "section")
-        ctx.addIssue({ code: "custom", message: "最外層必須是區塊" });
-      walk(section, 0);
+    const pageViews = [{ sections: page.sections, draftLayout: page.draftLayout }, ...(page.subpages ?? [])];
+    if (page.subpages?.length && !page.home) ctx.addIssue({ code: "custom", message: "多頁網站缺少首頁資訊" });
+    const pageIds = new Set<string>();
+    for (const id of [page.home?.id, ...(page.subpages ?? []).map((p) => p.id)].filter(Boolean) as string[]) {
+      if (pageIds.has(id)) ctx.addIssue({ code: "custom", message: "頁面 ID 重複" });
+      pageIds.add(id);
     }
-    if(page.draftLayout){const placed=new Set<string>();for(const item of page.draftLayout.items){if(!ids.has(item.id)||placed.has(item.id)||item.x+item.width>1440||item.y+item.height>page.draftLayout.height)ctx.addIssue({code:'custom',message:'草稿布局無效'});placed.add(item.id);}for(const id of placed)if(parents.get(id)?.some(p=>placed.has(p)))ctx.addIssue({code:'custom',message:'布局來源不可包含重複子樹'});}
+    for (const view of pageViews) {
+      const before = new Set(ids);
+      for (const section of view.sections) {
+        if (section.type !== "section")
+          ctx.addIssue({ code: "custom", message: "最外層必須是區塊" });
+        walk(section, 0);
+      }
+      // Draft geometry may only place nodes of its own page.
+      const own = new Set([...ids].filter((id) => !before.has(id)));
+      const layout = view.draftLayout;
+      if(layout){const placed=new Set<string>();for(const item of layout.items){if(!own.has(item.id)||placed.has(item.id)||item.x+item.width>1440||item.y+item.height>layout.height)ctx.addIssue({code:'custom',message:'草稿布局無效'});placed.add(item.id);}for(const id of placed)if(parents.get(id)?.some(p=>placed.has(p)))ctx.addIssue({code:'custom',message:'布局來源不可包含重複子樹'});}
+    }
+    if ([...pageIds].some((id) => ids.has(id))) ctx.addIssue({ code: "custom", message: "頁面 ID 與元件重複" });
     if(!withinMotionBudget(motions))ctx.addIssue({code:"custom",message:"動畫數量超過效能上限"});
-    if (links.some((id) => !ids.has(id)))
+    if (links.some((id) => !ids.has(id) && !pageIds.has(id)))
       ctx.addIssue({ code: "custom", message: "找不到連結目標" });
   });
 export const PageSchema = z.preprocess((input, ctx) => {
@@ -302,7 +333,7 @@ export function reconcilePage(
     cache.set(n.id, n);
     n.children?.forEach(collect);
   };
-  previous.sections.forEach(collect);
+  allSections(previous).forEach(collect);
   const share = (n: PageNode): PageNode => {
     const old = cache.get(n.id);
     if (old && JSON.stringify(old) === JSON.stringify(n)) return old;
@@ -319,10 +350,16 @@ export function reconcilePage(
         ? previous.responsive
         : next.responsive,
     sections: next.sections.map(share),
+    ...(next.subpages ? { subpages: next.subpages.map((p) => ({ ...p, sections: p.sections.map(share) })) } : {}),
   };
 }
 export function componentIdFromElement(element: Element): string | null {
   return (
     element.closest("[data-page-id]")?.getAttribute("data-page-id") ?? null
   );
+}
+
+/** Sections of every page (first page, then subpages), for walkers that must see the whole site. */
+export function allSections(page: Pick<PageSpec, "sections" | "subpages">): PageNode[] {
+  return [...page.sections, ...(page.subpages ?? []).flatMap((p) => p.sections)];
 }

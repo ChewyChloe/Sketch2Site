@@ -3,6 +3,7 @@ import { imageSource } from "./assetRef";
 import { z } from "zod";
 import {
   themeIds,
+  allSections,
   PageSchema,
   EffectSchema,
   effectIds,
@@ -173,7 +174,7 @@ export function indexNodes(page: PageSpec) {
     map.set(n.id, n);
     n.children?.forEach(walk);
   };
-  page.sections.forEach(walk);
+  allSections(page).forEach(walk);
   return map;
 }
 export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
@@ -184,8 +185,8 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
     JSON.stringify(x) === JSON.stringify(y);
   let structureChanged =
     !equal(
-      before.sections.map((n) => n.id),
-      after.sections.map((n) => n.id),
+      allSections(before).map((n) => n.id),
+      allSections(after).map((n) => n.id),
     ) || a.size !== b.size;
   for (const [id, node] of a) {
     const next = b.get(id);
@@ -272,6 +273,7 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
         styles: before.styles,
         responsive: before.responsive,
         chrome: before.chrome,
+        pages: [before.home, ...(before.subpages ?? []).map((p) => [p.id, p.title])],
       },
       {
         metadata: after.metadata,
@@ -280,6 +282,7 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
         styles: after.styles,
         responsive: after.responsive,
         chrome: after.chrome,
+        pages: [after.home, ...(after.subpages ?? []).map((p) => [p.id, p.title])],
       },
     ),
   };
@@ -460,7 +463,11 @@ export function applyPatchBatch(
         ? { ...n, children }
         : n;
     };
-    candidate = { ...candidate, sections: candidate.sections.map(replace) };
+    candidate = {
+      ...candidate,
+      sections: candidate.sections.map(replace),
+      ...(candidate.subpages ? { subpages: candidate.subpages.map((p) => ({ ...p, sections: p.sections.map(replace) })) } : {}),
+    };
     if (!PageSchema.safeParse(candidate).success) return fail("INVALID_PAGE");
   }
   const checked = PageSchema.safeParse(candidate);

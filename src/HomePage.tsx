@@ -97,12 +97,15 @@ export default function HomePage({
 // Miniature of the draft drawn from the real node geometry.
 function DraftThumb({ draft }: { draft: CanvasSpec }) {
   // Crop to the drawn content so a short draft does not sit in a sea of blank canvas.
-  const bottom = draft.nodes.reduce((m, n) => Math.max(m, n.y + n.height), 0);
+  // Multi-page drafts show their first page.
+  const first = draft.metadata.pages?.[0]?.id;
+  const nodes = first ? draft.nodes.filter((n) => (n.pageId ?? first) === first) : draft.nodes;
+  const bottom = nodes.reduce((m, n) => Math.max(m, n.y + n.height), 0);
   const height = Math.min(draft.metadata.height, Math.max(720, bottom + 80));
   return (
     <svg className="home-thumb" viewBox={`0 0 1440 ${height}`} preserveAspectRatio="xMidYMin meet" aria-hidden="true">
       <rect width="1440" height={height} rx="24" className="thumb-bg" />
-      {draft.nodes.map((n) => (
+      {nodes.map((n) => (
         <rect key={n.id} x={n.x} y={n.y} width={n.width} height={n.height} rx="10" className={"thumb-" + n.type} />
       ))}
     </svg>
@@ -147,6 +150,7 @@ function ProjectCard({
           <h3>{live.metadata.name}</h3>
         )}
         <p className="home-meta">
+          {live.metadata.pages && live.metadata.pages.length > 1 ? `${live.metadata.pages.length} 頁 · ` : ""}
           {live.nodes.length ? `${live.nodes.length} 個元件` : "空白草稿"}
           {project.hasPage ? " · 已有網站" : ""} · {updated.toLocaleDateString("zh-TW", { month: "numeric", day: "numeric" })} 更新
         </p>

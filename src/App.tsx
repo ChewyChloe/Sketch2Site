@@ -12,6 +12,8 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   blank,
   canvasMaxHeight,
+  pageDraft,
+  pageOfNode,
   CanvasSchema,
   createNode,
   commit,
@@ -29,7 +31,8 @@ import { listProjects, openProject, createProject, renameProject, duplicateProje
 import type { PageSpec } from "./pageSpec";
 import { localAssets } from "./pageSpec";
 import { blockTemplateIds, blockTemplateInfo, createBlock, type BlockTemplateId } from "./blockTemplates";
-import { createDemoCandidate, type CandidateResult } from "./demo";
+import { type CandidateResult } from "./demo";
+import { createSiteCandidate } from "./siteGeneration";
 import { generationFixtures } from "./demoFixtures";
 import { tabNavigation } from "./tabNavigation";
 import { requestGeneration } from "./generationClient";
@@ -163,6 +166,12 @@ export default function App() {
   const spec = history.present,
     node = spec.nodes.find((n) => n.id === selected),
     dirty = JSON.stringify(spec) !== saved;
+  // ---- Pages of a multi-page draft ----
+  const [activePage, setActivePage] = useState<string | null>(null);
+  const pagesList = spec.metadata.pages ?? null;
+  const currentPage = pagesList ? (pagesList.find((p) => p.id === activePage)?.id ?? pagesList[0].id) : null;
+  const onCurrentPage = (n: CanvasNode, s: CanvasSpec = state.current.present) => !s.metadata.pages || pageOfNode(s, n) === currentPage;
+  const withPage = <T extends CanvasNode>(n: T): T => (state.current.present.metadata.pages && currentPage ? { ...n, pageId: currentPage } : n);
   const imageUrls = useAssetUrls(
     spec.nodes.flatMap((n) => (n.assetId ? [n.assetId] : [])),
   );
@@ -191,17 +200,19 @@ export default function App() {
     setGenerating(true);
     setGenerationError("");
     try {
-      let usedLocal = demo;
+      const multiPage = (spec.metadata.pages?.length ?? 0) > 1;
+      let usedLocal = demo || multiPage;
       let result;
-      if (demo) result = createDemoCandidate(spec);
+      // Multi-page sites are laid out page by page locally; AI generation handles one page per request.
+      if (demo || multiPage) result = createSiteCandidate(spec);
       else
         try {
-          result = await requestGeneration(spec, controller.signal);
+          result = await requestGeneration(pageDraft(spec, null), controller.signal);
         } catch (e) {
           // Without a configured or reachable AI service, use the labelled local
           // layout instead of a dead end. Other failures still surface as errors.
           if (!(e instanceof GenerationError) || !["NOT_CONFIGURED", "UNAVAILABLE"].includes(e.code)) throw e;
-          result = createDemoCandidate(spec);
+          result = createSiteCandidate(spec);
           usedLocal = true;
         }
       const latest = previewRef.current?.target();
@@ -215,7 +226,9 @@ export default function App() {
         throw new GenerationError("STALE");
       report(
         result.mode !== "live"
-          ? usedLocal && !demo
+          ? multiPage && !demo
+            ? `已用本機智慧排版生成 ${spec.metadata.pages!.length} 頁網站（未呼叫 AI）。`
+            : usedLocal && !demo
             ? "AI 尚未設定，已改用本機智慧排版（未呼叫 AI）。"
             : "智慧排版完成，未呼叫 AI。"
           : "草稿已送至 OpenAI，候選尚未儲存。",
@@ -340,10 +353,10 @@ export default function App() {
         }
         let position={x:80,y:80};
         outer:for(let y=80;y<=1000;y+=220)for(let x=80;x<=1120;x+=320){
-          if(state.current.present.nodes.every(n=>x+280<=n.x||x>=n.x+n.width||y+180<=n.y||y>=n.y+n.height)){position={x,y};break outer;}
+          if(state.current.present.nodes.filter(n=>onCurrentPage(n)).every(n=>x+280<=n.x||x>=n.x+n.width||y+180<=n.y||y>=n.y+n.height)){position={x,y};break outer;}
         }
         const next = {
-          ...createNode("image", position.x, position.y),
+          ...withPage(createNode("image", position.x, position.y)),
           assetId: asset.ref,
           content: "匯入的圖片",
         };
@@ -367,7 +380,7 @@ export default function App() {
   }
   function add(type: CanvasNode["type"], x = 80, y = 80) {
     if (!ready || loadError) return;
-    const next = createNode(type, x, y, spec.metadata.height);
+    const next = withPage(createNode(type, x, y, spec.metadata.height));
     change({ ...spec, nodes: [...spec.nodes, next] });
     setSelected(next.id);
     report("已新增" + labels[type]);
@@ -431,14 +444,56 @@ export default function App() {
     report("已載入示範草稿（非 AI），可還原。");
     return true;
   }
+  // ---- Page management ----
+  const [renamingPage, setRenamingPage] = useState<{ id: string; name: string } | null>(null);
+  const [deletingPage, setDeletingPage] = useState<string | null>(null);
+  function addPage() {
+    const s = state.current.present;
+    const pages = s.metadata.pages ?? [{ id: crypto.randomUUID(), name: "首頁" }];
+    if (pages.length >= 10) { report("一個網站最多 10 頁。", true); return; }
+    const id = crypto.randomUUID();
+    if (change({ ...s, metadata: { ...s.metadata, pages: [...pages, { id, name: `第 ${pages.length + 1} 頁` }] } })) {
+      setActivePage(id); setSelected(null);
+      report("已新增頁面，雙擊分頁名稱可以改名。");
+    }
+  }
+  function renamePage(id: string, name: string) {
+    const s = state.current.present, clean = name.trim().slice(0, 30);
+    setRenamingPage(null);
+    if (!clean || !s.metadata.pages) return;
+    change({ ...s, metadata: { ...s.metadata, pages: s.metadata.pages.map((p) => (p.id === id ? { ...p, name: clean } : p)) } });
+  }
+  function removePage(id: string) {
+    const s = state.current.present, pages = s.metadata.pages;
+    setDeletingPage(null);
+    if (!pages || pages.length < 2) return;
+    const gone = new Set([id, ...s.nodes.filter((n) => pageOfNode(s, n) === id).map((n) => n.id)]);
+    const rest = pages.filter((p) => p.id !== id);
+    const single = rest.length === 1;
+    const nodes = s.nodes
+      .filter((n) => !gone.has(n.id))
+      .map((n) => {
+        const href = n.href?.startsWith("#") && gone.has(n.href.slice(1)) ? null : n.href;
+        const moved = { ...n, ...(n.href !== undefined ? { href } : {}) };
+        if (single) delete moved.pageId;
+        else if (!moved.pageId) moved.pageId = pageOfNode(s, n) ?? undefined;
+        return moved;
+      });
+    const { pages: _old, ...metadata } = s.metadata;
+    if (change({ ...s, metadata: single ? metadata : { ...metadata, pages: rest }, nodes })) {
+      setActivePage(null); setSelected(null);
+      report("已刪除頁面與上面的元件，可還原。");
+    }
+  }
   function addBlock(id: BlockTemplateId) {
     if (!ready || loadError) return;
-    const block = createBlock(spec, id);
+    const block = createBlock({ ...spec, nodes: spec.nodes.filter((n) => onCurrentPage(n, spec)) }, id);
     if (!block) {
       report("畫布已達上限，請先刪除部分元件。", true);
       return;
     }
-    const { nodes, height } = block;
+    const { height } = block;
+    const nodes = block.nodes.map(withPage);
     if (change({ ...spec, metadata: { ...spec.metadata, height }, nodes: [...spec.nodes, ...nodes] })) {
       setSelected(nodes[0].id);
       report("已新增區塊：" + blockTemplateInfo(id).label + "，點選文字即可修改。");
@@ -552,7 +607,7 @@ export default function App() {
   async function pasteSelection(){
     let value=clipboard.current;try{const text=await navigator.clipboard?.readText();if(text?.startsWith('Sketch2Site/CanvasNodes/v1:'))value=text;}catch{/* Internal clipboard remains available. */}
     const nodes=decodeNodes(value);if(!nodes.length)return;
-    const copies=cloneNodes(nodes,24,24,state.current.present.metadata.height);const available=new Set([...state.current.present.nodes,...copies].map(n=>n.id));copies.forEach(n=>{if(n.href?.startsWith('#')&&!available.has(n.href.slice(1)))n.href=null;});if(change({...state.current.present,nodes:[...state.current.present.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));report(`已貼上 ${copies.length} 個元件，可還原。`);}
+    const copies=cloneNodes(nodes,24,24,state.current.present.metadata.height);const available=new Set([...state.current.present.nodes,...copies].map(n=>n.id).concat((state.current.present.metadata.pages??[]).map(p=>p.id)));copies.forEach(n=>{if(n.href?.startsWith('#')&&!available.has(n.href.slice(1)))n.href=null;if(state.current.present.metadata.pages&&currentPage)n.pageId=currentPage;else delete n.pageId;});if(change({...state.current.present,nodes:[...state.current.present.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));report(`已貼上 ${copies.length} 個元件，可還原。`);}
   }
   function duplicate(){const ids=selectedIds.length?selectedIds:selected?[selected]:[];const copies=cloneNodes(spec.nodes.filter(n=>ids.includes(n.id)),24,24,spec.metadata.height);if(!copies.length)return;if(change({...spec,nodes:[...spec.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));}}
   useEffect(() => {
@@ -589,7 +644,7 @@ export default function App() {
         else pasteFormat(selectedIds.length ? selectedIds : selected ? [selected] : []);
       } else if(mod&&['a','c','v','x','g'].includes(e.key.toLowerCase())){
         e.preventDefault();const k=e.key.toLowerCase();
-        if(k==='a'){const current=state.current.present;setSelectedIds(current.nodes.map(n=>n.id));setPrimarySelected(current.nodes[0]?.id??null);report(`已選取 ${current.nodes.length} 個元件。`);}
+        if(k==='a'){const current=state.current.present.nodes.filter(n=>onCurrentPage(n));setSelectedIds(current.map(n=>n.id));setPrimarySelected(current[0]?.id??null);report(`已選取 ${current.length} 個元件。`);}
         if(k==='c')copySelection();if(k==='x')copySelection(true);if(k==='v')void pasteSelection();
         if(k==='g'){const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(ids.length>=2||e.shiftKey){change(groupSelection(spec,ids,e.shiftKey));report(e.shiftKey?'已取消群組，可還原。':'已建立群組，可一起移動；Shift＋點選可多選。');}}
       } else if (mod && e.key.toLowerCase() === "d") {
@@ -814,6 +869,22 @@ node ? (
                         <small>支援公開 HTTPS 網址或頁面中的元素連結。</small>
                       </label>
                     )}
+                    {node.type === "button" && pagesList && (
+                      <label className="field">
+                        連到頁面
+                        <select
+                          aria-label="連到頁面"
+                          value={pagesList.some((p) => "#" + p.id === node.href) ? node.href! : ""}
+                          onChange={(e) => {
+                            if (!e.target.value) return;
+                            if (patch(node.id, { href: e.target.value })) { setLinkDraft(e.target.value); setLinkError(""); report("按鈕會切換到「" + pagesList.find((p) => "#" + p.id === e.target.value)?.name + "」。"); }
+                          }}
+                        >
+                          <option value="">選擇網站中的頁面…</option>
+                          {pagesList.map((p) => <option key={p.id} value={"#" + p.id}>{p.name}</option>)}
+                        </select>
+                      </label>
+                    )}
                     {node.type === "form" && (
                       <label className="field">
                         表單接收網址
@@ -901,7 +972,8 @@ node ? (
                 )
   );
   const disabled = !ready || loadError;
-  const displayedNodes=resizing?spec.nodes.map(n=>n.id===resizing.id?{...n,...resizing}:n):moving&&drag.current?translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
+  const displayedNodesAll=resizing?spec.nodes.map(n=>n.id===resizing.id?{...n,...resizing}:n):moving&&drag.current?translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
+  const displayedNodes=displayedNodesAll.filter(n=>onCurrentPage(n,spec));
   return (
     <>
       <header className={"topbar " + mode}>
@@ -1152,6 +1224,33 @@ node ? (
                   </button>
                 </div>
               </div>
+              <div className="page-tabs" role="tablist" aria-label="網站頁面">
+                {(pagesList ?? [{ id: "single", name: "首頁" }]).map((p) => {
+                  const active = (currentPage ?? "single") === p.id;
+                  if (renamingPage?.id === p.id)
+                    return (
+                      <form key={p.id} className="page-tab-rename" onSubmit={(e) => { e.preventDefault(); renamePage(p.id, renamingPage.name); }}>
+                        <input aria-label="頁面名稱" autoFocus maxLength={30} value={renamingPage.name} onChange={(e) => setRenamingPage({ id: p.id, name: e.target.value })} onBlur={() => renamePage(p.id, renamingPage.name)} onKeyDown={(e) => { if (e.key === "Escape") setRenamingPage(null); }} />
+                      </form>
+                    );
+                  return (
+                    <span key={p.id} className={"page-tab" + (active ? " active" : "")}>
+                      <button role="tab" aria-selected={active} title={pagesList ? "雙擊改名" : "新增頁面後即可改名"} onClick={() => { if (pagesList) { setActivePage(p.id); setSelected(null); setDeletingPage(null); } }} onDoubleClick={() => pagesList && setRenamingPage({ id: p.id, name: p.name })}>
+                        {p.name}
+                      </button>
+                      {pagesList && pagesList.length > 1 && active && (deletingPage === p.id ? (
+                        <span className="page-tab-confirm">
+                          <button className="danger" onClick={() => removePage(p.id)}>刪除此頁</button>
+                          <button onClick={() => setDeletingPage(null)}>取消</button>
+                        </span>
+                      ) : (
+                        <button className="page-tab-close" aria-label={"刪除頁面：" + p.name} onClick={() => setDeletingPage(p.id)}>×</button>
+                      ))}
+                    </span>
+                  );
+                })}
+                <button className="page-tab-add" onClick={addPage} disabled={(pagesList?.length ?? 1) >= 10}>＋ 新增頁面</button>
+              </div>
               <div
                 ref={canvasScroll}
                 className="canvas-scroll"
@@ -1198,7 +1297,7 @@ node ? (
                       setMarquee(null);
                       if (right - left < 4 && bottom - top < 4) return;
                       // Anything the box touches is selected, with its whole group.
-                      const hit = spec.nodes.filter((n) => n.x < right && n.x + n.width > left && n.y < bottom && n.y + n.height > top);
+                      const hit = spec.nodes.filter((n) => onCurrentPage(n, spec) && n.x < right && n.x + n.width > left && n.y < bottom && n.y + n.height > top);
                       const groups = new Set(hit.map((n) => n.groupId).filter(Boolean));
                       const ids = spec.nodes.filter((n) => hit.includes(n) || (n.groupId && groups.has(n.groupId))).map((n) => n.id);
                       if (!ids.length) return;
@@ -1215,7 +1314,7 @@ node ? (
                         style={{ left: Math.min(marquee.x0, marquee.x1), top: Math.min(marquee.y0, marquee.y1), width: Math.abs(marquee.x1 - marquee.x0), height: Math.abs(marquee.y1 - marquee.y0) }}
                       />
                     )}
-                    {!spec.nodes.length && (
+                    {!displayedNodes.length && (
                       <div className="empty">
                         <span className="empty-mark" aria-hidden="true">
                           ＋
@@ -1516,13 +1615,13 @@ node ? (
                             }}
                             onClick={() => {
                               // Clicked elements go below existing content instead of piling up.
-                              const bottom = spec.nodes.reduce((m, n) => Math.max(m, n.y + n.height), 0);
-                              const y = spec.nodes.length ? bottom + 24 : 80;
+                              const bottom = spec.nodes.filter((n) => onCurrentPage(n, spec)).reduce((m, n) => Math.max(m, n.y + n.height), 0);
+                              const y = bottom ? bottom + 24 : 80;
                               const probe = createNode(t, 80, 0, canvasMaxHeight);
                               const needed = y + probe.height;
                               if (needed > spec.metadata.height && needed <= canvasMaxHeight) {
                                 const height = Math.ceil(needed / 600) * 600;
-                                const next = { ...createNode(t, 80, y, height) };
+                                const next = withPage(createNode(t, 80, y, height));
                                 if (change({ ...spec, metadata: { ...spec.metadata, height }, nodes: [...spec.nodes, next] })) { setSelected(next.id); report("已新增" + labels[t]); }
                               } else add(t, 80, needed > spec.metadata.height ? 80 : y);
                             }}
