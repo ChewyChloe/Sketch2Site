@@ -29,6 +29,7 @@ import { effectCompatible, effectIds, type PageNode } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import { validatePage } from "./pageSpec";
 import { applyPatchBatch, indexNodes, travelPage, type Change } from "./patch";
+import { AnnotationBubble } from "./AnnotationBubble";
 import { themeIds, themeLabels, allSections } from "./pageSpec";
 function changeLabel(c: Change) {
   return c.property === "style.align"
@@ -118,6 +119,8 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
     return true;
   }
   const selected = selectedIds.length === 1 ? selectedIds[0] : null;
+  // The annotation button / note box is anchored inside this stage.
+  const stageRef = useRef<HTMLDivElement>(null);
   function setSelected(id: string | null) {
     if (!setSelectedIds(id ? [id] : [])) return false;
     if (id && (!compact || panelOpen)) {
@@ -373,7 +376,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   }
   function patch(
     patches: unknown[],
-    targetId: string,
+    targetId: string | string[],
     baseRevision = current.current.revision,
   ) {
     if (!ready || loadError) return;
@@ -385,7 +388,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
         baseRevision,
         patches,
       },
-      [targetId],
+      Array.isArray(targetId) ? targetId : [targetId],
     );
     setPatchError(!result.ok);
     if (!result.ok) {
@@ -802,6 +805,7 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
           }}
         >
           <div
+            ref={stageRef}
             className="preview-zoom"
             style={{
               width:
@@ -890,6 +894,14 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
                 </VisualSurface>
               )}
             </div>
+            {mode === "browse" && ready && !loadError && node && (
+              <AnnotationBubble
+                page={page}
+                node={node}
+                stage={stageRef}
+                onApply={(patches, scope) => Boolean(patch(patches, scope))}
+              />
+            )}
           </div>
         </div>
         <aside

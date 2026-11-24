@@ -8,6 +8,7 @@ import { isLocalAsset } from "./assetRef";
 import { useAssetUrls, useAssetRefs } from "./useAssetUrls";
 import { AnimationLibrary } from "./AnimationLibrary";
 import { WorkbenchMenu } from "./WorkbenchMenu";
+import { enlivenDraft, stillDraft } from "./motionRecipes";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   blank,
@@ -522,12 +523,27 @@ export default function App() {
       return;
     }
     const { height } = block;
-    const nodes = block.nodes.map(withPage);
+    let nodes = block.nodes.map(withPage);
+    // New blocks arrive with recipe motion picked for the section they form.
+    const page = { ...spec, nodes: [...spec.nodes.filter((n) => onCurrentPage(n, spec)), ...nodes] };
+    const lively = enlivenDraft(page, undefined, new Set(nodes.map((n) => n.id)));
+    nodes = nodes.map((n) => lively.nodes.find((m) => m.id === n.id) ?? n);
     if (change({ ...spec, metadata: { ...spec.metadata, height }, nodes: [...spec.nodes, ...nodes] })) {
       setSelected(nodes[0].id);
       report("已新增區塊：" + blockTemplateInfo(id).label + "，點選文字即可修改。");
       requestAnimationFrame(() => document.querySelector(`[data-node-id="${nodes[0].id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
     }
+  }
+  /** Recipe motion for the selection (or the whole current page); one undo step. */
+  function autoMotion(remove = false) {
+    const ids = new Set(selectedIds.length ? selectedIds : spec.nodes.filter((n) => onCurrentPage(n, spec)).map((n) => n.id));
+    const page = { ...spec, nodes: spec.nodes.filter((n) => onCurrentPage(n, spec)) };
+    const next = remove ? stillDraft(page, ids) : enlivenDraft(page, undefined, ids);
+    const touched = next.nodes.filter((n, i) => n !== page.nodes[i]).length;
+    if (!touched) return report(remove ? "沒有可移除的動態。" : "選取的元件都已有動態，或沒有適合的動態。");
+    const byId = new Map(next.nodes.map((n) => [n.id, n]));
+    if (change({ ...spec, nodes: spec.nodes.map((n) => byId.get(n.id) ?? n) }))
+      report(remove ? `已移除 ${touched} 個元件的動態。` : `已替 ${touched} 個元件加上動態，可在右側個別調整。`);
   }
   function attach(effect: Effect, id: string, controls?:MotionControls) {
     const n = state.current.present.nodes.find((n) => n.id === id);
@@ -1111,6 +1127,8 @@ node ? (
                 <button disabled={!selectedIds.length} onClick={()=>copyFormat()}>複製格式 · Ctrl/Cmd＋Shift＋C</button>
                 <button disabled={!selectedIds.length} onClick={()=>pasteFormat(selectedIds)}>貼上格式 · Ctrl/Cmd＋Shift＋V</button>
                 <button disabled={!selectedIds.length} onClick={()=>change(groupSelection(spec,selectedIds,true))}>解組 · Ctrl/Cmd＋Shift＋G</button>
+                <button disabled={!spec.nodes.length} onClick={()=>autoMotion()}>自動加上動態{selectedIds.length?"（選取的元件）":"（整頁）"}</button>
+                <button disabled={!spec.nodes.some(n=>n.effects.length)} onClick={()=>autoMotion(true)}>移除動態{selectedIds.length?"（選取的元件）":"（整頁）"}</button>
               </WorkbenchMenu>
               <WorkbenchMenu label="草稿選單">
                 <button onClick={()=>{setCandidate(null);setMode("preview");}}>開啟網站工作區</button>

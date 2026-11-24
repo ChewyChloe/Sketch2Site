@@ -606,3 +606,101 @@
 .rendered-page[data-theme="mono"] .page-image-placeholder { color: #111; }
 /* Headings break at punctuation first (keeps CJK words whole), any character only if a line would overflow. */
 .rendered-page[data-theme] .page-heading { word-break: keep-all; overflow-wrap: anywhere; text-wrap: pretty; }
+
+/* ===== Personality layer (2026-11-24): each theme gets its own character. =====
+   Decorations are pure CSS (no remote assets, no extra DOM), sit behind content,
+   ignore pointer input and never carry meaning. */
+.rendered-page[data-theme] .page-main > .page-section { position: relative; isolation: isolate; }
+.rendered-page[data-theme] .page-main > .page-section.role-hero { overflow: clip; }
+.rendered-page[data-theme] .page-main > .page-section.role-hero::before,
+.rendered-page[data-theme] .page-main > .page-section.role-hero::after,
+.rendered-page[data-theme] .page-main > .page-section.role-cta::before { content: ""; position: absolute; pointer-events: none; z-index: -1; }
+.rendered-page[data-theme] .page-main > .page-section.role-cta { overflow: clip; }
+/* Bigger, bolder hero type everywhere. */
+.rendered-page[data-theme] .role-hero h1.page-heading { font-size: clamp(38px, 5.2cqi, 76px); line-height: 1.08; letter-spacing: -0.035em; font-weight: 800; }
+.rendered-page[data-theme] .role-hero h1.page-heading.is-long { font-size: clamp(32px, 4cqi, 56px); }
+.rendered-page[data-theme] .role-hero .page-paragraph { font-size: clamp(17px, 1.45cqi, 20px); }
+.rendered-page[data-theme] .role-hero .page-button { padding: 14px 30px; font-size: 1.05em; }
+/* Gallery of three: one large image beside two small ones (bento). */
+.rendered-page[data-theme] .role-gallery .page-grid:has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: stretch; }
+.rendered-page[data-theme] .role-gallery .page-grid:has(> :nth-child(3):last-child) > :first-child { grid-row: span 2; }
+.rendered-page[data-theme] .role-gallery .page-grid:has(> :nth-child(3):last-child) > :first-child :is(img, .page-image-placeholder) { height: 100%; aspect-ratio: auto; object-fit: cover; }
+.rendered-page[data-theme] .role-gallery .page-grid:has(> :nth-child(3):last-child) > :not(:first-child) :is(img, .page-image-placeholder) { aspect-ratio: 16 / 10; object-fit: cover; }
+/* Floating bands: soft sections become rounded panels inset from the edges. */
+.rendered-page[data-theme]:not([data-theme="mono"]):not([data-theme="ocean"]) .page-main > .page-section.tone-soft { width: auto; margin-inline: clamp(8px, 1.6cqi, 24px); border-radius: clamp(24px, 3cqi, 44px); }
+.rendered-page[data-theme]:not([data-theme="mono"]) .page-main > .page-section.role-cta { width: auto; margin: clamp(8px, 1.6cqi, 24px); border-radius: clamp(24px, 3cqi, 44px); }
+/* The hand-drawn highlight follows the theme instead of the library's default green. */
+.rendered-page[data-theme] { --advanced-highlight: var(--accent); }
+.rendered-page[data-theme] .page-main > .page-section.role-cta::before { width: 46cqi; aspect-ratio: 1; right: -12cqi; top: -22cqi; border-radius: 50%; background: color-mix(in srgb, var(--pg-accent-ink) 14%, transparent); }
+.rendered-page[data-theme] .role-cta h2.page-heading { font-size: clamp(30px, 3.8cqi, 52px); }
+
+/* --- blossom (活潑): pop outlines, hard shadows, stickers --- */
+.rendered-page[data-theme="blossom"] { --pg-pop: #7ee0c3; --pg-ink-line: #3a1d2b; --pg-soft: #ffe3ee; }
+.rendered-page[data-theme="blossom"] .role-hero::before { width: 30cqi; aspect-ratio: 1; right: 4cqi; top: 6%; border-radius: 50%; background: var(--accent-soft); }
+.rendered-page[data-theme="blossom"] .role-hero::after { width: 12cqi; aspect-ratio: 1; left: 44%; bottom: 8%; border-radius: 38% 62% 55% 45% / 45% 40% 60% 55%; background: var(--pg-pop); opacity: .75; }
+.rendered-page[data-theme="blossom"] :is(.page-card, .page-button, .page-image img, .page-image-placeholder, .page-form) { border: 2px solid var(--pg-ink-line); }
+.rendered-page[data-theme="blossom"] :is(.page-card, .page-image img, .page-image-placeholder) { box-shadow: 6px 6px 0 var(--pg-ink-line); }
+.rendered-page[data-theme="blossom"] .page-button { box-shadow: 4px 4px 0 var(--pg-ink-line); }
+.rendered-page[data-theme="blossom"] .page-button:active { box-shadow: 1px 1px 0 var(--pg-ink-line); transform: translate(3px, 3px); }
+.rendered-page[data-theme="blossom"] .page-grid > .page-card:nth-child(odd) { rotate: -1.2deg; }
+.rendered-page[data-theme="blossom"] .page-grid > .page-card:nth-child(even) { rotate: 1deg; }
+.rendered-page[data-theme="blossom"] .page-grid > .page-card:nth-child(3n) { background: color-mix(in srgb, var(--pg-pop) 35%, #fff); }
+.rendered-page[data-theme="blossom"] .role-hero .page-image { rotate: 2deg; }
+.rendered-page[data-theme="blossom"] .role-faq .page-stack > .page-card { border: 2px solid var(--pg-ink-line); border-radius: 18px; padding: 18px 22px; margin-bottom: 14px; box-shadow: 4px 4px 0 var(--pg-ink-line); background: #fff; }
+.rendered-page[data-theme="blossom"] .role-cta .page-button { border-color: var(--pg-ink-line); }
+
+/* --- sunrise (溫暖): organic shapes, sun, soft paper --- */
+.rendered-page[data-theme="sunrise"] { --pg-soft: #ffeedd; }
+.rendered-page[data-theme="sunrise"] .role-hero::before { width: 34cqi; aspect-ratio: 1; right: 2cqi; top: -8cqi; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #ffc67a, #ff9a4d 70%); opacity: .45; }
+.rendered-page[data-theme="sunrise"] .role-hero::after { width: 9cqi; aspect-ratio: 1; left: 40%; bottom: 10%; border-radius: 50%; background: #ffd9b8; }
+.rendered-page[data-theme="sunrise"] .role-hero .page-image :is(img, .page-image-placeholder) { border-radius: 58% 42% 46% 54% / 46% 52% 48% 54%; }
+.rendered-page[data-theme="sunrise"] .page-card { border-radius: 28px; border-color: transparent; background: #fff; box-shadow: 0 2px 0 #f2dcc8; }
+.rendered-page[data-theme="sunrise"] .role-features .page-grid > .page-card:nth-child(2) { translate: 0 18px; }
+.rendered-page[data-theme="sunrise"] .page-image img { border-radius: 26px; }
+
+/* --- midnight (科技感): grid, glow, crisp lines --- */
+.rendered-page[data-theme="midnight"] .role-hero::before { inset: 0; background-image: linear-gradient(rgb(157 140 255 / .09) 1px, transparent 1px), linear-gradient(90deg, rgb(157 140 255 / .09) 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(80% 70% at 60% 40%, #000, transparent); }
+.rendered-page[data-theme="midnight"] .role-hero::after { width: 40cqi; aspect-ratio: 1; right: 0; top: -10cqi; border-radius: 50%; background: radial-gradient(circle, rgb(157 140 255 / .32), transparent 65%); }
+.rendered-page[data-theme="midnight"] .page-card { background: linear-gradient(180deg, #1a1f3d, #141833); border-color: #2c3260; }
+.rendered-page[data-theme="midnight"] .role-hero h1.page-heading { background: linear-gradient(90deg, #fff 30%, var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.rendered-page[data-theme="midnight"] .page-button { box-shadow: 0 0 0 1px rgb(157 140 255 / .4), 0 8px 30px rgb(157 140 255 / .35); }
+
+/* --- forest (自然): paper grain, serif, leaf shapes --- */
+.rendered-page[data-theme="forest"] .page-main > .page-section { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .25 0 0 0 0 .15 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.rendered-page[data-theme="forest"] .role-hero::before { width: 26cqi; height: 34cqi; right: 3cqi; top: 8%; border-radius: 0 70% 0 70%; background: #dfe7d2; }
+.rendered-page[data-theme="forest"] .role-hero .page-image :is(img, .page-image-placeholder) { border-radius: 0 120px 0 120px; }
+.rendered-page[data-theme="forest"] .page-card { border-radius: 0 28px 0 28px; }
+.rendered-page[data-theme="forest"] h2.page-heading::after { content: ""; display: block; width: 48px; height: 3px; margin-top: 14px; border-radius: 2px; background: var(--accent); }
+.rendered-page[data-theme="forest"] .role-pricing h2.page-heading::after, .rendered-page[data-theme="forest"] .role-cta h2.page-heading::after { margin-inline: auto; }
+
+/* --- classic (清爽): dots and fresh rounded shapes --- */
+.rendered-page[data-theme="classic"] .role-hero::before { width: 28cqi; height: 22cqi; right: 2cqi; bottom: 4%; background-image: radial-gradient(var(--accent) 1.6px, transparent 1.8px); background-size: 18px 18px; opacity: .35; }
+.rendered-page[data-theme="classic"] .role-hero::after { width: 18cqi; aspect-ratio: 1; left: -4cqi; top: 10%; border-radius: 50%; background: var(--accent-soft); }
+.rendered-page[data-theme="classic"] .page-card { border-radius: 24px; }
+.rendered-page[data-theme="classic"] .role-features .page-grid > .page-card:first-child { background: var(--accent); border-color: var(--accent); --ink: #fff; --muted: #e3f2ea; color: #fff; }
+
+/* --- ocean (專業): bento emphasis, clean blue --- */
+.rendered-page[data-theme="ocean"] .role-hero::before { width: 36cqi; height: 36cqi; right: -6cqi; top: -10cqi; border-radius: 50%; background: radial-gradient(circle, #dbe8ff, transparent 70%); }
+.rendered-page[data-theme="ocean"] .page-card { border-radius: 20px; }
+.rendered-page[data-theme="ocean"] .role-features .page-grid > .page-card:first-child { background: #0d2340; border-color: #0d2340; --ink: #fff; --muted: #b9cdf0; color: #fff; }
+
+/* --- mono (簡約): editorial rules, oversized type --- */
+.rendered-page[data-theme="mono"] .role-hero h1.page-heading { font-size: clamp(44px, 6.4cqi, 96px); letter-spacing: -0.045em; }
+.rendered-page[data-theme="mono"] .page-main > .page-section + .page-section { border-top: 3px solid #111; }
+.rendered-page[data-theme="mono"] .page-card { border-width: 0; border-top: 3px solid #111; padding-inline: 0; background: transparent; }
+.rendered-page[data-theme="mono"] .page-button:hover { box-shadow: 4px 4px 0 #111; filter: none; }
+
+@container (max-width: 800px) {
+  .rendered-page[data-theme] .role-gallery .page-grid:has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1fr); }
+  .rendered-page[data-theme] .role-gallery .page-grid:has(> :nth-child(3):last-child) > :first-child { grid-row: auto; }
+  .rendered-page[data-theme] .page-grid > .page-card { rotate: none !important; translate: none !important; }
+  .rendered-page[data-theme] .role-hero .page-image { rotate: none; }
+}
+@media (prefers-reduced-motion: reduce) { .rendered-page[data-theme] .page-button:active { transform: none; } }
+.extended-phrase { display: inline-block; max-width: 100%; }
+/* FAQ with the disclosure motion: question bold on the left, small toggle on the right. */
+.rendered-page[data-theme] .role-faq .extended-disclosure { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 16px; }
+.rendered-page[data-theme] .role-faq .extended-disclosure > :first-child { font-weight: 700; font-size: 1.08em; color: var(--ink); }
+.rendered-page[data-theme] .role-faq .extended-disclosure > .motion-toggle { margin: 0; min-height: 36px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); color: var(--accent); font-size: 14px; font-weight: 600; background: transparent; }
+.rendered-page[data-theme] .role-faq .extended-disclosure > .motion-toggle[aria-expanded="true"] { background: var(--accent); color: var(--pg-accent-ink); border-color: var(--accent); }
+.rendered-page[data-theme] .role-faq .extended-disclosure > :not(:first-child):not(.motion-toggle) { grid-column: 1 / -1; margin-top: 8px; color: var(--muted); }

@@ -116,12 +116,14 @@ function SiteForm({ node }: { node: PageNode }) {
 const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
 // The built-in sample image stands for "a picture goes here": show a calm, theme-tinted
 // frame with its description instead of repeating the same mock screenshot everywhere.
-// Only themed (generated) pages use the frame; images with motion keep the real <img>.
+// Only themed (generated) pages use the frame; pixel-reading motions keep the real <img>.
 const sampleImage = "/assets/workspace.svg";
 const ThemedPage = createContext(false);
+// These read the image pixels, so they keep a real <img>; clip/mask motions animate the frame fine.
+const pixelMotions = new Set(["cinematic-image-pan", "pixel-dissolve", "shutter-lens-transition", "glitch-slice-reveal", "liquid-distortion-reveal", "scroll-image-sequence"]);
 function SafeImage({ node }: { node: PageNode }) {
   const themed = useContext(ThemedPage);
-  if (themed && node.src === sampleImage && !node.effects.length)
+  if (themed && node.src === sampleImage && !node.effects.some((e) => pixelMotions.has(e.presetId)))
     return (
       <div className="page-image-placeholder" role="img" aria-label={node.alt}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m4 18 5-5 4 4 3-3 4 4" /></svg>

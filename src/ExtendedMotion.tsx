@@ -162,6 +162,16 @@ export function useExtendedMotion(node: PageNode, ref: RefObject<HTMLElement | n
     }, [node, ref, reduced]);
 }
 
+// Letters are grouped into phrases ending at punctuation or spaces, so lines break
+// between phrases (keeping CJK words whole) instead of between any two letters.
+function phrases(letters: string[]): [string, number][][] {
+    const out: [string, number][][] = [[]];
+    letters.forEach((letter, index) => {
+        out[out.length - 1].push([letter, index]);
+        if (/^[\s，。、！？；：,.!?;:]$/u.test(letter)) out.push([]);
+    });
+    return out.filter((p) => p.length);
+}
 export function LetterAssembly({ text, effect }: { text: string; effect: MotionInstance }) {
     const ref = useRef<HTMLSpanElement>(null), reduced = useReducedMotion();
     const graphemes = typeof Intl.Segmenter === 'function'
@@ -171,7 +181,7 @@ export function LetterAssembly({ text, effect }: { text: string; effect: MotionI
     useEntrance(ref, effect, reduced, element => fallback ? [] : Array.from(element.querySelectorAll<HTMLElement>('.extended-letter')).map((letter, index) => letter.animate([
         { opacity: 0, transform: `translateY(${motionNumber(effect, 'distancePx', 12)}px)` }, { opacity: 1, transform: 'translateY(0)' },
     ], { duration: motionNumber(effect, 'durationMs', 600), delay: Math.min(1200, index * motionNumber(effect, 'intervalMs', 35)), fill: 'backwards', easing: 'ease-out' })));
-    return <span ref={ref} className="extended-letters">{fallback ? text : <><span className="motion-sr">{text}</span><span aria-hidden="true">{graphemes?.map((letter, index) => <span className="extended-letter" key={index}>{letter}</span>)}</span></>}</span>;
+    return <span ref={ref} className="extended-letters">{fallback ? text : <><span className="motion-sr">{text}</span><span aria-hidden="true">{phrases(graphemes ?? []).map((phrase, p) => <span className="extended-phrase" aria-hidden="true" key={p}>{phrase.map(([letter, index]) => <span className="extended-letter" key={index}>{letter}</span>)}</span>)}</span></>}</span>;
 }
 export function AccentStroke({ text, effect }: { text: string; effect: MotionInstance }) {
     const ref = useRef<HTMLSpanElement>(null), reduced = useReducedMotion();

@@ -319,3 +319,23 @@
 .theme-swatch-mono i { background: linear-gradient(135deg, #111 50%, #fff 50%); }
 .theme-swatch-blossom i { background: linear-gradient(135deg, #d0346f 50%, #ffe0ec 50%); }
 @media (max-width: 600px) { .theme-picker { padding: 8px 12px; } }
+
+/* Annotation bubble: "click it, say how to change it". */
+.preview-zoom { position: relative; }
+.note-bubble { position: absolute; z-index: 5; width: min(360px, calc(100% - 16px)); padding: 10px; background: #fff; color: #17231e; border: 2px solid #17231e; border-radius: 14px; box-shadow: 5px 5px 0 #17231e; font-size: 14px; }
+.note-bubble.above { transform: translateY(-100%); }
+.note-bubble form { display: flex; align-items: center; gap: 6px; }
+.note-target { flex: none; padding: 3px 8px; border-radius: 999px; background: #e3f2ea; color: #1f7a52; font-size: 12px; font-weight: 700; }
+.note-bubble input { flex: 1; min-width: 0; min-height: 40px; padding: 8px 10px; border: 1px solid #c9d3cd; border-radius: 10px; font: inherit; }
+.note-bubble input:focus-visible { outline: 2px solid #1f7a52; outline-offset: 1px; }
+.note-bubble button.primary { min-height: 40px; min-width: 44px; padding: 0 14px; border: 2px solid #17231e; border-radius: 10px; background: #1f7a52; color: #fff; font-weight: 700; cursor: pointer; }
+.note-bubble button.primary:disabled { opacity: .45; cursor: default; }
+.note-close { min-width: 36px; min-height: 40px; border: 0; background: transparent; font-size: 20px; cursor: pointer; color: #5b6a63; }
+.note-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.note-chips button { min-height: 32px; padding: 4px 10px; border: 1px solid #c9d3cd; border-radius: 999px; background: #f7f6f2; font: inherit; font-size: 13px; cursor: pointer; }
+.note-chips button:hover, .note-chips button:focus-visible { border-color: #1f7a52; color: #1f7a52; }
+.note-status { margin: 8px 2px 0; font-size: 12.5px; color: #5b6a63; line-height: 1.5; }
+.note-status.bad { color: #b42318; }
+.note-chip { position: absolute; z-index: 5; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 4px 12px 4px 10px; border: 2px solid #17231e; border-radius: 999px; background: #10e560; color: #0d0e11; font: inherit; font-size: 13px; font-weight: 800; box-shadow: 3px 3px 0 #17231e; cursor: pointer; }
+.note-chip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.note-chip:focus-visible { outline: 3px solid #087b36; outline-offset: 2px; }

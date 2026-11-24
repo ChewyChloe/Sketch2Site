@@ -1,5 +1,6 @@
 import { blank, CanvasSchema, type CanvasSpec } from "./spec";
 import { createBlock, type BlockTemplateId } from "./blockTemplates";
+import { enlivenDraft } from "./motionRecipes";
 import type { builtInAssets } from "./assetRef";
 
 // Starter templates for the home page: block templates with sample copy for a
@@ -56,6 +57,7 @@ export function starterDrafts(): CanvasSpec[] {
       }));
       spec = { ...spec, metadata: { ...spec.metadata, height: block.height }, nodes: [...spec.nodes, ...nodes] };
     });
-    return CanvasSchema.parse(spec);
+    // Starters show off the motion library: every element gets a fitting preset.
+    return enlivenDraft(CanvasSchema.parse(spec), "lively");
   });
 }
