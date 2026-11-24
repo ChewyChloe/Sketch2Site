@@ -11,6 +11,7 @@ import { WorkbenchMenu } from "./WorkbenchMenu";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   blank,
+  canvasMaxHeight,
   CanvasSchema,
   createNode,
   commit,
@@ -145,7 +146,11 @@ export default function App() {
     startX: number;
     startY: number;
     scale: number;
+    // A plain click (no drag) inside a multi-selection narrows it to this element's group.
+    collapseTo?: string[];
   } | null>(null);
+  // Box selection on the empty canvas, in canvas coordinates.
+  const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number; additive: boolean } | null>(null);
   const state = useRef(history);
   state.current = history;
   const saveActive = useRef(false), savePending = useRef<CanvasSpec | null>(null);
@@ -356,7 +361,7 @@ export default function App() {
   }
   function add(type: CanvasNode["type"], x = 80, y = 80) {
     if (!ready || loadError) return;
-    const next = createNode(type, x, y);
+    const next = createNode(type, x, y, spec.metadata.height);
     change({ ...spec, nodes: [...spec.nodes, next] });
     setSelected(next.id);
     report("已新增" + labels[type]);
@@ -568,9 +573,11 @@ export default function App() {
     e.stopPropagation();
     e.preventDefault();
     if(e.shiftKey){selectNode(n.id,true);return;}
-    const ids=selectedIds.includes(n.id)?selectedIds:(n.groupId?spec.nodes.filter(v=>v.groupId===n.groupId).map(v=>v.id):[n.id]);
+    const own=n.groupId?spec.nodes.filter(v=>v.groupId===n.groupId).map(v=>v.id):[n.id];
+    const multi=selectedIds.includes(n.id)&&selectedIds.some(id=>!own.includes(id));
+    const ids=multi?selectedIds:own;
     setPrimarySelected(n.id);setSelectedIds(ids);
-    drag.current = { ids,node: n, startX: e.clientX, startY: e.clientY, scale };
+    drag.current = { ids,node: n, startX: e.clientX, startY: e.clientY, scale, collapseTo: multi?own:undefined };
     e.currentTarget.setPointerCapture(e.pointerId);
   }
   function move(e: React.PointerEvent) {
@@ -600,6 +607,7 @@ export default function App() {
   }
   function finish() {
     if(moving&&drag.current)change(translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y));
+    else if(drag.current?.collapseTo)setSelectedIds(drag.current.collapseTo);
     drag.current = null;
     setMoving(null);
   }
@@ -1033,9 +1041,41 @@ node ? (
                     }}
                     onDrop={drop}
                     onPointerDown={(e) => {
-                      if (e.target === e.currentTarget) setSelected(null);
+                      if (e.target !== e.currentTarget || e.button !== 0) return;
+                      const r = e.currentTarget.getBoundingClientRect();
+                      const x = (e.clientX - r.left) / scale, y = (e.clientY - r.top) / scale;
+                      if (!e.shiftKey) setSelected(null);
+                      setMarquee({ x0: x, y0: y, x1: x, y1: y, additive: e.shiftKey });
+                      e.currentTarget.setPointerCapture(e.pointerId);
                     }}
+                    onPointerMove={(e) => {
+                      if (!marquee) return;
+                      const r = e.currentTarget.getBoundingClientRect();
+                      setMarquee({ ...marquee, x1: (e.clientX - r.left) / scale, y1: (e.clientY - r.top) / scale });
+                    }}
+                    onPointerUp={() => {
+                      if (!marquee) return;
+                      const left = Math.min(marquee.x0, marquee.x1), right = Math.max(marquee.x0, marquee.x1), top = Math.min(marquee.y0, marquee.y1), bottom = Math.max(marquee.y0, marquee.y1);
+                      setMarquee(null);
+                      if (right - left < 4 && bottom - top < 4) return;
+                      // Anything the box touches is selected, with its whole group.
+                      const hit = spec.nodes.filter((n) => n.x < right && n.x + n.width > left && n.y < bottom && n.y + n.height > top);
+                      const groups = new Set(hit.map((n) => n.groupId).filter(Boolean));
+                      const ids = spec.nodes.filter((n) => hit.includes(n) || (n.groupId && groups.has(n.groupId))).map((n) => n.id);
+                      if (!ids.length) return;
+                      setSelectedIds((prev) => (marquee.additive ? [...new Set([...prev, ...ids])] : ids));
+                      setPrimarySelected(ids[0]);
+                      report(ids.length > 1 ? `已選取 ${ids.length} 個元件，按 Ctrl/⌘＋G 建立群組。` : "已選取 1 個元件。");
+                    }}
+                    onPointerCancel={() => setMarquee(null)}
                   >
+                    {marquee && (
+                      <div
+                        className="canvas-marquee"
+                        aria-hidden="true"
+                        style={{ left: Math.min(marquee.x0, marquee.x1), top: Math.min(marquee.y0, marquee.y1), width: Math.abs(marquee.x1 - marquee.x0), height: Math.abs(marquee.y1 - marquee.y0) }}
+                      />
+                    )}
                     {!spec.nodes.length && (
                       <div className="empty">
                         <span className="empty-mark" aria-hidden="true">
@@ -1309,13 +1349,18 @@ node ? (
                                 JSON.stringify({ type: "component", value: t }),
                               );
                             }}
-                            onClick={() =>
-                              add(
-                                t,
-                                80 + (spec.nodes.length % 4) * 32,
-                                80 + (spec.nodes.length % 5) * 48,
-                              )
-                            }
+                            onClick={() => {
+                              // Clicked elements go below existing content instead of piling up.
+                              const bottom = spec.nodes.reduce((m, n) => Math.max(m, n.y + n.height), 0);
+                              const y = spec.nodes.length ? bottom + 24 : 80;
+                              const probe = createNode(t, 80, 0, canvasMaxHeight);
+                              const needed = y + probe.height;
+                              if (needed > spec.metadata.height && needed <= canvasMaxHeight) {
+                                const height = Math.ceil(needed / 600) * 600;
+                                const next = { ...createNode(t, 80, y, height) };
+                                if (change({ ...spec, metadata: { ...spec.metadata, height }, nodes: [...spec.nodes, next] })) { setSelected(next.id); report("已新增" + labels[t]); }
+                              } else add(t, 80, needed > spec.metadata.height ? 80 : y);
+                            }}
                             aria-label={"新增" + labels[t]}
                           >
                             <span className="glyph" aria-hidden="true">
@@ -1377,22 +1422,6 @@ node ? (
                     }}
                   />
                 ) : null}
-                <details className="panel-preferences">
-                  <summary>側欄寬度</summary>
-                  <label className="field note">
-                    調整側欄寬度
-                    <input
-                      className="panel-width"
-                      aria-label="側欄寬度"
-                      type="range"
-                      min={260}
-                      max={420}
-                      step={8}
-                      value={panelWidth}
-                      onChange={(e) => setPanelWidth(Number(e.target.value))}
-                    />
-                  </label>
-                </details>
               </aside>
             )}
             {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><div className="neo-inspector-head"><span>物件檢查器</span></div><div className="neo-inspector-tabs"><button onClick={()=>{setTab('animations');setPanel(true);setMotionFull(false);}}>加入動畫</button></div><div className="neo-inspector-body">{inspectorContent}</div></aside>}

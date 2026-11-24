@@ -54,15 +54,21 @@ export function PhysicsTags({ effect }: {
             ctx.save();
             ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
             ctx.rotate(b.angle ?? 0);
+            // Pill tags: soft shadow, accent-tinted edge, centered label; the held tag fills with accent.
+            ctx.shadowColor = 'rgba(20,30,25,.12)';
+            ctx.shadowBlur = i === held ? 14 : 6;
+            ctx.shadowOffsetY = i === held ? 6 : 2;
             ctx.fillStyle = i === held ? accent : panel;
-            ctx.strokeStyle = line;
-            ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.roundRect(-b.w / 2, -b.h / 2, b.w, b.h, 6);
+            ctx.roundRect(-b.w / 2, -b.h / 2, b.w, b.h, b.h / 2);
             ctx.fill();
+            ctx.shadowColor = 'transparent';
+            ctx.strokeStyle = i === held ? accent : line;
+            ctx.lineWidth = 1;
             ctx.stroke();
-            ctx.fillStyle = ink;
-            ctx.fillText(b.label, -b.w / 2 + 12, 0, b.w - 24);
+            ctx.fillStyle = i === held ? panel : ink;
+            ctx.textAlign = 'center';
+            ctx.fillText(b.label, 0, 1, b.w - 24);
             ctx.restore();
         } };
         const tick = (now: number) => {

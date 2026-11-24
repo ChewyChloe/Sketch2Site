@@ -102,3 +102,18 @@ body{background:var(--neo-cream)}
 /* Inline text editing: the textarea takes the node's own type and box. */
 .node .inline-editor{position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;margin:0;padding:6px 10px;overflow:auto;border:0;outline:2px solid #10e560;outline-offset:0;border-radius:inherit;background:#fffffff2;color:#0d0e11;font:inherit;line-height:inherit;letter-spacing:inherit;text-align:inherit;resize:none;z-index:3;cursor:text}
 .node.button .inline-editor{background:#0d0e11;color:#fff;text-align:center}
+/* Top bar: every control shares one 40px line and a common center. */
+.topbar .toolbar-actions{align-items:center}
+.topbar .workbench-menu{align-self:center}
+.topbar .workbench-menu>summary{display:inline-flex;align-items:center;gap:4px;min-height:40px;padding-block:0;line-height:1}
+.topbar .toolbar-actions>button:not(.primary){min-height:40px;padding-block:0;display:inline-flex;align-items:center;line-height:1}
+/* Animation cards: preview text is always dark on the light stage, even in the dark side panel. */
+.animation-asset .asset-preview{color:#1d2622}
+/* Card actions: name, apply pill, drag handle and replay sit on one centered row of equal height. */
+.asset-actions{align-items:center}
+.asset-choose{align-items:center;min-height:40px}
+.asset-choose>.asset-name{flex:1;min-width:0}
+.animation-asset .asset-apply{display:inline-flex;align-items:center;justify-content:center;flex:none;height:32px;min-height:0;padding:0 14px;font-size:12px;line-height:1;border-radius:999px;box-sizing:border-box}
+.asset-choose>svg{align-self:center}
+.animation-asset .motion-replay{display:inline-flex;align-items:center;justify-content:center;flex:none;height:32px;min-height:0;padding:0 14px;line-height:1;border-radius:999px}
+.canvas-marquee{position:absolute;z-index:50;pointer-events:none;border:2px solid #10e560;background:#10e5601f;border-radius:2px}
