@@ -1,6 +1,6 @@
 import { z } from "zod";
 export const localAssetPattern = /^\/assets\/local\/[a-f0-9]{64}\.png$/;
-export const builtInAssets=["/assets/workspace.svg","/assets/sequence/frame-01.svg","/assets/sequence/frame-02.svg","/assets/sequence/frame-03.svg"] as const;
+export const builtInAssets=["/assets/workspace.svg","/assets/sequence/frame-01.svg","/assets/sequence/frame-02.svg","/assets/sequence/frame-03.svg","/assets/samples/cafe.jpg","/assets/samples/camera.jpg"] as const;
 export const imageSource = z.union([
   z.enum(builtInAssets),
   z.string().max(90).regex(localAssetPattern),

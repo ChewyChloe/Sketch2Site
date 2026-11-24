@@ -1,3 +1,4 @@
+import { compatibleMotion, combinationReason } from './motion';
 import {CanvasSchema,NodeSchema,type CanvasSpec,type CanvasNode} from './spec';
 export const clipboardPrefix='Sketch2Site/CanvasNodes/v1:';
 export function encodeNodes(canvas:CanvasSpec,ids:readonly string[]){return clipboardPrefix+JSON.stringify(canvas.nodes.filter(n=>ids.includes(n.id)));}
@@ -21,4 +22,28 @@ export function translateSelection(canvas:CanvasSpec,ids:readonly string[],dx:nu
  dx=Math.max(-Math.min(...nodes.map(n=>n.x)),Math.min(dx,Math.min(...nodes.map(n=>1440-n.x-n.width))));
  dy=Math.max(-Math.min(...nodes.map(n=>n.y)),Math.min(dy,Math.min(...nodes.map(n=>canvas.metadata.height-n.y-n.height))));
  return {...canvas,nodes:canvas.nodes.map(n=>ids.includes(n.id)?{...n,x:n.x+dx,y:n.y+dy}:n)};
+}
+
+/** Format painter: size and animations, like copying formatting in a slide editor. */
+export type NodeFormat = { width: number; height: number; effects: CanvasNode["effects"] };
+export function formatOf(node: CanvasNode): NodeFormat {
+  return { width: node.width, height: node.height, effects: structuredClone(node.effects) };
+}
+export function applyFormat(canvas: CanvasSpec, ids: readonly string[], format: NodeFormat): { canvas: CanvasSpec; skippedEffects: number } {
+  let skipped = 0;
+  const nodes = canvas.nodes.map((n) => {
+    if (!ids.includes(n.id)) return n;
+    const width = Math.max(80, Math.min(format.width, 1440 - n.x));
+    const height = Math.max(40, Math.min(format.height, canvas.metadata.height - n.y));
+    // Animations are rebound to the target; ones that do not fit this element type are skipped.
+    const effects: CanvasNode["effects"] = [];
+    for (const effect of format.effects) {
+      const candidate = { ...structuredClone(effect), targetId: n.id };
+      const probe = { ...n, effects: [...effects, candidate] };
+      if (compatibleMotion(probe, candidate) && !combinationReason(probe.effects)) effects.push(candidate);
+      else skipped++;
+    }
+    return { ...n, width, height, effects };
+  });
+  return { canvas: CanvasSchema.parse({ ...canvas, nodes }), skippedEffects: skipped };
 }

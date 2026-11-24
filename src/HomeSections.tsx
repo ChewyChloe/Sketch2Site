@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, type ReactNode } from "react";
 import type { CanvasSpec } from "./spec";
 import { createDemoCandidate } from "./demo";
 import { PageRenderer } from "./PageRenderer";
@@ -115,27 +115,19 @@ const stepIcons: Record<string, ReactNode> = {
   build: <><rect x="8" y="10" width="48" height="44" rx="7" fill="#fff" /><rect x="15" y="17" width="34" height="8" rx="2" fill="#0d0e11" /><rect x="15" y="31" width="15" height="16" rx="2" fill="#c9b8ff" /><rect x="34" y="31" width="15" height="16" rx="2" fill="#10e560" /></>,
   style: <><circle cx="24" cy="26" r="13" fill="#10e560" /><circle cx="40" cy="26" r="13" fill="#c9b8ff" /><circle cx="32" cy="40" r="13" fill="#fff" /></>,
   ship: <><rect x="10" y="30" width="44" height="24" rx="6" fill="#fff" /><path d="M32 40 v-28 M22 22 l10 -10 10 10" fill="none" strokeWidth="3.5" /><circle cx="50" cy="12" r="5" fill="#10e560" /></>,
-  phone: <><rect x="20" y="6" width="24" height="52" rx="6" fill="#fff" /><rect x="25" y="14" width="14" height="6" rx="2" fill="#0d0e11" /><rect x="25" y="24" width="14" height="14" rx="2" fill="#c9b8ff" /><rect x="25" y="42" width="10" height="5" rx="2.5" fill="#10e560" /></>,
-  motion: <><rect x="16" y="20" width="34" height="26" rx="6" fill="#10e560" /><path d="M6 26 h6 M4 34 h8 M6 42 h6" /><path d="M54 14 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#fff" /></>,
-  mail: <><rect x="8" y="16" width="48" height="34" rx="6" fill="#fff" /><path d="M10 20 l22 16 22 -16" fill="none" /><circle cx="52" cy="16" r="7" fill="#10e560" /></>,
-  fast: <><circle cx="32" cy="34" r="22" fill="#fff" /><path d="M32 34 l10 -10" strokeWidth="3.5" /><path d="M14 34 h4 M46 34 h4 M32 16 v4" /><circle cx="32" cy="34" r="3" fill="#0d0e11" /></>,
 };
-const audiences = {
-  maker: { label: "我是建立網站的人", steps: [["draw", "畫草稿", "拖入元件或區塊範本，位置不必精準。"], ["build", "生成網站", "智慧排版整理成完整頁面，設定 AI 後也可交給模型。"], ["style", "調整風格", "換主題、加動畫、雙擊直接改字。"], ["ship", "匯出上線", "下載 React 專案，部署到任何靜態主機。"]] },
-  visitor: { label: "我是來看網站的人", steps: [["phone", "手機電腦都好讀", "版面自動改成單欄，字不會擠在一起。"], ["motion", "動畫自然不打擾", "系統設定減少動態時，動畫會自動停下。"], ["mail", "想聯絡就直接留言", "表單送到網站主人設定的信箱服務。"], ["fast", "打開就看得到", "純前端網站，不需要等後端伺服器。"]] },
-} as const;
+const steps: [string, string, string][] = [
+  ["draw", "畫草稿", "拖入元件或區塊範本，位置不必精準。"],
+  ["build", "生成網站", "智慧排版整理成完整頁面，設定 AI 後也可交給模型。"],
+  ["style", "調整風格", "換主題、加動畫、雙擊直接改字。"],
+  ["ship", "匯出上線", "下載 React 專案，部署到任何靜態主機。"],
+];
 export function StepsSection() {
-  const [who, setWho] = useState<keyof typeof audiences>("maker");
   return (
     <section className="home-section" id="home-steps" aria-labelledby="home-steps-title">
       <h2 id="home-steps-title" className="home-center-title">四個步驟，從想法到網站</h2>
-      <div className="steps-switch" role="tablist" aria-label="選擇視角">
-        {(Object.keys(audiences) as (keyof typeof audiences)[]).map((key) => (
-          <button key={key} role="tab" aria-selected={who === key} onClick={() => setWho(key)}>{audiences[key].label}</button>
-        ))}
-      </div>
-      <ol className="steps-track" role="tabpanel" aria-label={audiences[who].label}>
-        {audiences[who].steps.map(([icon, title, text]) => (
+      <ol className="steps-track">
+        {steps.map(([icon, title, text]) => (
           <li key={title}>
             <svg viewBox="0 0 64 64" className="step-icon" aria-hidden="true" fill="none" stroke="#0d0e11" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">{stepIcons[icon]}</svg>
             <b>{title}</b>

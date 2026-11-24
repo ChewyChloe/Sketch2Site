@@ -1,13 +1,15 @@
 import { blank, CanvasSchema, type CanvasSpec } from "./spec";
 import { createBlock, type BlockTemplateId } from "./blockTemplates";
+import type { builtInAssets } from "./assetRef";
 
 // Starter templates for the home page: block templates with sample copy for a
 // campus or everyday use case. They are clearly sample content to replace.
-type Starter = { name: string; blocks: BlockTemplateId[]; copy: string[][] };
+type Starter = { name: string; blocks: BlockTemplateId[]; copy: string[][]; heroImage?: (typeof builtInAssets)[number] };
 
 const starters: Starter[] = [
   {
     name: "巷口咖啡小店",
+    heroImage: "/assets/samples/cafe.jpg",
     blocks: ["hero", "features", "pricing", "cta"],
     copy: [
       ["每天一杯，剛剛好的手沖咖啡", "學校後門走路三分鐘，週一到週六早上八點開門。", "看今日菜單", "店內照片"],
@@ -18,6 +20,7 @@ const starters: Starter[] = [
   },
   {
     name: "社團招生頁",
+    heroImage: "/assets/samples/camera.jpg",
     blocks: ["hero", "gallery", "faq", "cta"],
     copy: [
       ["攝影社，新學期招生中", "不用有相機，手機也能拍出好照片。每週三晚上社團活動。", "立即報名", "社課照片"],
@@ -46,7 +49,11 @@ export function starterDrafts(): CanvasSpec[] {
       const block = createBlock(spec, id);
       if (!block) return;
       const lines = starter.copy[i] ?? [];
-      const nodes = block.nodes.map((n, j) => (lines[j] ? { ...n, content: lines[j] } : n));
+      const nodes = block.nodes.map((n, j) => ({
+        ...n,
+        ...(lines[j] ? { content: lines[j] } : {}),
+        ...(id === "hero" && n.type === "image" && starter.heroImage ? { assetId: starter.heroImage } : {}),
+      }));
       spec = { ...spec, metadata: { ...spec.metadata, height: block.height }, nodes: [...spec.nodes, ...nodes] };
     });
     return CanvasSchema.parse(spec);

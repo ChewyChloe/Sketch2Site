@@ -114,6 +114,13 @@ export async function exportProjectFiles(
       import.meta.env.BASE_URL + builtin.slice(1),
     );
     if (!response.ok) throw new Error("內建素材無法讀取。");
+    if (builtin.endsWith(".jpg")) {
+      // Sample photos ship as JPEG; verify the magic bytes and a sane size.
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      if (bytes.length > 400000 || bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("內建素材格式無效。");
+      files.push({ path: "public" + builtin, content: bytes });
+      continue;
+    }
     const asset = await response.text();
     if (asset.length > 100000 || !asset.includes("<svg"))
       throw new Error("內建素材格式無效。");

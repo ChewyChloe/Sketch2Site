@@ -15,8 +15,6 @@ for (const width of [1440, 375])
     await expect(home.locator(".showcase-card .rendered-page")).toHaveCount(7);
     await expect(home.locator(".why-card")).toHaveCount(3);
     await expect(home.locator(".steps-track li")).toHaveCount(4);
-    await home.getByRole("tab", { name: "我是來看網站的人" }).click();
-    await expect(home.locator(".steps-track li").first()).toContainText("手機電腦都好讀");
     await home.getByText("我的資料存在哪裡？").click();
     await expect(home.getByText("不會上傳")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

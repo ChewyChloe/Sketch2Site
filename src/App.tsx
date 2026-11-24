@@ -1,4 +1,4 @@
-import {encodeNodes,decodeNodes,cloneNodes,deleteNodes,groupSelection,translateSelection} from "./canvasEditing";
+import {encodeNodes,decodeNodes,cloneNodes,deleteNodes,groupSelection,translateSelection,formatOf,applyFormat,type NodeFormat} from "./canvasEditing";
 import {MotionControlsFields} from "./MotionControls";
 import type {MotionControls} from "./motionCatalog";
 import {motionCatalog,motionIds,createMotion,numericContent,combinationReason,targetReason,type MotionId,defaultControls} from "./motion";
@@ -494,6 +494,56 @@ export default function App() {
     const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(!ids.length)return;
     if(change(deleteNodes(spec,ids))){setSelected(null);report('已刪除選取元件，可還原。');}
   }
+  // Resize handles (like a slide editor): corners and edges, Shift on a corner keeps the ratio.
+  type Dir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+  const resizeStart = useRef<{ id: string; dir: Dir; px: number; py: number; x: number; y: number; width: number; height: number; scale: number } | null>(null);
+  const [resizing, setResizing] = useState<{ id: string; x: number; y: number; width: number; height: number } | null>(null);
+  function resizeTo(e: React.PointerEvent) {
+    const r = resizeStart.current;
+    if (!r) return;
+    const dx = (e.clientX - r.px) / r.scale, dy = (e.clientY - r.py) / r.scale, H = state.current.present.metadata.height;
+    let { x, y, width, height } = r;
+    if (r.dir.includes("e")) width = r.width + dx;
+    if (r.dir.includes("s")) height = r.height + dy;
+    if (r.dir.includes("w")) width = r.width - dx;
+    if (r.dir.includes("n")) height = r.height - dy;
+    if (e.shiftKey && r.dir.length === 2) {
+      const ratio = r.width / r.height;
+      if (Math.abs(width / r.width) > Math.abs(height / r.height)) height = width / ratio; else width = height * ratio;
+    }
+    width = Math.max(80, width); height = Math.max(40, height);
+    if (r.dir.includes("w")) x = r.x + r.width - width;
+    if (r.dir.includes("n")) y = r.y + r.height - height;
+    // Keep the element on the canvas.
+    if (x < 0) { width += x; x = 0; }
+    if (y < 0) { height += y; y = 0; }
+    width = Math.max(80, Math.min(width, 1440 - x)); height = Math.max(40, Math.min(height, H - y));
+    setResizing({ id: r.id, x: Math.round(x), y: Math.round(y), width: Math.round(width), height: Math.round(height) });
+  }
+  function endResize() {
+    const r = resizing;
+    resizeStart.current = null;
+    setResizing(null);
+    if (r && patch(r.id, { x: r.x, y: r.y, width: r.width, height: r.height })) report(`尺寸 ${r.width} × ${r.height}`);
+  }
+  // Format painter (size + animations), like a slide editor.
+  const formatClip = useRef<NodeFormat | null>(null);
+  const [brush, setBrush] = useState(false);
+  function copyFormat() {
+    const n = state.current.present.nodes.find((v) => v.id === (selected ?? selectedIds[0]));
+    if (!n) { report("請先選取要複製格式的元件。", true); return false; }
+    formatClip.current = formatOf(n);
+    report(`已複製格式：${Math.round(n.width)} × ${Math.round(n.height)}${n.effects.length ? `、${n.effects.length} 個動畫` : ""}。`);
+    return true;
+  }
+  function pasteFormat(ids: readonly string[]) {
+    if (!formatClip.current) { report("還沒有複製格式，先選取元件按 Ctrl/⌘＋Shift＋C。", true); return; }
+    if (!ids.length) { report("請先選取要套用格式的元件。", true); return; }
+    try {
+      const result = applyFormat(state.current.present, ids, formatClip.current);
+      if (change(result.canvas)) report(`已套用格式到 ${ids.length} 個元件${result.skippedEffects ? `，${result.skippedEffects} 個動畫不適用此類型已略過` : ""}。`);
+    } catch { report("格式無法套用到這個元件。", true); }
+  }
   function copySelection(cut=false){
     const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(!ids.length)return;
     clipboard.current=encodeNodes(spec,ids);void navigator.clipboard?.writeText(clipboard.current).catch(()=>{});
@@ -533,6 +583,10 @@ export default function App() {
         setHistory((h) =>
           e.shiftKey || e.key.toLowerCase() === "y" ? redo(h) : undo(h),
         );
+      } else if (mod && e.shiftKey && ["c", "v"].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        if (e.key.toLowerCase() === "c") copyFormat();
+        else pasteFormat(selectedIds.length ? selectedIds : selected ? [selected] : []);
       } else if(mod&&['a','c','v','x','g'].includes(e.key.toLowerCase())){
         e.preventDefault();const k=e.key.toLowerCase();
         if(k==='a'){const current=state.current.present;setSelectedIds(current.nodes.map(n=>n.id));setPrimarySelected(current.nodes[0]?.id??null);report(`已選取 ${current.nodes.length} 個元件。`);}
@@ -545,6 +599,7 @@ export default function App() {
         e.preventDefault();
         remove();
       } else if (e.key === "Escape") {
+        if (brush) { setBrush(false); report("已取消格式刷。"); return; }
         setSelected(null);
         setPending(null);
       } else if (
@@ -637,6 +692,10 @@ export default function App() {
     if (e.button !== 0 || !ready || loadError || editing === n.id) return;
     e.stopPropagation();
     e.preventDefault();
+    if (brush) {
+      // Format brush: one click applies the copied format, then the brush turns off.
+      e.stopPropagation(); setBrush(false); setSelected(n.id); pasteFormat([n.id]); return;
+    }
     if(e.shiftKey){selectNode(n.id,true);return;}
     const own=n.groupId?spec.nodes.filter(v=>v.groupId===n.groupId).map(v=>v.id):[n.id];
     const multi=selectedIds.includes(n.id)&&selectedIds.some(id=>!own.includes(id));
@@ -842,7 +901,7 @@ node ? (
                 )
   );
   const disabled = !ready || loadError;
-  const displayedNodes=moving&&drag.current?translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
+  const displayedNodes=resizing?spec.nodes.map(n=>n.id===resizing.id?{...n,...resizing}:n):moving&&drag.current?translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
   return (
     <>
       <header className={"topbar " + mode}>
@@ -937,6 +996,8 @@ node ? (
                 <button onClick={()=>void pasteSelection()}>貼上 · Ctrl/Cmd＋V</button>
                 <button onClick={()=>{setSelectedIds(spec.nodes.map(n=>n.id));setPrimarySelected(spec.nodes[0]?.id??null);}}>全選 · Ctrl/Cmd＋A</button>
                 <button disabled={selectedIds.length<2} onClick={()=>change(groupSelection(spec,selectedIds))}>群組 · Ctrl/Cmd＋G</button>
+                <button disabled={!selectedIds.length} onClick={()=>copyFormat()}>複製格式 · Ctrl/Cmd＋Shift＋C</button>
+                <button disabled={!selectedIds.length} onClick={()=>pasteFormat(selectedIds)}>貼上格式 · Ctrl/Cmd＋Shift＋V</button>
                 <button disabled={!selectedIds.length} onClick={()=>change(groupSelection(spec,selectedIds,true))}>解組 · Ctrl/Cmd＋Shift＋G</button>
               </WorkbenchMenu>
               <WorkbenchMenu label="草稿選單">
@@ -1073,6 +1134,17 @@ node ? (
                     </select>
                   </label>
                   <button
+                    className="format-brush"
+                    aria-pressed={brush}
+                    title="格式刷：複製選取元件的尺寸與動畫，再點一下要套用的元件（Esc 取消）"
+                    onClick={() => {
+                      if (brush) { setBrush(false); return; }
+                      if (copyFormat()) { setBrush(true); report("格式刷已開啟：點一下要套用格式的元件。"); }
+                    }}
+                  >
+                    格式刷
+                  </button>
+                  <button
                     onClick={() => setPanel(!panel)}
                     aria-expanded={panel}
                   >
@@ -1092,7 +1164,7 @@ node ? (
                 >
                   <div
                     ref={board}
-                    className="canvas"
+                    className={"canvas" + (brush ? " brush-active" : "")}
                     data-testid="canvas"
                     aria-label="草稿畫布"
                     style={{
@@ -1193,6 +1265,24 @@ node ? (
                             }
                           }}
                         >
+                          {selected === n.id && selectedIds.length === 1 && editing !== n.id && !brush &&
+                            (["n", "s", "e", "w", "ne", "nw", "se", "sw"] as const).map((dir) => (
+                              <span
+                                key={dir}
+                                className={"resize-handle h-" + dir}
+                                aria-hidden="true"
+                                onPointerDown={(e) => {
+                                  if (e.button !== 0) return;
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  resizeStart.current = { id: n.id, dir, px: e.clientX, py: e.clientY, x: n.x, y: n.y, width: n.width, height: n.height, scale };
+                                  e.currentTarget.setPointerCapture(e.pointerId);
+                                }}
+                                onPointerMove={resizeTo}
+                                onPointerUp={endResize}
+                                onPointerCancel={() => { resizeStart.current = null; setResizing(null); }}
+                              />
+                            ))}
                           {selected === n.id && (
                             <span className="node-label">
                               {labels[n.type]} · {Math.round(n.x)},{" "}
