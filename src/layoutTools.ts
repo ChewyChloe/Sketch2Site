@@ -124,3 +124,35 @@ export function toggleLock(canvas: CanvasSpec, ids: readonly string[]): { canvas
     },
   };
 }
+
+/**
+ * Text boxes grow (or shrink) to fit their text. When a box grows, everything
+ * directly below it on the same page (overlapping horizontally) moves down by the
+ * same amount, so nothing ends up on top of anything else. The canvas grows in
+ * 600px steps when needed. Returns the canvas unchanged when nothing moves.
+ */
+export function fitHeights(canvas: CanvasSpec, heights: ReadonlyMap<string, number>, maxHeight: number, samePage: (a: CanvasNode, b: CanvasNode) => boolean = () => true): CanvasSpec {
+  let nodes = canvas.nodes.map((n) => ({ ...n }));
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const changed = [...heights.entries()]
+    .map(([id, h]) => ({ node: byId.get(id)!, h: Math.max(40, Math.min(1200, Math.round(h))) }))
+    .filter(({ node, h }) => node && node.height !== h)
+    .sort((a, b) => a.node.y - b.node.y);
+  if (!changed.length) return canvas;
+  for (const { node, h } of changed) {
+    const oldBottom = node.y + node.height, delta = h - node.height;
+    node.height = h;
+    if (delta <= 0) continue;
+    for (const other of nodes) {
+      if (other === node || heights.has(other.id) && other.y < node.y || !samePage(node, other)) continue;
+      const overlapsX = other.x < node.x + node.width && other.x + other.width > node.x;
+      if (overlapsX && other.y >= oldBottom - 4) other.y += delta;
+    }
+  }
+  const bottom = Math.max(...nodes.map((n) => n.y + n.height));
+  let height = canvas.metadata.height;
+  if (bottom > height) height = Math.min(maxHeight, Math.ceil(bottom / 600) * 600);
+  // Anything that would fall off the canvas stays at the bottom edge.
+  nodes = nodes.map((n) => (n.y + n.height > height ? { ...n, y: Math.max(0, height - n.height) } : n));
+  return { ...canvas, metadata: { ...canvas.metadata, height }, nodes };
+}

@@ -2,7 +2,7 @@ import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
 import { imageSource } from "./assetRef";
 import { MotionSchema, bindMotionInput, compatibleMotion, combinationReason, withinMotionBudget } from "./motion";
-import { href, localAssets, ImageLookSchema } from "./pageSpec";
+import { href, localAssets, ImageLookSchema, TextStyleSchema } from "./pageSpec";
 import { SiteOverridesSchema } from "./siteOverrides";
 export const Effect = z.enum([
   "hover-glow",
@@ -40,12 +40,15 @@ export const NodeSchema = z.preprocess(bindMotionInput,z
     href: href.nullable().optional(),
     // Frame, crop and photo adjustments (images only).
     look: ImageLookSchema.optional(),
+    // Font, size, colour and emphasis from the text toolbar (text-like elements).
+    textStyle: TextStyleSchema.optional(),
     // Locked elements cannot be moved, resized, edited or deleted until unlocked.
     locked: z.literal(true).optional(),
     zIndex: z.number().int().min(0).max(100),
   })
   .strict()
-  .refine((n) => !n.look || n.type === "image", "只有圖片可以設定相框"));
+  .refine((n) => !n.look || n.type === "image", "只有圖片可以設定相框")
+  .refine((n) => !n.textStyle || ["heading", "text", "button", "card"].includes(n.type), "這個元件不能設定文字樣式"));
 export const CanvasSchema = z
   .object({
     schemaVersion: z.literal(1),

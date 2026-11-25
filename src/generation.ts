@@ -275,18 +275,22 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         effects: node.effects,
       };
       const presentation=canvas.metadata.layoutMode!=="reflow"&&node.type==="text"?"paragraph":item.presentation;
+      // The user's own text styling travels with the element (never chosen by the model).
+      const text = node.textStyle ? { text: node.textStyle } : {};
       switch (presentation) {
         case "heading":
           return make("heading", {
             ...common,
+            ...text,
             content: node.content,
             level: item.headingLevel,
           });
         case "paragraph":
-          return make("paragraph", { ...common, content: node.content });
+          return make("paragraph", { ...common, ...text, content: node.content });
         case "button":
           return make("button", {
             ...common,
+            ...text,
             style: { ...common.style, padding: "small" },
             content: node.content,
             href: node.href!,
@@ -303,6 +307,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         case "card":
           return make("card", {
             ...common,
+            ...text,
             children: (node.effects.some(e=>structuredGroupMotions.includes(e.presetId as typeof structuredGroupMotions[number])) ? node.content.split("\n").map(content=>make("card",{children:[make("paragraph",{content})]})) : (node.effects.some(e=>["stagger-reveal","focus-transfer","disclosure-panel","card-deck-fan","layered-parallax","grid-diagonal-turn"].includes(e.presetId)&&e.presetVersion===1)||(layout.version===2&&canvas.metadata.layoutMode==="reflow") ? node.content.split("\n") : [node.content]).map(content=>make("paragraph", { content }))),
           });
       }
@@ -438,6 +443,9 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
     if (n && !(types[source.type] as string[]).includes(n.type))
       throw new GenerationError("INVALID_OUTPUT");
     if (!n) throw new GenerationError("INVALID_OUTPUT");
+    // Text styling must come from the draft unchanged.
+    if (JSON.stringify(n.text ?? null) !== JSON.stringify(source.textStyle ?? null))
+      throw new GenerationError("INVALID_OUTPUT");
     if (source.type === "image") {
       if (
         n.type !== "image" ||

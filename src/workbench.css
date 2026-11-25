@@ -1395,3 +1395,56 @@ input[type="range"] {
 .neo-inspector .frame-adjust output { color: #10e560; }
 .neo-inspector .frame-adjust input[type="range"] { padding: 0; background: transparent; border: 0; accent-color: #10e560; }
 .neo-inspector .frame-thumb.none { border-color: #8b928a; }
+
+/* ===== Text toolbar ===== */
+.text-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; padding: 6px 8px; border: 2px solid #0d0e11; border-radius: 16px; background: #fff; box-shadow: 3px 3px 0 #0d0e11; position: relative; z-index: 6; }
+.text-toolbar button, .text-toolbar select, .text-toolbar input { min-height: 40px; font: inherit; }
+.text-toolbar > button, .tt-group button, .tt-size button, .tt-pop > button { min-width: 38px; padding: 0 8px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #0d0e11; cursor: pointer; font-size: 15px; }
+.text-toolbar button:hover, .text-toolbar button:focus-visible { background: #eef6f0; border-color: #087b36; }
+.text-toolbar button[aria-pressed="true"] { background: #10e560; border-color: #0d0e11; font-weight: 800; }
+.tt-count { padding: 0 6px; font-size: 12px; font-weight: 800; color: #087b36; }
+.tt-font select { min-width: 0; width: 128px; padding: 0 10px; border: 1px solid #c9ccc4; border-radius: 10px; background: #f7f6f2; }
+.tt-size { display: flex; align-items: center; border: 1px solid #c9ccc4; border-radius: 10px; background: #f7f6f2; }
+.tt-size input { width: 52px; border: 0; background: transparent; text-align: center; font-weight: 700; -moz-appearance: textfield; }
+.tt-size input::-webkit-inner-spin-button { appearance: none; }
+.tt-group { display: flex; gap: 0; padding: 0 2px; border-left: 1px solid #e2e4de; }
+.tt-group svg, .tt-pop svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+.tt-color { display: inline-block; font-weight: 900; font-size: 18px; line-height: 1; border-bottom: 5px solid var(--tt-color); padding: 0 2px 1px; }
+.tt-mark { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; background: var(--tt-mark); }
+.tt-spacing { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; }
+.tt-pop { position: relative; }
+.tt-panel { position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; display: grid; gap: 10px; width: 236px; padding: 12px; border: 2px solid #0d0e11; border-radius: 14px; background: #fff; box-shadow: 4px 4px 0 #0d0e11; }
+.tt-swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.tt-swatches button { width: 30px; height: 30px; min-height: 0; border-radius: 50%; border: 2px solid #d5d5cd; cursor: pointer; }
+.tt-swatches button[aria-pressed="true"] { outline: 3px solid #087b36; outline-offset: 2px; }
+.tt-custom { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+.tt-custom input { width: 44px; height: 32px; min-height: 0; padding: 0; border: 0; background: transparent; }
+.tt-reset { min-height: 34px; border: 1px dashed #b8bab2; border-radius: 10px; background: transparent; font-size: 13px; cursor: pointer; }
+.tt-slider { display: grid; gap: 4px; font-size: 13px; }
+.tt-slider span { display: flex; justify-content: space-between; }
+.tt-slider input { accent-color: #087b36; }
+.tt-clear { margin-left: auto; font-size: 13px !important; color: #62655f !important; }
+.shortcuts-button { min-height: 36px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ===== Shortcuts panel ===== */
+.shortcuts-backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgb(13 14 17 / .45); }
+.shortcuts-panel { width: min(880px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px 22px; border: 2px solid #0d0e11; border-radius: 18px; background: #fffdf7; box-shadow: 6px 6px 0 #0d0e11; outline: none; }
+.shortcuts-head { display: flex; align-items: center; justify-content: space-between; }
+.shortcuts-head h2 { margin: 0; font-size: 22px; }
+.shortcuts-head button { width: 44px; height: 44px; border: 0; background: transparent; font-size: 26px; cursor: pointer; }
+.shortcuts-panel > p { margin: 4px 0 14px; color: #62655f; }
+.shortcuts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px 20px; }
+.shortcuts-grid h3 { margin: 0 0 6px; font-size: 14px; color: #087b36; }
+.shortcuts-grid dl { margin: 0; display: grid; gap: 6px; }
+.shortcuts-grid dl > div { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.shortcuts-grid dt { display: flex; flex-wrap: wrap; gap: 3px; }
+.shortcuts-grid dd { margin: 0; font-size: 14px; text-align: right; }
+.shortcuts-grid kbd { min-width: 24px; padding: 2px 7px; border: 1.5px solid #0d0e11; border-bottom-width: 3px; border-radius: 7px; background: #fff; font: 700 12px/1.4 ui-monospace, monospace; text-align: center; }
+.text-toolbar { gap: 4px; }
+.tt-count { display: none; }
+.text-toolbar .tt-count:first-child:not(:empty) { display: inline; }
+.text-toolbar.is-idle { min-height: 54px; box-sizing: border-box; color: #62655f; font-size: 14px; border-style: dashed; box-shadow: none; padding-left: 16px; }
+/* The toolbar floats in a fixed-height slot: selecting text never moves the canvas. */
+.text-toolbar-slot { position: relative; height: 58px; margin-bottom: 8px; flex: none; }
+.text-toolbar-slot > .text-toolbar { position: absolute; top: 0; left: 0; right: 0; margin: 0; min-height: 54px; box-sizing: border-box; z-index: 12; }

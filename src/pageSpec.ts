@@ -96,6 +96,56 @@ export function lookStyle(look: ImageLook | undefined) {
     opacity: l.opacity !== undefined && l.opacity < 100 ? l.opacity / 100 : undefined,
   };
 }
+// Text styling from the editor's text toolbar (draft textStyle → site text).
+// Only system font stacks: no remote fonts are loaded.
+export const fontIds = ["sans", "serif", "rounded", "kai", "mono"] as const;
+export type FontId = (typeof fontIds)[number];
+export const fontLabels: Record<FontId, string> = { sans: "黑體（預設）", serif: "明體", rounded: "圓體", kai: "楷體（手寫感）", mono: "等寬" };
+export const fontStacks: Record<FontId, string> = {
+  sans: 'system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif',
+  serif: '"Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", Georgia, serif',
+  rounded: 'ui-rounded, "Arial Rounded MT Bold", "jf-openhuninn-2.0", "Yuanti TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
+  kai: '"Kaiti TC", "BiauKai", "DFKai-SB", "KaiTi", "STKaiti", serif',
+  mono: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Noto Sans Mono CJK TC", monospace',
+};
+const hex = z.string().regex(/^#[0-9a-f]{6}$/i);
+export const TextStyleSchema = z
+  .object({
+    font: z.enum(fontIds).optional(),
+    size: z.number().int().min(12).max(120).optional(),
+    color: hex.optional(),
+    highlight: hex.optional(),
+    bold: z.boolean().optional(),
+    italic: z.boolean().optional(),
+    underline: z.boolean().optional(),
+    strike: z.boolean().optional(),
+    align: z.enum(["start", "center", "end", "justify"]).optional(),
+    lineHeight: z.number().min(1).max(3).optional(),
+    letterSpacing: z.number().min(-0.1).max(0.5).optional(),
+  })
+  .strict();
+export type TextStyle = z.infer<typeof TextStyleSchema>;
+/**
+ * CSS for a text style. `fluid` scales the size with the page width (site),
+ * otherwise it is exact (editor canvas). Values come only from the schema.
+ */
+export function textCss(t: TextStyle | undefined, fluid = true) {
+  if (!t) return undefined;
+  const deco = [t.underline ? "underline" : "", t.strike ? "line-through" : ""].filter(Boolean).join(" ");
+  return {
+    ...(t.font ? { fontFamily: fontStacks[t.font] } : {}),
+    ...(t.size ? { fontSize: fluid ? `clamp(${Math.max(12, Math.round(t.size * 0.62))}px, ${(t.size / 14.4).toFixed(2)}cqi, ${t.size}px)` : `${t.size}px` } : {}),
+    ...(t.color ? { color: t.color } : {}),
+    // The highlight colour is painted by an inline .text-mark span, line by line.
+    ...(t.highlight ? { "--text-mark": t.highlight, ...(t.color ? {} : { "--text-mark-ink": "#111111" }) } : {}),
+    ...(t.bold !== undefined ? { fontWeight: t.bold ? 800 : 400 } : {}),
+    ...(t.italic ? { fontStyle: "italic" as const } : {}),
+    ...(deco ? { textDecorationLine: deco } : {}),
+    ...(t.align ? { textAlign: t.align } : {}),
+    ...(t.lineHeight ? { lineHeight: t.lineHeight } : {}),
+    ...(t.letterSpacing !== undefined ? { letterSpacing: `${t.letterSpacing}em` } : {}),
+  };
+}
 export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta"] as const;
 export type SectionRole = (typeof sectionRoles)[number];
 export type PageNode = {
@@ -120,6 +170,7 @@ export type PageNode = {
   src?: string;
   alt?: string;
   look?: ImageLook;
+  text?: TextStyle;
   columns?: 1 | 2 | 3;
   children?: PageNode[];
 };
@@ -169,6 +220,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         ...common,
         type: z.literal("card"),
         children: z.array(PageNodeSchema).max(100),
+        text: TextStyleSchema.optional(),
       })
       .strict(),
     z
@@ -192,6 +244,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         type: z.literal("heading"),
         content: z.string().min(1).max(2000),
         level: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+        text: TextStyleSchema.optional(),
       })
       .strict(),
     z
@@ -199,6 +252,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         ...common,
         type: z.literal("paragraph"),
         content: z.string().max(4000),
+        text: TextStyleSchema.optional(),
       })
       .strict(),
     z
@@ -207,6 +261,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         type: z.literal("button"),
         content: z.string().min(1).max(120),
         href,
+        text: TextStyleSchema.optional(),
       })
       .strict(),
     z

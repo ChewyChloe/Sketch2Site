@@ -1,4 +1,4 @@
-import { allSections, filterLabels, frameLabels, themeIds, themeLabels, type FrameId, type ImageLook, type PageNode, type PageSpec, type ThemeId } from "./pageSpec";
+import { allSections, filterLabels, fontLabels, frameLabels, themeIds, themeLabels, type FontId, type FrameId, type ImageLook, type PageNode, type PageSpec, type TextStyle, type ThemeId } from "./pageSpec";
 import { combinationReason, createMotion, targetReason, type MotionInstance } from "./motion";
 import { defaultControls, motionCatalog, motionIds, type MotionId } from "./motionCatalog";
 
@@ -11,7 +11,7 @@ export type AnnotationResult =
   | { ok: true; patches: unknown[]; scope: string[]; summary: string[]; skipped: string[] }
   | { ok: false; message: string };
 
-type Ctx = { page: PageSpec; node: PageNode; chain: PageNode[]; looks: Map<string, ImageLook> };
+type Ctx = { page: PageSpec; node: PageNode; chain: PageNode[]; looks: Map<string, ImageLook>; texts: Map<string, TextStyle> };
 type Step = { patches: unknown[]; summary: string } | { error: string } | null;
 
 const levelNames = { 1: "主標題（大）", 2: "章節標題（中）", 3: "小標題" } as const;
@@ -183,6 +183,40 @@ function clause(text: string, ctx: Ctx): Step {
     }
   }
 
+  // 2.6 Text styling (fonts, colours, emphasis) for text elements.
+  if (["heading", "paragraph", "button", "card"].includes(node.type)) {
+    const text: TextStyle = { ...(ctx.texts.get(node.id) ?? node.text ?? {}) };
+    const done: string[] = [];
+    const font = ([[/明體|宋體/, "serif"], [/楷體|手寫/, "kai"], [/圓體/, "rounded"], [/等寬|程式字/, "mono"], [/黑體|預設字/, "sans"]] as [RegExp, FontId][]).find(([re]) => re.test(t));
+    if (font) (font[1] === "sans" ? delete text.font : (text.font = font[1]), done.push(`字型換成${fontLabels[font[1]]}`));
+    const colorWords: [RegExp, string][] = [[/紅/, "#e5484d"], [/橘|橙/, "#f76b15"], [/黃/, "#ffc53d"], [/綠/, "#30a46c"], [/藍/, "#0d74ce"], [/紫/, "#6e56cf"], [/粉/, "#d6409f"], [/咖啡|棕/, "#8d5a3b"], [/白/, "#ffffff"], [/灰/, "#5b5f58"], [/黑/, "#111111"]];
+    const color = /字|文字|標題|按鈕/.test(t) && !/配色|主題|底色|背景/.test(t) ? colorWords.find(([re]) => re.test(t)) : undefined;
+    if (color) (text.color = color[1], done.push("文字顏色改好了"));
+    if (/原本的顏色|預設顏色/.test(t)) (delete text.color, done.push("文字顏色恢復預設"));
+    const flags: [RegExp, RegExp, "bold" | "italic" | "underline" | "strike", string][] = [
+      [/粗體|加粗|變粗/, /不要粗體|取消粗體|不要加粗/, "bold", "粗體"],
+      [/斜體/, /不要斜體|取消斜體/, "italic", "斜體"],
+      [/底線/, /不要底線|取消底線/, "underline", "底線"],
+      [/刪除線/, /不要刪除線/, "strike", "刪除線"],
+    ];
+    for (const [on, off, key, label] of flags) {
+      if (off.test(t)) (delete text[key], done.push("取消" + label));
+      else if (on.test(t)) (text[key] = true, done.push("改成" + label));
+    }
+    if (/螢光筆/.test(t) && !/動態|動畫/.test(t)) (text.highlight = "#fff3a3", done.push("加上螢光筆"));
+    // Paragraphs, buttons and cards have no heading level: "大一點" changes the type size.
+    if (node.type !== "heading") {
+      const sizes = [12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48];
+      const current = text.size ?? (node.type === "paragraph" ? 18 : 16);
+      if (/字.{0,2}(大一點|放大|變大)|大一點/.test(t) && !/卡片|照片|圖片/.test(t)) (text.size = sizes.find((v) => v > current) ?? 48, done.push("字變大"));
+      else if (/字.{0,2}(小一點|縮小|變小)|小一點/.test(t) && !/卡片|照片|圖片/.test(t)) (text.size = [...sizes].reverse().find((v) => v < current) ?? 12, done.push("字變小"));
+    }
+    if (done.length) {
+      ctx.texts.set(node.id, text);
+      return { patches: [{ operation: "set-property", targetId: node.id, payload: { property: "text", value: text } }], summary: done.join("、") };
+    }
+  }
+
   // 3. Remove motion.
   if (/(不要|移除|取消|拿掉|刪掉|關掉|停止).{0,3}(動態|動畫|特效|效果)|(動態|動畫).{0,2}(拿掉|移除|取消)/.test(t)) {
     if (!node.effects.length) return { patches: [], summary: "這個元件本來就沒有動態" };
@@ -287,7 +321,7 @@ export function interpretAnnotation(page: PageSpec, targetId: string, instructio
   if (!text) return { ok: false, message: "請輸入想怎麼改，例如「標題大一點」。" };
   const chain = chainOf(page, targetId);
   if (!chain) return { ok: false, message: "找不到選取的元件，請重新點選。" };
-  const ctx: Ctx = { page, node: chain[chain.length - 1], chain, looks: new Map() };
+  const ctx: Ctx = { page, node: chain[chain.length - 1], chain, looks: new Map(), texts: new Map() };
   // Keep quoted text intact while splitting into clauses.
   const parts: string[] = [];
   let buf = "", depth = 0;
@@ -311,16 +345,14 @@ export function interpretAnnotation(page: PageSpec, targetId: string, instructio
   }
   if (!patches.length && !summary.length)
     return { ok: false, message: errors[0] ?? `還看不懂「${skipped.join("、") || text}」。可以試試：標題大一點、置中、換成藍色、加動態、改成「新的文字」。` };
-  // Only the last look per image is needed: it already includes the earlier clauses.
-  const lastLook = new Map<string, number>();
-  patches.forEach((p, i) => {
+  // Only the last look / text style per element is needed: it already includes the earlier clauses.
+  const last = new Map<string, number>();
+  const keyOf = (p: unknown) => {
     const q = p as { targetId: string; payload?: { property?: string } };
-    if (q.payload?.property === "look") lastLook.set(q.targetId, i);
-  });
-  const merged = patches.filter((p, i) => {
-    const q = p as { targetId: string; payload?: { property?: string } };
-    return q.payload?.property !== "look" || lastLook.get(q.targetId) === i;
-  });
+    return q.payload?.property === "look" || q.payload?.property === "text" ? q.payload.property + ":" + q.targetId : null;
+  };
+  patches.forEach((p, i) => { const k = keyOf(p); if (k) last.set(k, i); });
+  const merged = patches.filter((p, i) => { const k = keyOf(p); return !k || last.get(k) === i; });
   patches.splice(0, patches.length, ...merged);
   const scope = [...new Set(patches.map((p) => (p as { targetId: string }).targetId))];
   return { ok: true, patches, scope, summary, skipped: [...skipped, ...errors] };
@@ -339,8 +371,8 @@ export function suggestionsFor(page: PageSpec, id: string): string[] {
 export function annotationSuggestions(type: string): string[] {
   const common = ["加動態", "換個配色"];
   switch (type) {
-    case "heading": return ["標題大一點", "標題小一點", "置中", "加螢光標記", ...common];
-    case "paragraph": return ["置中", "淡入", ...common];
+    case "heading": return ["標題大一點", "改成明體", "藍色字", "置中", "加螢光標記", ...common];
+    case "paragraph": return ["字大一點", "粗體", "紅色字", "置中", "淡入", ...common];
     case "button": return ["按鈕更醒目", "加磁吸效果", "呼吸發光", ...common];
     case "card": return ["卡片放大", "卡片縮小", "加 3D 傾斜", ...common];
     case "image": return ["換成圓形框", "愛心框", "黑白濾鏡", "亮一點", "左右翻轉", "百葉窗進場", ...common];

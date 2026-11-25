@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blank, CanvasSchema, createNode, type CanvasNode, type CanvasSpec } from "./spec";
-import { alignSelection, distribute, reorder, snapBox, toggleLock } from "./layoutTools";
+import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock } from "./layoutTools";
 
 const box = (x: number, y: number, width = 100, height = 50, type: CanvasNode["type"] = "text") => ({ ...createNode(type, x, y), width, height });
 const draft = (...nodes: CanvasNode[]): CanvasSpec => CanvasSchema.parse({ ...blank(), nodes });
@@ -49,5 +49,27 @@ describe("layout tools", () => {
     const unlocked = toggleLock(locked.canvas, [a.id]);
     expect(unlocked.locked).toBe(false);
     expect("locked" in unlocked.canvas.nodes[0]).toBe(false);
+  });
+});
+
+describe("text boxes fit their text", () => {
+  it("grows a box and pushes what is below it, leaving other columns alone", () => {
+    const top = box(80, 80, 400, 60), below = box(80, 160, 400, 60), side = box(600, 160, 300, 60);
+    const spec = draft(top, below, side);
+    const next = fitHeights(spec, new Map([[top.id, 120]]), 4800);
+    const at = (id: string) => next.nodes.find((n) => n.id === id)!;
+    expect(at(top.id).height).toBe(120);
+    expect(at(below.id).y).toBe(220);
+    expect(at(side.id).y).toBe(160);
+    // Shrinking only shrinks the box.
+    const smaller = fitHeights(spec, new Map([[top.id, 40]]), 4800);
+    expect(smaller.nodes.find((n) => n.id === below.id)!.y).toBe(160);
+    expect(fitHeights(spec, new Map([[top.id, 60]]), 4800)).toBe(spec);
+  });
+  it("grows the canvas in steps when text runs past the bottom", () => {
+    const last = box(80, 1100, 400, 80);
+    const next = fitHeights(draft(last), new Map([[last.id, 300]]), 4800);
+    expect(next.metadata.height).toBe(1800);
+    expect(CanvasSchema.safeParse(next).success).toBe(true);
   });
 });

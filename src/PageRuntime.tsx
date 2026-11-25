@@ -28,6 +28,7 @@ import {
   effectIds,
   frameRatios,
   lookStyle,
+  textCss,
 } from "./pageSpec";
 import "./pageRuntime.css";
 type Effect = PageNode["effects"][number];
@@ -253,6 +254,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
     "--glow-strength": glow?.validatedControls.intensity==="medium"?"35%":"18%",
     "--effect-lift": (lift ? motionNumber(lift,lift.presetVersion===0?"distancePx":"liftPx",5) : 0) + "px",
     "--hover-duration": (lift ? motionDuration(lift) : glow ? motionDuration(glow) : 250) + "ms",
+    ...textCss(node.text),
   } as CSSProperties;
   return (
     <Tag
@@ -260,6 +262,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       id={"page-" + node.id}
       data-page-id={node.id}
       data-page-type={node.type}
+      data-text-style={node.text ? "" : undefined}
       data-pause-hover={breathing?.validatedControls.pauseOnHover===true}
       tabIndex={(lift||glow)&&node.type!=="button"?0:undefined}
       data-effects={node.effects.map((e) => e.presetId).join(" ")}
@@ -291,7 +294,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
     >
       {node.type==="form"?<SiteForm node={node}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
         <FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox>
-      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.content}
+      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.content}
     </Tag>
   );
 });

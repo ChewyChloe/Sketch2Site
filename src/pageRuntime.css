@@ -734,3 +734,10 @@
 .frame-browser::before { content: ""; position: absolute; top: 2.4%; left: 5%; width: 4.4%; height: 2.4%; border-radius: 999px; background: radial-gradient(circle at 25% 50%, #ffbd2e 0 22%, transparent 24%), radial-gradient(circle at 75% 50%, #28c840 0 22%, transparent 24%); }
 .frame-browser .page-frame-photo { border-radius: 0 0 11px 11px; }
 @media (prefers-reduced-motion: reduce) { .frame-polaroid { rotate: none; } }
+
+/* Text toolbar styles: a styled card passes its font and colour to its lines. */
+.rendered-page .page-card[data-text-style] .page-paragraph, .rendered-page .page-card[data-text-style] .page-paragraph:first-child { color: inherit; font-family: inherit; font-size: inherit; font-style: inherit; text-align: inherit; letter-spacing: inherit; line-height: inherit; }
+.rendered-page .page-card[data-text-style] .page-paragraph:first-child::first-line { color: inherit; }
+.rendered-page [data-text-style] { text-decoration-thickness: from-font; text-underline-offset: .18em; }
+.text-mark { color: var(--text-mark-ink, inherit); background: var(--text-mark); -webkit-box-decoration-break: clone; box-decoration-break: clone; padding: 0 .12em; border-radius: .18em; }
+.page-card[data-text-style] .page-paragraph { --text-mark: inherit; }

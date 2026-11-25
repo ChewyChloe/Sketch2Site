@@ -82,6 +82,7 @@ export function syncSiteChange(draft: CanvasSpec, before: PageSpec, after: PageS
     else if (c.property === "src" && own) setNode(node.id, { assetId: node.src });
     else if (c.property === "alt" && own) setNode(node.id, { content: node.alt ?? "" });
     else if (c.property === "look" && own) setNode(node.id, { look: node.look });
+    else if (c.property === "text" && own) setNode(node.id, { textStyle: node.text });
     else if (c.property.startsWith("effects.")) {
       if (own) setNode(node.id, { effects: node.effects as MotionInstance[] });
       else setItem(node, { effects: node.effects as MotionInstance[] });

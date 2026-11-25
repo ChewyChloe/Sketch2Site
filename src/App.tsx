@@ -14,7 +14,10 @@ import { indexNodes } from "./patch";
 import { FrameBox } from "./PageRuntime";
 import { FrameControls, FrameThumb } from "./FrameControls";
 import { ArrangePanel } from "./ArrangePanel";
-import { alignSelection, distribute, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
+import { TextToolbar, defaultSize, stepSize } from "./TextToolbar";
+import { ShortcutsPanel } from "./ShortcutsPanel";
+import { textCss, type TextStyle } from "./pageSpec";
+import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
@@ -687,6 +690,86 @@ export default function App() {
     const ids = selection();
     if (ids.length >= 3 && change(distribute(spec, ids, axis))) report(axis === "h" ? "已左右平均分配。" : "已上下平均分配。");
   }
+  // ---- Text styling (text toolbar and shortcuts) ----
+  const textTypes = ["heading", "text", "button", "card"];
+  const textTargets = () => spec.nodes.filter((n) => selection().includes(n.id) && textTypes.includes(n.type) && !n.locked);
+  /** Height the element needs for its text (measured off-screen with the real canvas styles). */
+  function neededHeight(n: CanvasNode, style: TextStyle | undefined, content = n.content): number | null {
+    const el = document.querySelector<HTMLElement>(`[data-node-id="${n.id}"]`);
+    if (!el?.parentElement) return null;
+    const probe = el.cloneNode(false) as HTMLElement;
+    for (const a of ["data-node-id", "data-testid", "id", "aria-label", "tabindex"]) probe.removeAttribute(a);
+    probe.setAttribute("aria-hidden", "true");
+    probe.textContent = content;
+    probe.style.cssText = "";
+    Object.assign(probe.style, { position: "absolute", left: "-20000px", top: "0", width: n.width + "px", height: "auto", minHeight: "0", maxHeight: "none", visibility: "hidden" });
+    for (const [k, v] of Object.entries(textCss(style, false) ?? {})) k.startsWith("--") ? probe.style.setProperty(k, String(v)) : ((probe.style as unknown as Record<string, string>)[k] = String(v));
+    el.parentElement.appendChild(probe);
+    const h = probe.scrollHeight;
+    probe.remove();
+    return h;
+  }
+  /** Width a button needs to keep its label on one line. */
+  function neededWidth(n: CanvasNode, style: TextStyle | undefined, content = n.content): number | null {
+    const el = document.querySelector<HTMLElement>(`[data-node-id="${n.id}"]`);
+    if (!el?.parentElement) return null;
+    const probe = el.cloneNode(false) as HTMLElement;
+    for (const a of ["data-node-id", "data-testid", "id", "aria-label", "tabindex"]) probe.removeAttribute(a);
+    probe.textContent = content;
+    probe.style.cssText = "";
+    Object.assign(probe.style, { position: "absolute", left: "-20000px", top: "0", width: "auto", height: "auto", whiteSpace: "nowrap", visibility: "hidden" });
+    for (const [k, v] of Object.entries(textCss(style, false) ?? {})) k.startsWith("--") ? probe.style.setProperty(k, String(v)) : ((probe.style as unknown as Record<string, string>)[k] = String(v));
+    el.parentElement.appendChild(probe);
+    const w = probe.scrollWidth;
+    probe.remove();
+    return w;
+  }
+  /** Grows text boxes that no longer fit and moves what is below them down (same undo step). */
+  function withFittedText(input: CanvasSpec, ids: readonly string[], contents: Record<string, string> = {}): CanvasSpec {
+    const heights = new Map<string, number>();
+    // Buttons widen first so their label stays on one line (up to the canvas edge).
+    let next = input;
+    for (const id of ids) {
+      const n = next.nodes.find((v) => v.id === id);
+      if (n?.type !== "button") continue;
+      const w = neededWidth(n, n.textStyle, contents[id] ?? n.content);
+      const extra = n.textStyle?.highlight ? (n.textStyle.size ?? 16) * 0.3 : 0;
+      if (w && w + extra > n.width + 1) {
+        // The highlighter adds a little padding around the label.
+        const mark = n.textStyle?.highlight ? (n.textStyle.size ?? 16) * 0.3 : 0;
+        const width = Math.min(1440 - n.x, Math.ceil(w + 8 + mark));
+        next = { ...next, nodes: next.nodes.map((v) => (v.id === id ? { ...v, width } : v)) };
+      }
+    }
+    for (const id of ids) {
+      const n = next.nodes.find((v) => v.id === id);
+      if (!n || !textTypes.includes(n.type)) continue;
+      const h = neededHeight(n, n.textStyle, contents[id] ?? n.content);
+      if (h && h > n.height + 1) heights.set(id, h + 4);
+    }
+    return heights.size ? fitHeights(next, heights, canvasMaxHeight, (a, b) => pageOfNode(next, a) === pageOfNode(next, b)) : next;
+  }
+  /** Applies a style change (or null = clear) to every selected text element, as one undo step. */
+  function styleText(patch: Partial<TextStyle> | null, ids?: string[]) {
+    const targets = ids ? spec.nodes.filter((n) => ids.includes(n.id)) : textTargets();
+    if (!targets.length) return;
+    const next = new Map(
+      targets.map((n) => {
+        const merged: Record<string, unknown> = patch ? { ...n.textStyle, ...patch } : {};
+        for (const k of Object.keys(merged)) if (merged[k] === undefined) delete merged[k];
+        const { textStyle: _old, ...rest } = n;
+        void _old;
+        return [n.id, Object.keys(merged).length ? { ...rest, textStyle: merged as TextStyle } : rest];
+      }),
+    );
+    const styled = { ...spec, nodes: spec.nodes.map((n) => next.get(n.id) ?? n) };
+    const fitted = withFittedText(styled, [...next.keys()]);
+    if (change(fitted)) report((patch ? "已套用文字樣式" : "已清除文字樣式") + (fitted !== styled ? "，文字框已自動變高並把下方元件往下移" : "") + "，可還原。");
+  }
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  // Single-key shortcuts only act on the canvas, so Tab still moves through buttons elsewhere.
+  const onCanvasFocus = (e: KeyboardEvent) => e.target === document.body || (e.target instanceof Element && Boolean(e.target.closest("[data-node-id], [data-testid='canvas']")));
+  const zoomLevels = [0.4, 0.5, 0.6, 0.75, 1];
   function lock() {
     const ids = selection();
     if (!ids.length) return;
@@ -791,6 +874,39 @@ export default function App() {
         if(k==='a'){const current=state.current.present.nodes.filter(n=>onCurrentPage(n));setSelectedIds(current.map(n=>n.id));setPrimarySelected(current[0]?.id??null);report(`已選取 ${current.length} 個元件。`);}
         if(k==='c')copySelection();if(k==='x')copySelection(true);if(k==='v')void pasteSelection();
         if(k==='g'){const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(ids.length>=2||e.shiftKey){change(groupSelection(spec,ids,e.shiftKey));report(e.shiftKey?'已取消群組，可還原。':'已建立群組，可一起移動；Shift＋點選可多選。');}}
+      } else if (mod && !e.shiftKey && ["b", "i", "u"].includes(e.key.toLowerCase()) && textTargets().length) {
+        e.preventDefault();
+        const key = ({ b: "bold", i: "italic", u: "underline" } as const)[e.key.toLowerCase() as "b" | "i" | "u"];
+        styleText({ [key]: textTargets().every((n) => n.textStyle?.[key]) ? undefined : true });
+      } else if (mod && e.shiftKey && ["KeyL", "KeyE", "KeyR"].includes(e.code) && textTargets().length) {
+        e.preventDefault();
+        styleText({ align: ({ KeyL: "start", KeyE: "center", KeyR: "end" } as const)[e.code as "KeyL" | "KeyE" | "KeyR"] });
+      } else if (mod && e.shiftKey && (e.code === "Period" || e.code === "Comma") && textTargets().length) {
+        e.preventDefault();
+        const first = textTargets()[0];
+        styleText({ size: stepSize(first.textStyle?.size ?? defaultSize[first.type] ?? 18, e.code === "Period") });
+      } else if (mod && (e.key === "=" || e.key === "+" || e.key === "-" || e.key === "0")) {
+        e.preventDefault();
+        if (e.key === "0") setScale("fit");
+        else {
+          const i = zoomLevels.findIndex((z) => z >= scale - 0.001);
+          setScale(e.key === "-" ? zoomLevels[Math.max(0, (i < 0 ? zoomLevels.length : i) - 1)] : zoomLevels[Math.min(zoomLevels.length - 1, (zoomLevels[i] > scale + 0.001 ? i : i + 1))]);
+        }
+      } else if (!mod && !e.altKey && e.key === "?") {
+        e.preventDefault();
+        setShortcutsOpen(true);
+      } else if (!mod && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "t" && onCanvasFocus(e)) {
+        e.preventDefault();
+        add("text", 160, 160);
+      } else if (e.key === "Tab" && !mod && onCanvasFocus(e)) {
+        // Tab moves the selection through the elements on this page.
+        const list = state.current.present.nodes.filter((n) => onCurrentPage(n));
+        if (!list.length) return;
+        e.preventDefault();
+        const at = list.findIndex((n) => n.id === selected);
+        const next = list[(at + (e.shiftKey ? list.length - 1 : 1) + (at < 0 && e.shiftKey ? 1 : 0)) % list.length];
+        setSelected(next.id);
+        document.querySelector<HTMLElement>(`[data-node-id="${next.id}"]`)?.scrollIntoView({ block: "nearest" });
       } else if (mod && (e.code === "BracketRight" || e.code === "BracketLeft")) {
         e.preventDefault();
         layer(e.code === "BracketRight" ? (e.altKey ? "front" : "forward") : e.altKey ? "back" : "backward");
@@ -912,7 +1028,10 @@ export default function App() {
       report(labels[n.type] + "不能是空白，已保留原文字。", true);
       return;
     }
-    if (!patch(id, { content: n.type === "button" ? value.slice(0, 120) : value.slice(0, 2000) }))
+    const content = n.type === "button" ? value.slice(0, 120) : value.slice(0, 2000);
+    const current = state.current.present;
+    const typed = { ...current, nodes: current.nodes.map((v) => (v.id === id ? { ...v, content } : v)) };
+    if (!change(withFittedText(typed, [id], { [id]: content })))
       report("內容無法套用，已保留原文字。", true);
   }
   function begin(e: React.PointerEvent, n: CanvasNode) {
@@ -1351,6 +1470,7 @@ node ? (
           )}
         </div>
       </header>
+      {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
       {briefOpen && mode === "draft" && (
         <BriefPanel
           initial={spec.metadata.brief}
@@ -1466,6 +1586,7 @@ node ? (
                       ))}
                     </select>
                   </label>
+                  <button type="button" className="shortcuts-button" title="所有快捷鍵（?）" onClick={() => setShortcutsOpen(true)}>快捷鍵</button>
                   <button
                     className="format-brush"
                     aria-pressed={brush}
@@ -1485,6 +1606,30 @@ node ? (
                   </button>
                 </div>
               </div>
+              <div className="text-toolbar-slot">{(() => {
+                const targets = textTargets();
+                // The row is always there (no jumping canvas); without text selected it explains itself.
+                if (!targets.length || cropping)
+                  return (
+                    <div className="text-toolbar is-idle" role="note">
+                      {cropping
+                        ? "拖曳移動照片、滾輪縮放，按「完成」套用。"
+                        : selectedNodes.some((n) => n.type === "image")
+                          ? "圖片：右側可以換相框、濾鏡；雙擊照片可以調整裁切。"
+                          : "點一下文字，這裡就能改字型、大小、顏色和粗體。"}
+                    </div>
+                  );
+                const first = targets[0];
+                return (
+                  <TextToolbar
+                    style={first.textStyle ?? {}}
+                    type={first.type}
+                    count={targets.length}
+                    themeColors={[]}
+                    onChange={(patch) => styleText(patch)}
+                  />
+                );
+              })()}</div>
               <div className="page-tabs" role="tablist" aria-label="網站頁面">
                 {(pagesList ?? [{ id: "single", name: "首頁" }]).map((p) => {
                   const active = (currentPage ?? "single") === p.id;
@@ -1614,6 +1759,7 @@ node ? (
                             top: n.y,
                             width: n.width,
                             height: n.height,
+                            ...textCss(n.textStyle, false),
                           }}
                           onFocus={() => {if(!selectedIds.includes(n.id))selectNode(n.id);}}
                           onDoubleClick={(e) => { e.stopPropagation(); startEditing(n); }}
@@ -1749,6 +1895,12 @@ node ? (
                               onKeyDown={(e) => {
                                 e.stopPropagation();
                                 if (e.key === "Escape") { e.preventDefault(); editCancelled.current = true; (e.currentTarget.parentElement as HTMLElement)?.focus(); }
+                                if ((e.ctrlKey || e.metaKey) && ["b", "i", "u"].includes(e.key.toLowerCase())) {
+                                  e.preventDefault();
+                                  const key = ({ b: "bold", i: "italic", u: "underline" } as const)[e.key.toLowerCase() as "b" | "i" | "u"];
+                                  styleText({ [key]: n.textStyle?.[key] ? undefined : true }, [n.id]);
+                                  return;
+                                }
                                 // Headings and buttons are one line: Enter saves. Longer text: Ctrl/Cmd+Enter saves.
                                 else if (e.key === "Enter" && !e.nativeEvent.isComposing && ((n.type === "heading" || n.type === "button") ? !e.shiftKey : e.ctrlKey || e.metaKey)) { e.preventDefault(); e.currentTarget.blur(); }
                               }}
@@ -1760,6 +1912,8 @@ node ? (
                               ))}
                               <b>送出</b>
                             </span>
+                          ) : n.textStyle?.highlight ? (
+                            <span className="text-mark">{n.content}</span>
                           ) : (
                             n.content
                           )}
