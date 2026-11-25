@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import { test, expect } from "@playwright/test";
 import { pageAction, openPanel, editSelection } from "./helpers/workbench";
 import { execFile } from "node:child_process";
@@ -180,7 +181,7 @@ test("JPEG downscales to a re-encoded JPEG and replacing refs revokes object URL
     .poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth))
     .toBe(1600);
   const previous = await image.getAttribute("src");
-  await page.getByLabel("草稿圖片素材").selectOption("/assets/workspace.svg");
+  await choose(page.getByLabel("草稿圖片素材"), "/assets/workspace.svg");
   await expect
     .poll(() =>
       page.evaluate(

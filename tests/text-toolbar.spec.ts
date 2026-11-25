@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import { test, expect } from "@playwright/test";
 // Text toolbar and shortcuts: font, size, colour, emphasis and alignment carry to the site.
 test("text toolbar, text shortcuts and the shortcuts panel", async ({ page }) => {
@@ -17,7 +18,7 @@ test("text toolbar, text shortcuts and the shortcuts panel", async ({ page }) =>
   await heading.click();
   const bar = page.getByRole("toolbar", { name: "文字樣式" });
   await expect(bar).toBeVisible();
-  await bar.getByLabel("字型").selectOption("serif");
+  await choose(bar.getByLabel("字型"), "serif");
   await bar.getByRole("button", { name: "字變大" }).click();
   await expect(bar.getByLabel("字級大小")).toHaveValue("36");
   await bar.getByRole("button", { name: "文字顏色" }).click();

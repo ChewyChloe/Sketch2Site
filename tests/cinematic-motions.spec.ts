@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import { test, expect, type Page } from '@playwright/test';
 import { cinematicMotionIds, motionCatalog } from '../src/motionCatalog';
 import { cinematicSampleControls } from '../src/cinematicSamples';
@@ -163,10 +164,10 @@ for (const id of cinematicMotionIds)
         if (id === 'text-morph-transition')
             await page.getByLabel('目標文字', { exact: true }).fill('設計成真');
         if (id === 'cursor-image-follower')
-            await page.getByLabel('預覽圖片', { exact: true }).selectOption('/assets/workspace.svg');
+            await choose(page.getByLabel('預覽圖片', { exact: true }), '/assets/workspace.svg');
         if (id === 'scroll-image-sequence')
             for (const frame of ['/assets/sequence/frame-01.svg', '/assets/sequence/frame-02.svg', '/assets/sequence/frame-03.svg'])
-                await page.getByLabel('序列影格新增影格', { exact: true }).selectOption(frame);
+                await choose(page.getByLabel('序列影格新增影格', { exact: true }), frame);
         if (Object.values(motionCatalog[id].controls).some(c => c.required))
             await page.getByRole('button', { name: '確認附加動畫', exact: true }).click();
         await expect(el).toHaveAttribute('data-effects', id);

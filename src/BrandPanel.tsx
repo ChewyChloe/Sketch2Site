@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Select } from "./Select";
 import { brandRadii, radiusLabels, radiusPx, contrast, fixContrast, fontIds, fontLabels, fontStacks, inkOn, latinFontIds, latinFontLabels, latinFontStacks, smartPalette, type Brand, type FontId, type LatinFontId } from "./pageSpec";
 
 const weightLabels: Record<number, string> = { 400: "一般", 500: "中等", 600: "半粗", 700: "粗", 800: "特粗", 900: "最粗" };
@@ -55,26 +56,16 @@ export function BrandPanel({
     set(b.secondary || b.accent || b.neutral ? { primary: color } : { primary: color, ...smartPalette(color) });
   };
   const cjkSelect = (key: "headingFont" | "bodyFont", label: string) => (
-    <label className="brand-font">
+    <div className="brand-font">
       <span>{label}</span>
-      <select aria-label={label} value={b[key] ?? ""} style={b[key] ? { fontFamily: fontStacks[b[key]!] } : undefined} onChange={(e) => set({ [key]: (e.target.value || undefined) as FontId | undefined })}>
-        <option value="">跟著主題</option>
-        {fontIds.map((f) => (
-          <option key={f} value={f} style={{ fontFamily: fontStacks[f] }}>{fontLabels[f]}</option>
-        ))}
-      </select>
-    </label>
+      <Select label={label} value={b[key] ?? ""} buttonStyle={b[key] ? { fontFamily: fontStacks[b[key]!] } : undefined} onChange={(v) => set({ [key]: (v || undefined) as FontId | undefined })} options={[{ value: "", label: "跟著主題" }, ...fontIds.map((f) => ({ value: f, label: fontLabels[f], style: { fontFamily: fontStacks[f] } }))]} />
+    </div>
   );
   const latinSelect = (key: "headingFontLatin" | "bodyFontLatin", label: string) => (
-    <label className="brand-font">
+    <div className="brand-font">
       <span>{label}</span>
-      <select aria-label={label} value={b[key] ?? ""} style={b[key] ? { fontFamily: latinFontStacks[b[key]!] } : undefined} onChange={(e) => set({ [key]: (e.target.value || undefined) as LatinFontId | undefined })}>
-        <option value="">跟中文一樣</option>
-        {latinFontIds.map((f) => (
-          <option key={f} value={f} style={{ fontFamily: latinFontStacks[f] }}>{latinFontLabels[f]}</option>
-        ))}
-      </select>
-    </label>
+      <Select label={label} value={b[key] ?? ""} buttonStyle={b[key] ? { fontFamily: latinFontStacks[b[key]!] } : undefined} onChange={(v) => set({ [key]: (v || undefined) as LatinFontId | undefined })} options={[{ value: "", label: "跟中文一樣" }, ...latinFontIds.map((f) => ({ value: f, label: latinFontLabels[f], style: { fontFamily: latinFontStacks[f] } }))]} />
+    </div>
   );
   const [uploading, setUploading] = useState<"logo" | "logoAlt" | "icon" | null>(null);
   const logoPicker = (key: "logo" | "logoAlt" | "icon", name: string, hint: string) => (
@@ -175,14 +166,8 @@ export function BrandPanel({
             return (
               <div key={k} className="brand-type-row">
                 <span>{name}</span>
-                <select aria-label={name + "字級"} value={b.type?.[sizeKey] ?? ""} onChange={(e) => set({ type: { ...b.type, [sizeKey]: e.target.value ? Number(e.target.value) : undefined } })}>
-                  <option value="">跟著主題</option>
-                  {sizes.map((v) => <option key={v} value={v}>{v} px</option>)}
-                </select>
-                <select aria-label={name + "粗細"} value={b.type?.[weightKey] ?? ""} onChange={(e) => set({ type: { ...b.type, [weightKey]: e.target.value ? Number(e.target.value) : undefined } as Brand["type"] })}>
-                  <option value="">跟著主題</option>
-                  {weights.map((v) => <option key={v} value={v}>{weightLabels[v]}</option>)}
-                </select>
+                <Select label={name + "字級"} value={String(b.type?.[sizeKey] ?? "")} onChange={(v) => set({ type: { ...b.type, [sizeKey]: v ? Number(v) : undefined } })} options={[{ value: "", label: "跟著主題" }, ...sizes.map((v) => ({ value: String(v), label: v + " px" }))]} />
+                <Select label={name + "粗細"} value={String(b.type?.[weightKey] ?? "")} onChange={(v) => set({ type: { ...b.type, [weightKey]: v ? Number(v) : undefined } as Brand["type"] })} options={[{ value: "", label: "跟著主題" }, ...weights.map((v) => ({ value: String(v), label: weightLabels[v] }))]} />
               </div>
             );
           })}

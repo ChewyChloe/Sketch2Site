@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import { test, expect } from "@playwright/test";
 // Brand kit: colours, fonts and a logo set once and applied to the generated site.
 test("brand kit colours, fonts and logo reach the site", async ({ page }) => {
@@ -20,10 +21,10 @@ test("brand kit colours, fonts and logo reach the site", async ({ page }) => {
   await main.getByRole("button", { name: "幫我調清楚" }).click();
   await expect(main.locator(".brand-contrast")).toContainText("清楚");
   await kit.getByLabel("主色", { exact: true }).fill("#ffc53d");
-  await kit.getByLabel("標題中文字型").selectOption("serif");
-  await kit.getByLabel("標題英文字型").selectOption("serif");
-  await kit.getByLabel("內文中文字型").selectOption("rounded");
-  await kit.getByLabel("內文英文字型").selectOption("geometric");
+  await choose(kit.getByLabel("標題中文字型"), "serif");
+  await choose(kit.getByLabel("標題英文字型"), "serif");
+  await choose(kit.getByLabel("內文中文字型"), "rounded");
+  await choose(kit.getByLabel("內文英文字型"), "geometric");
   await kit.getByLabel("上傳標誌圖片").setInputFiles("public/assets/samples/camera.jpg");
   await expect(kit.getByRole("button", { name: "使用這張圖當標誌" })).toHaveAttribute("aria-pressed", "true");
   await expect(kit.locator(".brand-preview-button")).toHaveCSS("background-color", "rgb(255, 197, 61)");

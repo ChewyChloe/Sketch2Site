@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import {test,expect} from '@playwright/test';
 import {PageSchema} from '../src/pageSpec';
 import {createMotion} from '../src/motion';
@@ -14,5 +15,5 @@ for(const width of [1002,375])test(`long Chinese text actually follows visible c
  for(const svg of await curve.locator('svg').all()){await expect.poll(()=>svg.evaluate(el=>el.getAnimations().filter(a=>a.playState==='running').length)).toBe(0);await expect(svg).toHaveCSS('opacity','1');}
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/curve-fixed-${width}.png`});
- const rows=await curve.locator('textPath').count();for(const scale of ['0.75','0.5','1']){await page.getByLabel('預覽縮放').selectOption(scale);await expect(curve.locator('textPath')).toHaveCount(rows);expect((await curve.locator('textPath').allTextContents()).join('')).toBe(text);}
+ const rows=await curve.locator('textPath').count();for(const scale of ['0.75','0.5','1']){await choose(page.getByLabel('預覽縮放'), scale);await expect(curve.locator('textPath')).toHaveCount(rows);expect((await curve.locator('textPath').allTextContents()).join('')).toBe(text);}
 });

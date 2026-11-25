@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { fontIds, fontLabels, fontStacks, type TextStyle } from "./pageSpec";
+import { Select } from "./Select";
 
 // Text toolbar above the canvas (shown when text is selected): font, size,
 // colour, highlight, bold / italic / underline / strike, alignment and spacing.
@@ -65,15 +66,9 @@ export function TextToolbar({ style, type, count, onChange, themeColors }: { sty
   return (
     <div className="text-toolbar" role="toolbar" aria-label="文字樣式">
       {count > 1 && <span className="tt-count" style={{ display: "inline" }}>{count} 段文字</span>}
-      <label className="tt-font">
-        <span className="visually-hidden">字型</span>
-        <select aria-label="字型" title="字型" value={style.font ?? ""} style={style.font ? { fontFamily: fontStacks[style.font] } : undefined} onChange={(e) => onChange({ font: (e.target.value || undefined) as TextStyle["font"] })}>
-          <option value="">預設字型</option>
-          {fontIds.map((f) => (
-            <option key={f} value={f} style={{ fontFamily: fontStacks[f] }}>{fontLabels[f]}</option>
-          ))}
-        </select>
-      </label>
+      <div className="tt-font">
+        <Select label="字型" title="字型" value={style.font ?? ""} buttonStyle={style.font ? { fontFamily: fontStacks[style.font] } : undefined} onChange={(v) => onChange({ font: (v || undefined) as TextStyle["font"] })} options={[{ value: "", label: "預設字型" }, ...fontIds.map((f) => ({ value: f, label: fontLabels[f], style: { fontFamily: fontStacks[f] } }))]} />
+      </div>
       <div className="tt-size" role="group" aria-label="字級">
         <button type="button" aria-label="字變小" title={`字變小（${mod}+Shift+<）`} onClick={() => onChange({ size: stepSize(size, false) })}>−</button>
         <input

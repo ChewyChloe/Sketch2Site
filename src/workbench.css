@@ -1648,3 +1648,28 @@ button:has(> .x-icon:only-child) { display: inline-grid !important; place-items:
 .text-toolbar .tt-custom input { width: 48px; height: 32px; min-height: 32px !important; }
 /* Brand: space between the suggestion row and the colour roles. */
 .brand-suggest { margin: 4px 0 16px !important; }
+/* ===== App dropdown (replaces native selects) ===== */
+.ui-select { position: relative; display: inline-flex; min-width: 0; max-width: 100%; }
+.ui-select-button { display: inline-flex !important; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 40px; padding: 0 10px 0 14px !important; border: 2px solid #0d0e11; border-radius: 12px; background: #fff; color: #0d0e11; font: inherit; font-size: 14px; font-weight: 700; text-align: left; cursor: pointer; }
+.ui-select-button:disabled { opacity: .5; cursor: not-allowed; }
+.ui-select-button:focus-visible { outline: 3px solid #10e560; outline-offset: 2px; }
+.ui-select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-select-button svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; transition: transform .15s; }
+.ui-select-button[aria-expanded="true"] svg { transform: rotate(180deg); }
+.ui-select-list { z-index: 200; margin: 0; padding: 6px; list-style: none; overflow-y: auto; background: #fff; color: #0d0e11; border: 2px solid #0d0e11; border-radius: 14px; box-shadow: 4px 4px 0 #0d0e11, 0 16px 40px rgb(13 14 17 / .18); }
+.ui-select-list li { display: grid; grid-template-columns: minmax(0, 1fr) 18px; align-items: center; column-gap: 10px; min-height: 40px; padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.ui-select-list li small { grid-column: 1; font-size: 12px; font-weight: 500; color: #62655f; white-space: normal; }
+.ui-select-list li svg { grid-column: 2; grid-row: 1; width: 16px; height: 16px; fill: none; stroke: #087b36; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.ui-select-list li.is-active { background: #f1f1ec; }
+.ui-select-list li[aria-selected="true"] { background: #e3fbe9; }
+.ui-select-list li[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+/* Dark panels (inspector, sidebar). */
+.neo-inspector .ui-select-button, .neo-workspace > .sidebar .ui-select-button { background: #1a1d21; color: #f7f6f2; border: 1px solid #3a3f45; }
+/* Zoom in the dark canvas tool bar: label and menu on one line. */
+.canvas-tools label:has(.zoom-select) { display: inline-flex !important; flex-direction: row !important; align-items: center; gap: 6px; white-space: nowrap; }
+.canvas-tools .zoom-select .ui-select-button { min-height: 32px; height: 32px; padding: 0 8px 0 10px !important; border: 1px solid #3a3f45; border-radius: 10px; background: transparent; color: #f7f6f2; font-size: 13px; }
+.ui-select-list { position: fixed; top: 0; left: 0; width: max-content; max-width: min(360px, calc(100vw - 16px)); }
+/* Compact dropdown inside tool bars (keeps the bar one row on phones). */
+.compact-select .ui-select-button { min-height: 32px; height: 32px; padding: 0 6px 0 10px !important; gap: 4px; border: 1px solid #c9ccc4; border-radius: 10px; font-size: 13px; }
+.visual-tools .compact-select { flex: none; }
+@media (max-width: 760px) { .compact-select .ui-select-button { padding: 0 4px 0 8px !important; gap: 2px; font-size: 12px; } .compact-select .ui-select-button svg { width: 13px; height: 13px; } .visual-tools { column-gap: 4px !important; } }

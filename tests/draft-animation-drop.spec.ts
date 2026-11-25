@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import {test,expect} from '@playwright/test';
 async function setup(page:import('@playwright/test').Page){
  await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');
@@ -31,6 +32,6 @@ test('draft drag explains incompatible button and highlights compatible card wit
 test('animation dropped on blank draft asks for an existing target rather than creating sample content',async({page})=>{
  const canvas=await setup(page);await page.locator('.sidebar [data-effect-id="fade-in"] .asset-preview').dragTo(canvas,{targetPosition:{x:700,y:500}});
  await expect(page.getByLabel('動畫附加對象')).toBeVisible();await expect(page.getByTestId('canvas-node')).toHaveCount(3);
- const card=page.locator('.canvas .node.card');await page.getByLabel('動畫附加對象').selectOption((await card.getAttribute('data-node-id'))!);
+ const card=page.locator('.canvas .node.card');await choose(page.getByLabel('動畫附加對象'), (await card.getAttribute('data-node-id'))!);
  await page.getByRole('button',{name:'加上動畫',exact:true}).click();await expect(card.locator('.effect-tags')).toContainText('淡入');
 });

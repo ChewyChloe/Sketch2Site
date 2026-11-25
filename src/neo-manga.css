@@ -578,3 +578,10 @@ body{background:var(--neo-cream)}
 /* Sidebar tabs fill the whole pill evenly. */
 .neo-workspace .sidebar .tabs { display: grid !important; grid-template-columns: repeat(3, 1fr); }
 .neo-workspace .sidebar .tabs button { width: 100%; justify-content: center; text-align: center; }
+/* Top bar menus always sit above the canvas and its floating text toolbar. */
+.topbar { position: relative; z-index: 120 !important; }
+.topbar .workbench-menu-content { z-index: 130; }
+/* The page frame: a quiet label so it is clear this box is the website. */
+.canvas-wrap { position: relative; }
+.page-frame-label { position: absolute; left: 0; top: -30px; padding: 3px 10px; border-radius: 999px; background: #0d0e11; color: #f7f6f2; font-size: 12px; font-weight: 800; letter-spacing: .02em; pointer-events: none; }
+@media (max-width: 760px) { .page-frame-label { top: -26px; font-size: 11px; } }

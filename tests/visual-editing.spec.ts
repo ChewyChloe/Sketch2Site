@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import {
   pageAction,
@@ -68,7 +69,7 @@ async function marquee(page: Page, zoom = "1") {
   if (await page.getByRole("button", { name: "取消選取", exact: true }).count())
     await page.getByRole("button", { name: "取消選取", exact: true }).click();
   await page.getByRole("button", { name: "選取", exact: true }).click();
-  await page.getByLabel("預覽縮放").selectOption(zoom);
+  await choose(page.getByLabel("預覽縮放"), zoom);
   const root = (await page.getByTestId("visual-surface").boundingBox())!;
   const h = (await node(page, 2).boundingBox())!,
     p = (await node(page, 3).boundingBox())!;
@@ -100,7 +101,7 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
     "true",
   );
   await editSelection(page);
-  await page.getByLabel("元素對齊").selectOption("center");
+  await choose(page.getByLabel("元素對齊"), "center");
   await editSelection(page);
   await page.getByLabel("標題文字").fill("清楚呈現我的作品");
   await page.getByRole("button", { name: "套用", exact: true }).click();
@@ -134,7 +135,7 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
     await page.keyboard.press("Escape");
     await expect(page.locator("[data-page-selected]")).toHaveCount(0);
   }
-  await page.getByLabel("預覽縮放").selectOption("1");
+  await choose(page.getByLabel("預覽縮放"), "1");
   await node(page, 2).click();
   const scroll = (await page.locator(".preview-scroll").boundingBox())!;
   await page.mouse.click(scroll.x + 2, scroll.y + 2);
@@ -152,7 +153,7 @@ test("畫筆、撤銷清除、縮放與瀏覽互動；註記不進入 PageSpec",
   const external = await setup(page),
     before = await record(page);
   await page.getByRole("button", { name: "畫筆", exact: true }).click();
-  await page.getByLabel("預覽縮放").selectOption("0.5");
+  await choose(page.getByLabel("預覽縮放"), "0.5");
   const root = (await page.getByTestId("visual-surface").boundingBox())!;
   await page.mouse.move(root.x + 20, root.y + 20);
   await page.mouse.down();
@@ -167,7 +168,7 @@ test("畫筆、撤銷清除、縮放與瀏覽互動；註記不進入 PageSpec",
   await page.getByRole("button", { name: "撤銷註記", exact: true }).click();
   await expect(stroke).toHaveCount(1);
   expect(await record(page)).toEqual(before);
-  await page.getByLabel("預覽縮放").selectOption("1");
+  await choose(page.getByLabel("預覽縮放"), "1");
   await expect(stroke).toHaveCount(1);
   await page.setViewportSize({ width: 1440, height: 650 });
   await node(page, 4).scrollIntoViewIfNeeded();
@@ -207,8 +208,10 @@ test("動畫拖放、相容性、替換移除、Undo/Redo 與實際播放", asyn
   await expect(page.getByRole("alert")).toContainText("不適用於目前元件");
   await expect(node(page, 2)).toHaveAttribute("data-effects", "slide-up");
   await editSelection(page);
-  await expect(page.getByLabel("更換向上滑入").locator('option[value="scale-in"]')).toBeDisabled();
-  await page.getByLabel("更換向上滑入").selectOption("fade-in");
+  await page.getByLabel("更換向上滑入").click();
+  await expect(page.locator('.ui-select-list [role="option"][data-value="scale-in"]')).toHaveAttribute("aria-disabled", "true");
+  await page.keyboard.press("Escape");
+  await choose(page.getByLabel("更換向上滑入"), "fade-in");
   await expect(node(page, 2)).toHaveAttribute("data-effects", "fade-in");
   await page.getByRole("button", { name: "移除淡入", exact: true }).click();
   await expect(node(page, 2)).toHaveAttribute("data-effects", "");

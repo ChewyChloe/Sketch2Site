@@ -5,6 +5,7 @@ import { tabNavigation } from "./tabNavigation";
 import { importImage, assetErrorMessage } from "./assets";
 import { useAssetRefs } from "./useAssetUrls";
 import { createPortal } from "react-dom";
+import { Select } from "./Select";
 import { WorkbenchMenu } from "./WorkbenchMenu";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { AnimationLibrary } from "./AnimationLibrary";
@@ -694,15 +695,13 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
             </>
           )}
         </div>
-        <select
-          aria-label="預覽縮放"
+        <Select
+          className="zoom-select compact-select"
+          label="預覽縮放"
           value={zoom}
-          onChange={(e) => setZoom(e.target.value)}
-        >
-          <option value="1">100%</option>
-          <option value="0.75">75%</option>
-          <option value="0.5">50%</option>
-        </select>
+          onChange={(v: string) => setZoom(v)}
+options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { value: "0.5", label: "50%" }]}
+/>
         <WorkbenchMenu label="檢視">
           <div className="device-controls">
             <button
@@ -1108,30 +1107,24 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                     {node.type === "heading" && (
                       <label className="field">
                         標題層級
-                        <select
-                          aria-label="標題層級"
+                        <Select
+                          label="標題層級"
                           value={level}
-                          onChange={(e) => setLevel(e.target.value)}
-                        >
-                          <option value="1">主標題（大）</option>
-                          <option value="2">章節標題（中）</option>
-                          <option value="3">小標題</option>
-                        </select>
+                          onChange={(v: string) => setLevel(v)}
+options={[{ value: "1", label: "主標題（大）" }, { value: "2", label: "章節標題（中）" }, { value: "3", label: "小標題" }]}
+/>
                       </label>
                     )}
                     <label className="field">
                       對齊
-                      <select
-                        aria-label="元素對齊"
+                      <Select
+                        label="元素對齊"
                         value={align}
-                        onChange={(e) =>
-                          setAlign(e.target.value as typeof align)
+                        onChange={(v: string) =>
+                          setAlign(v as typeof align)
                         }
-                      >
-                        <option value="start">靠左</option>
-                        <option value="center">置中</option>
-                        <option value="end">靠右</option>
-                      </select>
+options={[{ value: "start", label: "靠左" }, { value: "center", label: "置中" }, { value: "end", label: "靠右" }]}
+/>
                     </label>
                   </form>
                 </>
@@ -1139,10 +1132,10 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                   <div className="image-controls">
                     <label className="field">
                       圖片素材
-                      <select
-                        aria-label="頁面圖片素材"
-                        value={node.src}
-                        onChange={(e) =>
+                      <Select
+                        label="頁面圖片素材"
+                        value={node.src ?? ""}
+                        onChange={(v: string) =>
                           patch(
                             [
                               {
@@ -1150,23 +1143,15 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                                 targetId: node.id,
                                 payload: {
                                   property: "src",
-                                  value: e.target.value,
+                                  value: v,
                                 },
                               },
                             ],
                             node.id,
                           )
                         }
-                      >
-                        <option value="/assets/workspace.svg">
-                          內建示意圖
-                        </option>
-                        {localImages.map((ref, index) => (
-                          <option key={ref} value={ref}>
-                            本機圖片 {index + 1}
-                          </option>
-                        ))}
-                      </select>
+options={[{ value: "/assets/workspace.svg", label: "示意圖" }, ...localImages.map((ref, index) => ({ value: ref, label: "我的照片 " + (index + 1) }))]}
+/>
                     </label>
                     <button
                       disabled={importingImage}
@@ -1219,12 +1204,11 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                     <div className="effect-edit-row" key={effect.presetId}>
                       <label className="field">
                         {effectLabels[effect.presetId]}
-                        <select
-                          aria-label={"更換" + effectLabels[effect.presetId]}
+                        <Select
+                          label={"更換" + effectLabels[effect.presetId]}
                           value={effect.presetId}
-                          onChange={(e) => {
-                            const effectId = e.target
-                              .value as (typeof effectIds)[number];
+                          onChange={(v: string) => {
+                            const effectId = v as (typeof effectIds)[number];
                             if (!effectCompatible(node, effectId)) {
                               setPatchError(true);
                               setNotice(targetReason(node,effectId)??"此效果不適用於目前元件");
@@ -1247,13 +1231,8 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                               node.id,
                             );
                           }}
-                        >
-                          {effectIds.filter(id=>motionCatalog[id].status==="DONE").map((id) => (
-                            <option key={id} value={id} disabled={!effectCompatible(node,id)}>
-                              {effectLabels[id]}
-                            </option>
-                          ))}
-                        </select>
+options={effectIds.filter((id) => motionCatalog[id].status === "DONE").map((id) => ({ value: id, label: effectLabels[id], disabled: !effectCompatible(node, id) }))}
+/>
                       </label>
                       {effect.presetVersion===1 ? <MotionControlsFields id={effect.presetId} values={motionEdits[effect.presetId]??effect.validatedControls} onChange={values=>setMotionEdits(previous=>({...previous,[effect.presetId]:values}))}/> :
                         <label className="field">

@@ -6,7 +6,7 @@ test("pinch and double-tap zoom the draft canvas on phones", async ({ page }) =>
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   const zoom = page.getByLabel("畫布縮放");
-  await expect(zoom).toHaveValue("fit");
+  await expect(zoom).toHaveAttribute("data-value", "fit");
   const width = async () => (await page.getByTestId("canvas").boundingBox())!.width;
   const fitWidth = await width();
   // Two fingers moving apart.
@@ -19,19 +19,19 @@ test("pinch and double-tap zoom the draft canvas on phones", async ({ page }) =>
     fire("touchend", []);
   });
   await expect.poll(width).toBeGreaterThan(fitWidth * 2);
-  await expect(zoom).not.toHaveValue("fit");
+  await expect(zoom).not.toHaveAttribute("data-value", "fit");
   // Double tap on empty canvas goes back to fit.
   await page.locator(".canvas-scroll").evaluate((el) => {
     const r = el.getBoundingClientRect();
     const tap = () => { const t = [new Touch({ identifier: 0, target: el, clientX: r.left + 10, clientY: r.top + 10 })]; el.dispatchEvent(new TouchEvent("touchstart", { touches: t, targetTouches: t, changedTouches: t, bubbles: true, cancelable: true })); el.dispatchEvent(new TouchEvent("touchend", { touches: [], changedTouches: t, bubbles: true })); };
     tap(); tap();
   });
-  await expect(zoom).toHaveValue("fit");
+  await expect(zoom).toHaveAttribute("data-value", "fit");
   // And once more to zoom in to a readable size.
   await page.locator(".canvas-scroll").evaluate((el) => {
     const r = el.getBoundingClientRect();
     const tap = () => { const t = [new Touch({ identifier: 0, target: el, clientX: r.left + 10, clientY: r.top + 10 })]; el.dispatchEvent(new TouchEvent("touchstart", { touches: t, targetTouches: t, changedTouches: t, bubbles: true, cancelable: true })); el.dispatchEvent(new TouchEvent("touchend", { touches: [], changedTouches: t, bubbles: true })); };
     tap(); tap();
   });
-  await expect(zoom).toHaveValue("0.6");
+  await expect(zoom).toHaveAttribute("data-value", "0.6");
 });

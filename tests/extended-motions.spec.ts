@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { extendedMotionFixture, extendedMotionId, extendedMotionNames, extendedMotionNodeIds, extendedMotionText } from './fixtures/extendedMotions';
@@ -184,13 +185,13 @@ for (const id of effects) test(`${id}: actual drag patch, parameter apply, undo,
     await target.click({ position: { x: 4, y: 4 } });
     await editSelection(page);
     const [label, value, original] = parameters[id], input = page.getByLabel(label, { exact: true });
-    if (id === 'image-reveal') await input.selectOption(value); else await input.fill(value);
+    if (id === 'image-reveal') await choose(input, value); else await input.fill(value);
     await page.getByRole('button', { name: '套用', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('已套用');
     await page.getByRole('button', { name: '撤銷修改' }).click();
-    await expect(input).toHaveValue(original);
+    if (id === 'image-reveal') await expect(input).toHaveAttribute('data-value', original); else await expect(input).toHaveValue(original);
     await page.getByRole('button', { name: '重做修改' }).click();
-    await expect(input).toHaveValue(value);
+    if (id === 'image-reveal') await expect(input).toHaveAttribute('data-value', value); else await expect(input).toHaveValue(value);
     await expect(page.getByTestId('page-save-status')).toHaveText('已儲存');
     await page.reload();
     await openWebsiteWorkspace(page);
@@ -198,7 +199,7 @@ for (const id of effects) test(`${id}: actual drag patch, parameter apply, undo,
     await page.getByRole('button', { name: '選取', exact: true }).click();
     await node(page, id).click({ position: { x: 4, y: 4 } });
     await editSelection(page);
-    await expect(page.getByLabel(label, { exact: true })).toHaveValue(value);
+    if (id === 'image-reveal') await expect(page.getByLabel(label, { exact: true })).toHaveAttribute('data-value', value); else await expect(page.getByLabel(label, { exact: true })).toHaveValue(value);
     check();
 });
 

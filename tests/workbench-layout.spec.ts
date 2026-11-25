@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
 import { writeFileSync } from "node:fs";
@@ -166,7 +167,7 @@ for (const width of [1440, 768, 375])
     await expect(heading).toHaveAttribute("data-effects", "slide-up");
     await editSelection(page);
     await page.getByLabel("標題文字").fill("讓作品清楚地被看見");
-    await page.getByLabel("元素對齊").selectOption("center");
+    await choose(page.getByLabel("元素對齊"), "center");
     await page.getByLabel("向上滑入時長").fill("700");
     await page.getByRole("button", { name: "套用", exact: true }).click();
     await expect(heading).toHaveText("讓作品清楚地被看見");

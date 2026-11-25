@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import { test, expect, type Page, type Locator } from "@playwright/test";
 async function ready(page: Page) {
   await page.goto("/");
@@ -21,7 +22,7 @@ async function drag(
 test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ page }) => {
   await ready(page);
   // Pixel expectations below are written for a fixed 60% zoom (default is now fit-width).
-  await page.getByLabel("畫布縮放").selectOption("0.6");
+  await choose(page.getByLabel("畫布縮放"), "0.6");
   const canvas = page.getByTestId("canvas");
   // Actual browser mouse drag from library into canvas.
   await page
@@ -105,7 +106,7 @@ test("空白處動畫需選對象、縮放座標與窄視窗", async ({ page }) 
   await expect(
     page.getByRole("button", { name: "加上動畫", exact: true }),
   ).toBeDisabled();
-  await page.getByLabel("動畫附加對象").selectOption({ index: 1 });
+  await choose(page.getByLabel("動畫附加對象"), { index: 1 });
   await page.getByRole("button", { name: "加上動畫", exact: true }).click();
   await expect(page.getByTestId("canvas-node")).toContainText("淡入");
   await drag(
@@ -119,7 +120,7 @@ test("空白處動畫需選對象、縮放座標與窄視窗", async ({ page }) 
     "Stagger Reveal",
   );
 
-  await page.getByLabel("畫布縮放").selectOption("0.4");
+  await choose(page.getByLabel("畫布縮放"), "0.4");
   await page.getByRole("tab", { name: "元件", exact: true }).click();
   await drag(
     page,

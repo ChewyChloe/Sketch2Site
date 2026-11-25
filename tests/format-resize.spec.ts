@@ -1,9 +1,10 @@
+import { choose } from "./helpers/select";
 import { test, expect } from "@playwright/test";
 // Slide-editor style editing: resize handles, Ctrl/Cmd+Shift+C/V format copy, format brush.
 test("resize handles, format copy/paste and format brush", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
-  await page.getByLabel("畫布縮放").selectOption("1");
+  await choose(page.getByLabel("畫布縮放"), "1");
   for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "新增卡片", exact: true }).click();
   const nodes = page.getByTestId("canvas-node");
   const box = (i: number) => nodes.nth(i).evaluate((e) => [parseFloat((e as HTMLElement).style.left), parseFloat((e as HTMLElement).style.top), parseFloat((e as HTMLElement).style.width), parseFloat((e as HTMLElement).style.height)]);

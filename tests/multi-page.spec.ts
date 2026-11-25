@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import { test, expect } from "@playwright/test";
 test("multi-page site: page tabs, page links, accept, reload and delete", async ({ page }) => {
   await page.goto("/");
@@ -12,7 +13,7 @@ test("multi-page site: page tabs, page links, accept, reload and delete", async 
   await page.getByRole("tab", { name: "首頁" }).click();
   await expect(page.getByTestId("canvas-node")).toHaveCount(4);
   await page.locator('[data-testid="canvas-node"].button').click();
-  await page.getByLabel("連到頁面").selectOption({ label: "價目與報名" });
+  await choose(page.getByLabel("連到頁面"), { label: "價目與報名" });
   await page.getByRole("button", { name: "儲存草稿" }).click();
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
   const site = page.locator(".preview-frame .rendered-page:visible").first();

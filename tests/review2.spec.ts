@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
 import { openPanel, editSelection, viewAction } from "./helpers/workbench";
@@ -97,7 +98,7 @@ for (const width of [1440, 768, 375])
     ).toBeFocused();
     await expect(page.locator("[data-page-selected]")).toHaveCount(0);
     await page.getByRole("button", { name: "選取", exact: true }).click();
-    await page.getByLabel("預覽縮放").selectOption("0.5");
+    await choose(page.getByLabel("預覽縮放"), "0.5");
     await h.click();
     await expect(h).toHaveAttribute("data-page-selected", "true");
     const aligned = await h.evaluate((e) => {
@@ -111,7 +112,7 @@ for (const width of [1440, 768, 375])
     expect(aligned.width).toBeGreaterThan(30);
     expect(aligned.outline).toBe("solid");
     await page.keyboard.press("Escape");
-    await page.getByLabel("預覽縮放").selectOption("1");
+    await choose(page.getByLabel("預覽縮放"), "1");
     await page.getByRole("button", { name: "畫筆", exact: true }).click();
     const r = (await h.boundingBox())!;
     await page.mouse.move(r.x + 8, r.y + 8);
@@ -196,7 +197,7 @@ test("100-node drag preserves grab offset at 50/75% and can be cancelled", async
   const first = page.getByTestId("canvas-node").first();
   const samples = [];
   for (const scale of ["0.5", "0.75"]) {
-    await page.getByLabel("畫布縮放").selectOption(scale);
+    await choose(page.getByLabel("畫布縮放"), scale);
     const b = (await first.boundingBox())!,
       factor = Number(scale);
     const start = Date.now();

@@ -19,6 +19,7 @@ import { ShortcutsPanel } from "./ShortcutsPanel";
 import { AccountButton } from "./AccountButton";
 import { InspectorSection } from "./InspectorSection";
 import { PanelResizer } from "./PanelResizer";
+import { Select } from "./Select";
 import { BrandPanel } from "./BrandPanel";
 import { smartFocus } from "./smartCrop";
 import { CopySuggest } from "./CopySuggest";
@@ -1294,12 +1295,7 @@ node ? (
                         />
                       <label className="field insp-inline">
                         用哪張照片
-                        <select aria-label="草稿圖片素材" value={node.assetId ?? "/assets/workspace.svg"} onChange={(e) => patch(node.id, { assetId: e.target.value })}>
-                          <option value="/assets/workspace.svg">示意圖</option>
-                          {localImages.map((ref, index) => (
-                            <option key={ref} value={ref}>我的照片 {index + 1}</option>
-                          ))}
-                        </select>
+                        <Select label="草稿圖片素材" value={node.assetId ?? "/assets/workspace.svg"} onChange={(v) => patch(node.id, { assetId: v })} options={[{ value: "/assets/workspace.svg", label: "示意圖" }, ...localImages.map((ref, index) => ({ value: ref, label: "我的照片 " + (index + 1) }))]} />
                       </label>
                       <p className="note">PNG 或 JPEG，每張最多 5 MB，也可以直接把照片拖到相框上</p>
                       </InspectorSection>
@@ -1355,17 +1351,15 @@ node ? (
                     {node.type === "button" && pagesList && (
                       <label className="field">
                         連到頁面
-                        <select
-                          aria-label="連到頁面"
+                        <Select
+                          label="連到頁面"
                           value={pagesList.some((p) => "#" + p.id === node.href) ? node.href! : ""}
-                          onChange={(e) => {
-                            if (!e.target.value) return;
-                            if (patch(node.id, { href: e.target.value })) { setLinkDraft(e.target.value); setLinkError(""); report("按鈕會切換到「" + pagesList.find((p) => "#" + p.id === e.target.value)?.name + "」"); }
+                          onChange={(v) => {
+                            if (!v) return;
+                            if (patch(node.id, { href: v })) { setLinkDraft(v); setLinkError(""); report("按鈕會切換到「" + pagesList.find((p) => "#" + p.id === v)?.name + "」"); }
                           }}
-                        >
-                          <option value="">選擇網站中的頁面…</option>
-                          {pagesList.map((p) => <option key={p.id} value={"#" + p.id}>{p.name}</option>)}
-                        </select>
+                          options={[{ value: "", label: "選擇網站中的頁面…" }, ...pagesList.map((p) => ({ value: "#" + p.id, label: p.name }))]}
+                        />
                       </label>
                     )}
                     {node.type === "form" && (
@@ -1767,19 +1761,13 @@ node ? (
                   </button>
                   <label>
                     縮放{" "}
-                    <select
-                      aria-label="畫布縮放"
-                      value={zoom}
-                      onChange={(e) => setScale(e.target.value === "fit" ? "fit" : Number(e.target.value))}
-                    >
-                      <option value="fit">符合寬度</option>
-                      {typeof zoom === "number" && ![0.4, 0.5, 0.6, 0.75, 1].includes(zoom) && <option value={zoom}>{Math.round(zoom * 100)}%</option>}
-                      {[0.4, 0.5, 0.6, 0.75, 1].map((s) => (
-                        <option key={s} value={s}>
-                          {s * 100}%
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      label="畫布縮放"
+                      className="zoom-select"
+                      value={String(zoom)}
+                      onChange={(v) => setScale(v === "fit" ? "fit" : Number(v))}
+                      options={[{ value: "fit", label: "符合寬度" }, ...(typeof zoom === "number" && ![0.4, 0.5, 0.6, 0.75, 1].includes(zoom) ? [{ value: String(zoom), label: Math.round(zoom * 100) + "%" }] : []), ...[0.4, 0.5, 0.6, 0.75, 1].map((z) => ({ value: String(z), label: z * 100 + "%" }))]}
+                    />
                   </label>
                   
                   <button
@@ -1859,6 +1847,7 @@ node ? (
                   className="canvas-wrap"
                   style={{ width: 1440 * scale, height: spec.metadata.height * scale }}
                 >
+                  <span className="page-frame-label" aria-hidden="true">網頁範圍</span>
                   <div
                     ref={board}
                     className={"canvas" + (brush ? " brush-active" : "") + (scale < 0.45 ? " is-tiny" : "")}
@@ -2192,18 +2181,12 @@ node ? (
                 {pending && (
                   <div className="pending">
                     <strong>{effects[pending]} · 選擇附加對象</strong>
-                    <select
-                      aria-label="動畫附加對象"
+                    <Select
+                      label="動畫附加對象"
                       value={target}
-                      onChange={(e) => setTarget(e.target.value)}
-                    >
-                      <option value="">選擇元件</option>
-                      {spec.nodes.map((n) => (
-                        <option key={n.id} value={n.id}>
-                          {labels[n.type]} · {n.content.slice(0, 20)}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={setTarget}
+                      options={[{ value: "", label: "選擇元件" }, ...spec.nodes.map((n) => ({ value: n.id, label: labels[n.type] + " · " + n.content.slice(0, 20) }))]}
+                    />
                     {Object.values(motionCatalog[pending].controls).some(c=>c.required)&&<MotionControlsFields id={pending} values={pendingControls} onChange={setPendingControls}/>}
                     <button
                       disabled={!target}

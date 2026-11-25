@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import {writeFile} from "node:fs/promises";
 import { expect, test, type Page } from '@playwright/test';
 
@@ -34,7 +35,7 @@ for (const scale of [0.6, 0.75]) {
     await page.route('https://**/*', route => route.abort());
     await page.goto('/');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
-    await page.getByLabel('畫布縮放').selectOption(String(scale));
+    await choose(page.getByLabel('畫布縮放'), String(scale));
     const canvas = page.getByTestId('canvas');
     await page.getByRole('button', { name: '新增標題', exact: true }).dragTo(canvas, {
       targetPosition: { x: 100, y: 100 },

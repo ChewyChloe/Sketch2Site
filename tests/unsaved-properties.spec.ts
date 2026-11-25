@@ -1,3 +1,4 @@
+import { choose } from "./helpers/select";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
 import { fixture, id } from "./fixtures/workbench";
@@ -29,7 +30,7 @@ for (const width of [1440, 768, 375])
     });
     const input = page.getByLabel("標題文字");
     await input.fill("還沒套用的標題");
-    await page.getByLabel("元素對齊").selectOption("center");
+    await choose(page.getByLabel("元素對齊"), "center");
     await expect(page.getByTestId("page-save-status")).toHaveText("尚未套用");
     await expect(page.locator(`[data-page-id="${id(2)}"]`)).toHaveText(
       "我的設計作品",
@@ -48,7 +49,7 @@ for (const width of [1440, 768, 375])
     await page.locator(`[data-component-id="${id(3)}"]`).click();
     await editSelection(page);
     await expect(input).toHaveValue("還沒套用的標題");
-    await expect(page.getByLabel("元素對齊")).toHaveValue("center");
+    await expect(page.getByLabel("元素對齊")).toHaveAttribute("data-value", "center");
     page.once("dialog", (d) => d.dismiss());
     await page.keyboard.press("Escape");
     await expect(input).toHaveValue("還沒套用的標題");
@@ -230,8 +231,8 @@ test("duration-only edits are guarded and accepted Undo/Redo restores committed 
   await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
   await page.getByRole("button", { name: "重做修改" }).click();
   await expect(duration).toHaveValue(original);
-  await page.getByLabel("元素對齊").selectOption("center");
+  await choose(page.getByLabel("元素對齊"), "center");
   await expect(page.getByTestId("page-save-status")).toHaveText("尚未套用");
   await page.getByRole("button", { name: "捨棄修改", exact: true }).click();
-  await expect(page.getByLabel("元素對齊")).toHaveValue("start");
+  await expect(page.getByLabel("元素對齊")).toHaveAttribute("data-value", "start");
 });
