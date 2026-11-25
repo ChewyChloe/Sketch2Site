@@ -575,3 +575,6 @@ body{background:var(--neo-cream)}
 .panel-resizer-left { position: absolute; top: 0; bottom: 0; width: 10px; z-index: 25; }
 .panel-resizer-left .panel-resizer { left: 0; right: auto; }
 @media (max-width: 1250px) { .panel-resizer-left { display: none; } }
+/* Sidebar tabs fill the whole pill evenly. */
+.neo-workspace .sidebar .tabs { display: grid !important; grid-template-columns: repeat(3, 1fr); }
+.neo-workspace .sidebar .tabs button { width: 100%; justify-content: center; text-align: center; }

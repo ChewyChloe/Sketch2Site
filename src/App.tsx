@@ -1563,7 +1563,7 @@ node ? (
               aria-expanded={brandOpen}
               title="品牌色、字型和標誌，套用到整個網站"
               disabled={disabled || generating}
-              onClick={() => setBrandOpen((v) => !v)}
+              onClick={() => { setBriefOpen(false); setShortcutsOpen(false); setBrandOpen((v) => !v); }}
             >
               <span className="brand-dot" style={spec.metadata.brand?.primary ? { background: spec.metadata.brand.primary } : undefined} aria-hidden="true" />
               品牌
@@ -1575,7 +1575,7 @@ node ? (
               aria-expanded={briefOpen}
               title={spec.metadata.brief ? briefSentence({ ...emptyBrief, ...spec.metadata.brief }) : "用幾個選項描述你想要的網站"}
               disabled={disabled || generating}
-              onClick={() => setBriefOpen((v) => !v)}
+              onClick={() => { setBrandOpen(false); setShortcutsOpen(false); setBriefOpen((v) => !v); }}
             >
               描述網站{spec.metadata.brief ? " ✓" : ""}
             </button>
@@ -1781,7 +1781,7 @@ node ? (
                       ))}
                     </select>
                   </label>
-                  <button type="button" className="shortcuts-button" title="所有快捷鍵（?）" onClick={() => setShortcutsOpen(true)}>快捷鍵</button>
+                  
                   <button
                     className="format-brush"
                     aria-pressed={brush}
@@ -1932,7 +1932,7 @@ node ? (
                           <button type="button" disabled={disabled} onClick={() => addBlock("collage")}>
                             <span className="kao" aria-hidden="true">[◉¯]</span>放幾張照片
                           </button>
-                          <button type="button" disabled={disabled} onClick={() => setBriefOpen(true)}>
+                          <button type="button" disabled={disabled} onClick={() => { setBrandOpen(false); setBriefOpen(true); }}>
                             <span className="kao" aria-hidden="true">( ˘▽˘)っ</span>告訴我想做什麼網站
                           </button>
                           <button type="button" onClick={() => setMode("home")}>
@@ -2404,7 +2404,7 @@ node ? (
           </span>
 
           {mode === "draft" && (
-            <button type="button" className="footer-shortcuts" aria-haspopup="dialog" onClick={() => setShortcutsOpen(true)}>快捷鍵</button>
+            <button type="button" className="footer-shortcuts" aria-haspopup="dialog" onClick={() => { setBrandOpen(false); setBriefOpen(false); setShortcutsOpen(true); }}>快捷鍵</button>
           )}
         </footer>
       )}

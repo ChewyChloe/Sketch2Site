@@ -1636,3 +1636,15 @@ button:has(> .x-icon:only-child) { display: inline-grid !important; place-items:
 .brand-role { grid-template-columns: 52px minmax(0, 1fr) auto auto 30px !important; }
 .brand-remove-spacer { width: 30px; height: 30px; }
 .brand-role .brand-contrast { justify-self: end; }
+/* Toolbar pop-ups: real circles, a comfortable width, clear gap below the toolbar. */
+.text-toolbar .tt-panel { width: 300px !important; padding: 16px !important; gap: 14px !important; }
+@media (min-width: 761px) {
+  .text-toolbar .tt-panel { top: calc(100% + 22px) !important; }
+  .text-toolbar .tt-panel.is-up { top: auto !important; bottom: calc(100% + 22px) !important; }
+}
+@media (max-width: 760px) { .text-toolbar .tt-panel { width: auto !important; } }
+.text-toolbar .tt-swatches { grid-template-columns: repeat(6, 36px) !important; justify-content: space-between; gap: 8px !important; }
+.text-toolbar .tt-swatches button { width: 36px !important; height: 36px !important; min-height: 36px !important; min-width: 0 !important; padding: 0 !important; aspect-ratio: 1; border-radius: 50% !important; }
+.text-toolbar .tt-custom input { width: 48px; height: 32px; min-height: 32px !important; }
+/* Brand: space between the suggestion row and the colour roles. */
+.brand-suggest { margin: 4px 0 16px !important; }
