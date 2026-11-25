@@ -16,6 +16,7 @@ import { FrameControls, FrameThumb } from "./FrameControls";
 import { ArrangePanel } from "./ArrangePanel";
 import { TextToolbar, defaultSize, stepSize } from "./TextToolbar";
 import { ShortcutsPanel } from "./ShortcutsPanel";
+import { BrandPanel } from "./BrandPanel";
 import { textCss, type TextStyle } from "./pageSpec";
 import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
@@ -189,8 +190,10 @@ export default function App() {
   const currentPage = pagesList ? (pagesList.find((p) => p.id === activePage)?.id ?? pagesList[0].id) : null;
   const onCurrentPage = (n: CanvasNode, s: CanvasSpec = state.current.present) => !s.metadata.pages || pageOfNode(s, n) === currentPage;
   const withPage = <T extends CanvasNode>(n: T): T => (state.current.present.metadata.pages && currentPage ? { ...n, pageId: currentPage } : n);
+  const [brandOpen, setBrandOpen] = useState(false);
   const imageUrls = useAssetUrls(
-    spec.nodes.flatMap((n) => (n.assetId ? [n.assetId] : [])),
+    // Canvas images, the brand logo, and (only while the brand kit is open) the other local images.
+    [...spec.nodes.flatMap((n) => (n.assetId ? [n.assetId] : [])), ...(brandOpen ? localImages : []), ...(spec.metadata.brand?.logo ? [spec.metadata.brand.logo] : [])],
   );
   if (canvasHead.current !== spec) {
     canvasVersion.current++;
@@ -1389,6 +1392,18 @@ node ? (
           {mode === "draft" && <label className="layout-choice" title="智慧排版：自動整理成首屏、特色、價目表等區塊；保留草稿位置：維持相對位置，手機單欄"><select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="reflow">智慧排版</option><option value="preserve">保留草稿位置</option></select></label>}
           {mode === "draft" && (
             <button
+              className={"describe-site brand-button" + (spec.metadata.brand ? " has-brief" : "")}
+              aria-expanded={brandOpen}
+              title="品牌色、字型和標誌，套用到整個網站"
+              disabled={disabled || generating}
+              onClick={() => setBrandOpen((v) => !v)}
+            >
+              <span className="brand-dot" style={spec.metadata.brand?.primary ? { background: spec.metadata.brand.primary } : undefined} aria-hidden="true" />
+              品牌
+            </button>
+          )}
+          {mode === "draft" && (
+            <button
               className={"describe-site" + (spec.metadata.brief ? " has-brief" : "")}
               aria-expanded={briefOpen}
               title={spec.metadata.brief ? briefSentence({ ...emptyBrief, ...spec.metadata.brief }) : "用幾個選項描述你想要的網站"}
@@ -1471,6 +1486,27 @@ node ? (
         </div>
       </header>
       {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
+      {brandOpen && mode === "draft" && (
+        <BrandPanel
+          brand={spec.metadata.brand}
+          logos={localImages}
+          urlFor={(ref) => imageUrls[ref] || (ref.startsWith("/assets/local/") ? null : import.meta.env.BASE_URL + ref.slice(1))}
+          onChange={(brand) => {
+            const { brand: _old, ...meta } = state.current.present.metadata;
+            void _old;
+            if (change({ ...state.current.present, metadata: brand ? { ...meta, brand } : meta })) report("已更新品牌設定，生成網站時會套用，可還原。");
+          }}
+          onImportLogo={async (file) => {
+            try {
+              return (await importImage(file)).ref;
+            } catch (e) {
+              report(assetErrorMessage(e), true);
+              return null;
+            }
+          }}
+          onClose={() => setBrandOpen(false)}
+        />
+      )}
       {briefOpen && mode === "draft" && (
         <BriefPanel
           initial={spec.metadata.brief}
@@ -1625,7 +1661,7 @@ node ? (
                     style={first.textStyle ?? {}}
                     type={first.type}
                     count={targets.length}
-                    themeColors={[]}
+                    themeColors={[...(spec.metadata.brand?.primary ? [spec.metadata.brand.primary] : []), ...(spec.metadata.brand?.colors ?? [])]}
                     onChange={(patch) => styleText(patch)}
                   />
                 );

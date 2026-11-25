@@ -30,6 +30,7 @@ export function PageRenderer({
     node.children?.forEach(walk);
   };
   if (checked.success) allSections(checked.data).forEach(walk);
+  if (checked.success && checked.data.brand?.logo) refs.push(checked.data.brand.logo);
   const urls = useAssetUrls(refs);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {

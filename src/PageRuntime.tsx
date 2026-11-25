@@ -29,6 +29,7 @@ import {
   frameRatios,
   lookStyle,
   textCss,
+  brandCss,
 } from "./pageSpec";
 import "./pageRuntime.css";
 type Effect = PageNode["effects"][number];
@@ -136,6 +137,12 @@ export function FrameBox({ look, children, className = "", ratio }: { look?: Ima
       </div>
     </div>
   );
+}
+// The brand logo is decorative next to the site name (the name stays the link text).
+function BrandLogo({ src }: { src: string }) {
+  const urls = useContext(AssetUrls);
+  const url = urls[src] ?? (src.startsWith("/assets/local/") ? null : import.meta.env.BASE_URL + src.slice(1));
+  return url ? <img className="page-brand-logo" src={url} alt="" aria-hidden="true" /> : null;
 }
 const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
 // The built-in sample image stands for "a picture goes here": show a calm, theme-tinted
@@ -318,7 +325,7 @@ function PageNav({ page, view, sections }: { page: PageSpec; view: string | null
     .slice(0, 5);
   return (
     <header className="page-nav">
-      <a className="page-brand" href={"#page-" + (page.home?.id ?? sections[0].id)}>{page.metadata.title}</a>
+      <a className="page-brand" href={"#page-" + (page.home?.id ?? sections[0].id)}>{page.brand?.logo && <BrandLogo src={page.brand.logo} />}{page.metadata.title}</a>
       {links.length > 0 && (
         <nav aria-label={pages ? "網站頁面" : "頁面導覽"}>
           {links.map((l) => (
@@ -437,6 +444,7 @@ export function PageRuntime({
           style={
             {
               "--desktop-columns": page.responsive.desktopColumns,
+              ...brandCss(page.brand),
             } as CSSProperties
           }
           onClick={(e) => {

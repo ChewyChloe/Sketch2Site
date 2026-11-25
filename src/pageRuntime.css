@@ -741,3 +741,6 @@
 .rendered-page [data-text-style] { text-decoration-thickness: from-font; text-underline-offset: .18em; }
 .text-mark { color: var(--text-mark-ink, inherit); background: var(--text-mark); -webkit-box-decoration-break: clone; box-decoration-break: clone; padding: 0 .12em; border-radius: .18em; }
 .page-card[data-text-style] .page-paragraph { --text-mark: inherit; }
+/* Brand kit */
+.page-brand { display: inline-flex; align-items: center; gap: 10px; }
+.page-brand-logo { width: 32px; height: 32px; object-fit: contain; border-radius: 8px; }

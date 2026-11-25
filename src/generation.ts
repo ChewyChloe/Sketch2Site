@@ -388,6 +388,8 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
           styles: "neutral",
           // An explicit mood choice in the brief always decides the theme, whoever planned the layout.
           theme: moodThemes[canvas.metadata.brief?.mood ?? ""] ?? layout.theme,
+          // The brand kit comes from the draft only, never from the model.
+          ...(canvas.metadata.brand ? { brand: canvas.metadata.brand } : {}),
           chrome: { nav: layout.nav, footer: layout.footer },
         }),
     responsive: { mobileColumns: 1, desktopColumns: 3 },

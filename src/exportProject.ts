@@ -34,6 +34,7 @@ export async function exportProjectFiles(
     node.children?.forEach(walk);
   };
   allSections(page).forEach(walk);
+  if (page.brand?.logo) refs.add(page.brand.logo);
   const files: ProjectFile[] = [
     { path: "package.json", content: manifest },
     { path: "THIRD_PARTY_NOTICES.md", content: notices },

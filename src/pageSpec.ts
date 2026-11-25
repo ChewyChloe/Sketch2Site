@@ -146,6 +146,33 @@ export function textCss(t: TextStyle | undefined, fluid = true) {
     ...(t.letterSpacing !== undefined ? { letterSpacing: `${t.letterSpacing}em` } : {}),
   };
 }
+// Brand kit: the project's own colours, fonts and logo (set in the editor only).
+export const BrandSchema = z
+  .object({
+    colors: z.array(hex).max(10),
+    // Main brand colour: buttons, links and the closing band use it instead of the theme accent.
+    primary: hex.optional(),
+    headingFont: z.enum(fontIds).optional(),
+    bodyFont: z.enum(fontIds).optional(),
+    logo: imageSource.optional(),
+  })
+  .strict();
+export type Brand = z.infer<typeof BrandSchema>;
+/** Black or white, whichever reads better on the colour (WCAG relative luminance). */
+export function inkOn(color: string) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (l + 0.05) / 0.05 > 1.05 / (l + 0.05) ? "#111111" : "#ffffff";
+}
+/** CSS variables a brand sets on the rendered page. */
+export function brandCss(b: Brand | undefined) {
+  if (!b) return {};
+  return {
+    ...(b.primary ? { "--accent": b.primary, "--pg-accent-ink": inkOn(b.primary), "--accent-soft": `color-mix(in srgb, ${b.primary} 14%, #ffffff)` } : {}),
+    ...(b.headingFont ? { "--pg-heading-font": fontStacks[b.headingFont] } : {}),
+    ...(b.bodyFont ? { fontFamily: fontStacks[b.bodyFont] } : {}),
+  };
+}
 export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta"] as const;
 export type SectionRole = (typeof sectionRoles)[number];
 export type PageNode = {
@@ -335,6 +362,7 @@ const PageObject = z
     typography: z.enum(["sans", "serif"]),
     styles: z.enum(["neutral", "warm"]),
     theme: z.enum(themeIds).optional(),
+    brand: BrandSchema.optional(),
     chrome: z.object({ nav: z.boolean(), footer: z.boolean() }).strict().optional(),
     responsive: z
       .object({

@@ -1448,3 +1448,37 @@ input[type="range"] {
 /* The toolbar floats in a fixed-height slot: selecting text never moves the canvas. */
 .text-toolbar-slot { position: relative; height: 58px; margin-bottom: 8px; flex: none; }
 .text-toolbar-slot > .text-toolbar { position: absolute; top: 0; left: 0; right: 0; margin: 0; min-height: 54px; box-sizing: border-box; z-index: 12; }
+
+/* ===== Brand kit ===== */
+.brand-button { display: inline-flex; align-items: center; gap: 8px; }
+.brand-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #0d0e11; background: conic-gradient(#e5484d, #ffc53d, #30a46c, #0d74ce, #6e56cf, #e5484d); }
+.brand-backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgb(13 14 17 / .4); }
+.brand-panel { width: min(560px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; display: grid; gap: 16px; padding: 20px 22px; background: #fff; color: #0d0e11; border: 2.5px solid #0d0e11; border-radius: 22px; box-shadow: 6px 6px 0 #0d0e11; }
+.brand-lead { margin: -6px 0 0; color: #62655f; }
+.brand-panel h3 { margin: 0 0 8px; font-size: 15px; }
+.brand-panel h3 small { font-weight: 500; color: #62655f; font-size: 12px; }
+.brand-colors { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.brand-color { position: relative; }
+.brand-color > button:first-child { width: 56px; height: 56px; border-radius: 16px; border: 2px solid #0d0e11; cursor: pointer; font: 800 12px/1 inherit; }
+.brand-color.is-primary > button:first-child { box-shadow: 0 0 0 3px #fff, 0 0 0 6px #0d0e11; }
+.brand-remove { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #0d0e11; background: #fff; font-size: 14px; line-height: 1; cursor: pointer; }
+.brand-add { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 2px dashed #b8bab2; border-radius: 16px; }
+.brand-add input { width: 44px; height: 44px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.brand-add button, .brand-upload { min-height: 44px; padding: 0 14px; border: 2px solid #0d0e11; border-radius: 999px; background: #f7f6f2; font: inherit; font-weight: 700; cursor: pointer; }
+.brand-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: #62655f; }
+.brand-suggest button { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1.5px #0d0e11; cursor: pointer; }
+.brand-fonts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.brand-fonts h3 { grid-column: 1 / -1; margin-bottom: 0; }
+.brand-font { display: grid; gap: 4px; font-size: 13px; }
+.brand-font select { min-height: 44px; padding: 0 10px; border: 2px solid #0d0e11; border-radius: 12px; background: #fff; font-size: 15px; }
+.brand-logo-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.brand-logo { width: 56px; height: 56px; padding: 4px; border: 2px solid #d5d5cd; border-radius: 12px; background: #fff; cursor: pointer; }
+.brand-logo img { width: 100%; height: 100%; object-fit: contain; }
+.brand-logo[aria-pressed="true"] { border-color: #087b36; box-shadow: 0 0 0 3px #10e560; }
+.brand-preview { display: grid; gap: 8px; padding: 16px; border: 2px solid #0d0e11; border-radius: 16px; background: #fffdf7; }
+.brand-preview-nav { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #e2e4de; }
+.brand-preview-nav img { width: 28px; height: 28px; object-fit: contain; }
+.brand-preview h4 { margin: 0; font-size: 24px; }
+.brand-preview p { margin: 0; color: #4b4f49; }
+.brand-preview-button { justify-self: start; padding: 10px 20px; border-radius: 999px; background: #1f7a52; color: #fff; font-weight: 700; }
+.brief-reset { min-height: 44px; padding: 0 16px; border: 2px solid #d5d5cd; border-radius: 999px; background: #fff; font: inherit; cursor: pointer; }
