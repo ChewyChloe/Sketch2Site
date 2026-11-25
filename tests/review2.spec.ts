@@ -57,7 +57,9 @@ for (const width of [1440, 768, 375])
       })),
     ).toEqual(before);
     await page.keyboard.press("End");
-    await expect(tabs.getByRole("tab", { name: "編輯元素" })).toBeFocused();
+    // Phones swap the library sheet for the inspector sheet; wider screens keep the tab focused.
+    if (width <= 760) await expect(page.getByRole("complementary", { name: "物件檢查器" })).toBeVisible();
+    else await expect(tabs.getByRole("tab", { name: "編輯元素" })).toBeFocused();
     await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
     await buildSite(page);
     await page.getByRole("button", { name: "使用此版本", exact: true }).click();

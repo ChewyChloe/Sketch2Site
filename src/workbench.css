@@ -1689,3 +1689,5 @@ button:has(> .x-icon:only-child) { display: inline-grid !important; place-items:
 
 /* Dialog lead lines break only between phrases (each phrase stays whole). */
 .nowrap-phrase { display: inline-block; }
+/* The floating text toolbar never runs past the visible canvas; on narrow screens it wraps. */
+@media (min-width: 761px) { .text-toolbar-slot.is-placed > .text-toolbar:not(.is-idle) { max-width: var(--tt-max, 100%); flex-wrap: wrap; } }

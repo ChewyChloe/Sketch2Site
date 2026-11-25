@@ -590,3 +590,92 @@ body{background:var(--neo-cream)}
 .brief-panel { z-index: 300 !important; }
 .account-card { z-index: 310 !important; }
 .ui-select-list { z-index: 400 !important; }
+
+/* ---- Panel close / switch buttons (phones and tablets) ---- */
+.sheet-actions { display: none; }
+.sheet-close { display: inline-grid; place-items: center; width: 36px !important; height: 36px; min-height: 36px; padding: 0 !important; border-radius: 50% !important; background: #202629 !important; border: 1px solid #455048 !important; color: #e8eee4 !important; font-size: 0; }
+.sheet-close svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+@media (min-width: 1001px) { .sidebar .draft-panel-close { display: none !important; } }
+@media (max-width: 1000px) { .neo-workspace .sidebar .side-head { display: flex; align-items: center; gap: 10px; } .neo-workspace .sidebar .side-head small { margin-left: auto; } .neo-workspace .sidebar .side-head .draft-panel-close { order: 3; } }
+
+/* ---- Phones: one bottom sheet at a time, the page stays visible above it ---- */
+@media (max-width: 760px) {
+  .neo-workspace:not(.neo-motion-full) { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr) auto; }
+  .neo-workspace:not(.neo-motion-full) > .studio { grid-row: 1; grid-column: 1; min-height: 0; }
+  .neo-workspace:not(.neo-motion-full) > .sidebar,
+  .neo-workspace:not(.neo-motion-full) > .neo-inspector {
+    grid-row: 2; grid-column: 1; position: relative !important; inset: auto !important;
+    width: 100% !important; max-width: none !important; height: min(52vh, 440px) !important; max-height: none !important;
+    border: 0 !important; border-top: 1px solid #383b3e !important; border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 30px #0004 !important; z-index: 19; overflow: auto;
+  }
+  .neo-workspace:not(.neo-motion-full) > .sidebar { padding: 14px 16px 20px !important; }
+  .neo-workspace:not(.neo-motion-full) > .sidebar .side-head { position: sticky; top: -14px; z-index: 2; background: #0d0e11; margin: -14px -16px 0; padding: 14px 16px 6px; }
+  .neo-workspace:not(.neo-motion-full) > .sidebar .tabs { margin: 10px 0 14px; }
+  /* Editing a selection shows the inspector sheet instead of the library sheet. */
+  .neo-workspace:not(.neo-motion-full):has(> .neo-inspector[data-active=true]) > .sidebar { display: none !important; }
+  .neo-workspace:not(.neo-motion-full) > .neo-inspector:not([data-active=true]) { display: none !important; }
+  .neo-workspace:not(.neo-motion-full) > .neo-inspector[data-active=true] { display: flex !important; overflow: hidden; }
+  .neo-inspector-head { padding: 12px 16px !important; }
+  .neo-inspector .sheet-actions { display: flex; align-items: center; gap: 8px; }
+  .neo-inspector .sheet-switch { font-size: 13px; min-height: 36px; padding: 0 14px !important; }
+  /* The floating tools sit on the canvas, never over a sheet. */
+  .neo-workspace .canvas-tools { bottom: 10px; z-index: 12 !important; }
+  .neo-workspace .canvas-scroll { padding-bottom: 76px; }
+  .neo-workspace .sidebar { padding-bottom: 20px; }
+}
+.phone-history { display: none; }
+@media (max-width: 760px) {
+  .phone-history { display: inline-flex; gap: 4px; margin-left: auto; order: 9; }
+  .phone-history button { width: 36px; height: 36px; min-height: 36px !important; padding: 0 !important; display: inline-grid; place-items: center; border-radius: 50% !important; }
+  .phone-history svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .phone-history button:disabled { opacity: .35; }
+  .neo-workspace .canvas-tools .tools-history { display: none !important; }
+  /* While a sheet is open it has its own close button; the floating tools would only cover the page. */
+  .neo-workspace:has(> .sidebar) .canvas-tools, .neo-workspace:has(> .neo-inspector[data-active=true]) .canvas-tools { display: none !important; }
+  .neo-workspace:not(.neo-motion-full) > .sidebar, .neo-workspace:not(.neo-motion-full) > .neo-inspector { height: min(46vh, 400px) !important; }
+  .footer .footer-shortcuts { display: none !important; }
+  .footer { min-height: 0 !important; padding: 6px 12px !important; font-size: 11px; }
+}
+@media (max-width: 760px) {
+  .topbar .toolbar-actions { flex-wrap: nowrap !important; gap: 6px !important; }
+  .topbar .toolbar-actions > button, .topbar .toolbar-actions > .workbench-menu > summary { padding: 0 10px !important; font-size: 13px !important; min-height: 36px; white-space: nowrap; }
+  .topbar .toolbar-actions .workbench-menu > summary svg { margin-left: 2px; }
+}
+@media (max-width: 760px) {
+  .topbar .secondary-actions { gap: 6px !important; flex-wrap: nowrap !important; }
+  .topbar .secondary-actions > button, .topbar .secondary-actions > .workbench-menu > summary { padding: 0 10px !important; font-size: 13px !important; min-height: 34px; height: 34px; white-space: nowrap; }
+  .topbar .secondary-actions .brand-button { gap: 6px; }
+  .topbar .secondary-actions .phone-history { order: 9; margin-left: auto; gap: 2px; }
+  .topbar .secondary-actions .phone-history button { width: 32px; height: 34px; min-height: 34px !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+}
+@media (max-width: 760px) { .hide-phone { display: none; } }
+
+/* Step tabs: labels centred in equal tabs; unselected tabs have no outline of their own. */
+.topbar .workspace-modes button { justify-content: center; text-align: center; border-color: transparent !important; box-shadow: none !important; background: transparent; }
+.topbar .workspace-modes button[aria-pressed=true] { background: #0d0e11; }
+.topbar .workspace-modes button:not([aria-pressed=true]):hover { background: #e2e1d9; border-radius: 100px; }
+@media (max-width: 760px) { .topbar .workspace-modes button { flex: 1 1 0; } }
+
+/* Page height handle on the bottom edge of the page frame. */
+.page-height-handle { position: absolute; left: 0; right: 0; bottom: -12px; height: 24px; z-index: 6; cursor: ns-resize; touch-action: none; display: grid; place-items: center; outline: none; }
+.page-height-handle > span { width: 64px; height: 10px; border-radius: 999px; background: #0d0e11; border: 2px solid #f7f6f2; box-shadow: 0 1px 4px #0003; transition: width .15s, background .15s; }
+.page-height-handle:hover > span, .page-height-handle:focus-visible > span, .page-height-handle.is-dragging > span { width: 96px; background: #10e560; border-color: #0d0e11; }
+.page-height-handle::before { content: ""; position: absolute; left: 0; right: 0; top: 11px; border-top: 2px dashed transparent; }
+.page-height-handle:hover::before, .page-height-handle.is-dragging::before { border-top-color: #10e560; }
+.page-height-handle > b { position: absolute; top: 24px; padding: 3px 10px; border-radius: 999px; background: #0d0e11; color: #10e560; font-size: 12px; font-weight: 800; white-space: nowrap; }
+@media (pointer: coarse) { .page-height-handle { height: 36px; bottom: -18px; } }
+@media (max-width: 760px) {
+  /* Text toolbar docks just above the zoom bar, which stays reachable. */
+  .text-toolbar-slot > .text-toolbar:not(.is-idle) { bottom: 104px !important; }
+  .text-toolbar-slot .tt-panel { bottom: 162px !important; }
+  /* A sheet covers the bottom of the screen, so the docked toolbar waits until it is closed. */
+  .neo-workspace:has(> .sidebar) .text-toolbar-slot, .neo-workspace:has(> .neo-inspector[data-active=true]) .text-toolbar-slot { display: none; }
+  .neo-motion-full .draft-panel-close { display: none !important; }
+}
+.neo-workspace.neo-motion-full > .sidebar > .tabs { display: none !important; }
+@media (max-width: 760px) {
+  .neo-workspace.neo-motion-full > .sidebar .side-head { display: none !important; }
+  /* The docked text toolbar scrolls sideways; fade the edge so it reads as "more". */
+  .text-toolbar-slot > .text-toolbar:not(.is-idle) { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); padding-right: 28px; }
+}

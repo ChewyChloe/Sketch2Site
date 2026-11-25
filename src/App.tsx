@@ -77,6 +77,7 @@ const freshDraft = (): CanvasSpec => {
   return { ...draft, metadata: { ...draft.metadata, layoutMode: "reflow" } };
 };
 // Menu shortcut hints in this computer's own keys (⌘ on Mac, Ctrl elsewhere).
+const phoneQuery = () => (typeof matchMedia === "function" ? matchMedia("(max-width: 760px)") : null);
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 function keyHint(key: string, shift = false) { return isMac ? (shift ? "⇧" : "") + "⌘" + key : "Ctrl+" + (shift ? "Shift+" : "") + key; }
 export default function App() {
@@ -138,6 +139,9 @@ export default function App() {
     [inspectorWidth, setInspectorWidthRaw] = useState(() => { try { return Number(localStorage.getItem("sketch2site:right-width")) || 300; } catch { return 300; } });
   const setPanelWidth = (w: number) => { setPanelWidthRaw(w); try { localStorage.setItem("sketch2site:left-width", String(w)); } catch { /* convenience only */ } };
   const setInspectorWidth = (w: number) => { setInspectorWidthRaw(w); try { localStorage.setItem("sketch2site:right-width", String(w)); } catch { /* convenience only */ } };
+  // Phone-only controls are rendered only on phones (not just hidden), so each action has one button.
+  const [isPhone, setIsPhone] = useState(() => !!phoneQuery()?.matches);
+  useEffect(() => { const q = phoneQuery(); if (!q) return; const on = () => setIsPhone(q.matches); q.addEventListener("change", on); return () => q.removeEventListener("change", on); }, []);
   const scale = zoom === "fit" ? fitScale : zoom;
   // "Fit" tracks the visible canvas width (panels, window resizes).
   useEffect(() => {
@@ -409,6 +413,15 @@ export default function App() {
       report("這樣會超出畫布，請調整後再試", true);
       return false;
     }
+  };
+  // Page height: dragged from the bottom edge of the page frame. Never shorter than the
+  // lowest element (or 1200), never taller than the canvas limit; one undo step per drag.
+  const [dragHeight, setDragHeight] = useState<number | null>(null);
+  const minPageHeight = () => Math.max(1200, ...state.current.present.nodes.map((n) => Math.ceil((n.y + n.height) / 10) * 10));
+  const clampPageHeight = (h: number) => Math.min(canvasMaxHeight, Math.max(minPageHeight(), Math.round(h / 10) * 10));
+  const setPageHeight = (h: number) => {
+    const cur = state.current.present, next = clampPageHeight(h);
+    if (next !== cur.metadata.height && change({ ...cur, metadata: { ...cur.metadata, height: next } })) report("網頁高度改成 " + next);
   };
   function patch(id: string, attrs: Partial<CanvasNode>) {
     return change({
@@ -824,7 +837,7 @@ export default function App() {
   // The floating text toolbar sits right above the selected text (below it when there is no
   // room), inside the visible canvas, so it never covers what you are editing.
   const ttSlot = useRef<HTMLDivElement>(null);
-  const [ttPos, setTtPos] = useState<{ top: number; left: number } | null>(null);
+  const [ttPos, setTtPos] = useState<{ top: number; left: number; max: number } | null>(null);
   useLayoutEffect(() => {
     const place = () => {
       const slot = ttSlot.current, bar = slot?.querySelector<HTMLElement>(".text-toolbar:not(.is-idle)");
@@ -838,8 +851,8 @@ export default function App() {
       let y = top - h - 14;
       if (y < view.top + 6) y = Math.min(bottom + 14, view.bottom - h - 6);
       const x = Math.min(Math.max((left + right) / 2 - w / 2, view.left + 8), Math.max(view.left + 8, view.right - w - 8));
-      const next = { top: Math.round(y - s.top), left: Math.round(x - s.left) };
-      setTtPos((p) => (p && p.top === next.top && p.left === next.left ? p : next));
+      const next = { top: Math.round(y - s.top), left: Math.round(x - s.left), max: Math.round(view.width - 16) };
+      setTtPos((p) => (p && p.top === next.top && p.left === next.left && p.max === next.max ? p : next));
     };
     place();
     const el = canvasScroll.current;
@@ -1123,6 +1136,18 @@ export default function App() {
     setSelectedIds([n.id]);
     setEditing(n.id);
     setEditDraft(n.content);
+    // Phones: text at "fit" size is a few pixels tall, so zoom to a readable size around it.
+    if (phoneQuery()?.matches && scale < 0.5) {
+      setScale(0.6);
+      const id = n.id;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const el = canvasScroll.current, node = el?.querySelector<HTMLElement>(`[data-node-id="${id}"]`);
+        if (!el || !node) return;
+        const v = el.getBoundingClientRect(), r = node.getBoundingClientRect();
+        el.scrollLeft += r.left + r.width / 2 - (v.left + v.width / 2);
+        el.scrollTop += r.top - v.top - 60;
+      }));
+    }
   }
   function stopEditing(commit: boolean) {
     const id = editing;
@@ -1579,13 +1604,17 @@ node ? (
           )}
           {mode === "draft" && (
             <>
+              {isPhone && <span className="phone-history">
+                <button type="button" aria-label="還原" title="還原" disabled={disabled || !history.past.length} onClick={() => setHistory(undo)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-3" /></svg></button>
+                <button type="button" aria-label="重做" title="重做" disabled={disabled || !history.future.length} onClick={() => setHistory(redo)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5M20 9H9a5 5 0 000 10h3" /></svg></button>
+              </span>}
               <button
                 disabled={busy || !ready || loadError}
                 title="儲存草稿（⌘ / Ctrl S）"
                 aria-label={busy?"儲存中…":"儲存草稿"}
                 onClick={() => void save()}
               >
-                {busy ? "儲存中…" : saved&&!dirty ? "已儲存" : "儲存草稿"}
+                {busy ? "儲存中…" : saved&&!dirty ? "已儲存" : <>儲存<span className="hide-phone">草稿</span></>}
               </button>
               <WorkbenchMenu label="編輯">
                 <button disabled={!selectedIds.length} onClick={()=>copySelection()}><span>複製</span><kbd>{keyHint("C")}</kbd></button>
@@ -1713,16 +1742,18 @@ node ? (
               <div className="canvas-tools">
                 <div>
                   <strong>網站草稿</strong>
-                  <small>1440 × {spec.metadata.height}</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · {keyHint("G")} 群組</small>}
+                  <small>1440 × {dragHeight ?? spec.metadata.height}</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · {keyHint("G")} 群組</small>}
                 </div>
                 <div>
                   <button
+                    className="tools-history"
                     disabled={disabled || !history.past.length}
                     onClick={() => setHistory(undo)}
                   >
                     還原
                   </button>
                   <button
+                    className="tools-history"
                     disabled={disabled || !history.future.length}
                     onClick={() => setHistory(redo)}
                   >
@@ -1758,7 +1789,7 @@ node ? (
                   </button>
                 </div>
               </div>
-              <div ref={ttSlot} className={"text-toolbar-slot" + (ttPos ? " is-placed" : "") + (moving ? " is-moving" : "")} style={ttPos ? ({ "--tt-top": ttPos.top + "px", "--tt-left": ttPos.left + "px" } as CSSProperties) : undefined}>{(() => {
+              <div ref={ttSlot} className={"text-toolbar-slot" + (ttPos ? " is-placed" : "") + (moving ? " is-moving" : "")} style={ttPos ? ({ "--tt-top": ttPos.top + "px", "--tt-left": ttPos.left + "px", "--tt-max": ttPos.max + "px" } as CSSProperties) : undefined}>{(() => {
                 const targets = textTargets();
                 // Floats over the canvas only while text is selected (or a photo is being cropped).
                 if (cropping) return <div className="text-toolbar is-idle" role="note">拖曳移動照片、滾輪縮放，按「完成」套用</div>;
@@ -1808,15 +1839,44 @@ node ? (
                 onPointerDown={(e) => {
                   // Pressing the empty area around the page clears the selection (and the floating toolbar).
                   const t = e.target as HTMLElement;
-                  if (!e.shiftKey && (t === e.currentTarget || t.classList.contains("canvas-wrap"))) { setSelected(null); setEditing(null); }
+                  if (!e.shiftKey && (t === e.currentTarget || t.classList.contains("canvas-wrap"))) { setSelected(null); setEditing(null); if (phoneQuery()?.matches) setPanel(false); }
                 }}
               >
                 {draftEffect && <span className="draft-drop-hint" role="status">{draftHover && spec.nodes.find(n=>n.id===draftHover) ? (draftDropReason(spec.nodes.find(n=>n.id===draftHover)!,draftEffect) ?? "放開以附加動畫") : "拖到有綠框的東西上就能加動畫"}</span>}
                 <div
                   className="canvas-wrap"
-                  style={{ width: 1440 * scale, height: spec.metadata.height * scale }}
+                  style={{ width: 1440 * scale, height: (dragHeight ?? spec.metadata.height) * scale }}
                 >
                   <span className="page-frame-label" aria-hidden="true">網頁範圍</span>
+                  <div
+                    className={"page-height-handle" + (dragHeight !== null ? " is-dragging" : "")}
+                    role="slider"
+                    tabIndex={0}
+                    aria-label="網頁高度"
+                    aria-valuemin={1200}
+                    aria-valuemax={canvasMaxHeight}
+                    aria-valuenow={dragHeight ?? spec.metadata.height}
+                    aria-valuetext={(dragHeight ?? spec.metadata.height) + " 像素"}
+                    title="往下拖拉長網頁，往上拖縮短"
+                    onPointerDown={(e) => {
+                      if (disabled) return;
+                      e.preventDefault(); e.stopPropagation();
+                      const el = e.currentTarget, startY = e.clientY, startH = spec.metadata.height;
+                      el.setPointerCapture(e.pointerId);
+                      let last = startH;
+                      const move = (ev: PointerEvent) => { last = clampPageHeight(startH + (ev.clientY - startY) / scale); setDragHeight(last); };
+                      const up = () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); setDragHeight(null); setPageHeight(last); };
+                      el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+                    }}
+                    onKeyDown={(e) => {
+                      const step = e.shiftKey ? 400 : 100;
+                      if (e.key === "ArrowDown") { e.preventDefault(); setPageHeight(spec.metadata.height + step); }
+                      else if (e.key === "ArrowUp") { e.preventDefault(); setPageHeight(spec.metadata.height - step); }
+                    }}
+                  >
+                    <span aria-hidden="true" />
+                    {dragHeight !== null && <b>高度 {dragHeight}</b>}
+                  </div>
                   <div
                     ref={board}
                     className={"canvas" + (brush ? " brush-active" : "") + (scale < 0.45 ? " is-tiny" : "")}
@@ -1824,7 +1884,7 @@ node ? (
                     aria-label="草稿畫布"
                     style={{
                       width: 1440,
-                      height: spec.metadata.height,
+                      height: dragHeight ?? spec.metadata.height,
                       transform: "scale(" + scale + ")",
                       "--s": scale,
                     } as CSSProperties}
@@ -2106,11 +2166,11 @@ node ? (
                 <div className="side-head">
                   <h2>{motionFull?'動態素材庫':'圖元素材'}</h2>
                   <button
-                    className="draft-panel-close"
+                    className="draft-panel-close sheet-close"
                     aria-label="關閉草稿工具"
                     onClick={() => setPanel(false)}
                   >
-                    關閉
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
                   </button>
                   <small>{spec.nodes.length} / 100 元件</small>
                 </div>
@@ -2343,7 +2403,7 @@ node ? (
                 ) : null}
               </aside>
             )}
-            {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><PanelResizer side="right" label="拖曳調整右側欄寬度" width={inspectorWidth} min={260} max={480} onChange={setInspectorWidth} /><div className="neo-inspector-head"><span>物件檢查器</span></div><div className="neo-inspector-body">{inspectorContent}</div></aside>}
+            {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><PanelResizer side="right" label="拖曳調整右側欄寬度" width={inspectorWidth} min={260} max={480} onChange={setInspectorWidth} /><div className="neo-inspector-head"><span>物件檢查器</span><span className="sheet-actions"><button type="button" className="sheet-switch" onClick={()=>setTab("library")}>元件素材</button><button type="button" className="sheet-close" aria-label="收起面板" onClick={()=>setPanel(false)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg></button></span></div><div className="neo-inspector-body">{inspectorContent}</div></aside>}
           </>
         )}
       </div>
