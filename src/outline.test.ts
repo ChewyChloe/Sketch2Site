@@ -56,3 +56,11 @@ describe("outline-based AI", () => {
     expect(moved.sections[0].role).toBe("hero");
   });
 });
+
+it("keeps FAQs as a list even if the model asks for a grid (paid test finding)", () => {
+  const d = draft(["hero", "faq", "cta"]);
+  const plan = smartLayout(d);
+  const i = plan.sections.findIndex((s) => s.role === "faq");
+  const next = applyRefine(plan, RefineSchema.parse({ theme: "blossom", nav: true, order: plan.sections.map((_, k) => k), sections: [{ i, role: "faq", layout: "grid", columns: 3, tone: "soft" }] }));
+  expect(next.sections[i]).toMatchObject({ role: "faq", layout: "stack", columns: 1 });
+});

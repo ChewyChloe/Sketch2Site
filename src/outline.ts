@@ -74,11 +74,11 @@ export function applyRefine(plan: LayoutV2, refine: Refine): LayoutV2 {
     // Hero stays the opening section; other roles may be renamed (affects styling only).
     if (r.role !== "hero" && s.role !== "hero") s.role = r.role;
     s.tone = s.role === "hero" ? s.tone : r.tone;
-    // A grid needs repeated items; otherwise keep the stack.
-    if (r.layout === "grid" && s.items.length >= 2) {
+    // A grid needs repeated items; FAQs and contact forms always read as a list (paid test finding).
+    if (r.layout === "grid" && s.items.length >= 2 && s.role !== "faq" && s.role !== "contact") {
       s.layout = "grid";
       s.columns = Math.min(r.columns, s.items.length) as 1 | 2 | 3;
-    } else if (r.layout === "stack") {
+    } else if (r.layout === "stack" || s.role === "faq" || s.role === "contact") {
       s.layout = "stack";
       s.columns = 1;
     }

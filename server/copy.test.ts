@@ -55,3 +55,7 @@ it("builds a small strict request and cleans unsafe options", () => {
   expect(Buffer.byteLength(JSON.stringify(r))).toBeLessThan(8192);
   expect(cleanOptions("button", "立即報名", ["馬上報名", "<b>報名</b>", "立即報名", "這是一個太長太長太長太長的按鈕文字", "馬上報名", "javascript:alert(1)", "一起\n報名"])).toEqual(["馬上報名", "一起 報名"]);
 });
+
+it("drops options that only change punctuation (paid test finding)", () => {
+  expect(cleanOptions("heading", "攝影社，新學期招生中", ["攝影社新學期招生中", "攝影社 新學期招生中！", "新學期加入攝影社"])).toEqual(["新學期加入攝影社"]);
+});

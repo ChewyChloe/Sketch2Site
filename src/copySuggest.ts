@@ -43,7 +43,9 @@ export function cleanOptions(kind: CopyKind, original: string, options: readonly
     if (kind !== "paragraph") v = v.replace(/\s*\n+\s*/g, " ");
     if (!v || v.length > copyLimits[kind]) continue;
     if (/https?:|www\.|[<>{}]|javascript:/i.test(v)) continue;
-    if (v === original.trim() || out.includes(v)) continue;
+    // Same words with only punctuation or spacing changed is not a real alternative.
+    const bare = (x: string) => x.replace(/[\s\p{P}]/gu, "");
+    if (bare(v) === bare(original) || out.some((o) => bare(o) === bare(v))) continue;
     out.push(v);
   }
   return out.slice(0, 3);

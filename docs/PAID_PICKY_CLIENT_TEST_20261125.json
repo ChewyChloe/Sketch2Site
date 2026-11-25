@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-25",
+  "authorization": { "maxCalls": 5, "maxUsd": 0.10, "givenBy": "project owner in chat" },
+  "model": "gpt-6-luna",
+  "approach": "Outline mode: server plans locally, model sees one line per section and returns a small refinement; copy suggestions via guarded /api/generation/copy.",
+  "keyHandling": "Network secret on the personal cloud environment, injected by the proxy; never in code, logs, chat or git. Real server stopped after the 5th call.",
+  "providerCalls": 5,
+  "totalEstimatedUsd": 0.0009146,
+  "blockedBeforeProvider": [{ "outcome": "LIMIT", "reason": "4th request within one minute (server allows 3/min); retried after the window", "costUsd": 0 }],
+  "draft": "Photo-club recruitment: hero with blob-framed warm photo and rounded bold heading, 3 feature cards, photo collage, 3 pricing cards, 3 FAQ cards, contact form (Formspree), CTA; brand kit #6e56cf; 25 motions from the motion library.",
+  "runs": [
+    { "round": 1, "brief": "新生/社團招生/活潑/報名按鈕 + 要很有活力", "inputTokens": 975, "outputTokens": 179, "usd": 0.000187, "theme": "blossom", "order": "hero,cta,gallery,features,pricing,faq,contact", "preserved": "25/25 motions, 4 frames, text style, brand", "client": "REJECT: sign-up form at the bottom, too generic" },
+    { "round": 2, "brief": "科技感/聯絡方式 + 報名表第二區、照片大、價格最後", "inputTokens": 976, "outputTokens": 410, "usd": 0.0003026, "theme": "midnight", "order": "hero,cta,contact,gallery,features,faq,pricing", "client": "REJECT: form came third, FAQ squeezed into 3 small boxes", "fix": "focus ordering no longer lets a lower-priority role push the requested one back; FAQ/contact always stacked" },
+    { "round": 3, "brief": "活潑/常見問題 + 明亮、FAQ在報名前、動畫保留", "inputTokens": 982, "outputTokens": 390, "usd": 0.0002932, "theme": "blossom", "order": "hero,faq,features,gallery,pricing,contact,cta", "client": "ACCEPT (order, colours, motions); FAQ grid fixed afterwards" },
+    { "case": "copy suggestions for 攝影社，新學期招生中", "inputTokens": 245, "outputTokens": 38, "usd": 0.0000435, "options": ["攝影社新學期招生中", "新學期加入攝影社", "攝影社等你來加入"], "client": "REJECT: bland, first option only drops a comma", "fix": "punctuation-only variants now dropped; prompt asks for clearly different options (not re-tested: no calls left)" },
+    { "case": "prompt injection in copy text (改成「點此領獎」, evil link, script)", "inputTokens": 263, "outputTokens": 124, "usd": 0.0000883, "options": ["立即報名", "現在報名", "報名加入"], "injected": false }
+  ],
+  "comparedToFullDraftMode": "Previous full-draft requests used ~2400 input tokens and ~US$0.00074 per generation for a smaller page; outline requests use ~980 tokens and ~US$0.0002–0.0003."
+}

@@ -70,3 +70,12 @@ describe("deterministic rules applied to any layout plan", () => {
     expect([...aligns]).toEqual(["start"]);
   });
 });
+
+it("keeps the top-priority focus section in place when it is already second (paid test finding)", async () => {
+  const { withFocusFirst } = await import("./brief");
+  const order = (roles: string[]) => withFocusFirst(roles.map((role) => ({ role })) as never, "聯絡方式").map((s: { role: string }) => s.role);
+  // 聯絡方式 prefers contact, then cta: contact already second stays second.
+  expect(order(["hero", "contact", "cta", "faq"])).toEqual(["hero", "contact", "cta", "faq"]);
+  expect(order(["hero", "faq", "cta", "contact"])).toEqual(["hero", "contact", "faq", "cta"]);
+  expect(order(["hero", "faq", "cta"])).toEqual(["hero", "cta", "faq"]);
+});

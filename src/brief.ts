@@ -36,13 +36,16 @@ export const focusRoles: Record<string, SectionRole[]> = {
 /** Moves the first section matching the brief's focus right after the opening section. */
 export function withFocusFirst<T extends { role: SectionRole }>(sections: T[], focus: string | undefined): T[] {
   const out = [...sections];
+  // Roles are in priority order: the first one present wins. If it is already right
+  // after the opening section, leave the order alone (a later role must not push it back).
   for (const role of focusRoles[focus ?? ""] ?? []) {
-    const at = out.findIndex((s, i) => i > 1 && s.role === role);
+    const at = out.findIndex((s, i) => i > 0 && s.role === role);
+    if (at < 0) continue;
     if (at > 1) {
       const [moved] = out.splice(at, 1);
       out.splice(1, 0, moved);
-      break;
     }
+    break;
   }
   return out;
 }
