@@ -67,7 +67,7 @@ export function CopySuggest({ kind, text, brief, onPick }: { kind: CopyKind; tex
     <div className="copy-suggest">
       {state.phase !== "done" && (
         <button type="button" className="copy-ask" disabled={!text.trim() || state.phase === "loading"} onClick={() => void ask()}>
-          {state.phase === "loading" ? "AI 正在想…" : "✨ 請 AI 想幾個說法"}
+          {state.phase === "loading" ? "AI 正在想…" : <><span className="kao" aria-hidden="true">(・∀・)</span> 請 AI 想幾個說法</>}
         </button>
       )}
       {state.phase === "error" && <p className="copy-note bad" role="status">{state.message}</p>}

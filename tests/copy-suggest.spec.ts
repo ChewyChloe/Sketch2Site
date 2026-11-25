@@ -12,7 +12,7 @@ test("AI suggests wordings for selected text and nothing changes until one is pi
   await page.keyboard.press("Control+Shift+G");
   await page.keyboard.press("Escape");
   await heading.click();
-  await page.getByRole("button", { name: "✨ 請 AI 想幾個說法" }).click();
+  await page.getByRole("button", { name: "請 AI 想幾個說法" }).click();
   const options = page.getByRole("group", { name: "AI 建議的說法" });
   await expect(options).toBeVisible();
   // Unsafe options (links) never reach the page; the original text is unchanged so far.

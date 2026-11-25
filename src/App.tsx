@@ -1831,16 +1831,16 @@ node ? (
                         <p>選一個開始，之後都可以改：</p>
                         <div className="empty-actions">
                           <button type="button" disabled={disabled} onClick={() => addBlock("hero")}>
-                            <span aria-hidden="true">👋</span>加一段開場介紹
+                            <span className="kao" aria-hidden="true">(・ω・)ノ</span>加一段開場介紹
                           </button>
                           <button type="button" disabled={disabled} onClick={() => addBlock("collage")}>
-                            <span aria-hidden="true">📷</span>放幾張照片
+                            <span className="kao" aria-hidden="true">[◉¯]</span>放幾張照片
                           </button>
                           <button type="button" disabled={disabled} onClick={() => setBriefOpen(true)}>
-                            <span aria-hidden="true">💬</span>告訴我想做什麼網站
+                            <span className="kao" aria-hidden="true">( ˘▽˘)っ</span>告訴我想做什麼網站
                           </button>
                           <button type="button" onClick={() => setMode("home")}>
-                            <span aria-hidden="true">✨</span>從範本開始
+                            <span className="kao" aria-hidden="true">٩(ˊᗜˋ)و</span>從範本開始
                           </button>
                         </div>
                         <small>也可以從左邊把東西拖進來。</small>
