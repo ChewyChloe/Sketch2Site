@@ -104,7 +104,7 @@ export const fontLabels: Record<FontId, string> = { sans: "黑體（預設）", 
 export const fontStacks: Record<FontId, string> = {
   sans: 'system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif',
   serif: '"Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", Georgia, serif',
-  rounded: 'ui-rounded, "Arial Rounded MT Bold", "jf-openhuninn-2.0", "Yuanti TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
+  rounded: '"Huninn", "jf-openhuninn-2.0", ui-rounded, "Arial Rounded MT Bold", "Yuanti TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
   kai: '"Kaiti TC", "BiauKai", "DFKai-SB", "KaiTi", "STKaiti", serif',
   mono: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Noto Sans Mono CJK TC", monospace',
 };

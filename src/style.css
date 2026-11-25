@@ -8,6 +8,10 @@
   --line: #daddd6;
   --danger: #ab3932;
   --font:
+    "Huninn", "jf-openhuninn-2.0", "jf open 粉圓 2.0", ui-rounded, "Yuanti TC",
+    "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  /* Headings keep the original sans stack; only body text is rounded. */
+  --heading-font:
     Inter, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --text: 14px;
   --title: 20px;
@@ -36,6 +40,9 @@ input,
 textarea,
 select {
   font: inherit;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font);
 }
 button {
   cursor: pointer;
@@ -484,6 +491,7 @@ small {
   pointer-events: none;
 }
 .node.heading {
+  font-family: var(--heading-font);
   font-size: 32px;
   font-weight: 600;
 }

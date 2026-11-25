@@ -1,3 +1,9 @@
+## 內文改用 jf open 粉圓（2026-11-25）
+- DONE：網頁內文（非標題）改用 Google Fonts 的 jf open 粉圓（Huninn）。字型檔跟著專案一起發布（111 個分片、共 2.6MB，瀏覽器只下載用到的字），沒有對外連線，CSP 不用改。授權檔在 `src/assets/fonts/huninn/OFL.txt`。
+- 備援順序：jf-openhuninn-2.0（本機）、ui-rounded、圓體 TC、蘋方、微軟正黑、Noto Sans TC、sans-serif。
+- 標題維持原本的黑體（`--heading-font`）；工作台與網站預覽都一樣。文字工具列的「圓體」也改成粉圓優先。
+- PARTIAL：匯出的網站專案也把粉圓排在第一，但目前沒有附上字型檔，所以沒裝粉圓的電腦會顯示備援字。
+
 ## 拿掉介面 emoji（2026-11-25）
 - DONE：開始畫面四個按鈕與「請 AI 想幾個說法」的 emoji 改成顏文字（螢幕閱讀器略過）。src 介面已無 emoji。
 

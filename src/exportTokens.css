@@ -8,6 +8,10 @@
   --line: #daddd6;
   --danger: #ab3932;
   --font:
+    "Huninn", "jf-openhuninn-2.0", "jf open 粉圓 2.0", ui-rounded, "Yuanti TC",
+    "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  /* Headings keep the original sans stack; only body text is rounded. */
+  --heading-font:
     Inter, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --text: 14px;
   --title: 20px;

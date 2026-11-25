@@ -1490,7 +1490,7 @@ input[type="range"] {
 .empty.empty-start h2 { margin: 0; font-size: calc(26px / var(--s, 1)); }
 .empty.empty-start p, .empty.empty-start small { margin: 0; font-size: calc(15px / var(--s, 1)); color: #62655f; }
 .empty-actions { display: grid; grid-template-columns: 1fr 1fr; gap: calc(10px / var(--s, 1)); width: 100%; }
-.empty-actions button { display: grid; justify-items: center; gap: calc(6px / var(--s, 1)); min-height: calc(92px / var(--s, 1)); padding: calc(12px / var(--s, 1)); border: calc(2px / var(--s, 1)) solid #0d0e11; border-radius: calc(18px / var(--s, 1)); background: #fff; box-shadow: calc(3px / var(--s, 1)) calc(3px / var(--s, 1)) 0 #0d0e11; font: 800 calc(16px / var(--s, 1)) / 1.3 system-ui, "PingFang TC", "Microsoft JhengHei", sans-serif; color: #0d0e11; cursor: pointer; }
+.empty-actions button { display: grid; justify-items: center; gap: calc(6px / var(--s, 1)); min-height: calc(92px / var(--s, 1)); padding: calc(12px / var(--s, 1)); border: calc(2px / var(--s, 1)) solid #0d0e11; border-radius: calc(18px / var(--s, 1)); background: #fff; box-shadow: calc(3px / var(--s, 1)) calc(3px / var(--s, 1)) 0 #0d0e11; font: 800 calc(16px / var(--s, 1)) / 1.3 var(--font); color: #0d0e11; cursor: pointer; }
 .empty-actions button span { font-size: calc(19px / var(--s, 1)); font-weight: 700; letter-spacing: 0; white-space: nowrap; color: #1f7a4a; }
 .empty-actions button:hover, .empty-actions button:focus-visible { background: #10e560; }
 @media (max-width: 520px) { .empty.empty-start { width: 96%; } }
