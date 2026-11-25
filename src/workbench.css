@@ -1482,3 +1482,25 @@ input[type="range"] {
 .brand-preview p { margin: 0; color: #4b4f49; }
 .brand-preview-button { justify-self: start; padding: 10px 20px; border-radius: 999px; background: #1f7a52; color: #fff; font-weight: 700; }
 .brief-reset { min-height: 44px; padding: 0 16px; border: 2px solid #d5d5cd; border-radius: 999px; background: #fff; font: inherit; cursor: pointer; }
+.node[data-swap-target] .draft-frame-fit { outline: 4px solid #ff2d87; outline-offset: 4px; }
+.node[data-swap-target]::before { content: "放開來交換照片"; position: absolute; z-index: 4; top: -34px; left: 50%; translate: -50% 0; padding: 4px 12px; border-radius: 999px; background: #ff2d87; color: #fff; font: 700 14px/1.4 system-ui, sans-serif; white-space: nowrap; }
+
+/* ===== Empty canvas: big first steps (counter-scaled so they stay readable at any zoom) ===== */
+.empty.empty-start { display: grid; justify-items: center; gap: calc(14px / var(--s, 1)); width: min(calc(560px / var(--s, 1)), 92%); padding: calc(26px / var(--s, 1)); left: 50%; top: calc(80px / var(--s, 1)); translate: -50% 0; transform: none; border: calc(2px / var(--s, 1)) dashed #b8bab2; border-radius: calc(24px / var(--s, 1)); background: #fffdf7; text-align: center; }
+.empty.empty-start h2 { margin: 0; font-size: calc(26px / var(--s, 1)); }
+.empty.empty-start p, .empty.empty-start small { margin: 0; font-size: calc(15px / var(--s, 1)); color: #62655f; }
+.empty-actions { display: grid; grid-template-columns: 1fr 1fr; gap: calc(10px / var(--s, 1)); width: 100%; }
+.empty-actions button { display: grid; justify-items: center; gap: calc(6px / var(--s, 1)); min-height: calc(92px / var(--s, 1)); padding: calc(12px / var(--s, 1)); border: calc(2px / var(--s, 1)) solid #0d0e11; border-radius: calc(18px / var(--s, 1)); background: #fff; box-shadow: calc(3px / var(--s, 1)) calc(3px / var(--s, 1)) 0 #0d0e11; font: 800 calc(16px / var(--s, 1)) / 1.3 system-ui, "PingFang TC", "Microsoft JhengHei", sans-serif; color: #0d0e11; cursor: pointer; }
+.empty-actions button span { font-size: calc(28px / var(--s, 1)); }
+.empty-actions button:hover, .empty-actions button:focus-visible { background: #10e560; }
+@media (max-width: 520px) { .empty.empty-start { width: 96%; } }
+.empty.empty-start { pointer-events: auto; }
+@media (max-width: 760px) {
+  .empty.empty-start { top: calc(16px / var(--s, 1)); gap: calc(8px / var(--s, 1)); padding: calc(12px / var(--s, 1)); }
+  .empty.empty-start h2 { font-size: calc(18px / var(--s, 1)); }
+  .empty.empty-start p, .empty.empty-start small { display: none; }
+  .empty-actions button { display: flex; align-items: center; justify-content: center; min-height: calc(52px / var(--s, 1)); font-size: calc(14px / var(--s, 1)); gap: calc(6px / var(--s, 1)); padding: calc(6px / var(--s, 1)); }
+  .empty-actions button span { font-size: calc(18px / var(--s, 1)); }
+}
+.library .frame-library button:focus-visible, .library .frame-library button:active, .library .frame-library button:focus { background: #fff; color: #0d0e11; outline: 3px solid #10e560; outline-offset: 1px; }
+.neo-inspector .frame-actions .frame-primary { background: #10e560; color: #0d0e11; border-color: #10e560; font-weight: 800; }

@@ -17,6 +17,7 @@ import { ArrangePanel } from "./ArrangePanel";
 import { TextToolbar, defaultSize, stepSize } from "./TextToolbar";
 import { ShortcutsPanel } from "./ShortcutsPanel";
 import { BrandPanel } from "./BrandPanel";
+import { smartFocus } from "./smartCrop";
 import { textCss, type TextStyle } from "./pageSpec";
 import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
@@ -164,6 +165,8 @@ export default function App() {
   const [moving, setMoving] = useState<CanvasNode | null>(null);
   // Smart guides shown while dragging (hold Alt to move freely).
   const [guides, setGuides] = useState<Guide[]>([]);
+  // Dragging a framed photo onto another frame swaps their photos.
+  const [swapTarget, setSwapTarget] = useState<string | null>(null);
   const board = useRef<HTMLDivElement>(null);
   const drag = useRef<{
     node: CanvasNode;
@@ -1091,6 +1094,13 @@ export default function App() {
         ),
       ),
     };
+    // Over another frame with a photo-holding image: offer a swap instead of a move.
+    const dragged = state.current.present.nodes.find((v) => v.id === d.node.id);
+    if (dragged?.type === "image" && !d.copies && d.ids.length === 1) {
+      const under = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest("[data-node-id]")?.getAttribute("data-node-id")).find((id) => id && id !== d.node.id);
+      const target = state.current.present.nodes.find((v) => v.id === under);
+      setSwapTarget(target?.type === "image" && target.look?.frame && !target.locked ? target.id : null);
+    }
     if (e.altKey) {
       setGuides([]);
       setMoving(raw);
@@ -1103,6 +1113,25 @@ export default function App() {
     setMoving({ ...raw, x: Math.round(Math.max(0, Math.min(1440 - raw.width, snap.x))), y: Math.round(Math.max(0, snap.y)) });
   }
   function finish() {
+    if (swapTarget && drag.current && moving) {
+      const a = spec.nodes.find((v) => v.id === drag.current!.node.id), b = spec.nodes.find((v) => v.id === swapTarget);
+      setSwapTarget(null);
+      if (a && b) {
+        // Photos (and their crop) trade places; frames, sizes and positions stay.
+        const crop = (n: CanvasNode) => ({ focusX: n.look?.focusX, focusY: n.look?.focusY, zoom: n.look?.zoom });
+        const clean = (l: Record<string, unknown>) => Object.fromEntries(Object.entries(l).filter(([, v]) => v !== undefined));
+        const lookA = clean({ ...a.look, ...crop(b) }), lookB = clean({ ...b.look, ...crop(a) });
+        const swapped = spec.nodes.map((n) =>
+          n.id === a.id ? { ...n, assetId: b.assetId, content: b.content, ...(Object.keys(lookA).length ? { look: lookA } : {}) } :
+          n.id === b.id ? { ...n, assetId: a.assetId, content: a.content, ...(Object.keys(lookB).length ? { look: lookB } : {}) } : n);
+        if (change({ ...spec, nodes: swapped })) report("已交換兩個相框的照片，可還原。");
+      }
+      drag.current = null;
+      setMoving(null);
+      setGuides([]);
+      return;
+    }
+    setSwapTarget(null);
     const copies=drag.current?.copies;
     if(moving&&drag.current&&copies){
       if(change(translateSelection({...spec,nodes:[...spec.nodes,...copies]},drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y))){
@@ -1126,18 +1155,41 @@ export default function App() {
       onLock={lock}
     />
   );
+  const contentLabel: Record<string, string> = { heading: "標題文字", text: "文字", button: "按鈕上的字", card: "卡片內容（每行一段）", image: "圖片說明（看不到圖的人會聽到）", form: "表單欄位（每行一個）" };
   const inspectorContent=(
 node ? (
                   <>
-                    {arrange}
                     <div className="selected-component">
                       <span className="component-icon">
                         <WorkbenchIcon name={node.type} />
                       </span>
                       <h2>{labels[node.type]}</h2>
                     </div>
+                    {/* Photos first: the controls people reach for most come before position and text. */}
+                    {node.type === "image" && (
+                      <FrameControls
+                          look={node.look}
+                          hasPhoto={isPhoto(node)}
+                          onChange={(look) => patch(node.id, { look })}
+                          onPickPhoto={() => { imageTarget.current = node.id; imageInput.current?.click(); }}
+                          onClearPhoto={() => { patch(node.id, { assetId: localAssets[0], look: node.look ? { ...node.look, focusX: undefined, focusY: undefined, zoom: undefined } : undefined }); report("已清空相框，形狀保留。"); }}
+                          onCrop={() => setCropping({ id: node.id, look: { ...(node.look ?? {}) } })}
+                          onSmartCrop={async () => {
+                            const id = node.id, ref = node.assetId!;
+                            try {
+                              const f = await smartFocus(imageUrls[ref] || import.meta.env.BASE_URL + ref.slice(1));
+                              const now = state.current.present.nodes.find((v) => v.id === id);
+                              if (!now || now.assetId !== ref) return;
+                              if (patch(id, { look: { ...now.look, ...f, zoom: Math.max(now.look?.zoom ?? 1, 1.15) } })) report("已自動對準照片重點；不滿意可以雙擊再調整或還原。");
+                            } catch {
+                              report("這張照片無法自動分析，請雙擊手動調整。", true);
+                            }
+                          }}
+                        />
+                    )}
+                    {arrange}
                     <label className="field">
-                      內容
+                      {contentLabel[node.type] ?? "內容"}
                       <textarea
                         aria-label="元素內容"
                         maxLength={2000}
@@ -1180,14 +1232,6 @@ node ? (
                         <p className="note">
                           PNG／JPEG，每張原圖最多 5 MB，僅存於本機。也可以直接把照片拖到相框上。
                         </p>
-                        <FrameControls
-                          look={node.look}
-                          hasPhoto={isPhoto(node)}
-                          onChange={(look) => patch(node.id, { look })}
-                          onPickPhoto={() => { imageTarget.current = node.id; imageInput.current?.click(); }}
-                          onClearPhoto={() => { patch(node.id, { assetId: localAssets[0], look: node.look ? { ...node.look, focusX: undefined, focusY: undefined, zoom: undefined } : undefined }); report("已清空相框，形狀保留。"); }}
-                          onCrop={() => setCropping({ id: node.id, look: { ...(node.look ?? {}) } })}
-                        />
                       </div>
                     )}
                     {node.type === "button" && (
@@ -1765,12 +1809,24 @@ node ? (
                       />
                     )}
                     {!displayedNodes.length && (
-                      <div className="empty">
-                        <span className="empty-mark" aria-hidden="true">
-                          ＋
-                        </span>
+                      <div className="empty empty-start" style={{ "--s": scale } as CSSProperties} onPointerDown={(e) => e.stopPropagation()}>
                         <h2>從一個想法開始</h2>
-                        <p>點左側「區塊範本」快速搭出頁面，或拖入單一元件。</p>
+                        <p>選一個開始，之後都可以改：</p>
+                        <div className="empty-actions">
+                          <button type="button" disabled={disabled} onClick={() => addBlock("hero")}>
+                            <span aria-hidden="true">👋</span>加一段開場介紹
+                          </button>
+                          <button type="button" disabled={disabled} onClick={() => addBlock("collage")}>
+                            <span aria-hidden="true">📷</span>放幾張照片
+                          </button>
+                          <button type="button" disabled={disabled} onClick={() => setBriefOpen(true)}>
+                            <span aria-hidden="true">💬</span>告訴我想做什麼網站
+                          </button>
+                          <button type="button" onClick={() => setMode("home")}>
+                            <span aria-hidden="true">✨</span>從範本開始
+                          </button>
+                        </div>
+                        <small>也可以從左邊把東西拖進來。</small>
                       </div>
                     )}
                     {displayedNodes.map((n) => {
@@ -1785,6 +1841,7 @@ node ? (
                           data-group-id={n.groupId}
                           data-draft-drop={draftEffect ? (draftDropReason(n,draftEffect) ? (draftHover===n.id?'invalid':undefined) : 'available') : undefined}
                           data-testid="canvas-node"
+                          data-swap-target={swapTarget === n.id ? "" : undefined}
                           className={
                             "node " +
                             n.type +

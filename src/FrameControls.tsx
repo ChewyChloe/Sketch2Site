@@ -18,6 +18,7 @@ type Props = {
   onPickPhoto: () => void;
   onClearPhoto: () => void;
   onCrop: () => void;
+  onSmartCrop: () => void;
 };
 
 const sliders = [
@@ -28,7 +29,7 @@ const sliders = [
 ] as const;
 
 /** Frame, crop and photo adjustments for the selected image (one undo step per change). */
-export function FrameControls({ look, hasPhoto, onChange, onPickPhoto, onClearPhoto, onCrop }: Props) {
+export function FrameControls({ look, hasPhoto, onChange, onPickPhoto, onClearPhoto, onCrop, onSmartCrop }: Props) {
   const l = look ?? {};
   const set = (patch: Partial<ImageLook>) => {
     const next: ImageLook = { ...l, ...patch };
@@ -38,8 +39,9 @@ export function FrameControls({ look, hasPhoto, onChange, onPickPhoto, onClearPh
   return (
     <div className="frame-controls">
       <div className="frame-actions">
-        <button type="button" onClick={onPickPhoto}>{hasPhoto ? "換照片" : "放入照片"}</button>
+        <button type="button" className={hasPhoto ? undefined : "frame-primary"} onClick={onPickPhoto}>{hasPhoto ? "換照片" : "放入照片"}</button>
         <button type="button" disabled={!hasPhoto} onClick={onCrop} title="也可以雙擊圖片">調整裁切</button>
+        <button type="button" disabled={!hasPhoto} onClick={onSmartCrop} title="依照片細節估計重點，自動移到畫面中">自動對準重點</button>
         <button type="button" disabled={!hasPhoto} onClick={onClearPhoto}>清空相框</button>
       </div>
       <fieldset className="frame-picker">
