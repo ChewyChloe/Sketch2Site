@@ -40,6 +40,8 @@ export const NodeSchema = z.preprocess(bindMotionInput,z
     href: href.nullable().optional(),
     // Frame, crop and photo adjustments (images only).
     look: ImageLookSchema.optional(),
+    // Locked elements cannot be moved, resized, edited or deleted until unlocked.
+    locked: z.literal(true).optional(),
     zIndex: z.number().int().min(0).max(100),
   })
   .strict()

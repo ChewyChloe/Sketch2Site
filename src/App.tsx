@@ -13,6 +13,8 @@ import { applySiteOverrides, draftFingerprint, markSiteBuilt, overrideCount, sit
 import { indexNodes } from "./patch";
 import { FrameBox } from "./PageRuntime";
 import { FrameControls, FrameThumb } from "./FrameControls";
+import { ArrangePanel } from "./ArrangePanel";
+import { alignSelection, distribute, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
@@ -156,10 +158,14 @@ export default function App() {
   const [pending, setPending] = useState<Effect | null>(null),
     [target, setTarget] = useState("");
   const [moving, setMoving] = useState<CanvasNode | null>(null);
+  // Smart guides shown while dragging (hold Alt to move freely).
+  const [guides, setGuides] = useState<Guide[]>([]);
   const board = useRef<HTMLDivElement>(null);
   const drag = useRef<{
     node: CanvasNode;
     ids:string[];
+    // Alt + drag: copies that only join the draft when the drag ends (one undo step).
+    copies?: CanvasNode[];
     startX: number;
     startY: number;
     scale: number;
@@ -663,7 +669,29 @@ export default function App() {
   }
   function remove() {
     const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(!ids.length)return;
-    if(change(deleteNodes(spec,ids))){setSelected(null);report('已刪除選取元件，可還原。');}
+    const free=ids.filter(id=>!spec.nodes.find(n=>n.id===id)?.locked);
+    if(!free.length){report('元件已鎖定，先解鎖才能刪除。',true);return;}
+    if(change(deleteNodes(spec,free))){setSelected(null);report(free.length<ids.length?'已刪除未鎖定的元件；鎖定的元件保留。':'已刪除選取元件，可還原。');}
+  }
+  const selection = () => (selectedIds.length ? selectedIds : selected ? [selected] : []);
+  const layerWords: Record<LayerMove, string> = { front: "移到最上層", forward: "上移一層", backward: "下移一層", back: "移到最下層" };
+  function layer(move: LayerMove) {
+    const ids = selection();
+    if (ids.length && change(reorder(spec, ids, move))) report("已" + layerWords[move] + "，可還原。");
+  }
+  function align(mode: AlignMode) {
+    const ids = selection();
+    if (ids.length && change(alignSelection(spec, ids, mode))) report(ids.length > 1 ? "已對齊選取的元件。" : "已對齊畫布。");
+  }
+  function spread(axis: "h" | "v") {
+    const ids = selection();
+    if (ids.length >= 3 && change(distribute(spec, ids, axis))) report(axis === "h" ? "已左右平均分配。" : "已上下平均分配。");
+  }
+  function lock() {
+    const ids = selection();
+    if (!ids.length) return;
+    const r = toggleLock(spec, ids);
+    if (change(r.canvas)) report(r.locked ? "已鎖定：不會被拖動、改大小或刪除。" : "已解鎖。");
   }
   // Resize handles (like a slide editor): corners and edges, Shift on a corner keeps the ratio.
   type Dir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
@@ -763,6 +791,12 @@ export default function App() {
         if(k==='a'){const current=state.current.present.nodes.filter(n=>onCurrentPage(n));setSelectedIds(current.map(n=>n.id));setPrimarySelected(current[0]?.id??null);report(`已選取 ${current.length} 個元件。`);}
         if(k==='c')copySelection();if(k==='x')copySelection(true);if(k==='v')void pasteSelection();
         if(k==='g'){const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(ids.length>=2||e.shiftKey){change(groupSelection(spec,ids,e.shiftKey));report(e.shiftKey?'已取消群組，可還原。':'已建立群組，可一起移動；Shift＋點選可多選。');}}
+      } else if (mod && (e.code === "BracketRight" || e.code === "BracketLeft")) {
+        e.preventDefault();
+        layer(e.code === "BracketRight" ? (e.altKey ? "front" : "forward") : e.altKey ? "back" : "backward");
+      } else if (e.altKey && e.shiftKey && e.code === "KeyL") {
+        e.preventDefault();
+        lock();
       } else if (mod && e.key.toLowerCase() === "d") {
         e.preventDefault();
         duplicate();
@@ -779,7 +813,9 @@ export default function App() {
       ) {
         e.preventDefault();
         const step=e.shiftKey?10:1;
-        change(translateSelection(spec,selectedIds.length?selectedIds:[node.id],e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0,e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0));
+        const movable=(selectedIds.length?selectedIds:[node.id]).filter(id=>!spec.nodes.find(n=>n.id===id)?.locked);
+        if(!movable.length){report('元件已鎖定，先解鎖才能移動。',true);return;}
+        change(translateSelection(spec,movable,e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0,e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0));
       }
     };
     window.addEventListener("keydown", key);
@@ -845,6 +881,7 @@ export default function App() {
   }
   function startEditing(n: CanvasNode) {
     if (!ready || loadError || disabled) return;
+    if (n.locked) { report("元件已鎖定，在右側「位置」解鎖後才能修改。"); return; }
     if (n.type === "image") {
       // Double-click a framed photo to adjust its crop; an empty frame asks for a photo.
       if (isPhoto(n)) {
@@ -889,15 +926,29 @@ export default function App() {
     if(e.shiftKey){selectNode(n.id,true);return;}
     const own=n.groupId?spec.nodes.filter(v=>v.groupId===n.groupId).map(v=>v.id):[n.id];
     const multi=selectedIds.includes(n.id)&&selectedIds.some(id=>!own.includes(id));
-    const ids=multi?selectedIds:own;
+    let ids=multi?selectedIds:own;
     setPrimarySelected(n.id);setSelectedIds(ids);
-    drag.current = { ids,node: n, startX: e.clientX, startY: e.clientY, scale, collapseTo: multi?own:undefined };
+    // Locked elements can be selected but not dragged.
+    if(n.locked){report('元件已鎖定，在右側「位置」解鎖後才能移動。');return;}
+    ids=ids.filter(id=>!spec.nodes.find(v=>v.id===id)?.locked);
+    let anchor=n;
+    let copies:CanvasNode[]|undefined;
+    // Alt + drag drags a copy, like in slide editors.
+    if(e.altKey){
+      const sources=spec.nodes.filter(v=>ids.includes(v.id));
+      copies=cloneNodes(sources,0,0,spec.metadata.height);
+      if(copies.length){
+        anchor=copies[sources.findIndex(v=>v.id===n.id)]??copies[0];ids=copies.map(c=>c.id);
+        report('放開滑鼠就會放下複製的元件。');
+      }else copies=undefined;
+    }
+    drag.current = { ids,node: anchor, copies, startX: e.clientX, startY: e.clientY, scale, collapseTo: multi&&!e.altKey?own:undefined };
     e.currentTarget.setPointerCapture(e.pointerId);
   }
   function move(e: React.PointerEvent) {
     const d = drag.current;
     if (!d) return;
-    setMoving({
+    const raw = {
       ...d.node,
       x: Math.round(
         Math.max(
@@ -917,17 +968,46 @@ export default function App() {
           ),
         ),
       ),
-    });
+    };
+    if (e.altKey) {
+      setGuides([]);
+      setMoving(raw);
+      return;
+    }
+    // Snap to the canvas and to other elements on this page.
+    const others = state.current.present.nodes.filter((v) => !d.ids.includes(v.id) && onCurrentPage(v));
+    const snap = snapBox(raw, others, { width: 1440, height: state.current.present.metadata.height }, 6 / d.scale);
+    setGuides(snap.guides);
+    setMoving({ ...raw, x: Math.round(Math.max(0, Math.min(1440 - raw.width, snap.x))), y: Math.round(Math.max(0, snap.y)) });
   }
   function finish() {
-    if(moving&&drag.current)change(translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y));
+    const copies=drag.current?.copies;
+    if(moving&&drag.current&&copies){
+      if(change(translateSelection({...spec,nodes:[...spec.nodes,...copies]},drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y))){
+        setPrimarySelected(drag.current.node.id);setSelectedIds(drag.current.ids);report(`已複製 ${copies.length} 個元件，可還原。`);
+      }
+    }
+    else if(moving&&drag.current)change(translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y));
     else if(drag.current?.collapseTo)setSelectedIds(drag.current.collapseTo);
     drag.current = null;
     setMoving(null);
+    setGuides([]);
   }
+  const selectedNodes = spec.nodes.filter((n) => selectedIds.includes(n.id));
+  const arrange = selectedNodes.length > 0 && (
+    <ArrangePanel
+      count={selectedNodes.length}
+      locked={selectedNodes.every((n) => n.locked)}
+      onLayer={layer}
+      onAlign={align}
+      onDistribute={spread}
+      onLock={lock}
+    />
+  );
   const inspectorContent=(
 node ? (
                   <>
+                    {arrange}
                     <div className="selected-component">
                       <span className="component-icon">
                         <WorkbenchIcon name={node.type} />
@@ -1108,6 +1188,8 @@ node ? (
                       <button onClick={remove}>刪除元件</button>
                     </div>
                   </>
+                ) : selectedNodes.length ? (
+                  <>{arrange}</>
                 ) : (
                   <p className="note">
                     先在畫布上選取一個元件，即可編輯內容、位置與動畫標記。
@@ -1115,7 +1197,8 @@ node ? (
                 )
   );
   const disabled = !ready || loadError;
-  const displayedNodesAll=resizing?spec.nodes.map(n=>n.id===resizing.id?{...n,...resizing}:n):moving&&drag.current?translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
+  const dragBase=drag.current?.copies&&moving?{...spec,nodes:[...spec.nodes,...drag.current.copies]}:spec;
+  const displayedNodesAll=resizing?spec.nodes.map(n=>n.id===resizing.id?{...n,...resizing}:n):moving&&drag.current?translateSelection(dragBase,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y).nodes:spec.nodes;
   const displayedNodes=displayedNodesAll.filter(n=>onCurrentPage(n,spec));
   return (
     <>
@@ -1485,6 +1568,14 @@ node ? (
                     }}
                     onPointerCancel={() => setMarquee(null)}
                   >
+                    {guides.map((g, i) => (
+                      <div
+                        key={i}
+                        className={"smart-guide " + g.axis}
+                        aria-hidden="true"
+                        style={g.axis === "v" ? { left: g.pos, top: g.from, height: g.to - g.from } : { top: g.pos, left: g.from, width: g.to - g.from }}
+                      />
+                    ))}
                     {marquee && (
                       <div
                         className="canvas-marquee"
@@ -1595,7 +1686,7 @@ node ? (
                               </div>
                             </div>
                           )}
-                          {selected === n.id && selectedIds.length === 1 && editing !== n.id && !brush && cropping?.id !== n.id &&
+                          {selected === n.id && selectedIds.length === 1 && editing !== n.id && !brush && cropping?.id !== n.id && !n.locked &&
                             (["n", "s", "e", "w", "ne", "nw", "se", "sw"] as const).map((dir) => (
                               <span
                                 key={dir}
@@ -1672,6 +1763,7 @@ node ? (
                           ) : (
                             n.content
                           )}
+                          {n.locked && <span className="lock-badge" title="已鎖定" aria-label="已鎖定"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z" /></svg></span>}
                           <span className="effect-tags">
                             {n.effects.map((f) => (
                               <span key={f.presetId}>{effects[f.presetId]}</span>

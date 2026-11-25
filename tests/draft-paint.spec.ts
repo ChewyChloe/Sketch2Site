@@ -55,6 +55,8 @@ for (const scale of [0.6, 0.75]) {
     const start = { x: box.x + 20, y: box.y + 20 };
     await page.mouse.move(start.x, start.y);
     await page.mouse.down();
+    // Holding Alt while moving turns smart-guide snapping off, so positions are exact.
+    await page.keyboard.down('Alt');
     for (let i = 0; i < 32; i++) {
       const dx = (40 + (i % 8) * 45) * scale;
       const dy = (40 + Math.floor(i / 8) * 65) * scale;
@@ -62,6 +64,7 @@ for (const scale of [0.6, 0.75]) {
       await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     }
     await page.mouse.up();
+    await page.keyboard.up('Alt');
     const final = { x: Math.round(initial.x + 355), y: Math.round(initial.y + 235) };
     await expect(node.locator('.node-label')).toContainText(`${Math.round(final.x)}, ${Math.round(final.y)}`);
     expect(await node.evaluate(el=>parseFloat(getComputedStyle(el).left))).toBeCloseTo(final.x,2);
