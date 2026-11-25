@@ -9,6 +9,8 @@ import { useAssetUrls, useAssetRefs } from "./useAssetUrls";
 import { AnimationLibrary } from "./AnimationLibrary";
 import { WorkbenchMenu } from "./WorkbenchMenu";
 import { enlivenDraft, stillDraft } from "./motionRecipes";
+import { applySiteOverrides, draftFingerprint, markSiteBuilt, overrideCount, siteOutdated, syncSiteChange } from "./siteSync";
+import { indexNodes } from "./patch";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   blank,
@@ -218,6 +220,8 @@ export default function App() {
           result = createSiteCandidate(spec);
           usedLocal = true;
         }
+      // Layout tweaks made earlier on the site come back on the new version.
+      result = { ...result, page: applySiteOverrides(result.page, spec) };
       const latest = previewRef.current?.target();
       if (
         run !== generationRun.current ||
@@ -250,6 +254,24 @@ export default function App() {
       }
     }
   }
+  // ---- Draft ↔ site sync (siteSync.ts) ----
+  const [syncSaves, setSyncSaves] = useState(0);
+  useEffect(() => {
+    if (syncSaves) void save();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncSaves]);
+  function syncFromSite(before: PageSpec, after: PageSpec) {
+    const draft = state.current.present;
+    const ids = new Set(draft.nodes.map((n) => n.id));
+    // Only a site generated from this draft writes back (not a loaded file or sample).
+    if (![...indexNodes(after).keys()].some((id) => ids.has(id))) return;
+    const next = syncSiteChange(draft, before, after);
+    if (!next) return;
+    // Edits made on the site don't make the site outdated.
+    const inSync = draft.metadata.siteBuiltFrom === draftFingerprint(draft);
+    setHistory((h) => commit(h, inSync ? markSiteBuilt(next) : next));
+    setSyncSaves((n) => n + 1);
+  }
   async function acceptCandidate(page: PageSpec = candidate!.result.page) {
     if (!candidate || candidate.canvasVersion !== canvasVersion.current) return;
     setAccepting(true);
@@ -259,8 +281,12 @@ export default function App() {
         page,
         candidate.target,
       );
-      if (result.ok) setCandidate(null);
-      else
+      if (result.ok) {
+        // Remember which draft the site was built from (no undo step for this bookkeeping).
+        setHistory((h) => ({ ...h, present: markSiteBuilt(h.present) }));
+        setSyncSaves((n) => n + 1);
+        setCandidate(null);
+      } else
         setGenerationError((result.error ?? "儲存失敗") + " 候選結果仍保留。");
     } finally {
       setAccepting(false);
@@ -1074,7 +1100,8 @@ node ? (
               aria-pressed={mode === "preview"}
               disabled={accepting}
               onClick={() => {
-                if(mode==="draft"&&spec.nodes.length&&!generating){
+                // Once a site was built from this draft, 預覽 opens that site (with an update banner if needed).
+                if(mode==="draft"&&spec.nodes.length&&!generating&&!spec.metadata.siteBuiltFrom){
                   if(!previewRef.current?.target()){setMode("preview");return;}
                   const missing=spec.nodes.find(n=>n.type==="button"&&!n.href);
                   if(missing){setSelected(missing.id);setTab("properties");setPanel(true);setGenerationError("請先為「"+missing.content+"」設定按鈕連結，再預覽。");return;}
@@ -1210,7 +1237,14 @@ node ? (
             display: mode === "preview" && !candidate ? "flex" : "none",
           }}
         >
-          <Preview ref={previewRef} />
+          {siteOutdated(spec) && !generating && (
+            <div className="site-update-bar" role="status">
+              <span>草稿有新的變更，網站還沒更新。</span>
+              <button type="button" className="primary" onClick={() => void generate()}>更新網站</button>
+              <small>你在網站上的修改會保留。</small>
+            </div>
+          )}
+          <Preview ref={previewRef} onSiteChange={syncFromSite} />
         </div>
         {mode === "home" && (
           <HomePage
@@ -1231,6 +1265,7 @@ node ? (
             candidate={candidate.result}
             previewOnly={candidate.previewOnly}
             aiFallback={candidate.aiFallback}
+            kept={overrideCount(spec.metadata.siteOverrides)}
             stale={candidate.canvasVersion !== canvasVersion.current}
             onAccept={acceptCandidate}
             onBack={() => {

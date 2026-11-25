@@ -6,6 +6,7 @@ export default function CandidatePreview({
   candidate,
   previewOnly=false,
   aiFallback=false,
+  kept=0,
   stale,
   onAccept,
   onBack,
@@ -13,6 +14,8 @@ export default function CandidatePreview({
   candidate: CandidateResult;
   previewOnly?:boolean;
   aiFallback?: boolean;
+  /** Site tweaks carried over from the previous version. */
+  kept?: number;
   stale: boolean;
   onAccept: (page: PageSpec) => Promise<void>;
   onBack: () => void;
@@ -35,6 +38,7 @@ export default function CandidatePreview({
           </strong>
           <small>
             {aiFallback ? "AI 尚未設定，已改用本機智慧排版（未呼叫 AI）。" : "確認後才儲存"}
+            {kept > 0 && ` 已保留你在網站上的 ${kept} 項版面修改。`}
           </small>
         </div>
         <div>

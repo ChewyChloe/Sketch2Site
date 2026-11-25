@@ -1314,3 +1314,8 @@ input[type="range"] {
 .neo-motion-full .animation-asset[data-effect-id="physics-tag-field"] .asset-sample { padding:36px 14px 14px; box-sizing:border-box; width:100%; height:100%; }
 .workbench-menu:not([open]) > .workbench-menu-content { display: none; }
 .workbench-menu-content { max-width: calc(100vw - 16px); }
+/* Draft changed after the site was built: one-click update that keeps site tweaks. */
+.preview-host { position: relative; }
+.site-update-bar { position: absolute; z-index: 7; top: 56px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 32px); padding: 8px 10px 8px 16px; border: 2px solid #0d0e11; border-radius: 999px; background: #fffbe6; box-shadow: 3px 3px 0 #0d0e11; font-size: 14px; }
+.site-update-bar button.primary { min-height: 36px; padding: 0 16px; border: 2px solid #0d0e11; border-radius: 999px; background: #10e560; color: #0d0e11; font-weight: 800; cursor: pointer; }
+.site-update-bar small { color: #62655f; }

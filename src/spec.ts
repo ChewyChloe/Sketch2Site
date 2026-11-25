@@ -3,6 +3,7 @@ import { z } from "zod";
 import { imageSource } from "./assetRef";
 import { MotionSchema, bindMotionInput, compatibleMotion, combinationReason, withinMotionBudget } from "./motion";
 import { href, localAssets } from "./pageSpec";
+import { SiteOverridesSchema } from "./siteOverrides";
 export const Effect = z.enum([
   "hover-glow",
   "fade-in",
@@ -58,6 +59,10 @@ export const CanvasSchema = z
         }).strict().optional(),
         // Pages of a multi-page site, in order; the first is the home page.
         pages: z.array(z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(30) }).strict()).min(1).max(10).optional(),
+        // Layout tweaks made on the generated site, re-applied after each generation (siteSync.ts).
+        siteOverrides: SiteOverridesSchema.optional(),
+        // Short fingerprint of the draft the current site was built from (siteSync.ts).
+        siteBuiltFrom: z.string().regex(/^[0-9a-f]{8}$/).optional(),
         width: z.literal(1440),
         // Taller pages grow in 600px steps; existing drafts stay at 1200.
         height: z.number().int().min(1200).max(canvasMaxHeight),

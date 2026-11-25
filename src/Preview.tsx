@@ -71,7 +71,7 @@ export type PreviewHandle = {
     target: { sessionId: string; revision: number },
   ): Promise<{ ok: boolean; error?: string }>;
 };
-export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
+export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle>; onSiteChange?: (before: import("./pageSpec").PageSpec, after: import("./pageSpec").PageSpec) => void }) {
   const pendingEdits = useRef(false);
   const resetProperties = useRef<() => void>(() => {});
   const selectionHead = useRef<string[]>([]);
@@ -86,7 +86,14 @@ export default function Preview({ ref }: { ref?: Ref<PreviewHandle> }) {
   const [importingImage, setImportingImage] = useState(false);
   const localImages = useAssetRefs();
   const persistence = usePagePersistence();
-  const { session, current, update, ready, loadError, status } = persistence;
+  const { session, current, update: store, ready, loadError, status } = persistence;
+  // Every edit, undo and redo on the site is reported so the draft can follow (siteSync.ts).
+  const update = (next: Parameters<typeof store>[0]) => {
+    const before = current.current.history.present;
+    store(next);
+    const after = next.history.present;
+    if (after !== before) onSiteChange?.(before, after);
+  };
   useImperativeHandle(ref, () => ({
     target: () =>
       pendingEdits.current ? null : persistence.generationTarget(),
