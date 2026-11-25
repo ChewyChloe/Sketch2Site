@@ -39,7 +39,7 @@ for (const width of [1440, 768, 375])
     await page.route("**/api/**", (r) => {
       // The read-only "is AI set up?" probe sends no draft data and creates no session;
       // it is aborted too, and the demo must still work.
-      if (!r.request().url().endsWith("/api/generation/ready")) unexpected.push(r.request().url());
+      if (!/\/api\/(generation\/ready|auth\/me)$/.test(r.request().url())) unexpected.push(r.request().url());
       return r.abort();
     });
     await page.route("https://**/*", (r) => {
@@ -51,9 +51,9 @@ for (const width of [1440, 768, 375])
     await draftAction(page, "載入個人作品集");
     await expect(page.getByTestId("canvas-node")).toHaveCount(6);
     await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-    await draftAction(page, "智慧排版（非 AI）");
+    await draftAction(page, "立即排版");
     await expect(
-      page.getByText("智慧排版（非 AI）", { exact: true }),
+      page.locator('[data-candidate-mode="demo"]'),
     ).toBeVisible();
     await page.screenshot({
       path: `test-results/review1-candidate-${width}.png`,
@@ -130,9 +130,9 @@ for (const name of ["活動介紹", "不規則草稿", "動畫草稿"])
     await page.getByRole("button", { name: "還原", exact: true }).click();
     await expect(page.getByTestId("canvas-node")).toHaveCount(0);
     await page.getByRole("button", { name: "重做", exact: true }).click();
-    await draftAction(page, "智慧排版（非 AI）");
+    await draftAction(page, "立即排版");
     await expect(
-      page.getByText("智慧排版（非 AI）", { exact: true }),
+      page.locator('[data-candidate-mode="demo"]'),
     ).toBeVisible();
     if (name === "動畫草稿")
       await expect(

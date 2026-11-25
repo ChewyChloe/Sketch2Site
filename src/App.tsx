@@ -16,6 +16,7 @@ import { FrameControls, FrameThumb } from "./FrameControls";
 import { ArrangePanel } from "./ArrangePanel";
 import { TextToolbar, defaultSize, stepSize } from "./TextToolbar";
 import { ShortcutsPanel } from "./ShortcutsPanel";
+import { AccountButton } from "./AccountButton";
 import { BrandPanel } from "./BrandPanel";
 import { smartFocus } from "./smartCrop";
 import { CopySuggest } from "./CopySuggest";
@@ -61,7 +62,7 @@ const labels = {
   image: "圖片",
   form: "表單",
 };
-const effects = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameEn])) as Record<MotionId,string>;
+const effects = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameZh])) as Record<MotionId,string>;
 type Effect = keyof typeof effects;
 const dragType = "application/x-sketch2site";
 const demoFixtures = generationFixtures();
@@ -118,7 +119,7 @@ export default function App() {
   const [ready, setReady] = useState(false),
     [busy, setBusy] = useState(false),
     [loadError, setLoadError] = useState(false);
-  const [message, setMessage] = useState("正在讀取本機草稿…"),
+  const [message, setMessage] = useState("正在打開你的草稿…"),
     [error, setError] = useState(false);
   const [saved, setSaved] = useState(""),
     [zoom, setScale] = useState<number | "fit">("fit"),
@@ -141,6 +142,46 @@ export default function App() {
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
+  }, [mode]);
+  // Touch: two fingers pinch-zoom the canvas around the fingers; a double tap on empty canvas
+  // toggles between "fit" and a readable 60%.
+  useEffect(() => {
+    const el = canvasScroll.current;
+    if (!el) return;
+    let pinch: { d: number; s: number; fx: number; fy: number } | null = null, lastTap = 0;
+    const dist = (t: TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    const current = () => Number(getComputedStyle(el).getPropertyValue("--draft-scale")) || 1;
+    const zoomAround = (next: number, cx: number, cy: number, from: number) => {
+      const r = el.getBoundingClientRect(), ox = cx - r.left + el.scrollLeft, oy = cy - r.top + el.scrollTop;
+      setScale(next);
+      requestAnimationFrame(() => { el.scrollLeft = (ox * next) / from - (cx - r.left); el.scrollTop = (oy * next) / from - (cy - r.top); });
+    };
+    const start = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        drag.current = null; setMoving(null);
+        pinch = { d: dist(e.touches), s: current(), fx: (e.touches[0].clientX + e.touches[1].clientX) / 2, fy: (e.touches[0].clientY + e.touches[1].clientY) / 2 };
+      } else if (e.touches.length === 1 && !(e.target as Element).closest("[data-node-id], button, input, textarea, select")) {
+        const now = Date.now();
+        if (now - lastTap < 300) {
+          e.preventDefault();
+          const from = current(), next = from < 0.55 ? 0.6 : 0;
+          if (next) zoomAround(next, e.touches[0].clientX, e.touches[0].clientY, from); else setScale("fit");
+          lastTap = 0;
+        } else lastTap = now;
+      }
+    };
+    const moveTouch = (e: TouchEvent) => {
+      if (!pinch || e.touches.length !== 2) return;
+      e.preventDefault();
+      const next = Math.round(Math.min(1.5, Math.max(0.2, (pinch.s * dist(e.touches)) / pinch.d)) * 100) / 100;
+      zoomAround(next, pinch.fx, pinch.fy, current());
+    };
+    const end = (e: TouchEvent) => { if (e.touches.length < 2) pinch = null; };
+    el.addEventListener("touchstart", start, { passive: false });
+    el.addEventListener("touchmove", moveTouch, { passive: false });
+    el.addEventListener("touchend", end);
+    return () => { el.removeEventListener("touchstart", start); el.removeEventListener("touchmove", moveTouch); el.removeEventListener("touchend", end); };
   }, [mode]);
   const [draftDragging, setDraftDragging] = useState(false);
   const [draftEffect,setDraftEffect]=useState<Effect|null>(null),[draftHover,setDraftHover]=useState<string|null>(null);
@@ -228,7 +269,7 @@ export default function App() {
       let usedLocal = demo || multiPage;
       let result;
       // Multi-page sites are laid out page by page locally; AI generation handles one page per request.
-      if (demo || multiPage) result = createSiteCandidate(spec);
+      if (demo || multiPage || aiOff.current) { result = createSiteCandidate(spec); usedLocal = true; }
       else
         try {
           result = await requestGeneration(pageDraft(spec, null), controller.signal);
@@ -253,11 +294,11 @@ export default function App() {
       report(
         result.mode !== "live"
           ? multiPage && !demo
-            ? `已用本機智慧排版生成 ${spec.metadata.pages!.length} 頁網站（未呼叫 AI）。`
+            ? `網站做好了，共 ${spec.metadata.pages!.length} 頁。`
             : usedLocal && !demo
-            ? "AI 尚未設定，已改用本機智慧排版（未呼叫 AI）。"
-            : "智慧排版完成，未呼叫 AI。"
-          : "草稿已送至 OpenAI，候選尚未儲存。",
+            ? "網站做好了！"
+            : "網站做好了！"
+          : "AI 排好了，看看喜不喜歡。",
       );
       setCandidate({ result, canvasVersion: version, target, previewOnly, aiFallback: usedLocal && !demo });
       setMode("preview");
@@ -306,7 +347,7 @@ export default function App() {
         setSyncSaves((n) => n + 1);
         setCandidate(null);
       } else
-        setGenerationError((result.error ?? "儲存失敗") + " 候選結果仍保留。");
+        setGenerationError((result.error ?? "儲存失敗") + " 剛做好的網站還在，可以再按一次「使用此版本」。");
     } finally {
       setAccepting(false);
     }
@@ -380,8 +421,8 @@ export default function App() {
     try {
       const asset = await importImage(file);
       if (canvasVersion.current !== originalVersion) {
-        setImageFeedback("草稿已變更，圖片保留於本機素材，請重新選取。");setImageError(true);
-        report("草稿已變更，圖片保留於本機素材，請重新選取。", true);
+        setImageFeedback("草稿剛剛變了，請再選一次照片。");setImageError(true);
+        report("草稿剛剛變了，請再選一次照片。", true);
         return;
       }
       if (id) {
@@ -415,8 +456,8 @@ export default function App() {
         setSelected(next.id);
       }
       setTab("properties");
-      setImageFeedback("圖片已匯入，僅存於本機。");
-      report("圖片已匯入，僅存於本機。");
+      setImageFeedback("照片放好了！");
+      report("照片放好了！");
       requestAnimationFrame(()=>{const selectedId=id??state.current.present.nodes.at(-1)?.id;if(selectedId)board.current?.querySelector<HTMLElement>('[data-node-id="'+selectedId+'"]')?.scrollIntoView({block:'nearest',inline:'nearest'});});
     } catch (e) {
       setImageFeedback(assetErrorMessage(e));setImageError(true);
@@ -524,19 +565,22 @@ export default function App() {
     },
   };
   function loadDemo(fixture: CanvasSpec) {
-    if (dirty && !window.confirm("載入示範會取代目前草稿，可使用還原復原。是否繼續？")) return false;
+    if (dirty && !window.confirm("載入範例會取代目前的草稿（可以按還原回來）。要繼續嗎？")) return false;
     if (!change(fixture.metadata.layoutMode ? fixture : { ...fixture, metadata: { ...fixture.metadata, layoutMode: "reflow" } })) return false;
     setSelected(null);
     setPending(null);
     setMoving(null);
     drag.current = null;
     setCandidate(null);
-    report("已載入示範草稿（非 AI），可還原。");
+    report("已載入範例草稿，可以按還原回來。");
     return true;
   }
   // ---- Generation brief (fill-in description) ----
   const [briefOpen, setBriefOpen] = useState(false);
   const [aiReady, setAiReady] = useState(false);
+  // True once the start-up probe has answered "not set up": generation then goes straight to
+  // the local layout instead of knocking on the AI service first.
+  const aiOff = useRef(import.meta.env.VITE_SITES_FRONTEND_ONLY === "true");
   const [pendingGenerate, setPendingGenerate] = useState(false);
   // Checked on start and whenever the brief opens: AI features show only when AI is set up.
   useEffect(() => {
@@ -544,8 +588,8 @@ export default function App() {
     let live = true;
     fetch("/api/generation/ready", { credentials: "same-origin", cache: "no-store" })
       .then((r) => r.json())
-      .then((s: { configured?: boolean }) => { if (live) setAiReady(Boolean(s?.configured)); })
-      .catch(() => { if (live) setAiReady(false); });
+      .then((s: { configured?: boolean }) => { if (live) { setAiReady(Boolean(s?.configured)); aiOff.current = !s?.configured; } })
+      .catch(() => { if (live) { setAiReady(false); aiOff.current = true; } });
     return () => { live = false; };
   }, [briefOpen]);
   // Generate after the brief has been written into the draft (next render sees it).
@@ -641,7 +685,7 @@ export default function App() {
       return;
     }
     if (n.effects.some(e=>e.presetId===effect)) {
-      report("此元素已有該動畫標記");
+      report("這個元件已經有這個動畫了。");
       return;
     }
     if(targetReason(n,effect)){report(targetReason(n,effect)!,true);return;}
@@ -650,7 +694,7 @@ export default function App() {
     patch(id, { effects: [...n.effects, motion] });
     setSelected(id);
     setPending(null);
-    report("已附加 " + effects[effect] + " · 草稿不播放動畫");
+    report("已加上「" + effects[effect] + "」，到「預覽」就能看到它動。");
   }
   async function save() {
     if (!ready || loadError) return;
@@ -666,7 +710,7 @@ export default function App() {
         await saveDraft(snapshot);
         setSaved(JSON.stringify(snapshot));
       }
-      report("已儲存至本機");
+      report("已儲存");
     } catch {
       savePending.current = null;
       report(
@@ -757,6 +801,27 @@ export default function App() {
     }
     return heights.size ? fitHeights(next, heights, canvasMaxHeight, (a, b) => pageOfNode(next, a) === pageOfNode(next, b)) : next;
   }
+  // Keeps text from spilling out of its box when the font loads late or a saved draft was
+  // measured with another font: grows boxes that overflow (never shrinks), without adding
+  // an undo step.
+  const [fontsReady, setFontsReady] = useState(0);
+  useEffect(() => {
+    let live = true;
+    void document.fonts?.ready.then(() => live && setFontsReady((v) => v + 1));
+    const done = () => live && setFontsReady((v) => v + 1);
+    document.fonts?.addEventListener?.("loadingdone", done);
+    return () => { live = false; document.fonts?.removeEventListener?.("loadingdone", done); };
+  }, []);
+  const textFitKey = spec.nodes.filter((n) => textTypes.includes(n.type)).map((n) => `${n.id}:${n.width}:${n.height}:${n.content.length}:${JSON.stringify(n.textStyle ?? "")}`).join("|");
+  useEffect(() => {
+    if (!ready || !fontsReady || editing || moving) return;
+    const t = window.setTimeout(() => {
+      const present = state.current.present;
+      const fitted = withFittedText(present, present.nodes.filter((n) => textTypes.includes(n.type) && n.type !== "button").map((n) => n.id));
+      if (fitted !== present && CanvasSchema.safeParse(fitted).success) setHistory((h) => (h.present === present ? { ...h, present: fitted } : h));
+    }, 250);
+    return () => window.clearTimeout(t);
+  }, [textFitKey, ready, fontsReady, editing, moving, currentPage]);
   /** Applies a style change (or null = clear) to every selected text element, as one undo step. */
   function styleText(patch: Partial<TextStyle> | null, ids?: string[]) {
     const targets = ids ? spec.nodes.filter((n) => ids.includes(n.id)) : textTargets();
@@ -1069,7 +1134,10 @@ export default function App() {
         report('放開滑鼠就會放下複製的元件。');
       }else copies=undefined;
     }
-    drag.current = { ids,node: anchor, copies, startX: e.clientX, startY: e.clientY, scale, collapseTo: multi&&!e.altKey?own:undefined };
+    // Like slide editors: the first click picks the whole group; clicking it again (without
+    // dragging) picks just the element under the pointer.
+    const groupAlready=own.length>1&&!multi&&own.every(id=>selectedIds.includes(id))&&selectedIds.length===own.length;
+    drag.current = { ids,node: anchor, copies, startX: e.clientX, startY: e.clientY, scale, collapseTo: e.altKey?undefined:multi?own:groupAlready?[n.id]:undefined };
     e.currentTarget.setPointerCapture(e.pointerId);
   }
   function move(e: React.PointerEvent) {
@@ -1141,7 +1209,7 @@ export default function App() {
       }
     }
     else if(moving&&drag.current)change(translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y));
-    else if(drag.current?.collapseTo)setSelectedIds(drag.current.collapseTo);
+    else if(drag.current?.collapseTo){setSelectedIds(drag.current.collapseTo);if(drag.current.collapseTo.length===1&&drag.current.ids.length>1)report('現在只選了這一個元件，可以單獨修改。');}
     drag.current = null;
     setMoving(null);
     setGuides([]);
@@ -1244,7 +1312,7 @@ node ? (
                           {importingImage ? "正在匯入圖片…" : "替換圖片"}
                         </button>
                         <p className="note">
-                          PNG／JPEG，每張原圖最多 5 MB，僅存於本機。也可以直接把照片拖到相框上。
+                          PNG 或 JPEG，每張最多 5 MB。也可以直接把照片拖到相框上。
                         </p>
                       </div>
                     )}
@@ -1343,7 +1411,7 @@ node ? (
                         </label>
                       ))}
                     </div>
-                    <h2>動畫標記</h2>
+                    <h2>動畫</h2>
                     {node.effects.length ? (
                       node.effects.map((f) => (
                         <div className="effect-row" key={f.presetId}>
@@ -1372,7 +1440,7 @@ node ? (
                   <>{arrange}</>
                 ) : (
                   <p className="note">
-                    先在畫布上選取一個元件，即可編輯內容、位置與動畫標記。
+                    點一下畫布上的東西，就能在這裡改內容、位置和動畫。
                   </p>
                 )
   );
@@ -1452,7 +1520,7 @@ node ? (
               className="primary topbar-generate"
               disabled={disabled || generating || !spec.nodes.length}
               aria-label={generating?"生成中…":"生成網站"}
-              title="生成時會將這份草稿的內容與布局傳送至 OpenAI"
+              title={aiReady ? "生成時會把草稿的內容和版面傳給 OpenAI 排版" : "把草稿變成完整的網站"}
               onClick={() => void generate()}
             >
               <span aria-hidden="true">ϟ</span> {generating ? "生成中…" : "生成網站"}
@@ -1512,9 +1580,9 @@ node ? (
                   disabled={disabled || generating || !spec.nodes.length}
                   onClick={() => void generate(true)}
                 >
-                  智慧排版（非 AI）
+                  立即排版
                 </button>
-                <div className="menu-label">示範草稿（非 AI）</div>
+                <div className="menu-label">範例草稿</div>
                 {demoFixtures
                   .filter((_, index) => index !== 2)
                   .map((fixture) => (
@@ -1545,6 +1613,7 @@ node ? (
           )}
           </div>
         </div>
+        <AccountButton />
       </header>
       {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
       {brandOpen && mode === "draft" && (
@@ -1676,6 +1745,7 @@ node ? (
                       onChange={(e) => setScale(e.target.value === "fit" ? "fit" : Number(e.target.value))}
                     >
                       <option value="fit">符合寬度</option>
+                      {typeof zoom === "number" && ![0.4, 0.5, 0.6, 0.75, 1].includes(zoom) && <option value={zoom}>{Math.round(zoom * 100)}%</option>}
                       {[0.4, 0.5, 0.6, 0.75, 1].map((s) => (
                         <option key={s} value={s}>
                           {s * 100}%
@@ -1773,7 +1843,8 @@ node ? (
                       width: 1440,
                       height: spec.metadata.height,
                       transform: "scale(" + scale + ")",
-                    }}
+                      "--s": scale,
+                    } as CSSProperties}
                     onDragOver={(e) => {
                       e.preventDefault();
                       const id=(e.target as HTMLElement).closest('[data-node-id]')?.getAttribute('data-node-id')??null;
@@ -2113,7 +2184,7 @@ node ? (
                       disabled={!target}
                       onClick={() => attach(pending, target, Object.values(motionCatalog[pending].controls).some(c=>c.required)?pendingControls:undefined)}
                     >
-                      附加標記
+                      加上動畫
                     </button>{" "}
                     <button onClick={() => setPending(null)}>取消</button>
                   </div>
@@ -2267,7 +2338,7 @@ node ? (
                       node?.effects.some(
                         (e) => e.presetId === id,
                       )
-                        ? "已附加標記"
+                        ? "已經加過這個動畫了"
                         : node ? targetReason(node,id) : null
                     }
                     onChoose={(id) => {

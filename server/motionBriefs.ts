@@ -64,6 +64,14 @@ const briefs: Record<MotionId, [
     "pinned-story-panels": ["2至5個真實分鏡在有界捲動視窗依進度切換，手機直排。生成只規劃來源布局，不能替換動畫或編造內容。", "映射受控pinned-story-panels Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。"],
     "particle-constellation": ["單一Canvas中有限小點慢速移動並依距離連線，離屏／背景暫停。生成只規劃來源布局，不能替換動畫或編造內容。", "映射受控particle-constellation Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。"],
     "elastic-svg-morph": ["相容的八段曲線座標真正變形，具有有限彈性回彈。生成只規劃來源布局，不能替換動畫或編造內容。", "映射受控elastic-svg-morph Runtime，完整保留來源Preset、素材順序及驗證過的controls；不輸出動畫程式碼或額外可見內容。"],
+    "typewriter": ["短文字逐字打出，營造正在說話的感覺。生成只規劃來源布局，不能改寫文字。", "映射受控typewriter Runtime；原文保留可選取，覆蓋層打完即移除。"],
+    "marquee-text": ["一行短句持續橫向捲動，吸引目光到公告或優惠。生成只規劃來源布局，不能改寫文字。", "映射受控marquee-text Runtime；離屏暫停，原文保留給輔助科技。"],
+    "gradient-text-flow": ["大標題中的彩色漸層緩慢流動，增加品牌感。生成只規劃來源布局，不能改寫文字。", "映射受控gradient-text-flow Runtime；background-clip文字，離屏暫停。"],
+    "blur-in": ["內容從模糊對焦到清楚，進場柔和。生成只規劃來源布局。", "映射受控blur-in Runtime；只播放一次，不改變布局。"],
+    "float-idle": ["元件輕微上下漂浮，讓畫面有呼吸感。生成只規劃來源布局。", "映射受控float-idle Runtime；離屏暫停，不影響點擊。"],
+    "confetti-burst": ["點擊按鈕時噴出彩紙，適合送出與慶祝。生成只規劃來源布局。", "映射受控confetti-burst Runtime；紙片播完移除，不阻擋原動作。"],
+    "jelly-press": ["滑過或按下時Q彈回饋，讓可點元件更有趣。生成只規劃來源布局。", "映射受控jelly-press Runtime；結束回到原尺寸。"],
+    "shine-sweep": ["一道亮光掃過按鈕或卡片，提示可以點。生成只規劃來源布局。", "映射受控shine-sweep Runtime；每次只掃一次。"],
 };
 export const serverMotionRegistry = Object.fromEntries(motionIds.map(id => [id, { ...motionCatalog[id], designIntent: briefs[id][0], implementationBrief: briefs[id][1] }])) as Record<MotionId, typeof motionCatalog[MotionId] & {
     designIntent: string;

@@ -402,3 +402,118 @@ body{background:var(--neo-cream)}
   .topbar .secondary-actions:not(:has(> :not([hidden]))) { display: none; }
   .topbar.home { grid-template-columns: auto 1fr; }
 }
+
+/* ===== Top bar v3 (2026-11-25): one tidy row on desktop, two rows on tablets.
+   Order: logo · name · steps ········ tools · 生成網站 (the main action sits at the right edge). */
+@media (min-width: 761px) {
+  .topbar:not(.home) { display: flex !important; flex-wrap: nowrap !important; align-items: center; gap: 10px !important; padding: 8px 16px !important; min-height: 60px; }
+  .topbar:not(.home) .toolbar-actions { display: contents !important; }
+  .topbar:not(.home) .brand.home-link { order: 0; }
+  .topbar:not(.home) .project-divider { display: none; }
+  .topbar:not(.home) .project-name { order: 1; width: 168px !important; flex: none !important; }
+  .topbar:not(.home) .workspace-modes { order: 2; flex: none; }
+  .topbar:not(.home) .preview-app-actions { order: 3; margin-left: auto; }
+  .topbar:not(.home) .secondary-actions > .layout-choice { order: 3; margin-left: auto; }
+  .topbar:not(.home) .secondary-actions > .brand-button { order: 4; }
+  .topbar:not(.home) .secondary-actions > .describe-site:not(.brand-button) { order: 5; }
+  .topbar:not(.home) .secondary-actions > :not(.layout-choice):not(.describe-site) { order: 6; }
+  .topbar:not(.home) .topbar-generate { order: 9; margin-left: 4px; }
+  /* Preview: the name reads as a title, not a greyed-out field. */
+  .topbar .project-name:disabled { -webkit-text-fill-color: var(--neo-dark); color: var(--neo-dark); background: transparent; border-color: transparent; box-shadow: none; cursor: default; }
+  .topbar .layout-choice select { height: 40px; padding: 0 30px 0 14px; border: 2px solid #0d0e11; border-radius: 999px; background-color: #fff; font: 700 13px var(--font); color: #0d0e11; }
+}
+@media (min-width: 761px) and (max-width: 1320px) {
+  .topbar .brand.home-link .brand-name { display: none; }
+  .topbar:not(.home) .project-name { width: 140px !important; }
+  .topbar .workspace-modes button { padding: 8px 10px !important; }
+}
+/* Tablets: steps and 生成網站 on the first row, tools on a swipeable second row. */
+@media (min-width: 761px) and (max-width: 1240px) {
+  .topbar.draft { display: grid !important; grid-template-columns: auto auto 1fr auto; row-gap: 8px !important; }
+  .topbar.draft .brand.home-link { grid-column: 1; grid-row: 1; }
+  .topbar.draft .project-name { grid-column: 2; grid-row: 1; }
+  .topbar.draft .workspace-modes { grid-column: 3; grid-row: 1; justify-self: start; }
+  .topbar.draft .topbar-generate { grid-column: 4; grid-row: 1; }
+  .topbar.draft .secondary-actions { grid-column: 1 / -1; grid-row: 2; display: flex !important; gap: 8px; align-items: center; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px 0; }
+  .topbar.draft .secondary-actions::-webkit-scrollbar { display: none; }
+  .topbar.draft .secondary-actions > * { flex: none; margin-left: 0 !important; }
+  .topbar.draft .secondary-actions > .layout-choice { display: inline-flex !important; font-size: 0; }
+}
+@media (min-width: 761px) and (max-width: 900px) {
+  .topbar.preview .preview-app-actions .preview-saved, .topbar.preview .preview-app-actions > span:first-child { display: none; }
+}
+
+/* ===== Motion library v2 (2026-11-25): lively, colourful, compact. ===== */
+.animation-library .lib-intro { display: block; margin-bottom: 14px; }
+.animation-library .lib-intro h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 22px; letter-spacing: -.02em; }
+.animation-library .lib-count { display: inline-grid; place-items: center; height: 26px; padding: 0 10px; border: 2px solid #0d0e11; border-radius: 999px; background: #10e560; font-size: 13px; font-weight: 900; letter-spacing: 0; }
+.animation-library .lib-intro p { margin: 0; font-size: 14px; color: #4b4e49; }
+.motion-library-filters { display: grid; gap: 10px; margin-bottom: 8px; }
+.motion-library-filters input[type=search] { height: 44px; padding: 0 16px; border: 2px solid #0d0e11; border-radius: 999px; background: #fff; color: #0d0e11; font: inherit; font-size: 15px; }
+.lib-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.lib-chips button { min-height: 38px; padding: 0 14px; border: 2px solid #0d0e11; border-radius: 999px; background: #fff; color: #0d0e11; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0 #0d0e11; transition: transform .12s, box-shadow .12s; }
+.lib-chips button:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #0d0e11; }
+.lib-chips button[aria-pressed=true] { background: #0d0e11; color: #10e560; box-shadow: none; transform: none; }
+.neo-workspace>.sidebar .lib-chips button { box-shadow: none; }
+.animation-family > h3 { display: flex; align-items: center; gap: 8px; font-size: 15px !important; font-weight: 900 !important; letter-spacing: 0 !important; border: 0 !important; padding: 0 !important; }
+.animation-family > h3::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--fam, #10e560); border: 2px solid #0d0e11; }
+.animation-family:nth-child(1) { --fam: #ffb238; --stage: linear-gradient(135deg, #fff4dc, #ffe2c2); }
+.animation-family:nth-child(2) { --fam: #10e560; --stage: linear-gradient(135deg, #e3fbe9, #c9f2dc); }
+.animation-family:nth-child(3) { --fam: #a66bff; --stage: linear-gradient(135deg, #f1e9ff, #e0d4ff); }
+.animation-family:nth-child(4) { --fam: #3fa7ff; --stage: linear-gradient(135deg, #e5f3ff, #d2e9ff); }
+.animation-family:nth-child(5) { --fam: #ff5fa2; --stage: linear-gradient(135deg, #ffe8f2, #ffd6e7); }
+.animation-asset .asset-preview { background: var(--stage) !important; border: 2px solid #0d0e11 !important; border-radius: 18px !important; box-shadow: 4px 4px 0 #0d0e11; transition: transform .15s, box-shadow .15s; }
+.animation-asset:hover .asset-preview { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #0d0e11; }
+.animation-asset .asset-category { top: 10px !important; left: 12px !important; padding: 2px 9px; border-radius: 999px; background: #fff; border: 1.5px solid #0d0e11; font-size: 11px !important; font-weight: 800; letter-spacing: 0 !important; opacity: 1 !important; color: #0d0e11 !important; }
+.animation-asset .asset-new { position: absolute; top: 10px; right: 12px; z-index: 2; padding: 2px 9px; border-radius: 999px; background: #ff5fa2; color: #fff; border: 1.5px solid #0d0e11; font-size: 11px; font-weight: 900; letter-spacing: .04em; pointer-events: none; }
+.neo-motion-full .animation-assets { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important; gap: 26px 20px !important; }
+.neo-motion-full .animation-asset .asset-preview, .neo-motion-full .animation-asset[data-effect-id] .asset-preview, .neo-motion-full .animation-asset[data-batch=third] .asset-preview { height: 210px !important; }
+.animation-asset .asset-sample .page-button { background: #0d0e11 !important; color: #fff !important; border: 2px solid #0d0e11; font-weight: 800; }
+.animation-asset .asset-sample .page-paragraph { font-weight: 800 !important; color: #0d0e11; }
+.animation-asset .asset-sample .page-image img, .animation-asset .asset-sample img { border-radius: 12px; }
+/* Full library: the drawer's own header, tabs and element counter are not needed there. */
+.neo-motion-full > .sidebar .side-head small, .neo-motion-full > .sidebar > .tabs { display: none !important; }
+.neo-motion-full > .sidebar .side-head h2 { font-size: 0 !important; }
+.neo-motion-full > .sidebar input[type=search] { background: #fff !important; color: #0d0e11 !important; border: 2px solid #0d0e11 !important; }
+@media (max-width: 760px) { .neo-workspace.neo-motion-full > .sidebar { left: 0 !important; right: 0 !important; width: auto !important; min-width: 0 !important; max-width: none !important; border-left: 0; } }
+.animation-library .lib-chips button { background: #fff !important; color: #0d0e11 !important; }
+.animation-library .lib-chips button[aria-pressed=true] { background: #10e560 !important; color: #0d0e11 !important; border-color: #0d0e11 !important; }
+.neo-workspace > .sidebar:not(:where(.neo-motion-full > *)) .animation-library .lib-intro p { color: #c9ccc4; }
+.neo-workspace > .sidebar:not(:where(.neo-motion-full > *)) .lib-chips button { min-height: 34px; padding: 0 11px; font-size: 13px; }
+
+/* ===== Account (Google sign-in) ===== */
+.account { position: relative; flex: none; order: 10; }
+.account-button { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 2px solid #0d0e11 !important; border-radius: 999px !important; background: #fff !important; color: #0d0e11 !important; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.account-button.is-signed-in { padding: 0 12px 0 4px; }
+.account-avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #a66bff; color: #fff; font-weight: 900; border: 2px solid #0d0e11; }
+.account-name { max-width: 7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-card { position: absolute; right: 0; top: calc(100% + 10px); z-index: 60; width: 300px; padding: 18px; border: 2px solid #0d0e11; border-radius: 18px; background: #fff; color: #0d0e11; box-shadow: 5px 5px 0 #0d0e11; display: grid; gap: 10px; }
+.account-card h2 { margin: 0; font-size: 18px; }
+.account-help { margin: 0; font-size: 14px; line-height: 1.6; color: #4b4e49; }
+.account-who { margin: 0; display: grid; gap: 2px; }
+.account-who small { color: #62655f; overflow-wrap: anywhere; }
+.account-google { min-height: 44px; }
+.account-note { margin: 0; color: #a3271f; font-size: 13px; font-weight: 700; }
+.account-logout { min-height: 40px; border: 2px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+.account-logout:hover { background: #f1f1ec; }
+@media (max-width: 760px) {
+  .topbar:not(.home) { grid-template-columns: auto minmax(0, 1fr) auto auto !important; }
+  .topbar:not(.home) .account { grid-column: 3; grid-row: 1; }
+  .topbar:not(.home) .topbar-generate, .topbar:not(.home) .preview-app-actions:not([hidden]) { grid-column: 4 !important; }
+  .account-button { min-height: 36px; padding: 0 10px; font-size: 13px; }
+  .account-button.is-signed-in .account-name { display: none; }
+  .account-button.is-signed-in { padding: 0 3px; }
+  .account-card { position: fixed; left: 12px; right: 12px; top: 64px; width: auto; }
+}
+@media (min-width: 761px) and (max-width: 1240px) {
+  .topbar.draft { grid-template-columns: auto auto 1fr auto auto !important; }
+  .topbar.draft .account { grid-column: 5; grid-row: 1; }
+  .topbar.draft .secondary-actions { grid-column: 1 / -1 !important; }
+}
+.account-github { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 0 16px; border-radius: 999px; background: #0d0e11; color: #fff; font-weight: 800; font-size: 15px; text-decoration: none; border: 2px solid #0d0e11; }
+.account-github:hover, .account-github:focus-visible { background: #2b2e33; outline: 3px solid #10e560; outline-offset: 2px; }
+.account-github svg { width: 20px; height: 20px; }
+.account-who small + small { color: #8a8d86; font-size: 12px; }
+
+.account-soon { display: grid; gap: 8px; }
+.account-soon button { min-height: 44px; border: 2px dashed #b8bab2; border-radius: 999px; background: #f4f4f0; color: #8a8d86; font: inherit; font-weight: 800; cursor: not-allowed; }

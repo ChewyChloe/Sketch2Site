@@ -1,3 +1,20 @@
+## 全面優化＋Google/GitHub 登入（2026-11-25）
+- DONE：畫布文字字型晚載入時自動長高（不加還原步驟）；首屏範本文字框加寬，不再被按鈕壓住。
+- DONE：文字工具列永遠一排，窄畫布自動藏標籤；提示列和頂部列、側欄留出間距。
+- DONE：群組第一下選整組、再點一下只選單一元件（Canva 式）。
+- DONE：畫布上的動畫標籤改成中文膠囊，任何縮放都看得清楚；草稿的動畫名稱全面改中文。
+- DONE：頂部列 v3：桌面一排（Logo·名稱·步驟……工具·生成網站），平板兩排，預覽時名稱不再像被停用；步驟不再跳位置。
+- DONE：手機兩指縮放畫布、雙擊空白處在「符合寬度」和 60% 間切換。
+- DONE：AI 沒設定時直接本機排版，不再先打 /check（少一個 500 錯誤）。
+- DONE：動畫素材庫改版：一個標題＋數量徽章、分類膠囊、依家族上色的舞台、NEW 標籤、觸發方式改中文、進場類示意在畫面上會自動重播（尊重減少動態）；手機版全寬。
+- DONE：新增 8 種動畫（共 68 種）：打字機、跑馬燈、流光漸層字、模糊淡入、輕飄浮動、彩紙慶祝、果凍彈跳、光澤掃過。原文保留可選取、離屏暫停、減少動態時不播；匯出網站同樣可用；註解可用「打字機／撒花／果凍…」加上；範本動畫配方也會用到。
+- DONE（程式與測試）／BLOCKED（實際登入）：Google 與 GitHub 登入。Google 驗 ID token（RS256、issuer、audience、到期、nonce、已驗證 Email）；GitHub 用 OAuth＋state＋PKCE，伺服器換碼後丟掉 GitHub token。兩者都只存簽章過的 HttpOnly session（id、Email、名字）。沒設定時仍顯示「登入」按鈕，但 Google／GitHub 兩個選項都是灰色的「即將開放」，按了不會做任何事。實際登入需要：SESSION_SECRET（≥32 字元）、GOOGLE_CLIENT_ID、GITHUB_CLIENT_ID／GITHUB_CLIENT_SECRET，並在 Google／GitHub 後台登記網址；目前沒有這些值，所以未做真實登入測試。
+- DONE：拿掉給開發者看的提示（「未呼叫 AI」「非 AI」「AI 尚未設定」「本機頁面」「動畫標記」「僅存於本機」等），改成一般人看得懂的話；首頁範本不再出現測試用草稿。
+- DONE：匯出網站會附上這頁用得到的粉圓字型分片與授權檔（匯出專案實際 npm ci＋build 測過）。
+- DONE：資安檢查：npm audit 0 個漏洞；無 innerHTML／eval；repo 無金鑰；CSP 只多開 accounts.google.com/gsi；Referrer-Policy 改 strict-origin-when-cross-origin（Google 按鈕需要來源網域）。
+- 剩餘：AI 功能優化（之後一起討論）；生成網站視覺再打磨（#20）。
+- 中斷恢復：git status 看未提交檔案 → npx tsc -b、npx vitest run、Playwright 全套 → 通過後 commit 並 push 到 claude/gallant-cerf-2vjpdm。
+
 ## 內文改用 jf open 粉圓（2026-11-25）
 - DONE：網頁內文（非標題）改用 Google Fonts 的 jf open 粉圓（Huninn）。字型檔跟著專案一起發布（111 個分片、共 2.6MB，瀏覽器只下載用到的字），沒有對外連線，CSP 不用改。授權檔在 `src/assets/fonts/huninn/OFL.txt`。
 - 備援順序：jf-openhuninn-2.0（本機）、ui-rounded、圓體 TC、蘋方、微軟正黑、Noto Sans TC、sans-serif。

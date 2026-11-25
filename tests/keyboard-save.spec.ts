@@ -9,11 +9,11 @@ test("draft save shortcuts work while typing without stealing native text editin
   const content = page.getByLabel("元素內容");
   await content.fill("從文字欄位保存草稿");
   await page.keyboard.press("Control+s");
-  await expect(page.getByRole("status")).toHaveText("已儲存至本機");
+  await expect(page.getByRole("status")).toHaveText("已儲存");
   await expect(content).toBeFocused();
   await page.getByLabel("專案名稱").fill("鍵盤保存測試");
   await page.keyboard.press("Meta+s");
-  await expect(page.getByRole("status")).toHaveText("已儲存至本機");
+  await expect(page.getByRole("status")).toHaveText("已儲存");
   await content.focus();
   await page.keyboard.press("End");
   await page.keyboard.type("X");
@@ -24,7 +24,7 @@ test("draft save shortcuts work while typing without stealing native text editin
   await page.keyboard.press("Delete");
   await expect(page.getByTestId("canvas-node")).toHaveCount(1);
   await page.keyboard.press("Control+s");
-  await expect(page.getByRole("status")).toHaveText("已儲存至本機");
+  await expect(page.getByRole("status")).toHaveText("已儲存");
   const expected = await content.inputValue();
   await page.reload();
   await expect(page.getByLabel("專案名稱")).toHaveValue("鍵盤保存測試");
@@ -50,6 +50,6 @@ test('a second explicit save during a pending draft write persists the latest sn
  const input=page.getByLabel('元素內容');await input.fill('第一份明確保存內容');await page.keyboard.press('Control+s');
  await expect(page.getByRole('button',{name:'儲存中…',exact:true})).toBeVisible();
  await input.fill('寫入期間修改後再次保存的內容');await page.keyboard.press('Control+s');
- await expect(page.getByRole('status')).toHaveText('已儲存至本機');
+ await expect(page.getByRole('status')).toHaveText('已儲存');
  await page.reload();await expect(page.getByTestId('canvas-node')).toHaveText('寫入期間修改後再次保存的內容');
 });

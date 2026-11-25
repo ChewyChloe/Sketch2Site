@@ -21,16 +21,17 @@ function pick(slot: Slot, node: CanvasNode, style: MotionStyle): MotionId[] {
   const { role, kind } = slot;
   if (kind === "title") return [lively ? "letter-assembly" : "split-line-assembly"];
   if (kind === "heading") {
-    if (role === "cta") return [lively ? "elastic-word-bounce" : "slide-up"];
+    if (role === "cta") return [lively ? "gradient-text-flow" : "slide-up"];
     return [lively ? "hand-drawn-highlight" : "slide-up"];
   }
   if (kind === "text") {
     if (numericContent(node.content)) return ["count-up"];
-    return [lively && role === "hero" ? "slide-up" : "fade-in"];
+    return [lively ? (role === "hero" ? "slide-up" : "blur-in") : "fade-in"];
   }
   if (kind === "button") {
     if (role === "cta") return [lively ? "breathing-glow" : "press-feedback"];
-    return [lively ? "magnetic-control" : "press-feedback"];
+    if (role === "contact") return [lively ? "confetti-burst" : "press-feedback"];
+    return [lively ? (role === "hero" ? "shine-sweep" : "jelly-press") : "press-feedback"];
   }
   if (kind === "card") {
     if (role === "faq") return ["disclosure-panel"];

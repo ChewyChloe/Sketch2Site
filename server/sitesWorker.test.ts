@@ -291,3 +291,17 @@ describe('explicit additional three-call grant',()=>{
   const results=await Promise.all([send(),send(),send(),send()]);expect(results.filter(r=>r.status===200)).toHaveLength(1);expect(s.generate).toHaveBeenCalledTimes(1);expect((await (await s.status()).json()).remainingCalls).toBe(2);
  });
 });
+
+describe('Google sign-in on Sites', () => {
+ it('answers /api/auth/me for any visitor and refuses cross-site sign-in posts', async () => {
+  const api = createSitesAPI();
+  const env: SitesEnv = { SKETCH_SITE_ORIGIN: origin, GOOGLE_CLIENT_ID: '1234567890-abc.apps.googleusercontent.com', SESSION_SECRET: 'z'.repeat(40) };
+  const me = await api(new Request(origin + '/api/auth/me'), env);
+  expect(me.status).toBe(200);
+  expect(await me.json()).toMatchObject({ providers: ['google'], google: { clientId: '1234567890-abc.apps.googleusercontent.com' }, user: null });
+  const cross = await api(new Request(origin + '/api/auth/google', { method: 'POST', headers: { origin: 'https://evil.example', 'content-type': 'application/json' }, body: '{"credential":"x.y.z.zzzzzz"}' }), env);
+  expect(cross.status).toBe(403);
+  const off = await api(new Request(origin + '/api/auth/me'), { SKETCH_SITE_ORIGIN: origin });
+  expect(await off.json()).toEqual({ providers: [], user: null });
+ });
+});

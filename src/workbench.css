@@ -1528,3 +1528,23 @@ input[type="range"] {
   .page-tabs { padding: 6px 10px !important; gap: 6px !important; }
   .page-tabs button, .page-tabs [role=tab], .page-tabs .page-add { min-height: 34px !important; height: 34px !important; padding: 0 12px !important; font-size: 13px !important; border-radius: 10px !important; }
 }
+
+/* Text toolbar: always one row; labels drop away on narrow canvases (2026-11-25). */
+.text-toolbar-slot { container-type: inline-size; }
+.text-toolbar-slot > .text-toolbar { flex-wrap: nowrap; gap: 2px; padding: 6px; }
+.text-toolbar-slot > .text-toolbar:not(.is-idle) > * { flex: none; }
+.text-toolbar .tt-font select { width: auto; max-width: 136px; }
+.text-toolbar > button, .text-toolbar .tt-group button, .text-toolbar .tt-size button, .text-toolbar .tt-pop > button { min-width: 34px; padding: 0 6px; }
+.text-toolbar .tt-size input { width: 42px; }
+.text-toolbar .tt-clear { display: inline-flex; align-items: center; gap: 4px; }
+.text-toolbar .tt-clear svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@container (max-width: 790px) { .text-toolbar .tt-label, .text-toolbar .tt-count { display: none !important; } .text-toolbar .tt-font select { width: 96px; } }
+@container (max-width: 640px) { .text-toolbar .tt-group[aria-label="對齊"] button:last-child, .text-toolbar .tt-group[aria-label="強調"] button:last-child { display: none; } }
+
+/* Motion tags on the draft canvas: readable at any zoom, tucked on the element's top edge. */
+[data-testid="canvas"] .effect-tags { top: calc(-11px / var(--s, 1)); bottom: auto; left: calc(8px / var(--s, 1)); right: auto; gap: calc(4px / var(--s, 1)); z-index: 3; font: 700 calc(11px / var(--s, 1)) / 1.5 var(--font); color: #075c2a; }
+[data-testid="canvas"] .effect-tags span { display: inline-flex; align-items: center; gap: calc(3px / var(--s, 1)); padding: 0 calc(7px / var(--s, 1)); border: calc(1px / var(--s, 1)) solid #9fe3b9; border-radius: 999px; background: #e9fbef; box-shadow: 0 calc(1px / var(--s, 1)) 0 #0d0e1114; }
+[data-testid="canvas"] .effect-tags span::before { content: ""; width: calc(6px / var(--s, 1)); height: calc(6px / var(--s, 1)); border-radius: 50%; background: #10c556; }
+[data-testid="canvas"] .effect-tags:empty { display: none; }
+/* Text toolbar slot: breathing room from the top bar and both side panels. */
+@media (min-width: 761px) { .text-toolbar-slot { margin: 12px 16px 6px; } }

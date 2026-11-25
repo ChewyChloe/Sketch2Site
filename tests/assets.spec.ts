@@ -57,7 +57,7 @@ test("private raster import, reload, Mock generation, page edits, animation and 
   );
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
   await expect(
-    page.getByText("測試生成（非 AI）", { exact: true }),
+    page.locator('[data-candidate-mode="mock"]'),
   ).toBeVisible();
   await page.getByRole("button", { name: "使用此版本", exact: true }).click();
   // Confirmation commits asynchronously; wait until the candidate has closed before inspecting the saved preview.
@@ -257,7 +257,7 @@ test("an import completing after a draft edit cannot overwrite the new draft", a
   ).toBeVisible();
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
   await page.evaluate(() => window.dispatchEvent(new Event("release-import")));
-  await expect(page.getByRole("status")).toContainText("草稿已變更");
+  await expect(page.getByRole("status")).toContainText("草稿剛剛變了");
   await expect(page.getByTestId("canvas-node")).toHaveCount(1);
   await expect(page.getByTestId("canvas-node").locator("img")).toHaveCount(0);
 });

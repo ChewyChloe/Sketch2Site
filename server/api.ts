@@ -5,6 +5,7 @@ import {
   type ServerResponse,
 } from "node:http";
 import { randomBytes, timingSafeEqual } from "node:crypto";
+import { handleAuth, type AuthConfig } from "./auth";
 import { z } from "zod";
 import { CanvasSchema } from "../src/spec";
 import { CopyRequestSchema, cleanOptions, type CopyRequest } from "../src/copySuggest";
@@ -34,6 +35,7 @@ type Options = {
   maxPerMinute?: number;
   budgetUsd?: number;
   testMode?: boolean;
+  auth?: AuthConfig | null;
   onUsage?: (usage: Record<string, number | string | null>) => void;
 };
 export function createGenerationServer(options: Options = {}) {
@@ -63,7 +65,8 @@ export function createGenerationServer(options: Options = {}) {
     if (
       !/^(127\.0\.0\.1|localhost):\d+$/.test(host) ||
       (origin && !allowedOrigins.includes(origin)) ||
-      site === "cross-site"
+      // GitHub's sign-in redirect is the one cross-site GET allowed in (its state is checked).
+      (site === "cross-site" && !(req.method === "GET" && req.url?.startsWith("/api/auth/github/callback?")))
     )
       return failure(res, 403, "FORBIDDEN");
     const address = req.socket.remoteAddress;
@@ -73,6 +76,23 @@ export function createGenerationServer(options: Options = {}) {
       address !== "::ffff:127.0.0.1"
     )
       return failure(res, 403, "FORBIDDEN");
+    // Google sign-in (same rules as the rest: loopback host, allowed origin, same-site POSTs).
+    if (req.url?.startsWith("/api/auth/")) {
+      const chunks: Buffer[] = [];
+      let size = 0;
+      for await (const chunk of req) { size += (chunk as Buffer).length; if (size > 8192) return json(res, 413, { code: "BAD_REQUEST" }); chunks.push(chunk as Buffer); }
+      const headers = new Headers();
+      for (const [k, v] of Object.entries(req.headers)) if (typeof v === "string") headers.set(k, v);
+      const request = new Request(`http://${host}${req.url}`, { method: req.method, headers, body: req.method === "POST" ? Buffer.concat(chunks) : undefined });
+      const answer = await handleAuth(request, options.auth ?? null, { sameOrigin: Boolean(origin && allowedOrigins.includes(origin)), clientKey: address ?? "anon" });
+      if (!answer || res.destroyed) return;
+      const out: Record<string, string | string[]> = {};
+      answer.headers.forEach((v, k) => { if (k !== "set-cookie") out[k] = v; });
+      const cookies = answer.headers.getSetCookie();
+      if (cookies.length) out["set-cookie"] = cookies;
+      res.writeHead(answer.status, out);
+      return res.end(await answer.text());
+    }
     // Read-only availability check for the editor (no session is created).
     if (req.method === "GET" && req.url === "/api/generation/ready")
       return json(res, 200, { configured: Boolean(options.provider) });

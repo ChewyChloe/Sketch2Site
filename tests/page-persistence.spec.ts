@@ -63,7 +63,7 @@ test("自動保存、刷新、新 Session 歷史、範例取消與 Canvas 隔離
     .getByTestId("canvas-node")
     .getAttribute("data-node-id");
   await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("已儲存至本機");
+  await expect(page.getByRole("status")).toHaveText("已儲存");
   await openWebsiteWorkspace(page);
   await expect(page.getByTestId("page-save-status")).toHaveText("尚未儲存");
   expect(await disk(page)).toBeUndefined();

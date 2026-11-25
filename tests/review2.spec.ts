@@ -19,7 +19,7 @@ for (const width of [1440, 768, 375])
     const network: string[] = [];
     page.on("request", (r) => {
       // The read-only "is AI set up?" probe sends no draft data and creates no session.
-      if (r.url().endsWith("/api/generation/ready")) return;
+      if (/\/api\/(generation\/ready|auth\/me)$/.test(r.url())) return;
       if (
         r.url().includes("/api/") ||
         new URL(r.url()).hostname !== "127.0.0.1"
@@ -62,7 +62,7 @@ for (const width of [1440, 768, 375])
     await page.keyboard.press("End");
     await expect(tabs.getByRole("tab", { name: "編輯元素" })).toBeFocused();
     await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-    await action(page, "智慧排版（非 AI）");
+    await action(page, "立即排版");
     await page.getByRole("button", { name: "使用此版本", exact: true }).click();
     await page.getByRole("button", { name: "選取", exact: true }).click();
     const h = page.locator(".preview-frame h1");

@@ -50,7 +50,7 @@ test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ pag
     nodes.first(),
     { x: 30, y: 20 },
   );
-  await expect(nodes.first()).toContainText("Fade In");
+  await expect(nodes.first()).toContainText("淡入");
   await page.getByRole("tab", { name: "元件", exact: true }).click();
   await page.getByRole("button", { name: "新增按鈕", exact: true }).click();
   await page.getByRole("button", { name: "新增卡片", exact: true }).click();
@@ -70,19 +70,19 @@ test("草稿拖曳、位置、標記、歷史與 IndexedDB 恢復", async ({ pag
     ),
   ).toBe(0);
   await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("已儲存至本機");
+  await expect(page.getByRole("status")).toHaveText("已儲存");
   await page.reload();
   await expect(nodes).toHaveCount(3);
   await expect(nodes.first()).toHaveAttribute("data-node-id", originalId!);
   await expect(nodes.first()).toHaveCSS("left", "400px");
-  await expect(nodes.first()).toContainText("Fade In");
+  await expect(nodes.first()).toContainText("淡入");
   await nodes.last().click();
   await page.keyboard.press("Delete");
   await expect(nodes).toHaveCount(2);
   await page.keyboard.press("Control+z");
   await expect(nodes).toHaveCount(3);
   await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("已儲存至本機");
+  await expect(page.getByRole("status")).toHaveText("已儲存");
   await page.screenshot({
     path: "test-results/workspace-desktop.png",
     fullPage: true,
@@ -103,11 +103,11 @@ test("空白處動畫需選對象、縮放座標與窄視窗", async ({ page }) 
     { x: 500, y: 400 },
   );
   await expect(
-    page.getByRole("button", { name: "附加標記", exact: true }),
+    page.getByRole("button", { name: "加上動畫", exact: true }),
   ).toBeDisabled();
   await page.getByLabel("動畫附加對象").selectOption({ index: 1 });
-  await page.getByRole("button", { name: "附加標記", exact: true }).click();
-  await expect(page.getByTestId("canvas-node")).toContainText("Fade In");
+  await page.getByRole("button", { name: "加上動畫", exact: true }).click();
+  await expect(page.getByTestId("canvas-node")).toContainText("淡入");
   await drag(
     page,
     page.locator('.sidebar [data-effect-id="stagger-reveal"]'),

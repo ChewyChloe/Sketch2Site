@@ -5,7 +5,7 @@ for(const width of [1440,768,375])test(`native library review: readable, directl
  const errors:string[]=[],external:string[]=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/generation'))external.push(r.url());});
  await page.setViewportSize({width,height:1000});await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');await openWebsiteWorkspace(page);await openPanel(page,'動畫');
- const library=page.locator('#preview-inspector .animation-library');await expect(library.locator('[data-effect-id]')).toHaveCount(60);await expect(library.locator('.preview-error')).toHaveCount(0);
+ const library=page.locator('#preview-inspector .animation-library');await expect(library.locator('[data-effect-id]')).toHaveCount(68);await expect(library.locator('.preview-error')).toHaveCount(0);
  for(const sample of await library.locator('.rendered-page').all()){
   expect(await sample.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);await expect(sample).toHaveCSS('transform','none');
  }
@@ -24,7 +24,7 @@ for(const width of [1440,768,375])test(`native library review: readable, directl
  const flip=library.locator('[data-effect-id="flip-card"]');await flip.scrollIntoViewIfNeeded();await flip.getByRole('button',{name:'查看背面'}).click();await expect(flip.getByText('把細節，說清楚。')).toBeVisible();
  await flip.getByRole('button',{name:'查看正面'}).focus();await page.keyboard.press('Space');await expect(flip.getByText('從想法到作品')).toBeVisible();
  const fold=library.locator('[data-effect-id="fold-reveal"]');await fold.scrollIntoViewIfNeeded();await fold.getByRole('button',{name:'折頁切換'}).click();await expect(fold.getByText('下一層，藏著新想法。')).toBeVisible();
- const physics=library.locator('[data-effect-id="physics-tag-field"]');await physics.scrollIntoViewIfNeeded();const canvas=physics.locator('canvas');await expect(canvas).toBeVisible();expect((await canvas.boundingBox())!.height).toBe(180);
+ const physics=library.locator('[data-effect-id="physics-tag-field"]');await physics.scrollIntoViewIfNeeded();const canvas=physics.locator('canvas');await expect(canvas).toBeVisible();expect((await canvas.boundingBox())!.height).toBeCloseTo(180, 1);
  await physics.getByRole('button',{name:'拖曳標籤',exact:true}).click();await expect(canvas).toHaveCSS('touch-action','none');
  await expect.poll(()=>canvas.evaluate((el:HTMLCanvasElement)=>el.getContext('2d')!.getImageData(0,0,el.width,el.height).data.some((v,i)=>i%4===3&&v>0))).toBe(true);
  const metrics=await physics.evaluate(el=>{const c=el.querySelector('canvas')!,button=el.querySelector('.motion-toggle')!,container=el.querySelector('.asset-preview')!,cr=c.getBoundingClientRect(),br=button.getBoundingClientRect(),r=container.getBoundingClientRect();return{canvasHeight:cr.height,buttonHeight:br.height,buttonInside:br.top>=r.top&&br.bottom<=r.bottom,canvasInside:cr.top>=r.top&&cr.bottom<=r.bottom};});

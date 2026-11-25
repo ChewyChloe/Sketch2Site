@@ -13,12 +13,17 @@ export default defineConfig(({ command }) => ({
         target: "http://127.0.0.1:" + (process.env.SKETCH_API_PORT ?? "8787"),
         changeOrigin: true,
       },
+      "/api/auth": {
+        target: "http://127.0.0.1:" + (process.env.SKETCH_API_PORT ?? "8787"),
+        changeOrigin: true,
+      },
     },
     headers: {
       "Content-Security-Policy":
-        "default-src 'self'; script-src 'self' 'nonce-sketch2site-dev-only'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+        "default-src 'self'; script-src 'self' 'nonce-sketch2site-dev-only' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; connect-src 'self' ws: https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
       "X-Content-Type-Options": "nosniff",
-      "Referrer-Policy": "no-referrer",
+      // Google sign-in needs the page origin (not the path) to verify where its button runs.
+      "Referrer-Policy": "strict-origin-when-cross-origin",
     },
   },
 }));

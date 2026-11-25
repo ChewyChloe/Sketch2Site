@@ -2,12 +2,14 @@ import cinematicMotionSource from "./CinematicMotion.tsx?raw";
 import cinematicTextSource from "./CinematicText.tsx?raw";
 import storyMotionSource from "./StoryMotion.tsx?raw";
 import advancedMotionSource from "./AdvancedMotion.tsx?raw";
+import signatureMotionSource from "./SignatureMotion.tsx?raw";
 import assetSchema from "./assetRef.ts?raw";
 import { builtInAssets, motionAssetRefs, isLocalAsset } from "./assetRef";
 import { readAsset } from "./assets";
 import type { PageNode } from "./pageSpec";
 import { PageSchema, allSections } from "./pageSpec";
 import { zipProject, type ProjectFile } from "./archive";
+import { exportFontFiles } from "./exportFonts";
 import notices from "../THIRD_PARTY_NOTICES.md?raw";
 import foldGeometrySource from "./foldGeometry.ts?raw";
 import physicsSource from "./physics.ts?raw";
@@ -75,13 +77,14 @@ export async function exportProjectFiles(
     {
       path: "src/main.tsx",
       content:
-        'import { createRoot } from "react-dom/client";\nimport { PageRuntime } from "./PageRuntime";\nimport page from "./page.json";\nimport "./tokens.css";\ndocument.title=page.metadata.title;\ncreateRoot(document.getElementById("root")!).render(<PageRuntime input={page}/>);\n',
+        'import { createRoot } from "react-dom/client";\nimport { PageRuntime } from "./PageRuntime";\nimport page from "./page.json";\nimport "./fonts.css";\nimport "./tokens.css";\ndocument.title=page.metadata.title;\ncreateRoot(document.getElementById("root")!).render(<PageRuntime input={page}/>);\n',
     },
     { path: "src/PageRuntime.tsx", content: runtime },
     { path: "src/pageSpec.ts", content: schema },
     { path: "src/motion.ts", content: motionSource },
     { path: "src/ExtendedMotion.tsx", content: extendedMotionSource },
     { path: "src/AdvancedMotion.tsx", content: advancedMotionSource },
+    { path: "src/SignatureMotion.tsx", content: signatureMotionSource },
     { path: "src/CinematicMotion.tsx", content: cinematicMotionSource },
     { path: "src/CinematicText.tsx", content: cinematicTextSource },
     { path: "src/StoryMotion.tsx", content: storyMotionSource },
@@ -101,6 +104,8 @@ export async function exportProjectFiles(
     },
   ];
   files.push({ path: "src/assetRef.ts", content: assetSchema });
+  // Body font: only the pieces of 粉圓 that this page's text needs.
+  files.push(...(await exportFontFiles(JSON.stringify(page))));
   for (const ref of refs)
     if (isLocalAsset(ref)) {
       const image = await readAsset(ref);

@@ -11,8 +11,8 @@ for (const width of [1440, 375])
     const home = page.getByRole("main", { name: "Sketch2Site 首頁" });
     await expect(home.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(home.getByRole("heading", { name: "我的工作區" })).toBeVisible();
-    await expect(home.locator(".showcase-card")).toHaveCount(7);
-    await expect(home.locator(".showcase-card .rendered-page")).toHaveCount(7);
+    await expect(home.locator(".showcase-card")).toHaveCount(5);
+    await expect(home.locator(".showcase-card .rendered-page")).toHaveCount(5);
     await expect(home.locator(".why-card")).toHaveCount(3);
     await expect(home.locator(".steps-track li")).toHaveCount(4);
     await home.getByText("我的資料存在哪裡？").click();
@@ -27,7 +27,7 @@ for (const width of [1440, 375])
     await home.getByRole("button", { name: "開啟網站工作區" }).click();
     await expect(page.locator(".preview-frame .rendered-page")).toBeVisible();
     await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
-    await home.getByRole("button", { name: "動畫素材庫（60）" }).click();
-    await expect(page.locator(".sidebar [data-effect-id]")).toHaveCount(60);
+    await home.getByRole("button", { name: "動畫素材庫（68）" }).click();
+    await expect(page.locator(".sidebar [data-effect-id]")).toHaveCount(68);
     expect(errors).toEqual([]);
   });

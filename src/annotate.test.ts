@@ -84,3 +84,15 @@ describe("annotation targets", () => {
     expect(indexNodes(roomy.page).get(section.id)!.style?.padding).toBe("large");
   });
 });
+
+describe("signature motions by note", () => {
+  it("adds a typewriter to a heading and confetti to a button", () => {
+    const page = site();
+    const h = first(page, (n) => n.type === "heading");
+    const typed = run(page, h.id, "加上打字機效果");
+    expect(indexNodes(typed.page).get(h.id)!.effects.map((e) => e.presetId)).toContain("typewriter");
+    const b = first(page, (n) => n.type === "button");
+    const party = run(page, b.id, "按下去要撒花慶祝");
+    expect(indexNodes(party.page).get(b.id)!.effects.map((e) => e.presetId)).toContain("confetti-burst");
+  });
+});

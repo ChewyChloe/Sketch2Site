@@ -1,6 +1,7 @@
 import { configFromEnv } from "./config";
 import { createGenerationServer } from "./api";
 import { openAIProvider } from "./provider";
+import { authConfigFrom } from "./auth";
 const config = configFromEnv(process.env);
 const server = createGenerationServer({
   provider: config.enabled
@@ -11,6 +12,8 @@ const server = createGenerationServer({
   cachedInputRate: config.enabled ? config.cachedInputRate : undefined,
   maxCalls: config.maxCalls,
   budgetUsd: config.budgetUsd,
+  // Sign-in: SESSION_SECRET (≥32 chars) plus GOOGLE_CLIENT_ID and/or GITHUB_CLIENT_ID + GITHUB_CLIENT_SECRET.
+  auth: authConfigFrom({ PUBLIC_ORIGIN: "http://127.0.0.1:5173", ...process.env }),
   onUsage: (usage) =>
     console.info(
       JSON.stringify({ event: "generation_usage", model: config.model, ...usage }),

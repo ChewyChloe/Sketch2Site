@@ -107,7 +107,7 @@ export function TextToolbar({ style, type, count, onChange, themeColors }: { sty
           </button>
         ))}
       </div>
-      <Popover label="間距" title="行距與字距" button={<span className="tt-spacing"><Icon d="M4 7h10M4 12h10M4 17h10M19 5v14M17 7l2-2 2 2M17 17l2 2 2-2" />間距</span>}>
+      <Popover label="間距" title="行距與字距" button={<span className="tt-spacing"><Icon d="M4 7h10M4 12h10M4 17h10M19 5v14M17 7l2-2 2 2M17 17l2 2 2-2" /><span className="tt-label">間距</span></span>}>
         <label className="tt-slider">
           <span>行距 <output>{(style.lineHeight ?? 1.6).toFixed(1)}</output></span>
           <input type="range" aria-label="行距" min={1} max={3} step={0.1} value={style.lineHeight ?? 1.6} onChange={(e) => onChange({ lineHeight: Number(e.target.value) })} />
@@ -118,7 +118,7 @@ export function TextToolbar({ style, type, count, onChange, themeColors }: { sty
         </label>
         <button type="button" className="tt-reset" onClick={() => onChange({ lineHeight: undefined, letterSpacing: undefined })}>恢復預設間距</button>
       </Popover>
-      <button type="button" className="tt-clear" title="清除這些文字的所有樣式" onClick={() => onChange(null)}>清除格式</button>
+      <button type="button" className="tt-clear" aria-label="清除格式" title="清除這些文字的所有樣式" onClick={() => onChange(null)}><Icon d="M7 21h10M5 15l8-11 6 5-7 9H8zM9 10l6 5" /><span className="tt-label">清除格式</span></button>
     </div>
   );
 }

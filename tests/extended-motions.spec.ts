@@ -31,7 +31,7 @@ test('library exposes sixty effects and filters by name, identifier and category
     const check = await load(page);
     await openPanel(page, '動畫');
     const library = page.locator('#preview-inspector .animation-library'), assets = library.locator('[data-effect-id]');
-    await expect(assets).toHaveCount(60);
+    await expect(assets).toHaveCount(68);
     for (const id of effects) {
         await page.getByLabel('搜尋動畫').fill(id);
         await expect(assets).toHaveCount(1);
@@ -42,13 +42,14 @@ test('library exposes sixty effects and filters by name, identifier and category
     await page.getByLabel('搜尋動畫').fill('no-such-effect');await expect(assets).toHaveCount(0);await expect(library.getByRole('status')).toContainText('找不到符合');
     await page.getByLabel('搜尋動畫').fill('Letter Assembly');await expect(assets).toHaveCount(1);
     await page.getByLabel('搜尋動畫').fill('');
+    const chips: Record<string, string> = { 進場: '出場動畫', 互動: '滑過與點擊', 內容: '閱讀與卡片', 資訊: '捲動' };
     for (const category of ['進場', '互動', '內容', '資訊']) {
-        await page.getByLabel('動畫使用情境').selectOption(category);
+        await page.getByRole('group', { name: '動畫使用情境' }).getByRole('button', { name: chips[category], exact: true }).click();
         expect(await assets.count()).toBeGreaterThan(0);
         for (const asset of await assets.all()) await expect(asset).toHaveAttribute('data-category', category);
     }
-    await page.getByLabel('動畫使用情境').selectOption('');
-    await expect(assets).toHaveCount(60);
+    await page.getByRole('group', { name: '動畫使用情境' }).getByRole('button', { name: '全部', exact: true }).click();
+    await expect(assets).toHaveCount(68);
     check();
 });
 
@@ -217,7 +218,7 @@ for (const round of [1, 2]) for (const width of [1440, 768, 375]) test(`review $
     await page.locator('.preview-scroll').evaluate(el=>{el.scrollTop=0;});
     await openPanel(page, '動畫');
     const library = page.locator('#preview-inspector .animation-library');
-    await expect(library.locator('[data-effect-id]')).toHaveCount(60);
+    await expect(library.locator('[data-effect-id]')).toHaveCount(68);
     await library.locator('[data-effect-id="fade-in"]').scrollIntoViewIfNeeded();
     await page.screenshot({ path: `test-results/extended-review${round}-gallery-upper-${width}.png` });
     const disclosure = library.locator('[data-effect-id="disclosure-panel"]');

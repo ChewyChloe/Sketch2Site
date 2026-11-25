@@ -91,7 +91,7 @@ for (const [index, canvas] of fixtures.entries()) {
         page.getByRole("main", { name: "生成候選預覽" }),
       ).toBeVisible();
       await expect(
-        page.getByText("測試生成（非 AI）", { exact: true }),
+        page.locator('[data-candidate-mode="mock"]'),
       ).toBeVisible();
       for (const source of canvas.nodes)
         await expect(
@@ -157,8 +157,8 @@ test("key 缺失、生成失敗與返回草稿都保留原內容", async ({ page
   );
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
   // Without AI the draft gets a clearly labelled local layout, never saved automatically.
-  await expect(page.getByText("智慧排版（非 AI）", { exact: true })).toBeVisible();
-  await expect(page.getByText("AI 尚未設定，已改用本機智慧排版（未呼叫 AI）。")).toBeAttached();
+  await expect(page.locator('[data-candidate-mode="demo"]')).toBeVisible();
+  await expect(page.locator("[data-ai-fallback]")).toBeAttached();
   expect(await savedPage(page)).toBeUndefined();
   await page.getByRole("button", { name: "返回草稿", exact: true }).click();
   await expect(page.getByTestId("canvas-node")).toHaveCount(
@@ -253,7 +253,7 @@ test("候選保存失敗仍保留候選，最後有效頁面不變，可重試�
       true;
   });
   await page.getByRole("button", { name: "使用此版本", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("候選結果仍保留");
+  await expect(page.getByRole("alert")).toContainText("剛做好的網站還在");
   await expect(page.getByRole("main", { name: "生成候選預覽" })).toBeVisible();
   expect(await savedPage(page)).toEqual(previous);
   await page.evaluate(() => {

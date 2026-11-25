@@ -747,3 +747,15 @@
 /* Brand kit */
 .page-brand { display: inline-flex; align-items: center; gap: 10px; }
 .page-brand-logo { width: 32px; height: 32px; object-fit: contain; border-radius: 8px; }
+
+/* ===== Signature motion presets (2026-11-25) ===== */
+.sig-typewriter { position: absolute; inset: 0; padding: inherit; font: inherit; letter-spacing: inherit; line-height: inherit; text-align: inherit; white-space: pre-wrap; overflow-wrap: anywhere; pointer-events: none; }
+.sig-caret { display: inline-block; width: .08em; min-width: 2px; height: 1em; margin-left: 2px; vertical-align: -.12em; background: currentColor; animation: sig-blink .9s steps(1) infinite; }
+@keyframes sig-blink { 50% { opacity: 0; } }
+.sig-marquee { position: absolute; inset: 0; display: flex; align-items: center; overflow: hidden; padding-block: inherit; pointer-events: none; }
+.sig-marquee-track { display: flex; flex: none; white-space: nowrap; will-change: transform; }
+.sig-marquee-track > span { flex: none; padding-right: 2.5em; }
+.sig-confetti-layer { position: absolute; inset: 0; overflow: visible; pointer-events: none; z-index: 3; }
+.sig-confetti { position: absolute; width: 8px; height: 12px; border-radius: 2px; pointer-events: none; }
+.sig-shine { position: absolute; top: -10%; bottom: -10%; left: 0; width: 40%; background: linear-gradient(90deg, transparent, rgb(255 255 255 / .55), transparent); transform: translateX(-120%) skewX(-20deg); pointer-events: none; z-index: 2; }
+@media (prefers-reduced-motion: reduce) { .sig-caret { animation: none; } }

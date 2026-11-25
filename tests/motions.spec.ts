@@ -63,7 +63,7 @@ test('review 2: controlled parameters, incompatible combinations, undo, reload a
     await page.getByRole('button', { name: '重做修改' }).click();
     await expect(page.getByLabel('位移（像素）')).toHaveValue('64');
     await openPanel(page, '動畫');
-    await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(60);
+    await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(68);
     await expect(page.getByRole('button', { name: '懸停光暈', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: '工具', exact: true }).click();
     await page.getByRole('button', { name: '瀏覽', exact: true }).click();
@@ -169,7 +169,7 @@ for (const width of [1440, 768, 375])
         await page.setViewportSize({ width, height: 1000 });
         await load(page);
         await openPanel(page, '動畫');
-        await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(60);
+        await expect(page.locator('#preview-inspector [data-effect-id]')).toHaveCount(68);
         await page.screenshot({ path: `test-results/motions-gallery-${width}.png` });
         await page.getByRole('button', { name: '重播物理標籤場示意' }).click();
         const asset = page.locator('#preview-inspector [data-effect-id="physics-tag-field"]');
@@ -196,12 +196,12 @@ test('draft markers retain user-supplied faces and labels without running them o
     await page.getByRole('tab', { name: '動畫', exact: true }).click();
     await page.getByRole('button', { name: '雙面卡片 · Flip Card', exact: true }).click();
     await page.getByLabel('背面內容').fill('使用者的真實背面');
-    await page.getByRole('button', { name: '附加標記', exact: true }).click();
-    await expect(page.getByTestId('canvas-node')).toContainText('Flip Card');
+    await page.getByRole('button', { name: '加上動畫', exact: true }).click();
+    await expect(page.getByTestId('canvas-node')).toContainText('雙面卡片');
     await expect(page.getByTestId('canvas-node').locator('.motion-flip')).toHaveCount(0);
     await page.getByRole('button', { name: '儲存草稿', exact: true }).click();
     await page.reload();
-    await expect(page.getByTestId('canvas-node')).toContainText('Flip Card');
+    await expect(page.getByTestId('canvas-node')).toContainText('雙面卡片');
     expect(calls).toEqual([]);
 });
 test('fold transitions can be interrupted and reversed without resetting progress', async ({ page }) => {

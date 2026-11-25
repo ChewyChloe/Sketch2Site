@@ -8,6 +8,7 @@ import { openAIProvider, validUsage, type LayoutProvider } from './provider';
 import {LUNA_MODEL,LUNA_RATES,LUNA_MAX_OUTPUT_TOKENS,lunaUsageUsd} from './lunaPolicy';
 import {authenticatedOwner,type SitesEnv} from './sitesIdentity';
 import {exactInputProof} from './sitesPreflight';
+import {authConfigFrom,handleAuth} from './auth';
 export type {D1,SitesEnv} from './sitesIdentity';
 
 const schema = z.object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema, draftApproval:z.string().max(100).optional() }).strict();
@@ -70,6 +71,11 @@ async function readBody(request: Request) {
 export function createSitesAPI(providerFactory: (key: string, model: string) => LayoutProvider = openAIProvider, timeoutMs = 30000) {
   return async function handle(request: Request, env: SitesEnv): Promise<Response> {
     const url = new URL(request.url), now = Date.now();
+    // Google sign-in is open to every visitor (not only the owner); POSTs must come from this site.
+    if (url.pathname.startsWith('/api/auth/')) {
+      const sameOrigin = url.origin === env.SKETCH_SITE_ORIGIN && request.headers.get('origin') === url.origin && request.headers.get('sec-fetch-site') !== 'cross-site';
+      return (await handleAuth(request, authConfigFrom(env), { sameOrigin, clientKey: request.headers.get('cf-connecting-ip') ?? 'anon' }))!;
+    }
     // Dispatch authenticates these headers. Never trust them on an independently public Worker URL.
     const user = await authenticatedOwner(request,env);
     if (!user) return fail('OWNER_REQUIRED');

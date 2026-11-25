@@ -1,5 +1,5 @@
 import { it, expect } from 'vitest';
-import { motionIds, advancedMotionIds, cinematicMotionIds, motionCatalog, motionControlSchemas, defaultControls } from './motionCatalog';
+import { motionIds, advancedMotionIds, cinematicMotionIds, motionCatalog, motionControlSchemas, defaultControls, signatureMotionIds } from './motionCatalog';
 import { thirdFixture, thirdCanvas } from '../tests/fixtures/cinematicMotions';
 import { cinematicSampleControls } from './cinematicSamples';
 import { createMotion, targetReason, combinationReason, withinMotionBudget } from './motion';
@@ -8,7 +8,7 @@ import { mockLayout } from '../tests/fixtures/generation';
 import { indexNodes, applyPatchBatch, createPageSession } from './patch';
 import { PageSchema } from './pageSpec';
 import { motionAssetRefs, imageSource } from './assetRef';
-it('retains forty existing IDs and adds exactly twenty new distinct presets', () => { expect(motionIds).toHaveLength(60); expect(cinematicMotionIds).toHaveLength(20); expect(new Set(motionIds).size).toBe(60); expect(motionIds.slice(20, 40)).toEqual([...advancedMotionIds]); expect(motionIds.slice(40)).toEqual([...cinematicMotionIds]); });
+it('retains forty existing IDs and adds exactly twenty new distinct presets', () => { expect(motionIds).toHaveLength(68); expect(cinematicMotionIds).toHaveLength(20); expect(new Set(motionIds).size).toBe(68); expect(motionIds.slice(20, 40)).toEqual([...advancedMotionIds]); expect(motionIds.slice(40, 60)).toEqual([...cinematicMotionIds]); expect(motionIds.slice(60)).toEqual([...signatureMotionIds]); });
 it.each(cinematicMotionIds)('%s validates safe controls and rejects arbitrary code and out-of-range parameters', id => { const controls = { ...defaultControls(id), ...cinematicSampleControls(id) }; expect(motionControlSchemas[id].safeParse(controls).success).toBe(true); expect(motionControlSchemas[id].safeParse({ ...controls, onclick: 'run()' }).success).toBe(false); for (const [key, c] of Object.entries(motionCatalog[id].controls)) {
     if (c.kind === 'number')
         for (const value of [NaN, Infinity, c.min! - 1, c.max! + 1])

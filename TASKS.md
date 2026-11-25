@@ -1,3 +1,12 @@
+## 全面優化（2026-11-25）
+- [x] 字型造成的文字溢出、工具列兩排遮住頁籤、虛線提示列黏邊（DONE）
+- [x] Canva 式群組點選、中文動畫標籤、頂部列 v3、手機縮放（DONE）
+- [x] 動畫素材庫改版＋8 種新動畫（DONE）
+- [x] Google／GitHub 登入（DONE，實際登入 BLOCKED：缺 Client ID／Secret）
+- [x] 移除開發者提示文字（DONE）
+- [x] 匯出附字型（DONE）
+- [ ] AI 功能優化（NOT STARTED，待討論）
+
 ## 內文字型：jf open 粉圓（2026-11-25）
 - [x] 自帶 Huninn 字型檔＋備援字疊（DONE）
 - [x] 標題保留原字型（DONE）

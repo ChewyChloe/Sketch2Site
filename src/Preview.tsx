@@ -102,7 +102,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
         return { ok: false, error: "請先套用或捨棄屬性修改。" };
       const result = await persistence.acceptGeneration(page, target);
       if (result.ok) {
-        setSource("本機頁面");
+        setSource("");
         setSelected(null);
         setNotice("");
       }
@@ -209,7 +209,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
   const fileRef = useRef<HTMLInputElement>(null),
     loadSequence = useRef(0);
   useEffect(() => {
-    if (ready) setSource(persistence.restored ? "本機頁面" : "範例預覽");
+    if (ready) setSource(persistence.restored ? "" : "範例預覽");
   }, [ready, persistence.restored]);
   const page = session.history.present,
     nodes = indexNodes(page),
@@ -346,7 +346,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
         reportLoadError("頁面已更新，請重新載入檔案。");
         return;
       }
-      if (install(parsed)) setSource("本機檔案預覽");
+      if (install(parsed)) setSource("");
     } catch {
       if (sequence !== loadSequence.current) return;
       reportLoadError("預覽失敗：檔案格式無效。請修正檔案後重試。");
@@ -500,7 +500,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
 
   const pageActions = (
     <>
-      <span className="preview-source">{source}</span>
+      {source && <span className="preview-source">{source}</span>}
       <span
         className="page-status"
         data-save-state={
@@ -511,7 +511,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
             ? "屬性修改尚未套用"
             : status.kind === "saved"
               ? "已儲存"
-              : "本機頁面保存狀態"
+              : "儲存狀態"
         }
         aria-live="polite"
       >

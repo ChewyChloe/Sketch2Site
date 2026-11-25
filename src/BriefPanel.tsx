@@ -142,7 +142,7 @@ export function BriefPanel({
       <p className="brief-note">
         {aiReady
           ? "AI 會參考以上所有描述排版；不會改寫或新增你的文字內容。"
-          : "目前沒有接 AI：「感覺」決定配色，「最想被注意的」會把對應區塊往前排；補充文字要接上 AI 後才會生效。"}
+          : "「感覺」會決定配色，「最想被注意的」會排在前面。"}
       </p>
       <div className="brief-actions">
         <button type="button" className="brief-reset" onClick={() => { setBrief(emptyBrief); setActive("audience"); }}>全部清除</button>

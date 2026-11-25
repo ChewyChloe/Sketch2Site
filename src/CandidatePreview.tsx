@@ -29,15 +29,11 @@ export default function CandidatePreview({
     <main className="preview-workspace" aria-label="生成候選預覽">
       <div className="preview-tools">
         <div>
-          <strong>
-            {previewOnly ? "草稿預覽（非 AI）" : candidate.mode === "demo"
-              ? "智慧排版（非 AI）"
-              : candidate.mode === "mock"
-                ? "測試生成（非 AI）"
-                : "生成候選版本"}
+          <strong data-candidate-mode={previewOnly ? "preview" : candidate.mode} data-ai-fallback={aiFallback ? "" : undefined}>
+            {previewOnly ? "網站預覽" : "你的網站"}
           </strong>
           <small>
-            {aiFallback ? "AI 尚未設定，已改用本機智慧排版（未呼叫 AI）。" : "確認後才儲存"}
+            滿意就按「使用此版本」，不喜歡可以返回草稿再改。
             {kept > 0 && ` 已保留你在網站上的 ${kept} 項版面修改。`}
           </small>
         </div>

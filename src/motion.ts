@@ -113,7 +113,7 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
         return '互動內容效果一次只能套用一種。';
     if (ids.has('physics-tag-field') && ids.has('stagger-reveal'))
         return '物理標籤不能再套用逐項進場。';
-    if (['letter-assembly','accent-stroke','count-up','curved-path-text','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','kinetic-text-wave','numeric-gauge-sweep','text-morph-transition','elastic-word-bounce','text-spotlight-reveal','typographic-stretch'].filter(id=>ids.has(id as MotionId)).length>1)
+    if (['typewriter','marquee-text','gradient-text-flow','letter-assembly','accent-stroke','count-up','curved-path-text','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','kinetic-text-wave','numeric-gauge-sweep','text-morph-transition','elastic-word-bounce','text-spotlight-reveal','typographic-stretch'].filter(id=>ids.has(id as MotionId)).length>1)
         return '文字呈現效果一次只能套用一種。';
     if(ids.has('magnetic-control') && ['hover-lift','slide-up','press-feedback'].some(id=>ids.has(id as MotionId)))
         return '磁吸回饋不能與其他位移或按壓效果重疊。';
@@ -126,6 +126,8 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
     if(scene.length>1)return '第三批場景動態每個目標一次套用一種，避免遮罩或互動互相覆寫。';
     if(scene.length&&['card-stack-shuffle','horizontal-scroll-gallery','sticky-section-morph','pinned-story-panels'].some(id=>ids.has(id as MotionId))&&effects.length>1)return '敘事群組必須獨立套用，避免改寫同一組子項。';
     if(ids.has('spring-drag-snap')&&effects.length>1)return '拖曳吸附不可與其他位置效果同時套用。';
+    if(['float-idle','jelly-press'].some(id=>ids.has(id as MotionId))&&['hover-lift','slide-up','scale-in','perspective-tilt','magnetic-control','press-feedback','float-idle','jelly-press','blur-in'].filter(id=>ids.has(id as MotionId)).length>1)return '漂浮或彈跳不能與其他位移效果重疊。';
+    if(ids.has('blur-in')&&['fade-in','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '進場效果一次只能套用一種。';
     return null;
 }
 /** Per-document resource limits, in addition to each preset's own bounds. */

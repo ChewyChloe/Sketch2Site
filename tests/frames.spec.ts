@@ -28,7 +28,7 @@ test("frames hold photos with crop and adjustments, in the draft and on the site
   // An empty frame invites a photo.
   await expect(heart.getByRole("img")).toHaveAccessibleName(/尚未放入圖片/);
   await dropPhoto(page, heart);
-  await expect(page.getByText("圖片已匯入，僅存於本機。").first()).toBeVisible();
+  await expect(page.getByText("照片放好了！").first()).toBeVisible();
   await expect(heart.locator(".page-frame-photo img")).toBeVisible();
   // Double-click to crop: zoom in, nudge with the keyboard, apply with Enter.
   await heart.dblclick();

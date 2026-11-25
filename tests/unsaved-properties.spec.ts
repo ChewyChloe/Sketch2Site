@@ -107,7 +107,7 @@ test("reload, Undo, page replacement and local candidate cannot silently discard
     .filter({ hasText: "草稿選單" })
     .click();
   await page
-    .getByRole("button", { name: "智慧排版（非 AI）", exact: true })
+    .getByRole("button", { name: "立即排版", exact: true })
     .click();
   await expect(page.getByRole("alert")).toContainText("請先套用或捨棄");
   await expect(page.getByRole("main", { name: "生成候選預覽" })).toHaveCount(0);

@@ -34,7 +34,8 @@ export default function HomePage({
     remove: (id: string) => Promise<void>;
   };
 }) {
-  const templates = useMemo(() => [...starterDrafts(), ...demos], [demos]);
+  // Rough test drafts stay in the draft menu; the showcase only shows finished-looking sites.
+  const templates = useMemo(() => [...starterDrafts(), ...demos.filter((d) => !["不規則草稿", "動畫草稿"].includes(d.metadata.name))], [demos]);
   return (
     <main className="home-page" aria-label="Sketch2Site 首頁">
       <HomeNav />

@@ -136,3 +136,11 @@ React匯出複製同一AdvancedMotion原始碼、Schema及CSS，不含Provider�
 
 ## 相框與照片調整（2026-11-25）
 圖片的相框、裁切與調整只存為嚴格列舉／數值範圍的 look 欄位（相框種類、焦點0–100、縮放1–4、亮度／對比／飽和度／不透明度範圍、翻轉、固定濾鏡名），不接受任意 CSS、URL 或字串；渲染時由程式轉成固定的 CSS。只有圖片可帶 look。AI 輸出若改動 look 會被保存驗證拒絕；網站端修改經 Patch（set-property look，僅圖片）驗證後才寫回草稿。相框形狀遮罩為程式內固定的 data: SVG（CSP 已允許 img-src data:）。
+
+
+## 登入（2026-11-25）
+- Google：瀏覽器拿到的 ID token 一律送伺服器驗證：RS256 簽章（Google 公開金鑰，快取 1 小時）、iss、aud＝本站 Client ID、exp／iat（容許 60 秒）、email_verified、一次性 nonce（簽章 HttpOnly Cookie，10 分鐘）。
+- GitHub：OAuth 授權碼流程＋state＋PKCE S256；state 與 verifier 放在簽章 HttpOnly、SameSite=Lax Cookie（10 分鐘）。Client Secret 只在伺服器；GitHub token 用完即丟，不寫入 Cookie、日誌或資料庫。
+- Session：HMAC 簽章 Cookie（HttpOnly、SameSite=Lax、HTTPS 時 Secure、7 天），只含 provider:id、Email、名字。登出清除 Cookie。
+- POST 一律檢查同源；登入每 IP 每分鐘 10 次。沒設定 SESSION_SECRET（≥32 字元）與任一組 Client ID 時整個登入關閉；按鈕只顯示「即將開放」，不會發出任何登入請求。
+- CSP 只多允許 https://accounts.google.com/gsi/（script、style、frame、connect）；Referrer-Policy 改 strict-origin-when-cross-origin，只送來源網域。
