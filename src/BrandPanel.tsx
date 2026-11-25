@@ -92,7 +92,7 @@ export function BrandPanel({
           <h2>品牌模板設定</h2>
           <button ref={first} type="button" className="brief-close" aria-label="關閉" onClick={onClose}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
         </div>
-        <p className="brand-lead">設定一次，整個網站的顏色、字型和標誌都會跟著換</p>
+        <p className="brand-lead"><span className="nowrap-phrase">設定一次，</span><span className="nowrap-phrase">整個網站的顏色、字型和標誌都會跟著換</span></p>
         <section>
           <div className="brand-colors-head">
             <h3>顏色</h3>

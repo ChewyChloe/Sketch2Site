@@ -51,8 +51,22 @@ export async function cancelSelection(page: Page) {
 }
 
 // Enter the existing website editor explicitly; Preview now previews a populated draft.
-export async function openWebsiteWorkspace(page: Page){
- const menu=page.locator('.workbench-menu > summary').filter({hasText:'草稿選單'});
- if(await menu.isVisible()){await menu.click();await page.getByRole('button',{name:'開啟網站工作區',exact:true}).click();}
- else await page.getByRole('button',{name:'預覽',exact:true}).click();
+export async function openWebsiteWorkspace(page: Page) {
+  // The stored site is opened from the home page (我的工作區 → 開啟網站工作區).
+  await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
+  await page.getByRole("button", { name: "開啟網站工作區", exact: true }).click();
+}
+/** Starts a new project from a home-page template (replaces the old 草稿選單 samples). */
+export async function useTemplate(page: Page, name: string) {
+  await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
+  // Starting a project switches to it with a page reload; wait until the new draft is ready.
+  await Promise.all([
+    page.waitForEvent("load"),
+    page.getByRole("article", { name: "範本：" + name }).getByRole("button", { name: /用這個範本開始/ }).click(),
+  ]);
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+}
+/** Builds the site from the draft (local layout when AI is not set up). */
+export async function buildSite(page: Page) {
+  await page.getByRole("button", { name: "生成網站", exact: true }).click();
 }

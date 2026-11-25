@@ -103,13 +103,7 @@ test("reload, Undo, page replacement and local candidate cannot silently discard
   await expect(input).toHaveValue("保留這份輸入");
   await page.getByRole("button", { name: "草稿", exact: true }).click();
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
-  await page
-    .locator(".workbench-menu > summary")
-    .filter({ hasText: "草稿選單" })
-    .click();
-  await page
-    .getByRole("button", { name: "立即排版", exact: true })
-    .click();
+  await page.getByRole("button", { name: "生成網站", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("請先套用或取消");
   await expect(page.getByRole("main", { name: "生成候選預覽" })).toHaveCount(0);
   await openWebsiteWorkspace(page);

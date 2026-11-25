@@ -1,22 +1,18 @@
+import { useTemplate, buildSite } from "./helpers/workbench";
 import { choose } from "./helpers/select";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import { test, expect, type Page } from "@playwright/test";
 import { openPanel, editSelection, viewAction } from "./helpers/workbench";
 import { generationFixtures } from "../src/demoFixtures";
 import { writeFile } from "node:fs/promises";
-async function action(page: Page, name: string) {
-  await page
-    .locator(".workbench-menu > summary")
-    .filter({ hasText: "草稿選單" })
-    .click();
-  await page.getByRole("button", { name, exact: true }).click();
-}
 for (const width of [1440, 768, 375])
   test(`review 2: fresh keyboard, animation, pen and scaling inspection ${width}`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 1000 });
     await page.emulateMedia({ reducedMotion: "reduce" });
+    // AI not set up: 生成網站 builds the site locally, so nothing should leave the browser.
+    await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
     const network: string[] = [];
     page.on("request", (r) => {
       // The read-only "is AI set up?" probe sends no draft data and creates no session.
@@ -29,7 +25,7 @@ for (const width of [1440, 768, 375])
     });
     await page.goto("/");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
-    await action(page, "載入活動介紹");
+    await useTemplate(page, "活動介紹");
     if (
       width < 1000 &&
       (await page.getByRole("button", { name: "收合側欄" }).isVisible())
@@ -63,7 +59,7 @@ for (const width of [1440, 768, 375])
     await page.keyboard.press("End");
     await expect(tabs.getByRole("tab", { name: "編輯元素" })).toBeFocused();
     await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-    await action(page, "立即排版");
+    await buildSite(page);
     await page.getByRole("button", { name: "使用此版本", exact: true }).click();
     await page.getByRole("button", { name: "選取", exact: true }).click();
     const h = page.locator(".preview-frame h1");

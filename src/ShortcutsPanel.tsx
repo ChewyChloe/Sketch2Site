@@ -41,7 +41,7 @@ export function ShortcutsPanel({ onClose }: { onClose: () => void }) {
               <dl>
                 {items.map(([keys, what]) => (
                   <div key={keys}>
-                    <dt>{keys.split(" ").map((k, i) => <kbd key={i}>{k}</kbd>)}</dt>
+                    <dt>{keys.split(" ").map((k, i) => (k === "/" || k === "＋" ? <span key={i} className="sc-sep">{k}</span> : <kbd key={i}>{k}</kbd>))}</dt>
                     <dd>{what}</dd>
                   </div>
                 ))}

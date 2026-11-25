@@ -1,3 +1,4 @@
+import { useTemplate, buildSite } from "./helpers/workbench";
 import { test, expect } from "@playwright/test";
 import { openPanel, editSelection } from "./helpers/workbench";
 const phase = process.env.DESIGN_CAPTURE === "before" ? "before" : "after";
@@ -30,18 +31,13 @@ for (const width of [1440, 768, 375])
       await page.getByRole("button", { name: "還原", exact: true }).click();
       await expect(page.getByTestId("canvas-node")).toHaveCount(0);
     }
-    await page
-      .locator(".workbench-menu > summary")
-      .filter({ hasText: "草稿選單" })
-      .click();
-    await page
-      .getByRole("button", { name: "載入個人作品集", exact: true })
-      .click();
+    await useTemplate(page, "個人作品集");
     await page.screenshot({
       path: `test-results/design-${phase}-draft-${width}.png`,
       fullPage: true,
     });
-    if (width < 1000)
+    // A new project from a template may already start with the side panel closed on narrow screens.
+    if (width < 1000 && (await page.getByRole("button", { name: "收合側欄", exact: true }).isVisible()))
       await page.getByRole("button", { name: "收合側欄", exact: true }).click();
     await page.getByTestId("canvas-node").first().click();
     if (width < 1000)
@@ -52,13 +48,7 @@ for (const width of [1440, 768, 375])
       fullPage: true,
     });
     await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-    await page
-      .locator(".workbench-menu > summary")
-      .filter({ hasText: "草稿選單" })
-      .click();
-    await page
-      .getByRole("button", { name: "立即排版", exact: true })
-      .click();
+    await buildSite(page);
     await page.getByRole("button", { name: "使用此版本", exact: true }).click();
     await page.getByRole("button", { name: "選取", exact: true }).click();
     await page.locator(".preview-frame h1").click();

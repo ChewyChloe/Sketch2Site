@@ -1673,3 +1673,19 @@ button:has(> .x-icon:only-child) { display: inline-grid !important; place-items:
 .compact-select .ui-select-button { min-height: 32px; height: 32px; padding: 0 6px 0 10px !important; gap: 4px; border: 1px solid #c9ccc4; border-radius: 10px; font-size: 13px; }
 .visual-tools .compact-select { flex: none; }
 @media (max-width: 760px) { .compact-select .ui-select-button { padding: 0 4px 0 8px !important; gap: 2px; font-size: 12px; } .compact-select .ui-select-button svg { width: 13px; height: 13px; } .visual-tools { column-gap: 4px !important; } }
+/* Menu rows: action on the left, this computer's shortcut as a quiet hint on the right. */
+.workbench-menu-content > button:has(> kbd) { display: flex !important; align-items: center; justify-content: space-between; gap: 24px; }
+.workbench-menu-content kbd { font: 600 12px/1 ui-monospace, "SF Mono", Menlo, monospace; color: #8a8d86; background: none; border: 0; padding: 0; }
+.workbench-menu-content button:disabled kbd { color: #c4c6c0; }
+.menu-divider { margin: 4px 8px; border: 0; border-top: 1px solid #e6e7e2; }
+/* Shortcuts: two roomy columns; keys never wrap, the description takes the rest. */
+.shortcuts-grid { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)) !important; gap: 18px 28px !important; }
+.shortcuts-grid dl > div { display: grid !important; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; padding: 6px 0; }
+.shortcuts-grid dt { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.shortcuts-grid dd { margin: 0; text-align: right; }
+.shortcuts-grid kbd { min-width: 0; padding: 3px 7px; font-size: 12px; }
+.sc-sep { color: #8a8d86; font-weight: 700; padding: 0 1px; }
+@media (max-width: 520px) { .shortcuts-grid { grid-template-columns: 1fr !important; } }
+
+/* Dialog lead lines break only between phrases (each phrase stays whole). */
+.nowrap-phrase { display: inline-block; }

@@ -76,6 +76,9 @@ const freshDraft = (): CanvasSpec => {
   const draft = blank();
   return { ...draft, metadata: { ...draft.metadata, layoutMode: "reflow" } };
 };
+// Menu shortcut hints in this computer's own keys (⌘ on Mac, Ctrl elsewhere).
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+function keyHint(key: string, shift = false) { return isMac ? (shift ? "⇧" : "") + "⌘" + key : "Ctrl+" + (shift ? "Shift+" : "") + key; }
 export default function App() {
   const imageInput = useRef<HTMLInputElement>(null),
     imageTarget = useRef<string | null>(null);
@@ -1585,52 +1588,18 @@ node ? (
                 {busy ? "儲存中…" : saved&&!dirty ? "已儲存" : "儲存草稿"}
               </button>
               <WorkbenchMenu label="編輯">
-                <button disabled={!selectedIds.length} onClick={()=>copySelection()}>複製 · Ctrl/Cmd＋C</button>
-                <button disabled={!selectedIds.length} onClick={()=>copySelection(true)}>剪下 · Ctrl/Cmd＋X</button>
-                <button onClick={()=>void pasteSelection()}>貼上 · Ctrl/Cmd＋V</button>
-                <button onClick={()=>{setSelectedIds(spec.nodes.map(n=>n.id));setPrimarySelected(spec.nodes[0]?.id??null);}}>全選 · Ctrl/Cmd＋A</button>
-                <button disabled={selectedIds.length<2} onClick={()=>change(groupSelection(spec,selectedIds))}>群組 · Ctrl/Cmd＋G</button>
-                <button disabled={!selectedIds.length} onClick={()=>copyFormat()}>複製格式 · Ctrl/Cmd＋Shift＋C</button>
-                <button disabled={!selectedIds.length} onClick={()=>pasteFormat(selectedIds)}>貼上格式 · Ctrl/Cmd＋Shift＋V</button>
-                <button disabled={!selectedIds.length} onClick={()=>change(groupSelection(spec,selectedIds,true))}>解組 · Ctrl/Cmd＋Shift＋G</button>
+                <button disabled={!selectedIds.length} onClick={()=>copySelection()}><span>複製</span><kbd>{keyHint("C")}</kbd></button>
+                <button disabled={!selectedIds.length} onClick={()=>copySelection(true)}><span>剪下</span><kbd>{keyHint("X")}</kbd></button>
+                <button onClick={()=>void pasteSelection()}><span>貼上</span><kbd>{keyHint("V")}</kbd></button>
+                <button onClick={()=>{setSelectedIds(spec.nodes.map(n=>n.id));setPrimarySelected(spec.nodes[0]?.id??null);}}><span>全選</span><kbd>{keyHint("A")}</kbd></button>
+                <hr className="menu-divider" /><button disabled={selectedIds.length<2} onClick={()=>change(groupSelection(spec,selectedIds))}><span>群組</span><kbd>{keyHint("G")}</kbd></button><button disabled={!selectedIds.length} onClick={()=>change(groupSelection(spec,selectedIds,true))}><span>解組</span><kbd>{keyHint("G", true)}</kbd></button><hr className="menu-divider" />
+                <button disabled={!selectedIds.length} onClick={()=>copyFormat()}><span>複製格式</span><kbd>{keyHint("C", true)}</kbd></button>
+                <button disabled={!selectedIds.length} onClick={()=>pasteFormat(selectedIds)}><span>貼上格式</span><kbd>{keyHint("V", true)}</kbd></button><hr className="menu-divider" />
+                
                 <button disabled={!spec.nodes.length} onClick={()=>autoMotion()}>自動加上動態{selectedIds.length?"（選取的元件）":"（整頁）"}</button>
                 <button disabled={!spec.nodes.some(n=>n.effects.length)} onClick={()=>autoMotion(true)}>移除動態{selectedIds.length?"（選取的元件）":"（整頁）"}</button>
               </WorkbenchMenu>
-              <WorkbenchMenu label="草稿選單">
-                <button onClick={()=>{setCandidate(null);setMode("preview");}}>開啟網站工作區</button>
-                <button
-                  disabled={disabled || generating || !spec.nodes.length}
-                  onClick={() => void generate(true)}
-                >
-                  立即排版
-                </button>
-                <div className="menu-label">範例草稿</div>
-                {demoFixtures
-                  .filter((_, index) => index !== 2)
-                  .map((fixture) => (
-                    <button
-                      key={fixture.metadata.name}
-                      disabled={disabled || generating}
-                      onClick={() => void loadDemo(fixture)}
-                    >
-                      載入{fixture.metadata.name}
-                    </button>
-                  ))}
-                <button
-                  disabled={!ready}
-                  onClick={() => {
-                    if (
-                      !dirty ||
-                      window.confirm(
-                        "尚有未儲存的修改，重新載入會捨棄這些修改，是否繼續？",
-                      )
-                    )
-                      void restore();
-                  }}
-                >
-                  重新載入
-                </button>
-              </WorkbenchMenu>
+
             </>
           )}
           </div>
@@ -1744,7 +1713,7 @@ node ? (
               <div className="canvas-tools">
                 <div>
                   <strong>網站草稿</strong>
-                  <small>1440 × {spec.metadata.height}</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · Ctrl/Cmd＋G 群組</small>}
+                  <small>1440 × {spec.metadata.height}</small>{selectedIds.length>1&&<small className="selection-count">已選取 {selectedIds.length} 個 · {keyHint("G")} 群組</small>}
                 </div>
                 <div>
                   <button

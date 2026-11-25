@@ -24,8 +24,7 @@ test("multi-page site: page tabs, page links, accept, reload and delete", async 
   await page.getByRole("button", { name: "使用此版本", exact: true }).click();
   await page.reload();
   await expect(page.getByRole("status")).toContainText("草稿");
-  await page.locator(".workbench-menu > summary").filter({ hasText: "草稿選單" }).click();
-  await page.getByRole("button", { name: "開啟網站工作區", exact: true }).click();
+  await page.getByRole("button", { name: "預覽", exact: true }).click();
   const saved = page.locator(".preview-frame .rendered-page:visible").first();
   await expect(saved.locator(".page-nav nav a")).toHaveText(["首頁", "價目與報名"]);
   await saved.locator(".page-nav nav a", { hasText: "價目與報名" }).click();

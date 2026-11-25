@@ -4,15 +4,10 @@ import {
   openPanel,
   editSelection,
   viewAction,
+  useTemplate,
+  buildSite,
 } from "./helpers/workbench";
 import { writeFile } from "node:fs/promises";
-async function draftAction(page: Page, name: string) {
-  await page
-    .locator(".workbench-menu > summary")
-    .filter({ hasText: "草稿選單" })
-    .click();
-  await page.getByRole("button", { name, exact: true }).click();
-}
 async function measurements(page: Page) {
   return page.evaluate(() => {
     const rect = (selector: string) => {
@@ -48,10 +43,10 @@ for (const width of [1440, 768, 375])
     });
     await page.goto("/");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
-    await draftAction(page, "載入個人作品集");
+    await useTemplate(page, "個人作品集");
     await expect(page.getByTestId("canvas-node")).toHaveCount(6);
     await page.getByRole("button", { name: "儲存草稿", exact: true }).click();
-    await draftAction(page, "立即排版");
+    await buildSite(page);
     await expect(
       page.locator('[data-candidate-mode="demo"]'),
     ).toBeVisible();
@@ -119,27 +114,14 @@ for (const width of [1440, 768, 375])
       .toBe(true);
     expect(unexpected).toEqual([]);
   });
-for (const name of ["活動介紹", "不規則草稿", "動畫草稿"])
-  test(`repeatable ${name} sample and Undo preserve original draft`, async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await expect(page.getByRole("status")).toContainText("草稿已就緒");
-    await draftAction(page, "載入" + name);
-    await expect(page.getByTestId("canvas-node")).not.toHaveCount(0);
-    await page.getByRole("button", { name: "還原", exact: true }).click();
-    await expect(page.getByTestId("canvas-node")).toHaveCount(0);
-    await page.getByRole("button", { name: "重做", exact: true }).click();
-    await draftAction(page, "立即排版");
-    await expect(
-      page.locator('[data-candidate-mode="demo"]'),
-    ).toBeVisible();
-    if (name === "動畫草稿")
-      await expect(
-        page
-          .getByRole("main", { name: "生成候選預覽" })
-          .locator('.preview-frame [data-effects]:not([data-effects=""])'),
-      ).toHaveCount(5);
-    await page.getByRole("button", { name: "使用此版本", exact: true }).click();
-    await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
-  });
+test("a home template builds into a site and the site is saved", async ({ page }) => {
+  await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
+  await page.goto("/");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await useTemplate(page, "活動介紹");
+  await expect(page.getByTestId("canvas-node")).not.toHaveCount(0);
+  await buildSite(page);
+  await expect(page.locator('[data-candidate-mode="demo"]')).toBeVisible();
+  await page.getByRole("button", { name: "使用此版本", exact: true }).click();
+  await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
+});

@@ -92,7 +92,7 @@ export function AccountButton() {
         slot.current.replaceChildren();
         g.accounts.id.renderButton(slot.current, { theme: "outline", size: "large", shape: "pill", text: "signin_with", locale: "zh-TW", width: 260 });
       })
-      .catch(() => live && setNote("連不到 Google，請檢查網路後再試"));
+      .catch(() => live && setNote((current) => current || "連不到 Google，請檢查網路後再試"));
     return () => { live = false; };
   }, [open, me]);
   async function logout() {

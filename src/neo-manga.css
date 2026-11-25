@@ -585,3 +585,8 @@ body{background:var(--neo-cream)}
 .canvas-wrap { position: relative; }
 .page-frame-label { position: absolute; left: 0; top: -30px; padding: 3px 10px; border-radius: 999px; background: #0d0e11; color: #f7f6f2; font-size: 12px; font-weight: 800; letter-spacing: .02em; pointer-events: none; }
 @media (max-width: 760px) { .page-frame-label { top: -26px; font-size: 11px; } }
+/* Layers: top bar (120) < dialogs (300) < dropdown lists (400). */
+.shortcuts-backdrop, .brand-backdrop { z-index: 300 !important; }
+.brief-panel { z-index: 300 !important; }
+.account-card { z-index: 310 !important; }
+.ui-select-list { z-index: 400 !important; }
