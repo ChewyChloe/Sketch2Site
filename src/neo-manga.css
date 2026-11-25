@@ -372,3 +372,33 @@ body{background:var(--neo-cream)}
 .brief-actions .primary{min-height:46px;padding:0 20px;border:2px solid #0d0e11;border-radius:999px;background:#10e560;font:inherit;font-weight:900;box-shadow:3px 3px 0 #0d0e11;cursor:pointer}
 .brief-reset{min-height:46px;padding:0 16px;border:1.5px solid #c9cec7;border-radius:999px;background:#fff;font:inherit;font-weight:700;cursor:pointer}
 @media(max-width:760px){.brief-panel{top:auto;bottom:12px;right:12px;left:12px;width:auto;max-height:80vh}.brief-sentence{font-size:15px}}
+
+/* ===== Top bar: secondary actions wrapper (2026-11-25) =====
+   Desktop: the wrapper is invisible and the original order is kept.
+   Phones: logo + name + 生成網站 / step tabs / one swipeable row of actions. */
+.topbar .secondary-actions { display: contents; }
+.topbar .toolbar-actions > .workspace-modes { order: 0; }
+.topbar .secondary-actions > .layout-choice { order: 1; }
+.topbar .secondary-actions > .brand-button { order: 2; }
+.topbar .secondary-actions > .describe-site:not(.brand-button) { order: 3; }
+.topbar .toolbar-actions > .topbar-generate { order: 4; }
+.topbar .secondary-actions > :not(.layout-choice):not(.describe-site) { order: 5; }
+@media (max-width: 760px) {
+  .topbar { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px; padding: 6px 10px !important; }
+  .topbar .project-divider { display: none; }
+  .topbar .brand.home-link { min-height: 36px; }
+  .topbar .brand.home-link .brand-mark { width: 34px; height: 34px; font-size: 12px; }
+  .topbar .project-name { grid-column: 2; grid-row: 1; width: 100% !important; height: 36px !important; flex: none !important; }
+  .topbar .toolbar-actions { display: contents !important; }
+  .topbar .topbar-generate { grid-column: 3; grid-row: 1; min-height: 36px !important; padding: 0 12px !important; font-size: 13px !important; white-space: nowrap; }
+  .topbar .workspace-modes { grid-column: 1 / -1; grid-row: 2; width: 100%; height: 36px !important; }
+  .topbar .workspace-modes button { height: 28px !important; min-height: 28px !important; font-size: 12px !important; }
+  .topbar .secondary-actions { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .topbar .secondary-actions::-webkit-scrollbar { display: none; }
+  .topbar .secondary-actions > * { flex: none; }
+  .topbar .secondary-actions button, .topbar .secondary-actions summary, .topbar .secondary-actions select { min-height: 32px !important; height: 32px; padding: 0 12px !important; font-size: 13px !important; white-space: nowrap; }
+  .topbar .preview-app-actions:not([hidden]) { grid-column: 3; grid-row: 1; }
+  .topbar .preview-app-actions button, .topbar .preview-app-actions summary { min-height: 36px !important; }
+  .topbar .secondary-actions:not(:has(> :not([hidden]))) { display: none; }
+  .topbar.home { grid-template-columns: auto 1fr; }
+}

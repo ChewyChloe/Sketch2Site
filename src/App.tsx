@@ -1447,6 +1447,19 @@ node ? (
               <span className="neo-step">3.</span> 預覽
             </button>
           </div>
+          {mode === "draft" && (
+            <button
+              className="primary topbar-generate"
+              disabled={disabled || generating || !spec.nodes.length}
+              aria-label={generating?"生成中…":"生成網站"}
+              title="生成時會將這份草稿的內容與布局傳送至 OpenAI"
+              onClick={() => void generate()}
+            >
+              <span aria-hidden="true">ϟ</span> {generating ? "生成中…" : "生成網站"}
+            </button>
+          )}
+          {/* Secondary actions: inline on desktop, one swipeable row on phones. */}
+          <div className="secondary-actions">
           {mode === "draft" && <label className="layout-choice" title="智慧排版：自動整理成首屏、特色、價目表等區塊；保留草稿位置：維持相對位置，手機單欄"><select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="reflow">智慧排版</option><option value="preserve">保留草稿位置</option></select></label>}
           {mode === "draft" && (
             <button
@@ -1469,17 +1482,6 @@ node ? (
               onClick={() => setBriefOpen((v) => !v)}
             >
               描述網站{spec.metadata.brief ? " ✓" : ""}
-            </button>
-          )}
-          {mode === "draft" && (
-            <button
-              className="primary"
-              disabled={disabled || generating || !spec.nodes.length}
-              aria-label={generating?"生成中…":"生成網站"}
-              title="生成時會將這份草稿的內容與布局傳送至 OpenAI"
-              onClick={() => void generate()}
-            >
-              <span aria-hidden="true">ϟ</span> {generating ? "生成中…" : "生成網站"}
             </button>
           )}
           {mode === "draft" && (
@@ -1541,6 +1543,7 @@ node ? (
               </WorkbenchMenu>
             </>
           )}
+          </div>
         </div>
       </header>
       {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}

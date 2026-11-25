@@ -1,3 +1,8 @@
+## 手機頂部列瘦身（2026-11-25）
+- [x] 次要按鈕收成可滑動一排；生成網站留在第一排（DONE）
+- [x] 網站工作區頂部列兩排（DONE）
+- [ ] 手機畫布預設縮放（NOT STARTED）
+
 ## 20種進階動畫擴充（2026-11-18）
 - DONE：保留原20個Preset，淨新增20個不同機制，共40種。重複的磁吸／折角／交錯／數值遞增／閱讀進度提案改為聚光、扇形、對角翻入、儀表及里程碑；完整清單與原因見docs/ADVANCED_MOTIONS.md。
 - DONE：沿用MotionSchema／Canvas／PageSpec／Patch，整合四組Live Preview、參數、Apply／Remove、Undo／Redo、IndexedDB、Mock生成與共享React匯出。舊合法組合不放寬／不破壞；無新依賴。

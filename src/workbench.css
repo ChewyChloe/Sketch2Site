@@ -1516,3 +1516,15 @@ input[type="range"] {
 .neo-inspector .copy-options button span { font-size: 11px; font-weight: 800; color: #10e560; }
 .neo-inspector .copy-options button:hover { border-color: #10e560; }
 .neo-inspector .copy-options .copy-dismiss { justify-items: center; text-align: center; min-height: 38px; background: transparent; border-style: dashed; color: #b9c1b3; }
+/* Phones: no reserved toolbar row; the active text toolbar floats above the canvas tools. */
+@media (max-width: 760px) {
+  .text-toolbar-slot { height: 0; margin: 0; }
+  .text-toolbar-slot > .text-toolbar.is-idle { display: none; }
+  .text-toolbar-slot > .text-toolbar:not(.is-idle) { position: fixed; left: 8px; right: 8px; top: auto; bottom: 88px; z-index: 30; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; min-height: 50px; }
+  .text-toolbar-slot > .text-toolbar:not(.is-idle)::-webkit-scrollbar { display: none; }
+  .text-toolbar-slot > .text-toolbar:not(.is-idle) > * { flex: none; }
+  /* Popovers open upwards from the floating bar. */
+  .text-toolbar-slot .tt-panel { position: fixed; left: 8px; right: 8px; top: auto; bottom: 146px; width: auto; }
+  .page-tabs { padding: 6px 10px !important; gap: 6px !important; }
+  .page-tabs button, .page-tabs [role=tab], .page-tabs .page-add { min-height: 34px !important; height: 34px !important; padding: 0 12px !important; font-size: 13px !important; border-radius: 10px !important; }
+}
