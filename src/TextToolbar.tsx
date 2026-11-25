@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { fontIds, fontLabels, fontStacks, type TextStyle } from "./pageSpec";
 
 // Text toolbar above the canvas (shown when text is selected): font, size,
@@ -14,7 +14,18 @@ const marks = ["#fff3a3", "#ffd6e7", "#d3f9d8", "#d0ebff", "#e5dbff", "#ffe8cc"]
 
 function Popover({ label, title, children, button }: { label: string; title: string; children: React.ReactNode; button: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  const box = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLDivElement>(null), panel = useRef<HTMLDivElement>(null);
+  const [shift, setShift] = useState<{ x: number; up: boolean }>({ x: 0, up: false });
+  // Keep the pop-up inside the visible canvas: slide it left if it would run under the side
+  // panel, and open it upward if there is no room below.
+  useLayoutEffect(() => {
+    if (!open || !panel.current) { setShift({ x: 0, up: false }); return; }
+    const r = panel.current.getBoundingClientRect();
+    const view = document.querySelector(".canvas-scroll")?.getBoundingClientRect() ?? { left: 0, right: innerWidth, bottom: innerHeight };
+    const x = Math.min(0, view.right - 8 - r.right) + Math.max(0, view.left + 8 - r.left);
+    const up = r.bottom > Math.min(innerHeight, view.bottom) - 8 && r.top - r.height - 60 > 0;
+    setShift({ x, up });
+  }, [open]);
   useEffect(() => {
     if (!open) return;
     const close = (e: PointerEvent) => !box.current?.contains(e.target as Node) && setOpen(false);
@@ -27,7 +38,7 @@ function Popover({ label, title, children, button }: { label: string; title: str
         {button}
       </button>
       {open && (
-        <div className="tt-panel" role="group" aria-label={label}>
+        <div ref={panel} className={"tt-panel" + (shift.up ? " is-up" : "")} role="group" aria-label={label} style={shift.x ? { translate: `${shift.x}px 0` } : undefined}>
           {children}
         </div>
       )}

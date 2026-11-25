@@ -74,6 +74,7 @@ export function GhostField({
 }
 
 const blankLabels: Record<BriefField, string> = { audience: "誰會看", purpose: "網站用途", mood: "感覺", focus: "最想被注意的" };
+const questions: Record<BriefField, string> = { audience: "誰會看這個網站？", purpose: "網站要做什麼？", mood: "想要什麼感覺？", focus: "最想讓人注意什麼？" };
 const order: BriefField[] = ["audience", "purpose", "mood", "focus"];
 
 export function BriefPanel({
@@ -109,30 +110,35 @@ export function BriefPanel({
       aria-controls="brief-choices"
       onClick={() => setActive(active === field ? null : field)}
     >
-      {brief[field] || blankLabels[field]}
-      <span aria-hidden="true"> ▾</span>
+      <span>{brief[field] || "選一個"}</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
     </button>
   );
   return (
     <div className="brief-panel" role="dialog" aria-label="描述你的網站" onKeyDown={(e) => { if (e.key === "Escape") onClose(brief); }}>
       <div className="brief-head">
         <h2>描述你的網站</h2>
-        <button type="button" className="brief-close" aria-label="關閉" onClick={() => onClose(brief)}>×</button>
+        <button type="button" className="brief-close" aria-label="關閉" onClick={() => onClose(brief)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
       </div>
-      <p className="brief-sentence">
-        這是一個給 {blank("audience")} 看的 {blank("purpose")} 網站，感覺要 {blank("mood")}，最想讓人注意到 {blank("focus")}
-      </p>
-      {active && (
-        <div className="brief-choices" id="brief-choices" role="group" aria-label={"選擇" + blankLabels[active]}>
-          {briefOptions[active].map((option) => (
-            <button key={option} type="button" aria-pressed={brief[active] === option} onClick={() => choose(active, option)}>{option}</button>
-          ))}
-          <form className="brief-custom" onSubmit={(e) => { e.preventDefault(); if (custom.trim()) choose(active, custom); }}>
-            <input aria-label={"自己輸入" + blankLabels[active]} placeholder="自己輸入…" maxLength={20} value={custom} onChange={(e) => setCustom(e.target.value)} />
-          </form>
-          {brief[active] && <button type="button" className="brief-clear" onClick={() => { set(active, ""); setActive(null); }}>清除</button>}
-        </div>
-      )}
+      <div className="brief-rows">
+        {order.map((field) => (
+          <div key={field} className={"brief-row" + (active === field ? " is-active" : "")}>
+            <span className="brief-q">{questions[field]}</span>
+            {blank(field)}
+            {active === field && (
+              <div className="brief-choices" id="brief-choices" role="group" aria-label={"選擇" + blankLabels[field]}>
+                {briefOptions[field].map((option) => (
+                  <button key={option} type="button" aria-pressed={brief[field] === option} onClick={() => choose(field, option)}>{option}</button>
+                ))}
+                <form className="brief-custom" onSubmit={(e) => { e.preventDefault(); if (custom.trim()) choose(field, custom); }}>
+                  <input aria-label={"自己輸入" + blankLabels[field]} placeholder="自己輸入…" maxLength={20} value={custom} onChange={(e) => setCustom(e.target.value)} />
+                </form>
+                {brief[field] && <button type="button" className="brief-clear" onClick={() => { set(field, ""); setActive(null); }}>清除</button>}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
       <GhostField id="brief-note" label="一句話補充（選填）" value={brief.note} purpose={brief.purpose} maxLength={100} placeholder="例如：主色想用學校的藍色" onChange={(v) => set("note", v)} onEscape={() => onClose(brief)} />
       {moreOpen ? (
         <GhostField id="brief-details" label="詳細說明（選填）" multiline value={brief.details ?? ""} purpose={brief.purpose} maxLength={600} placeholder="例如：目標、喜歡的風格、想強調的內容" onChange={(v) => set("details", v)} onEscape={() => onClose(brief)} />

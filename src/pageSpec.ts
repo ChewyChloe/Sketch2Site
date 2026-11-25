@@ -160,6 +160,8 @@ export const latinFontStacks: Record<LatinFontId, string> = {
   rounded: '"Arial Rounded MT Bold", "Varela Round", "Nunito"',
   mono: '"SF Mono", Menlo, Consolas, "Courier New"',
 };
+export const brandRadii = ["none", "small", "medium", "large", "round"] as const;
+export const radiusLabels: Record<(typeof brandRadii)[number], string> = { none: "直角", small: "小圓角", medium: "中圓角", large: "大圓角", round: "膠囊" };
 export const BrandSchema = z
   .object({
     colors: z.array(hex).max(10),
@@ -174,9 +176,27 @@ export const BrandSchema = z
     headingFontLatin: z.enum(latinFontIds).optional(),
     bodyFontLatin: z.enum(latinFontIds).optional(),
     logo: imageSource.optional(),
+    // Secondary logo (footer) and the small site icon (browser tab).
+    logoAlt: imageSource.optional(),
+    icon: imageSource.optional(),
+    // One corner style for cards, images and buttons.
+    radius: z.enum(brandRadii).optional(),
+    // Type scale: largest size in px and weight for 標題 (h1), 副標題 (h2) and 內文.
+    type: z
+      .object({
+        h1Size: z.number().int().min(28).max(96).optional(),
+        h1Weight: z.union([z.literal(500), z.literal(600), z.literal(700), z.literal(800), z.literal(900)]).optional(),
+        h2Size: z.number().int().min(20).max(64).optional(),
+        h2Weight: z.union([z.literal(500), z.literal(600), z.literal(700), z.literal(800), z.literal(900)]).optional(),
+        bodySize: z.number().int().min(14).max(22).optional(),
+        bodyWeight: z.union([z.literal(400), z.literal(500), z.literal(600)]).optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type Brand = z.infer<typeof BrandSchema>;
+export const radiusPx: Record<(typeof brandRadii)[number], { card: number; button: number }> = { none: { card: 0, button: 0 }, small: { card: 6, button: 6 }, medium: { card: 14, button: 12 }, large: { card: 24, button: 20 }, round: { card: 28, button: 999 } };
 const channel = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 /** WCAG relative luminance of a #rrggbb colour. */
 export function luminance(color: string) {
@@ -238,6 +258,13 @@ export function brandCss(b: Brand | undefined) {
     ...(b.neutral ? { "--ink": b.neutral } : {}),
     ...(b.headingFont || b.headingFontLatin ? { "--pg-heading-font": fontWith(b.headingFontLatin, headingCjk) } : {}),
     ...(b.bodyFont || b.bodyFontLatin ? { fontFamily: fontWith(b.bodyFontLatin, bodyCjk) } : {}),
+    ...(b.radius ? { "--pg-radius-lg": radiusPx[b.radius].card + "px", "--brand-btn-radius": radiusPx[b.radius].button + "px" } : {}),
+    ...(b.type?.h1Size ? { "--brand-h1-n": String(b.type.h1Size) } : {}),
+    ...(b.type?.h1Weight ? { "--brand-h1-w": String(b.type.h1Weight) } : {}),
+    ...(b.type?.h2Size ? { "--brand-h2-n": String(b.type.h2Size) } : {}),
+    ...(b.type?.h2Weight ? { "--brand-h2-w": String(b.type.h2Weight) } : {}),
+    ...(b.type?.bodySize ? { "--brand-body-n": String(b.type.bodySize) } : {}),
+    ...(b.type?.bodyWeight ? { "--brand-body-w": String(b.type.bodyWeight) } : {}),
   };
 }
 export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta"] as const;

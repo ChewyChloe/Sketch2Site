@@ -9,7 +9,7 @@ test("brand kit colours, fonts and logo reach the site", async ({ page }) => {
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增區塊：首屏介紹" }).click();
   await page.getByRole("button", { name: "品牌", exact: true }).click();
-  const kit = page.getByRole("dialog", { name: "品牌工具組" });
+  const kit = page.getByRole("dialog", { name: "品牌模板設定" });
   await expect(kit).toBeVisible();
   // Picking a main colour fills in the other three roles, each with a contrast check.
   await kit.getByRole("button", { name: "主色用 #ffc53d" }).click();

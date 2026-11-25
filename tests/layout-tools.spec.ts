@@ -30,6 +30,8 @@ test("smart guides, layer order, align, lock and Alt-drag duplicate", async ({ p
   await heading.click();
   await page.keyboard.press("Control+Alt+BracketRight");
   await expect(nodes.last()).toContainText("最後，請訪客做一件事");
+  // 排列與對齊 starts collapsed in the inspector; open it once (it stays open).
+  await page.getByRole("button", { name: "排列與對齊" }).click();
   await page.getByRole("button", { name: "移到最下層" }).click();
   await expect(nodes.first()).toContainText("最後，請訪客做一件事");
   // Align a single element to the canvas centre.
@@ -37,7 +39,7 @@ test("smart guides, layer order, align, lock and Alt-drag duplicate", async ({ p
   const centred = (await heading.boundingBox())!, board = (await page.getByTestId("canvas").boundingBox())!;
   expect(Math.abs(centred.x + centred.width / 2 - (board.x + board.width / 2))).toBeLessThan(3);
   // Lock: no drag, no delete, no inline edit; then unlock.
-  await page.getByRole("button", { name: /鎖定（不會被拖動或刪除）/ }).click();
+  await page.getByRole("button", { name: "鎖定", exact: true }).click();
   await expect(heading.getByLabel("已鎖定")).toBeVisible();
   const before = (await heading.boundingBox())!;
   await page.mouse.move(before.x + 10, before.y + 10);

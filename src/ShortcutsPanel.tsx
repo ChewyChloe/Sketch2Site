@@ -31,7 +31,7 @@ export function ShortcutsPanel({ onClose }: { onClose: () => void }) {
       >
         <div className="shortcuts-head">
           <h2>快捷鍵</h2>
-          <button type="button" aria-label="關閉快捷鍵說明" onClick={onClose}>×</button>
+          <button type="button" aria-label="關閉快捷鍵說明" onClick={onClose}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
         </div>
         <p>不用背，用滑鼠一樣做得到，想快一點再用鍵盤</p>
         <div className="shortcuts-grid">

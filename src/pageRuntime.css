@@ -767,3 +767,15 @@
 .rendered-page[data-theme] .page-heading { color: var(--ink); }
 /* The dark theme keeps its own text and soft background colours; brand 中性色／副色 are for light pages. */
 .rendered-page[data-theme="midnight"] { --ink: #eef0ff !important; --pg-soft: #11142a !important; }
+
+/* Brand template: corner style and type scale override the theme when set. */
+.rendered-page[style*="--brand-btn-radius"] .page-button { border-radius: var(--brand-btn-radius) !important; }
+.rendered-page[style*="--pg-radius-lg"] .page-image, .rendered-page[style*="--pg-radius-lg"] .page-card { border-radius: var(--pg-radius-lg) !important; }
+.rendered-page[style*="--brand-h1-n"] h1.page-heading { font-size: clamp(calc(var(--brand-h1-n) * .55px), calc(var(--brand-h1-n) * 1cqi / 14.4), calc(var(--brand-h1-n) * 1px)) !important; }
+.rendered-page[style*="--brand-h1-w"] h1.page-heading { font-weight: var(--brand-h1-w) !important; }
+.rendered-page[style*="--brand-h2-n"] h2.page-heading { font-size: clamp(calc(var(--brand-h2-n) * .65px), calc(var(--brand-h2-n) * 1cqi / 14.4), calc(var(--brand-h2-n) * 1px)) !important; }
+.rendered-page[style*="--brand-h2-w"] h2.page-heading { font-weight: var(--brand-h2-w) !important; }
+.rendered-page[style*="--brand-body-n"] { font-size: calc(var(--brand-body-n) * 1px) !important; }
+.rendered-page[style*="--brand-body-n"] .page-paragraph { font-size: 1em; }
+.rendered-page[style*="--brand-body-w"] .page-paragraph, .rendered-page[style*="--brand-body-w"] .page-card { font-weight: var(--brand-body-w); }
+.page-footer .page-brand-logo { width: 28px; height: 28px; }

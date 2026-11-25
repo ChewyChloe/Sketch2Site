@@ -41,7 +41,6 @@ export function ArrangePanel({
 }) {
   return (
     <section className="arrange-panel" aria-label="位置與圖層">
-      <h3>位置</h3>
       <div className="arrange-row two" role="group" aria-label="圖層順序">
         {layers.map(([move, label, keys, d]) => (
           <button key={move} type="button" disabled={locked} title={`${label}（${keys}）`} aria-label={label} onClick={() => onLayer(move)}>
@@ -72,7 +71,7 @@ export function ArrangePanel({
       )}
       <button type="button" className={"arrange-lock" + (locked ? " is-locked" : "")} aria-pressed={locked} title={`鎖定（Alt+Shift+L）`} onClick={onLock}>
         {icon(locked ? "M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z" : "M7 11V8a5 5 0 0 1 9.6-2M5 11h14v10H5z")}
-        {locked ? "已鎖定，按這裡解鎖" : "鎖定（不會被拖動或刪除）"}
+        {locked ? "已鎖定，按這裡解鎖" : "鎖定"}
       </button>
     </section>
   );

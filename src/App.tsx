@@ -17,6 +17,8 @@ import { ArrangePanel } from "./ArrangePanel";
 import { TextToolbar, defaultSize, stepSize } from "./TextToolbar";
 import { ShortcutsPanel } from "./ShortcutsPanel";
 import { AccountButton } from "./AccountButton";
+import { InspectorSection } from "./InspectorSection";
+import { PanelResizer } from "./PanelResizer";
 import { BrandPanel } from "./BrandPanel";
 import { smartFocus } from "./smartCrop";
 import { CopySuggest } from "./CopySuggest";
@@ -128,7 +130,10 @@ export default function App() {
     [tab, setTab] = useState("library"),
     [search, setSearch] = useState("");
   const [panel, setPanel] = useState(() => window.innerWidth > 1000),
-    [panelWidth, setPanelWidth] = useState(304);
+    [panelWidth, setPanelWidthRaw] = useState(() => { try { return Number(localStorage.getItem("sketch2site:left-width")) || 260; } catch { return 260; } }),
+    [inspectorWidth, setInspectorWidthRaw] = useState(() => { try { return Number(localStorage.getItem("sketch2site:right-width")) || 300; } catch { return 300; } });
+  const setPanelWidth = (w: number) => { setPanelWidthRaw(w); try { localStorage.setItem("sketch2site:left-width", String(w)); } catch { /* convenience only */ } };
+  const setInspectorWidth = (w: number) => { setInspectorWidthRaw(w); try { localStorage.setItem("sketch2site:right-width", String(w)); } catch { /* convenience only */ } };
   const scale = zoom === "fit" ? fitScale : zoom;
   // "Fit" tracks the visible canvas width (panels, window resizes).
   useEffect(() => {
@@ -238,7 +243,7 @@ export default function App() {
   const [brandOpen, setBrandOpen] = useState(false);
   const imageUrls = useAssetUrls(
     // Canvas images, the brand logo, and (only while the brand kit is open) the other local images.
-    [...spec.nodes.flatMap((n) => (n.assetId ? [n.assetId] : [])), ...(brandOpen ? localImages : []), ...(spec.metadata.brand?.logo ? [spec.metadata.brand.logo] : [])],
+    [...spec.nodes.flatMap((n) => (n.assetId ? [n.assetId] : [])), ...(brandOpen ? localImages : []), ...[spec.metadata.brand?.logo, spec.metadata.brand?.logoAlt, spec.metadata.brand?.icon].filter((r): r is string => Boolean(r))],
   );
   if (canvasHead.current !== spec) {
     canvasVersion.current++;
@@ -1258,14 +1263,16 @@ export default function App() {
   const inspectorContent=(
 node ? (
                   <>
-                    <div className="selected-component">
-                      <span className="component-icon">
-                        <WorkbenchIcon name={node.type} />
-                      </span>
+                    <div className="insp-head">
+                      <span className="component-icon"><WorkbenchIcon name={node.type} /></span>
                       <h2>{labels[node.type]}</h2>
+                      <div className="insp-actions">
+                        <button type="button" aria-label="複製元件" title="複製" onClick={duplicate}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h12v12H8zM4 16V4h12" /></svg></button>
+                        <button type="button" aria-label="刪除元件" title="刪除" onClick={remove}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg></button>
+                      </div>
                     </div>
-                    {/* Photos first: the controls people reach for most come before position and text. */}
                     {node.type === "image" && (
+                      <InspectorSection id="photo" title="照片">
                       <FrameControls
                           look={node.look}
                           hasPhoto={isPhoto(node)}
@@ -1285,8 +1292,19 @@ node ? (
                             }
                           }}
                         />
+                      <label className="field insp-inline">
+                        用哪張照片
+                        <select aria-label="草稿圖片素材" value={node.assetId ?? "/assets/workspace.svg"} onChange={(e) => patch(node.id, { assetId: e.target.value })}>
+                          <option value="/assets/workspace.svg">示意圖</option>
+                          {localImages.map((ref, index) => (
+                            <option key={ref} value={ref}>我的照片 {index + 1}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <p className="note">PNG 或 JPEG，每張最多 5 MB，也可以直接把照片拖到相框上</p>
+                      </InspectorSection>
                     )}
-                    {arrange}
+                    <InspectorSection id="content" title="內容">
                     <label className="field">
                       {contentLabel[node.type] ?? "內容"}
                       <textarea
@@ -1309,41 +1327,6 @@ node ? (
                           if (change(withFittedText(typed, [node.id], { [node.id]: value }))) report("已換成 AI 建議的說法，不喜歡可以還原");
                         }}
                       />
-                    )}
-                    {node.type === "image" && (
-                      <div className="image-controls">
-                        <label className="field">
-                          圖片素材
-                          <select
-                            aria-label="草稿圖片素材"
-                            value={node.assetId ?? "/assets/workspace.svg"}
-                            onChange={(e) =>
-                              patch(node.id, { assetId: e.target.value })
-                            }
-                          >
-                            <option value="/assets/workspace.svg">
-                              內建示意圖
-                            </option>
-                            {localImages.map((ref, index) => (
-                              <option key={ref} value={ref}>
-                                本機圖片 {index + 1}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <button
-                          disabled={importingImage}
-                          onClick={() => {
-                            imageTarget.current = node.id;
-                            imageInput.current?.click();
-                          }}
-                        >
-                          {importingImage ? "正在匯入圖片…" : "替換圖片"}
-                        </button>
-                        <p className="note">
-                          PNG 或 JPEG，每張最多 5 MB，也可以直接把照片拖到相框上
-                        </p>
-                      </div>
                     )}
                     {node.type === "button" && (
                       <label className="field">
@@ -1409,8 +1392,9 @@ node ? (
                         <small>在 Formspree 等服務建立表單後，貼上它提供的網址，內容欄每行是一個欄位</small>
                       </label>
                     )}
-                    <h3 className="property-section-title">位置與尺寸</h3>
-                    <div className="pair">
+                    </InspectorSection>
+                    <InspectorSection id="size" title="位置與大小">
+                    <div className="insp-size">
                       {(["x", "y", "width", "height"] as const).map((k) => (
                         <label className="field" key={k}>
                           {
@@ -1440,7 +1424,11 @@ node ? (
                         </label>
                       ))}
                     </div>
-                    <h2>動畫</h2>
+                    </InspectorSection>
+                    <InspectorSection id="arrange" title="排列與對齊" defaultOpen={false}>
+                      {arrange}
+                    </InspectorSection>
+                    <InspectorSection id="motion" title="動畫">
                     {node.effects.length ? (
                       node.effects.map((f) => (
                         <div className="effect-row" key={f.presetId}>
@@ -1458,15 +1446,16 @@ node ? (
                         </div>
                       ))
                     ) : (
-                      <p className="note">尚未附加動畫效果</p>
+                      <p className="note">還沒有動畫</p>
                     )}
-                    <div className="field">
-                      <button onClick={duplicate}>複製元件</button>
-                      <button onClick={remove}>刪除元件</button>
-                    </div>
+                    <button type="button" className="insp-add-motion" onClick={() => { setTab("animations"); setPanel(true); setMotionFull(false); }}>＋ 加入動畫</button>
+                    </InspectorSection>
                   </>
                 ) : selectedNodes.length ? (
-                  <>{arrange}</>
+                  <>
+                    <div className="insp-head"><h2>已選 {selectedNodes.length} 個</h2></div>
+                    <InspectorSection id="arrange-multi" title="排列與對齊">{arrange}</InspectorSection>
+                  </>
                 ) : (
                   <p className="note">
                     點一下畫布上的東西，就能在這裡改內容、位置和動畫
@@ -1557,7 +1546,17 @@ node ? (
           )}
           {/* Secondary actions: inline on desktop, one swipeable row on phones. */}
           <div className="secondary-actions">
-          {mode === "draft" && <label className="layout-choice" title="智慧排版會整理成首屏、特色、價目表，保留草稿位置會照你擺的位置排"><select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="reflow">智慧排版</option><option value="preserve">保留草稿位置</option></select></label>}
+          {mode === "draft" && (
+            <div className="layout-choice">
+              <WorkbenchMenu label={(spec.metadata.layoutMode ?? "preserve") === "reflow" ? "智慧排版" : "保留草稿位置"}>
+                {([["reflow", "智慧排版", "自動排成首屏、特色、價目表"], ["preserve", "保留草稿位置", "照你擺的位置排"]] as const).map(([value, name, hint]) => (
+                  <button key={value} type="button" className="layout-option" aria-pressed={(spec.metadata.layoutMode ?? "preserve") === value} disabled={generating} onClick={(e) => { change({ ...spec, metadata: { ...spec.metadata, layoutMode: value } }); e.currentTarget.closest("details")?.removeAttribute("open"); }}>
+                    <strong>{name}</strong><small>{hint}</small>
+                  </button>
+                ))}
+              </WorkbenchMenu>
+            </div>
+          )}
           {mode === "draft" && (
             <button
               className={"describe-site brand-button" + (spec.metadata.brand ? " has-brief" : "")}
@@ -1700,7 +1699,7 @@ node ? (
           e.target.value = "";
         }}
       />
-      <div style={{"--neo-library-width":`${panelWidth}px`} as CSSProperties} className={'workspace neo-workspace'+(mode==='draft'&&motionFull?' neo-motion-full':'')}>
+      <div style={{"--neo-library-width":`${panelWidth}px`,"--neo-inspector-width":`${inspectorWidth}px`} as CSSProperties} className={'workspace neo-workspace'+(mode==='draft'&&motionFull?' neo-motion-full':'')}>{mode === "draft" && panel && !motionFull && <div className="panel-resizer-left" style={{ left: panelWidth - 5 }}><PanelResizer side="left" label="拖曳調整左側欄寬度" width={panelWidth} min={220} max={460} onChange={setPanelWidth} /></div>}
         <div
           className="preview-host"
           style={{
@@ -1838,7 +1837,7 @@ node ? (
                           <button onClick={() => setDeletingPage(null)}>取消</button>
                         </span>
                       ) : (
-                        <button className="page-tab-close" aria-label={"刪除頁面：" + p.name} onClick={() => setDeletingPage(p.id)}>×</button>
+                        <button className="page-tab-close" aria-label={"刪除頁面：" + p.name} onClick={() => setDeletingPage(p.id)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
                       ))}
                     </span>
                   );
@@ -1849,6 +1848,11 @@ node ? (
                 ref={canvasScroll}
                 className="canvas-scroll"
                 style={{ "--draft-scale": scale } as React.CSSProperties}
+                onPointerDown={(e) => {
+                  // Pressing the empty area around the page clears the selection (and the floating toolbar).
+                  const t = e.target as HTMLElement;
+                  if (!e.shiftKey && (t === e.currentTarget || t.classList.contains("canvas-wrap"))) { setSelected(null); setEditing(null); }
+                }}
               >
                 {draftEffect && <span className="draft-drop-hint" role="status">{draftHover && spec.nodes.find(n=>n.id===draftHover) ? (draftDropReason(spec.nodes.find(n=>n.id===draftHover)!,draftEffect) ?? "放開以附加動畫") : "拖到有綠框的東西上就能加動畫"}</span>}
                 <div
@@ -2387,7 +2391,7 @@ node ? (
                 ) : null}
               </aside>
             )}
-            {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><div className="neo-inspector-head"><span>物件檢查器</span></div><div className="neo-inspector-tabs"><button onClick={()=>{setTab('animations');setPanel(true);setMotionFull(false);}}>加入動畫</button></div><div className="neo-inspector-body">{inspectorContent}</div></aside>}
+            {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><PanelResizer side="right" label="拖曳調整右側欄寬度" width={inspectorWidth} min={260} max={480} onChange={setInspectorWidth} /><div className="neo-inspector-head"><span>物件檢查器</span></div><div className="neo-inspector-body">{inspectorContent}</div></aside>}
           </>
         )}
       </div>
@@ -2400,12 +2404,7 @@ node ? (
           </span>
 
           {mode === "draft" && (
-            <span className="shortcuts">
-              <span>雙擊編輯文字</span>
-              <span>⌘ / Ctrl Z 還原</span>
-              <span>Delete 刪除</span>
-              <span>方向鍵微調</span>
-            </span>
+            <button type="button" className="footer-shortcuts" aria-haspopup="dialog" onClick={() => setShortcutsOpen(true)}>快捷鍵</button>
           )}
         </footer>
       )}

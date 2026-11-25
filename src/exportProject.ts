@@ -37,6 +37,8 @@ export async function exportProjectFiles(
   };
   allSections(page).forEach(walk);
   if (page.brand?.logo) refs.add(page.brand.logo);
+  if (page.brand?.logoAlt) refs.add(page.brand.logoAlt);
+  if (page.brand?.icon) refs.add(page.brand.icon);
   const files: ProjectFile[] = [
     { path: "package.json", content: manifest },
     { path: "THIRD_PARTY_NOTICES.md", content: notices },
@@ -44,7 +46,7 @@ export async function exportProjectFiles(
     {
       path: "index.html",
       content:
-        '<!doctype html><html lang="zh-Hant"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>匯出網站</title></head><body><div id="root"></div><script type="module" src="./src/main.tsx"></script></body></html>',
+        '<!doctype html><html lang="zh-Hant"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>匯出網站</title>' + (page.brand?.icon ? '<link rel="icon" href=".' + page.brand.icon + '"/>' : '') + '</head><body><div id="root"></div><script type="module" src="./src/main.tsx"></script></body></html>',
     },
     {
       path: "tsconfig.json",

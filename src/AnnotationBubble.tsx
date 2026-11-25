@@ -124,7 +124,7 @@ export function AnnotationBubble({
           onChange={(e) => setText(e.target.value)}
         />
         <button type="submit" className="primary" disabled={!text.trim()}>改</button>
-        <button type="button" className="note-close" aria-label="關閉註解" onClick={() => setOpen(false)}>×</button>
+        <button type="button" className="note-close" aria-label="關閉註解" onClick={() => setOpen(false)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
       </form>
       <div className="note-chips" role="group" aria-label="常用修改">
         {suggestionsFor(page, node.id).map((s) => (
