@@ -3,6 +3,7 @@ import { imageSource } from "./assetRef";
 import { z } from "zod";
 import {
   themeIds,
+  ImageLookSchema,
   allSections,
   PageSchema,
   EffectSchema,
@@ -70,6 +71,7 @@ export const PatchSchema = z.discriminatedUnion("operation", [
           .object({ property: z.literal("src"), value: imageSource })
           .strict(),
         z.object({ property: z.literal("alt"), value: plainText }).strict(),
+        z.object({ property: z.literal("look"), value: ImageLookSchema }).strict(),
         z
           .object({
             property: z.literal("columns"),
@@ -208,6 +210,7 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
       "href",
       "src",
       "alt",
+      "look",
       "columns",
     ] as const)
       if (!equal(node[key], next[key]))
@@ -374,6 +377,7 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
         href: ["button", "form"],
         src: ["image"],
         alt: ["image"],
+        look: ["image"],
         columns: ["grid"],
       };
       if (!(allowed[property] as string[]).includes(node.type))
@@ -390,6 +394,8 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
           return { ...node, alt: value };
         case "columns":
           return { ...node, columns: value };
+        case "look":
+          return Object.keys(value).length ? { ...node, look: value } : (({ look: _l, ...rest }) => (void _l, rest))(node);
       }
     }
     case "set-style":

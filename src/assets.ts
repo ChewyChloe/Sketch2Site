@@ -121,7 +121,7 @@ export async function validateAsset(
     !isLocalAsset(v.ref ?? "") ||
     (ref && ref !== v.ref) ||
     !(v.blob instanceof Blob) ||
-    v.blob.type !== "image/png" ||
+    !(v.blob.type === "image/png" || v.blob.type === "image/jpeg") ||
     v.blob.size > assetLimits.bytes ||
     !v.blob.size ||
     !Number.isInteger(v.width) ||
@@ -134,20 +134,20 @@ export async function validateAsset(
     throw failure();
   const size = inspectRaster(
     new Uint8Array(await v.blob.arrayBuffer()),
-    "image/png",
+    v.blob.type,
   );
   if (
     size.width !== v.width ||
     size.height !== v.height ||
-    v.ref !== `/assets/local/${await fingerprint(v.blob)}.png`
+    v.ref !== `/assets/local/${await fingerprint(v.blob)}.${v.blob.type === "image/png" ? "png" : "jpg"}`
   )
     throw failure();
   return v;
 }
 export async function storeAsset(blob: Blob, width: number, height: number) {
-  if (blob.size > assetLimits.bytes || blob.type !== "image/png")
+  if (blob.size > assetLimits.bytes || !(blob.type === "image/png" || blob.type === "image/jpeg"))
     throw failure();
-  const ref = `/assets/local/${await fingerprint(blob)}.png`,
+  const ref = `/assets/local/${await fingerprint(blob)}.${blob.type === "image/png" ? "png" : "jpg"}`,
     value = await validateAsset({ schemaVersion: 1, ref, blob, width, height });
   const db = await database();
   try {
@@ -265,10 +265,24 @@ export async function importImage(file: File) {
     canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
     const context = canvas.getContext("2d");
     if (!context) throw failure();
+    const encode = (type: string, quality?: number) =>
+      new Promise<Blob>((resolve, reject) =>
+        canvas.toBlob((b) => (b && b.type === type ? resolve(b) : reject(failure())), type, quality),
+      );
+    // Photos stay JPEG; PNG keeps transparency. A PNG that is too large becomes a JPEG
+    // on a white background. Re-encoding always drops metadata.
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise<Blob>((resolve, reject) =>
-      canvas.toBlob((b) => (b ? resolve(b) : reject(failure())), "image/png"),
-    );
+    let blob = mime === "image/jpeg" ? await encode("image/jpeg", 0.9) : await encode("image/png");
+    if (blob.size > assetLimits.bytes) {
+      context.globalCompositeOperation = "destination-over";
+      context.fillStyle = "#fff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.globalCompositeOperation = "source-over";
+      for (const quality of [0.88, 0.8, 0.7]) {
+        blob = await encode("image/jpeg", quality);
+        if (blob.size <= assetLimits.bytes) break;
+      }
+    }
     if (blob.size > assetLimits.bytes)
       throw new AssetError("圖片轉換後超過 2 MB，請縮小後重試。");
     return await storeAsset(blob, canvas.width, canvas.height);

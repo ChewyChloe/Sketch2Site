@@ -1,5 +1,6 @@
 import { z } from "zod";
-export const localAssetPattern = /^\/assets\/local\/[a-f0-9]{64}\.png$/;
+// Local photos are re-encoded in the browser: PNG keeps transparency, JPEG keeps photos small.
+export const localAssetPattern = /^\/assets\/local\/[a-f0-9]{64}\.(png|jpg)$/;
 export const builtInAssets=["/assets/workspace.svg","/assets/sequence/frame-01.svg","/assets/sequence/frame-02.svg","/assets/sequence/frame-03.svg","/assets/samples/cafe.jpg","/assets/samples/camera.jpg"] as const;
 export const imageSource = z.union([
   z.enum(builtInAssets),

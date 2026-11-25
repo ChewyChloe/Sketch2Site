@@ -24,7 +24,10 @@ import {
   reconcilePage,
   type PageNode,
   type PageSpec,
+  type ImageLook,
   effectIds,
+  frameRatios,
+  lookStyle,
 } from "./pageSpec";
 import "./pageRuntime.css";
 type Effect = PageNode["effects"][number];
@@ -111,6 +114,26 @@ function SiteForm({ node }: { node: PageNode }) {
         {state === "sent" ? "已送出，謝謝你的留言。" : state === "failed" ? "送出失敗，請稍後再試。" : state === "preview" ? "預覽中不會送出；匯出網站後才會寄到接收網址。" : ""}
       </p>
     </form>
+  );
+}
+/**
+ * A photo inside a frame shape, with crop (focus + zoom), flip and adjustments.
+ * Shared by the editor canvas, the site and exported projects.
+ */
+export function FrameBox({ look, children, className = "", ratio }: { look?: ImageLook; children: ReactNode; className?: string; ratio?: number }) {
+  if (!look) return <>{children}</>;
+  const r = ratio ?? (look.frame ? frameRatios[look.frame] : undefined);
+  const { objectPosition, ...photo } = lookStyle(look);
+  return (
+    <div
+      className={"page-frame frame-" + (look.frame ?? "plain") + (className ? " " + className : "")}
+      data-frame={look.frame ?? "plain"}
+      style={r ? ({ "--frame-ratio": String(r) } as CSSProperties) : undefined}
+    >
+      <div className="page-frame-photo" style={{ ...photo, "--focus": objectPosition } as CSSProperties}>
+        {children}
+      </div>
+    </div>
   );
 }
 const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
@@ -267,7 +290,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
         : {})}
     >
       {node.type==="form"?<SiteForm node={node}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
-        <SafeImage key={node.src} node={node} />
+        <FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox>
       ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.content}
     </Tag>
   );

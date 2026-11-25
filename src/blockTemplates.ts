@@ -1,10 +1,12 @@
 import { canvasMaxHeight, createNode, type CanvasNode, type CanvasSpec } from "./spec";
+import type { FrameId } from "./pageSpec";
 
 // Starter sections for the draft canvas. They are ordinary, editable canvas
 // nodes (placeholder copy the user replaces), grouped so they move together.
-export type BlockTemplateId = "hero" | "features" | "gallery" | "pricing" | "faq" | "contact" | "cta";
+export type BlockTemplateId = "hero" | "features" | "gallery" | "collage" | "pricing" | "faq" | "contact" | "cta";
 
-type Part = [CanvasNode["type"], string, number, number, number, number];
+// Optional 7th value: the frame shape for image parts (empty frames to drop photos into).
+type Part = [CanvasNode["type"], string, number, number, number, number, FrameId?];
 
 const templates: Record<BlockTemplateId, { label: string; hint: string; height: number; parts: Part[] }> = {
   hero: {
@@ -38,6 +40,17 @@ const templates: Record<BlockTemplateId, { label: string; hint: string; height: 
       ["image", "展示圖片一", 80, 88, 400, 142],
       ["image", "展示圖片二", 520, 88, 400, 142],
       ["image", "展示圖片三", 960, 88, 400, 142],
+    ],
+  },
+  collage: {
+    label: "照片拼貼",
+    hint: "一大兩小的相框，拖入照片即可",
+    height: 520,
+    parts: [
+      ["heading", "活動花絮", 80, 0, 400, 72],
+      ["image", "主要照片", 80, 88, 760, 432, "rounded"],
+      ["image", "照片二", 880, 88, 480, 208, "rounded"],
+      ["image", "照片三", 880, 312, 480, 208, "rounded"],
     ],
   },
   pricing: {
@@ -99,12 +112,13 @@ export function createBlock(spec: CanvasSpec, id: BlockTemplateId): { nodes: Can
   const height = needed <= spec.metadata.height ? spec.metadata.height : Math.ceil(needed / 600) * 600;
   if (height > canvasMaxHeight || spec.nodes.length + template.parts.length > 100) return null;
   const groupId = crypto.randomUUID();
-  const nodes = template.parts.map(([type, content, x, y, width, h]) => ({
+  const nodes = template.parts.map(([type, content, x, y, width, h, frame]) => ({
     ...createNode(type, x, top + y, height),
     content,
     width,
     height: h,
     groupId,
+    ...(frame ? { look: { frame } } : {}),
   }));
   // Template buttons start linked to the block's own heading; the user can change it.
   const heading = nodes.find((n) => n.type === "heading")!;

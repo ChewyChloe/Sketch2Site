@@ -79,7 +79,7 @@ Mock 只由測試程式注入，正式 API 不提供選 Mock 的請求欄位或�
 匯出僅接受完整PageSchema，檔案路徑由程式固定，不使用標題、檔名、模型文字作程式碼或路徑。JSON獨立保存，不嵌進HTML script。只複製純Runtime及Schema／CSS，沒有Provider、內部Prompt、Session、IndexedDB、註記或編輯控制；只讀取固定同來源內建素材，沒有任意URL抓取。ZIP以外部標準解析器驗證CRC、路徑與內容，下載後獨立npm ci／Build／瀏覽器驗收。
 
 ### 本機圖片邊界
-僅允許PNG/JPEG：原檔5MiB、4096px邊長／12MP，規範化PNG2MiB、1600px、10張／20MiB。PNG逐chunk CRC，拒絕APNG／SVG／混淆MIME，解碼重編碼去metadata。每次讀取／匯出重驗SHA256及實際尺寸。PageSpec只接受固定安全asset ref，不接受任意URL。物件URL限可信讀取結果並於卸載／替換撤銷。素材滿額／損毀／Quota錯誤拒絕並保留頁面；不自動清理可能被Undo引用的素材，不上傳外部。CSP僅圖片增加blob，腳本限制不變。
+僅允許PNG/JPEG：原檔5MiB、4096px邊長／12MP，規範化PNG或JPEG（2026-11-25起：JPEG來源與過大的PNG重新編碼為JPEG，仍解碼重繪去除metadata、檢查檔頭與指紋，參照副檔名需與實際格式一致）2MiB、1600px、10張／20MiB。PNG逐chunk CRC，拒絕APNG／SVG／混淆MIME，解碼重編碼去metadata。每次讀取／匯出重驗SHA256及實際尺寸。PageSpec只接受固定安全asset ref，不接受任意URL。物件URL限可信讀取結果並於卸載／替換撤銷。素材滿額／損毀／Quota錯誤拒絕並保留頁面；不自動清理可能被Undo引用的素材，不上傳外部。CSP僅圖片增加blob，腳本限制不變。
 
 ### 示範、匯出與秘密驗證
 本機demo不能隱式代替失敗的模型輸出，不能接觸API Key，也不能直接跳過PageSpec／內容保留／動畫對應驗證。展示資料皆為可辨識的虛構範例。前端candidate的demo型別不擴張後端API合約。正式AI入口仍由既有後端旗標、CSRF、用量／預算與零重試限制控制；本輪絕不啟用或測試真實模型。
@@ -133,3 +133,6 @@ React匯出複製同一AdvancedMotion原始碼、Schema及CSS，不含Provider�
 
 ## 表單（2026-11-23）
 表單資料只會由匯出／發布後的網站直接POST到使用者設定的公開https接收網址（第三方服務，例如Formspree），Sketch2Site不經手、不儲存。接收網址沿用既有href白名單驗證並禁止頁內錨點；生成驗證會拒絕任何改動欄位或網址的結果。編輯器與候選預覽一律不送出。使用者需自行確認接收服務的隱私條款。
+
+## 相框與照片調整（2026-11-25）
+圖片的相框、裁切與調整只存為嚴格列舉／數值範圍的 look 欄位（相框種類、焦點0–100、縮放1–4、亮度／對比／飽和度／不透明度範圍、翻轉、固定濾鏡名），不接受任意 CSS、URL 或字串；渲染時由程式轉成固定的 CSS。只有圖片可帶 look。AI 輸出若改動 look 會被保存驗證拒絕；網站端修改經 Patch（set-property look，僅圖片）驗證後才寫回草稿。相框形狀遮罩為程式內固定的 data: SVG（CSP 已允許 img-src data:）。

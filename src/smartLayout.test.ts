@@ -22,8 +22,8 @@ const roles = (sections: PageNode[]) => sections.map((s) => s.role);
 describe("block templates", () => {
   it("adds valid grouped nodes below existing content and grows the canvas", () => {
     const spec = templatedDraft("咖啡小店", blockTemplateIds);
-    expect(spec.nodes).toHaveLength(26);
-    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(7);
+    expect(spec.nodes).toHaveLength(30);
+    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(8);
     expect(spec.metadata.height).toBeGreaterThan(1200);
     expect(spec.metadata.height % 600).toBe(0);
     expect(spec.nodes.every((n) => n.type !== "button" || n.href?.startsWith("#"))).toBe(true);

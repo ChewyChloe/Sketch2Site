@@ -1,4 +1,4 @@
-import { allSections, themeIds, themeLabels, type PageNode, type PageSpec, type ThemeId } from "./pageSpec";
+import { allSections, filterLabels, frameLabels, themeIds, themeLabels, type FrameId, type ImageLook, type PageNode, type PageSpec, type ThemeId } from "./pageSpec";
 import { combinationReason, createMotion, targetReason, type MotionInstance } from "./motion";
 import { defaultControls, motionCatalog, motionIds, type MotionId } from "./motionCatalog";
 
@@ -11,7 +11,7 @@ export type AnnotationResult =
   | { ok: true; patches: unknown[]; scope: string[]; summary: string[]; skipped: string[] }
   | { ok: false; message: string };
 
-type Ctx = { page: PageSpec; node: PageNode; chain: PageNode[] };
+type Ctx = { page: PageSpec; node: PageNode; chain: PageNode[]; looks: Map<string, ImageLook> };
 type Step = { patches: unknown[]; summary: string } | { error: string } | null;
 
 const levelNames = { 1: "主標題（大）", 2: "章節標題（中）", 3: "小標題" } as const;
@@ -140,6 +140,49 @@ function clause(text: string, ctx: Ctx): Step {
     return { patches: [{ operation: "set-property", targetId: node.id, payload: { property: "href", value: url[0] } }], summary: "更新按鈕連結" };
   }
 
+  // 2.5 Photo frames and adjustments (images only; "配色" stays a page theme request).
+  if (node.type === "image" && !/配色|主題|色系/.test(t)) {
+    // Several clauses in one sentence build on each other ("愛心框，黑白，亮一點").
+    const look: ImageLook = { ...(ctx.looks.get(node.id) ?? node.look ?? {}) };
+    const done: string[] = [];
+    const frameWord = /框|形狀|相框|裁成|變成.*(形|框)/.test(t);
+    const frame = ([
+      [/不要框|拿掉框|移除框|取消框|原本的形狀/, null],
+      [/愛心|心形/, "heart"], [/星/, "star"], [/六角/, "hexagon"], [/菱/, "diamond"], [/花/, "flower"],
+      [/拍立得/, "polaroid"], [/手機/, "phone"], [/筆電|電腦/, "laptop"], [/瀏覽器|網頁視窗/, "browser"],
+      [/圓角/, "rounded"], [/膠囊/, "pill"], [/有機|不規則/, "blob"], [/圓潤|方形/, "squircle"], [/圓/, "circle"],
+    ] as [RegExp, FrameId | null][]).find(([re]) => re.test(t));
+    if (frame && (frameWord || /愛心|心形|拍立得|手機|筆電|瀏覽器|六角|菱形|花瓣|星形|膠囊/.test(t))) {
+      if (frame[1]) look.frame = frame[1];
+      else delete look.frame;
+      done.push(frame[1] ? `換成${frameLabels[frame[1]]}相框` : "移除相框");
+    }
+    const filter = ([
+      [/不要濾鏡|原圖|拿掉濾鏡/, "none"], [/高對比黑白/, "noir"], [/黑白/, "mono"], [/暖/, "warm"], [/冷/, "cool"],
+      [/復古|懷舊/, "vintage"], [/鮮豔|飽和/, "vivid"], [/褪色|淡一點|柔和/, "fade"],
+    ] as [RegExp, keyof typeof filterLabels][]).find(([re]) => re.test(t));
+    if (filter) {
+      if (filter[1] === "none") delete look.filter;
+      else look.filter = filter[1];
+      done.push(filter[1] === "none" ? "拿掉濾鏡" : `套用「${filterLabels[filter[1]]}」濾鏡`);
+    }
+    if (/亮一點|變亮|太暗/.test(t)) (look.brightness = Math.min(50, (look.brightness ?? 0) + 15), done.push("照片調亮"));
+    if (/暗一點|變暗|太亮/.test(t)) (look.brightness = Math.max(-50, (look.brightness ?? 0) - 15), done.push("照片調暗"));
+    if (/透明/.test(t)) (look.opacity = /不要透明|不透明/.test(t) ? 100 : Math.max(10, (look.opacity ?? 100) - 30), done.push("調整透明度"));
+    if (/翻轉|鏡像|反過來/.test(t)) {
+      if (/上下|垂直/.test(t)) look.flipY = !look.flipY || undefined;
+      else look.flipX = !look.flipX || undefined;
+      done.push(/上下|垂直/.test(t) ? "上下翻轉" : "左右翻轉");
+    }
+    if (/放大照片|照片放大|拉近/.test(t)) (look.zoom = Math.min(4, (look.zoom ?? 1) + 0.3), done.push("照片拉近"));
+    if (/拉遠|縮小照片|照片縮小|完整/.test(t)) (look.zoom = undefined, done.push("顯示完整照片"));
+    if (done.length) {
+      for (const k of Object.keys(look) as (keyof ImageLook)[]) if (look[k] === undefined || (k === "opacity" && look[k] === 100)) delete look[k];
+      ctx.looks.set(node.id, look);
+      return { patches: [{ operation: "set-property", targetId: node.id, payload: { property: "look", value: look } }], summary: done.join("、") };
+    }
+  }
+
   // 3. Remove motion.
   if (/(不要|移除|取消|拿掉|刪掉|關掉|停止).{0,3}(動態|動畫|特效|效果)|(動態|動畫).{0,2}(拿掉|移除|取消)/.test(t)) {
     if (!node.effects.length) return { patches: [], summary: "這個元件本來就沒有動態" };
@@ -150,8 +193,9 @@ function clause(text: string, ctx: Ctx): Step {
   if (/動態|動畫|特效|效果|動起來|會動/.test(t) || motionWords.some(([re]) => re.test(t) && /加|換|改|用|要|讓|做/.test(t))) {
     const replace = /換|改/.test(t);
     const named = motionIds.find((id) => t.includes(motionCatalog[id].nameZh));
-    const word = motionWords.find(([re]) => re.test(t))?.[1];
-    return motionPatches(node, named ? [named] : word ?? defaultMotion[node.type] ?? ["fade-in"], replace);
+    // Every matching word is a candidate; the first one that suits this element wins.
+    const words = motionWords.filter(([re]) => re.test(t)).flatMap(([, ids]) => ids);
+    return motionPatches(node, named ? [named] : words.length ? words : defaultMotion[node.type] ?? ["fade-in"], replace);
   }
 
   // 5. Colors / theme (page-wide, anchored on the first section like the theme menu).
@@ -227,7 +271,7 @@ function clause(text: string, ctx: Ctx): Step {
 }
 
 // "卡片放大" said while a card's text is selected means the card, and so on.
-const nouns: [RegExp, string][] = [[/卡片|方案/, "card"], [/區塊|這區|整段|這一段|背景|底色|留白|間距/, "section"], [/網格|欄/, "grid"]];
+const nouns: [RegExp, string][] = [[/圖片|照片|相片|相框/, "image"], [/卡片|方案/, "card"], [/區塊|這區|整段|這一段|背景|底色|留白|間距/, "section"], [/網格|欄/, "grid"]];
 function retarget(text: string, ctx: Ctx): Ctx {
   for (const [re, type] of nouns) {
     if (!re.test(text) || ctx.node.type === type) continue;
@@ -243,7 +287,7 @@ export function interpretAnnotation(page: PageSpec, targetId: string, instructio
   if (!text) return { ok: false, message: "請輸入想怎麼改，例如「標題大一點」。" };
   const chain = chainOf(page, targetId);
   if (!chain) return { ok: false, message: "找不到選取的元件，請重新點選。" };
-  const ctx: Ctx = { page, node: chain[chain.length - 1], chain };
+  const ctx: Ctx = { page, node: chain[chain.length - 1], chain, looks: new Map() };
   // Keep quoted text intact while splitting into clauses.
   const parts: string[] = [];
   let buf = "", depth = 0;
@@ -267,6 +311,17 @@ export function interpretAnnotation(page: PageSpec, targetId: string, instructio
   }
   if (!patches.length && !summary.length)
     return { ok: false, message: errors[0] ?? `還看不懂「${skipped.join("、") || text}」。可以試試：標題大一點、置中、換成藍色、加動態、改成「新的文字」。` };
+  // Only the last look per image is needed: it already includes the earlier clauses.
+  const lastLook = new Map<string, number>();
+  patches.forEach((p, i) => {
+    const q = p as { targetId: string; payload?: { property?: string } };
+    if (q.payload?.property === "look") lastLook.set(q.targetId, i);
+  });
+  const merged = patches.filter((p, i) => {
+    const q = p as { targetId: string; payload?: { property?: string } };
+    return q.payload?.property !== "look" || lastLook.get(q.targetId) === i;
+  });
+  patches.splice(0, patches.length, ...merged);
   const scope = [...new Set(patches.map((p) => (p as { targetId: string }).targetId))];
   return { ok: true, patches, scope, summary, skipped: [...skipped, ...errors] };
 }
@@ -288,7 +343,7 @@ export function annotationSuggestions(type: string): string[] {
     case "paragraph": return ["置中", "淡入", ...common];
     case "button": return ["按鈕更醒目", "加磁吸效果", "呼吸發光", ...common];
     case "card": return ["卡片放大", "卡片縮小", "加 3D 傾斜", ...common];
-    case "image": return ["圖片放大", "百葉窗進場", "圓形展開", ...common];
+    case "image": return ["換成圓形框", "愛心框", "黑白濾鏡", "亮一點", "左右翻轉", "百葉窗進場", ...common];
     default: return ["留白多一點", "底色淡一點", ...common];
   }
 }

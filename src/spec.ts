@@ -2,7 +2,7 @@ import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
 import { imageSource } from "./assetRef";
 import { MotionSchema, bindMotionInput, compatibleMotion, combinationReason, withinMotionBudget } from "./motion";
-import { href, localAssets } from "./pageSpec";
+import { href, localAssets, ImageLookSchema } from "./pageSpec";
 import { SiteOverridesSchema } from "./siteOverrides";
 export const Effect = z.enum([
   "hover-glow",
@@ -38,9 +38,12 @@ export const NodeSchema = z.preprocess(bindMotionInput,z
     pageId: z.string().uuid().optional(),
     assetId: imageSource.nullable(),
     href: href.nullable().optional(),
+    // Frame, crop and photo adjustments (images only).
+    look: ImageLookSchema.optional(),
     zIndex: z.number().int().min(0).max(100),
   })
-  .strict());
+  .strict()
+  .refine((n) => !n.look || n.type === "image", "只有圖片可以設定相框"));
 export const CanvasSchema = z
   .object({
     schemaVersion: z.literal(1),

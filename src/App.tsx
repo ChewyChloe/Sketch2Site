@@ -11,6 +11,9 @@ import { WorkbenchMenu } from "./WorkbenchMenu";
 import { enlivenDraft, stillDraft } from "./motionRecipes";
 import { applySiteOverrides, draftFingerprint, markSiteBuilt, overrideCount, siteOutdated, syncSiteChange } from "./siteSync";
 import { indexNodes } from "./patch";
+import { FrameBox } from "./PageRuntime";
+import { FrameControls, FrameThumb } from "./FrameControls";
+import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   blank,
@@ -407,6 +410,48 @@ export default function App() {
       setImportingImage(false);
     }
   }
+  /** Adds an empty frame (like a photo placeholder in a shape); drop or pick a photo into it. */
+  function addFrame(frame: FrameId, at?: { x: number; y: number }) {
+    if (!ready || loadError) return;
+    const ratio = frameRatios[frame];
+    const width = Math.round(Math.min(420, Math.max(200, 300 * Math.sqrt(ratio))));
+    const height = Math.round(Math.min(640, Math.max(120, width / ratio)));
+    let position = at ?? { x: 80, y: 80 };
+    if (!at)
+      outer: for (let y = 80; y <= spec.metadata.height - height; y += 120)
+        for (let x = 80; x <= 1440 - width - 40; x += 160)
+          if (spec.nodes.filter((n) => onCurrentPage(n, spec)).every((n) => x + width <= n.x || x >= n.x + n.width || y + height <= n.y || y >= n.y + n.height)) {
+            position = { x, y };
+            break outer;
+          }
+    const base = createNode("image", Math.min(position.x, 1440 - width), Math.min(position.y, spec.metadata.height - height), spec.metadata.height);
+    const next = withPage({ ...base, width, height, content: "照片", look: { frame } });
+    if (change({ ...spec, nodes: [...spec.nodes, next] })) {
+      setSelected(next.id);
+      setTab("properties");
+      report(`已新增${frameLabels[frame]}相框：拖入照片，或按「放入照片」。`);
+    }
+  }
+  // Crop mode (double-click a framed photo): drag to move the photo, wheel or slider to zoom.
+  const [cropping, setCropping] = useState<{ id: string; look: ImageLook } | null>(null);
+  const cropDrag = useRef<{ x: number; y: number; fx: number; fy: number; w: number; h: number } | null>(null);
+  function finishCrop(keep: boolean) {
+    if (!cropping) return;
+    const { id, look } = cropping;
+    setCropping(null);
+    if (keep) patch(id, { look });
+  }
+  const isPhoto = (n: CanvasNode) => n.type === "image" && !!n.assetId && n.assetId !== localAssets[0] && !brokenImages.has(n.id + n.assetId);
+  const framed = (n: CanvasNode, content: React.ReactNode) => {
+    const look = cropping?.id === n.id ? cropping.look : n.look;
+    if (!look) return content;
+    const ratio = look.frame ? frameRatios[look.frame] : n.width / n.height;
+    return (
+      <span className="draft-frame-fit" style={{ width: `min(100%, ${Math.round(n.height * ratio)}px)` }}>
+        <FrameBox look={look} ratio={ratio}>{content}</FrameBox>
+      </span>
+    );
+  };
   function add(type: CanvasNode["type"], x = 80, y = 80) {
     if (!ready || loadError) return;
     const next = withPage(createNode(type, x, y, spec.metadata.height));
@@ -757,10 +802,22 @@ export default function App() {
     setDraftDragging(false);
     e.preventDefault();
     if (!ready || loadError) return;
+    // A photo file dropped on a frame or image fills it; elsewhere it becomes a new image.
+    const file = [...(e.dataTransfer.files ?? [])].find((f) => /^image\/(png|jpeg)$/.test(f.type));
+    if (file) {
+      const id = (e.target as HTMLElement).closest("[data-node-id]")?.getAttribute("data-node-id");
+      const hit = spec.nodes.find((n) => n.id === id && n.type === "image");
+      imageTarget.current = hit?.id ?? null;
+      void importPicture(file);
+      return;
+    }
     try {
       const data = JSON.parse(e.dataTransfer.getData(dragType));
       if(data.value==="lift")data.value="hover-lift";
-      if (
+      if (data.type === "frame" && (frameIds as readonly string[]).includes(data.value)) {
+        const rect = board.current!.getBoundingClientRect();
+        addFrame(data.value as FrameId, { x: Math.max(0, (e.clientX - rect.left) / scale - 100), y: Math.max(0, (e.clientY - rect.top) / scale - 100) });
+      } else if (
         data.type === "component" &&
         Object.keys(labels).includes(data.value)
       ) {
@@ -789,7 +846,14 @@ export default function App() {
   function startEditing(n: CanvasNode) {
     if (!ready || loadError || disabled) return;
     if (n.type === "image") {
-      // Double-clicking a picture opens the replace-image picker instead.
+      // Double-click a framed photo to adjust its crop; an empty frame asks for a photo.
+      if (isPhoto(n)) {
+        setPrimarySelected(n.id);
+        setSelectedIds([n.id]);
+        setCropping({ id: n.id, look: { ...(n.look ?? {}) } });
+        report("拖曳移動照片，滾輪或滑桿縮放；按「完成」或 Enter 套用，Esc 取消。");
+        return;
+      }
       imageTarget.current = n.id;
       imageInput.current?.click();
       return;
@@ -912,8 +976,16 @@ node ? (
                           {importingImage ? "正在匯入圖片…" : "替換圖片"}
                         </button>
                         <p className="note">
-                          PNG／JPEG，每張原圖最多 5 MB，僅存於本機。
+                          PNG／JPEG，每張原圖最多 5 MB，僅存於本機。也可以直接把照片拖到相框上。
                         </p>
+                        <FrameControls
+                          look={node.look}
+                          hasPhoto={isPhoto(node)}
+                          onChange={(look) => patch(node.id, { look })}
+                          onPickPhoto={() => { imageTarget.current = node.id; imageInput.current?.click(); }}
+                          onClearPhoto={() => { patch(node.id, { assetId: localAssets[0], look: node.look ? { ...node.look, focusX: undefined, focusY: undefined, zoom: undefined } : undefined }); report("已清空相框，形狀保留。"); }}
+                          onCrop={() => setCropping({ id: node.id, look: { ...(node.look ?? {}) } })}
+                        />
                       </div>
                     )}
                     {node.type === "button" && (
@@ -1470,7 +1542,60 @@ node ? (
                             }
                           }}
                         >
-                          {selected === n.id && selectedIds.length === 1 && editing !== n.id && !brush &&
+                          {cropping?.id === n.id && (
+                            <div
+                              className="crop-overlay"
+                              role="group"
+                              aria-label="調整照片裁切"
+                              tabIndex={-1}
+                              ref={(el) => el?.focus({ preventScroll: true })}
+                              onPointerDown={(e) => {
+                                e.stopPropagation();
+                                if (e.button !== 0) return;
+                                const r = e.currentTarget.getBoundingClientRect();
+                                cropDrag.current = { x: e.clientX, y: e.clientY, fx: cropping.look.focusX ?? 50, fy: cropping.look.focusY ?? 50, w: r.width, h: r.height };
+                                e.currentTarget.setPointerCapture(e.pointerId);
+                              }}
+                              onPointerMove={(e) => {
+                                const d = cropDrag.current;
+                                if (!d) return;
+                                const z = cropping.look.zoom ?? 1;
+                                // Dragging right reveals more of the left side, like moving the photo itself.
+                                const fx = Math.min(100, Math.max(0, d.fx - ((e.clientX - d.x) / d.w) * 100 / z));
+                                const fy = Math.min(100, Math.max(0, d.fy - ((e.clientY - d.y) / d.h) * 100 / z));
+                                setCropping({ id: n.id, look: { ...cropping.look, focusX: Math.round(fx * 10) / 10, focusY: Math.round(fy * 10) / 10 } });
+                              }}
+                              onPointerUp={() => (cropDrag.current = null)}
+                              onDoubleClick={(e) => { e.stopPropagation(); finishCrop(true); }}
+                              onWheel={(e) => {
+                                const z = Math.min(4, Math.max(1, (cropping.look.zoom ?? 1) - e.deltaY * 0.0015));
+                                setCropping({ id: n.id, look: { ...cropping.look, zoom: Math.round(z * 100) / 100 } });
+                              }}
+                              onKeyDown={(e) => {
+                                e.stopPropagation();
+                                const step = e.shiftKey ? 10 : 2, l = cropping.look;
+                                if (e.key === "Escape") finishCrop(false);
+                                else if (e.key === "Enter") finishCrop(true);
+                                else if (e.key.startsWith("Arrow")) {
+                                  e.preventDefault();
+                                  const fx = Math.min(100, Math.max(0, (l.focusX ?? 50) + (e.key === "ArrowLeft" ? step : e.key === "ArrowRight" ? -step : 0)));
+                                  const fy = Math.min(100, Math.max(0, (l.focusY ?? 50) + (e.key === "ArrowUp" ? step : e.key === "ArrowDown" ? -step : 0)));
+                                  setCropping({ id: n.id, look: { ...l, focusX: fx, focusY: fy } });
+                                }
+                              }}
+                            >
+                              <div className="crop-bar" onPointerDown={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()}>
+                                <label>
+                                  縮放
+                                  <input type="range" aria-label="照片縮放" min={1} max={4} step={0.05} value={cropping.look.zoom ?? 1} onChange={(e) => setCropping({ id: n.id, look: { ...cropping.look, zoom: Number(e.target.value) } })} />
+                                </label>
+                                <button type="button" onClick={() => setCropping({ id: n.id, look: { ...cropping.look, focusX: undefined, focusY: undefined, zoom: undefined } })}>置中</button>
+                                <button type="button" onClick={() => finishCrop(false)}>取消</button>
+                                <button type="button" className="primary" onClick={() => finishCrop(true)}>完成</button>
+                              </div>
+                            </div>
+                          )}
+                          {selected === n.id && selectedIds.length === 1 && editing !== n.id && !brush && cropping?.id !== n.id &&
                             (["n", "s", "e", "w", "ne", "nw", "se", "sw"] as const).map((dir) => (
                               <span
                                 key={dir}
@@ -1504,20 +1629,20 @@ node ? (
                             </span>
                           ) : n.type === "image" && (n.assetId === localAssets[0] || brokenImages.has(n.id + n.assetId)) ? (
                             // The built-in sample (and any image that fails to load) shows as an empty frame to fill.
-                            <span className="image-placeholder" role="img" aria-label={n.content + "（尚未放入圖片）"}>
+                            framed(n, <span className="image-placeholder" role="img" aria-label={n.content + "（尚未放入圖片）"}>
                               <WorkbenchIcon name="image" />
                               <strong>{n.content}</strong>
-                              <small>雙擊替換圖片</small>
-                            </span>
+                              <small>{n.look?.frame ? "拖入照片或雙擊選擇" : "雙擊替換圖片"}</small>
+                            </span>)
                           ) : n.type === "image" ? (
-                            <img
+                            framed(n, <img
                               src={imageUrls[n.assetId!] || import.meta.env.BASE_URL + n.assetId!.slice(1)}
                               loading="lazy"
                               decoding="async"
                               alt={n.content}
                               draggable={false}
                               onError={() => setBrokenImages((prev) => new Set(prev).add(n.id + n.assetId))}
-                            />
+                            />)
                           ) : editing === n.id ? (
                             <textarea
                               className="inline-editor"
@@ -1679,6 +1804,26 @@ node ? (
                         <WorkbenchIcon name="image" />
                         {importingImage ? "正在匯入圖片…" : "匯入圖片"}
                       </button>
+                      <div className="frame-library" role="group" aria-label="相框">
+                        <p className="library-subhead">相框</p>
+                        {frameIds
+                          .filter((f) => !search || frameLabels[f].includes(search) || "相框".includes(search))
+                          .map((f) => (
+                            <button
+                              key={f}
+                              type="button"
+                              disabled={disabled}
+                              draggable={!disabled}
+                              aria-label={"新增相框：" + frameLabels[f]}
+                              title={"新增相框：" + frameLabels[f]}
+                              onDragStart={(e) => e.dataTransfer.setData(dragType, JSON.stringify({ type: "frame", value: f }))}
+                              onClick={() => addFrame(f)}
+                            >
+                              <FrameThumb frame={f} />
+                              <small>{frameLabels[f]}</small>
+                            </button>
+                          ))}
+                      </div>
                       <div className="block-templates" role="group" aria-label="區塊範本">
                         <p className="library-subhead">區塊範本</p>
                         {blockTemplateIds

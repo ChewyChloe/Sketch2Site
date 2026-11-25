@@ -704,3 +704,33 @@
 .rendered-page[data-theme] .role-faq .extended-disclosure > .motion-toggle { margin: 0; min-height: 36px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); color: var(--accent); font-size: 14px; font-weight: 600; background: transparent; }
 .rendered-page[data-theme] .role-faq .extended-disclosure > .motion-toggle[aria-expanded="true"] { background: var(--accent); color: var(--pg-accent-ink); border-color: var(--accent); }
 .rendered-page[data-theme] .role-faq .extended-disclosure > :not(:first-child):not(.motion-toggle) { grid-column: 1 / -1; margin-top: 8px; color: var(--muted); }
+
+/* ===== Image frames (pageSpec frameIds) =====
+   The frame owns the shape; the photo fills it (cover), positioned by its focus
+   point and zoom. Theme decorations on plain images do not apply inside frames. */
+.page-frame { position: relative; width: 100%; aspect-ratio: var(--frame-ratio, 4 / 3); overflow: hidden; isolation: isolate; box-sizing: border-box; }
+.page-frame-photo { width: 100%; height: 100%; overflow: hidden; border-radius: inherit; }
+.page-frame-photo > :is(img, .page-image-placeholder, .page-image-error, .image-placeholder) { display: block; width: 100% !important; height: 100% !important; max-width: none; max-height: none !important; aspect-ratio: auto !important; object-fit: cover !important; object-position: var(--focus, 50% 50%) !important; margin: 0; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; rotate: none !important; }
+.page-frame-photo > :is(.page-image-placeholder, .image-placeholder) { display: grid !important; place-items: center; align-content: center; min-height: 0; text-align: center; }
+.frame-plain { border-radius: var(--pg-radius-lg, 12px); }
+.frame-rounded { border-radius: 28px; }
+.frame-circle { border-radius: 50%; }
+.frame-squircle { border-radius: 30%; }
+.frame-pill { border-radius: 999px; }
+.frame-blob { border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%; }
+.frame-star { clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.frame-hexagon { clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+.frame-diamond { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.frame-heart { -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 92C22 71 3 53 3 32 3 16 15 5 29 5c9 0 16 5 21 12C55 10 62 5 71 5c14 0 26 11 26 27 0 21-19 39-47 60z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 92C22 71 3 53 3 32 3 16 15 5 29 5c9 0 16 5 21 12C55 10 62 5 71 5c14 0 26 11 26 27 0 21-19 39-47 60z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.frame-flower { -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34'/%3E%3Ccircle cx='50' cy='16' r='16'/%3E%3Ccircle cx='50' cy='84' r='16'/%3E%3Ccircle cx='16' cy='50' r='16'/%3E%3Ccircle cx='84' cy='50' r='16'/%3E%3Ccircle cx='26' cy='26' r='16'/%3E%3Ccircle cx='74' cy='26' r='16'/%3E%3Ccircle cx='26' cy='74' r='16'/%3E%3Ccircle cx='74' cy='74' r='16'/%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34'/%3E%3Ccircle cx='50' cy='16' r='16'/%3E%3Ccircle cx='50' cy='84' r='16'/%3E%3Ccircle cx='16' cy='50' r='16'/%3E%3Ccircle cx='84' cy='50' r='16'/%3E%3Ccircle cx='26' cy='26' r='16'/%3E%3Ccircle cx='74' cy='26' r='16'/%3E%3Ccircle cx='26' cy='74' r='16'/%3E%3Ccircle cx='74' cy='74' r='16'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+/* Photo frames and device mockups: drawn chrome around the photo. */
+.frame-polaroid { padding: 5% 5% 18%; background: #fff; box-shadow: 0 10px 28px rgb(0 0 0 / .16), 0 1px 3px rgb(0 0 0 / .12); rotate: -2deg; overflow: visible; }
+.frame-phone { padding: 3.4%; border-radius: 15% / 7.2%; background: #15161a; box-shadow: inset 0 0 0 2px #2c2d33, 0 14px 34px rgb(0 0 0 / .22); }
+.frame-phone .page-frame-photo { border-radius: 12% / 5.6%; }
+.frame-phone::after { content: ""; position: absolute; z-index: 2; top: 4.4%; left: 50%; width: 28%; height: 2.6%; translate: -50% 0; border-radius: 999px; background: #15161a; }
+.frame-laptop { padding: 2.6% 2.6% 4.2%; border-radius: 14px 14px 4px 4px; background: #1d1e22; box-shadow: 0 1px 0 #3a3b41 inset; overflow: visible; margin-bottom: 3.5%; }
+.frame-laptop::after { content: ""; position: absolute; left: -6%; right: -6%; bottom: -3.6%; height: 3.6%; border-radius: 0 0 14px 14px; background: linear-gradient(#cfd0d4, #a9abb1); }
+.frame-browser { padding-top: 7%; border-radius: 12px; border: 1px solid #d9dad5; background: #f1f1ee radial-gradient(circle at 2.6% 3.5%, #ff6159 0 .9%, transparent 1%) no-repeat, #f1f1ee; box-shadow: 0 12px 30px rgb(0 0 0 / .12); }
+.frame-browser::before { content: ""; position: absolute; top: 2.4%; left: 5%; width: 4.4%; height: 2.4%; border-radius: 999px; background: radial-gradient(circle at 25% 50%, #ffbd2e 0 22%, transparent 24%), radial-gradient(circle at 75% 50%, #28c840 0 22%, transparent 24%); }
+.frame-browser .page-frame-photo { border-radius: 0 0 11px 11px; }
+@media (prefers-reduced-motion: reduce) { .frame-polaroid { rotate: none; } }

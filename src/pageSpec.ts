@@ -57,6 +57,45 @@ export const themeLabels: Record<ThemeId, string> = {
   mono: "極簡黑白",
   blossom: "花園",
 };
+// Image frames and photo adjustments (shared by the draft, the site and the export).
+export const frameIds = ["rounded", "circle", "squircle", "pill", "blob", "heart", "star", "hexagon", "diamond", "flower", "polaroid", "phone", "laptop", "browser"] as const;
+export type FrameId = (typeof frameIds)[number];
+export const frameLabels: Record<FrameId, string> = { rounded: "圓角", circle: "圓形", squircle: "圓潤方形", pill: "膠囊", blob: "有機形", heart: "愛心", star: "星形", hexagon: "六角形", diamond: "菱形", flower: "花瓣", polaroid: "拍立得", phone: "手機", laptop: "筆電", browser: "瀏覽器視窗" };
+/** Width ÷ height of each frame (rounded follows its box). */
+export const frameRatios: Record<FrameId, number> = { rounded: 4 / 3, circle: 1, squircle: 1, pill: 4 / 5, blob: 1, heart: 1, star: 1, hexagon: 1.155, diamond: 1, flower: 1, polaroid: 0.84, phone: 9 / 19, laptop: 16 / 10.6, browser: 16 / 10.5 };
+export const imageFilters = ["none", "mono", "warm", "cool", "vintage", "vivid", "fade", "noir"] as const;
+export const filterLabels: Record<(typeof imageFilters)[number], string> = { none: "原圖", mono: "黑白", warm: "暖調", cool: "冷調", vintage: "復古", vivid: "鮮豔", fade: "褪色", noir: "高對比黑白" };
+export const ImageLookSchema = z
+  .object({
+    frame: z.enum(frameIds).optional(),
+    // Crop inside the frame: focus point (percent) and zoom.
+    focusX: z.number().min(0).max(100).optional(),
+    focusY: z.number().min(0).max(100).optional(),
+    zoom: z.number().min(1).max(4).optional(),
+    brightness: z.number().int().min(-50).max(50).optional(),
+    contrast: z.number().int().min(-50).max(50).optional(),
+    saturation: z.number().int().min(-100).max(100).optional(),
+    opacity: z.number().int().min(10).max(100).optional(),
+    flipX: z.boolean().optional(),
+    flipY: z.boolean().optional(),
+    filter: z.enum(imageFilters).optional(),
+  })
+  .strict();
+export type ImageLook = z.infer<typeof ImageLookSchema>;
+const filterCss: Record<(typeof imageFilters)[number], string> = { none: "", mono: "grayscale(1)", warm: "sepia(.25) saturate(1.15) hue-rotate(-8deg)", cool: "saturate(.9) hue-rotate(12deg) brightness(1.03)", vintage: "sepia(.45) contrast(.92) brightness(1.04)", vivid: "saturate(1.45) contrast(1.08)", fade: "contrast(.8) brightness(1.1) saturate(.75)", noir: "grayscale(1) contrast(1.45)" };
+/** CSS for a framed photo; every value comes from the validated look, never from text. */
+export function lookStyle(look: ImageLook | undefined) {
+  const l = look ?? {};
+  const parts = [filterCss[l.filter ?? "none"], l.brightness ? `brightness(${1 + l.brightness / 100})` : "", l.contrast ? `contrast(${1 + l.contrast / 100})` : "", l.saturation ? `saturate(${1 + l.saturation / 100})` : ""].filter(Boolean);
+  const zoom = l.zoom ?? 1;
+  return {
+    objectPosition: `${l.focusX ?? 50}% ${l.focusY ?? 50}%`,
+    transformOrigin: `${l.focusX ?? 50}% ${l.focusY ?? 50}%`,
+    transform: zoom !== 1 || l.flipX || l.flipY ? `scale(${zoom * (l.flipX ? -1 : 1)}, ${zoom * (l.flipY ? -1 : 1)})` : undefined,
+    filter: parts.length ? parts.join(" ") : undefined,
+    opacity: l.opacity !== undefined && l.opacity < 100 ? l.opacity / 100 : undefined,
+  };
+}
 export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta"] as const;
 export type SectionRole = (typeof sectionRoles)[number];
 export type PageNode = {
@@ -80,6 +119,7 @@ export type PageNode = {
   href?: string;
   src?: string;
   alt?: string;
+  look?: ImageLook;
   columns?: 1 | 2 | 3;
   children?: PageNode[];
 };
@@ -184,6 +224,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         type: z.literal("image"),
         src: imageSource,
         alt: z.string().min(1).max(200),
+        look: ImageLookSchema.optional(),
       })
       .strict(),
   ])),

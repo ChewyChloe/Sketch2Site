@@ -138,7 +138,8 @@ test("forged images fail without modifying the draft or retaining filenames", as
   );
 });
 
-test("JPEG downscales to PNG and replacing refs revokes object URLs; Undo restores the image", async ({
+// Photos stay JPEG after re-encoding (smaller than PNG); metadata is still dropped.
+test("JPEG downscales to a re-encoded JPEG and replacing refs revokes object URLs; Undo restores the image", async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -217,7 +218,7 @@ test("JPEG downscales to PNG and replacing refs revokes object URLs; Undo restor
   expect(records).toEqual([
     {
       keys: ["schemaVersion", "ref", "blob", "width", "height"],
-      type: "image/png",
+      type: "image/jpeg",
       width: 1600,
       height: 800,
     },

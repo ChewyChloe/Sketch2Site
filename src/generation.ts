@@ -298,6 +298,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
             ...common,
             src: node.assetId!,
             alt: node.content,
+            ...(node.look ? { look: node.look } : {}),
           });
         case "card":
           return make("card", {
@@ -441,7 +442,8 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
       if (
         n.type !== "image" ||
         n.src !== source.assetId ||
-        n.alt !== source.content
+        n.alt !== source.content ||
+        JSON.stringify(n.look ?? null) !== JSON.stringify(source.look ?? null)
       )
         throw new GenerationError("INVALID_OUTPUT");
     } else {
