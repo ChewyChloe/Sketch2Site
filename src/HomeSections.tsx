@@ -88,9 +88,9 @@ function ArtShip() {
 }
 export function WhySection() {
   const cards: [string, string, string, ReactNode][] = [
-    ["排版", "亂擺也能變整齊", "標題、文字、卡片隨手放，智慧排版會讀懂順序，整理成首屏、特色、價目表與問答。", <ArtSketchToSite />],
-    ["風格", "換風格只要一下", `${Object.keys(themeLabels).length} 套配色與字體一鍵切換，內容不變；再加上動畫，頁面立刻有個性。`, <ArtThemes />],
-    ["上線", "做完就能帶走", "匯出獨立的 React + TypeScript 專案，聯絡表單也能接上收件服務，放到任何主機都能用。", <ArtShip />],
+    ["排版", "亂擺也能變整齊", "標題、文字、卡片隨便放，智慧排版會看懂順序，排成首屏、特色、價目表和問答", <ArtSketchToSite />],
+    ["風格", "換風格只要一下", `${Object.keys(themeLabels).length} 套配色與字體一鍵切換，內容不變；再加上動畫，頁面立刻有個性`, <ArtThemes />],
+    ["上線", "做完就能帶走", "匯出獨立的 React + TypeScript 專案，聯絡表單也能接上收件服務，放到任何主機都能用", <ArtShip />],
   ];
   return (
     <section className="home-section" id="home-why" aria-labelledby="home-why-title">
@@ -117,10 +117,10 @@ const stepIcons: Record<string, ReactNode> = {
   ship: <><rect x="10" y="30" width="44" height="24" rx="6" fill="#fff" /><path d="M32 40 v-28 M22 22 l10 -10 10 10" fill="none" strokeWidth="3.5" /><circle cx="50" cy="12" r="5" fill="#10e560" /></>,
 };
 const steps: [string, string, string][] = [
-  ["draw", "畫草稿", "拖入元件或區塊範本，位置不必精準。"],
-  ["build", "生成網站", "自動整理成完整、好看的頁面。"],
-  ["style", "調整風格", "換主題、加動畫、雙擊直接改字。"],
-  ["ship", "匯出上線", "下載 React 專案，部署到任何靜態主機。"],
+  ["draw", "畫草稿", "拖入元件或區塊範本，位置不必精準"],
+  ["build", "生成網站", "自動整理成完整、好看的頁面"],
+  ["style", "調整風格", "換主題、加動畫、雙擊直接改字"],
+  ["ship", "匯出上線", "下載 React 專案，部署到任何靜態主機"],
 ];
 export function StepsSection() {
   return (
@@ -165,7 +165,7 @@ export function Showcase({ templates, onUse }: { templates: CanvasSpec[]; onUse:
           <button aria-label="下一組範本" onClick={() => step(1)}>→</button>
         </div>
       </div>
-      <p className="home-note">每個範本都是真的生成結果；使用後會建立成新專案，不影響現有的專案。</p>
+      <p className="home-note">這些都是真的做出來的網站，選一個會開成新專案，原本的作品不受影響</p>
       <div className="showcase-track" ref={track}>
         {pages.map(({ draft, page }) => {
           const roles = [...new Set(page?.sections.map((s) => s.role).filter(Boolean) as string[])];
@@ -192,11 +192,11 @@ export function Showcase({ templates, onUse }: { templates: CanvasSpec[]; onUse:
 
 /* ---------- FAQ ---------- */
 const faqs: [string, string][] = [
-  ["需要會寫程式嗎？", "不需要。拖拉元件、雙擊改字、選主題就能完成；想自己改程式時，匯出的 React 專案也能直接編輯。"],
-  ["我的資料存在哪裡？", "草稿、網站和圖片都存在你這台裝置的瀏覽器裡，不會上傳。清除瀏覽器資料會一起刪掉，重要的作品記得匯出備份。"],
-  ["要付費嗎？", "編輯、智慧排版、主題、動畫與匯出都可以免費使用。"],
-  ["做好的網站怎麼上線？", "在網站工作區匯出 React 專案，放到 GitHub Pages、Netlify 等靜態主機即可，也能設定自己的網域。"],
-  ["聯絡表單收得到留言嗎？", "可以。在表單填入 Formspree 等收件服務的網址，匯出的網站就會把留言送到那裡；編輯時的預覽不會真的送出。"],
+  ["需要會寫程式嗎？", "不用，拖拉、雙擊改字、選主題就能做完，想自己改程式的話，匯出的 React 專案也能直接改"],
+  ["我的資料存在哪裡？", "草稿、網站和圖片都存在你這台裝置的瀏覽器裡，不會上傳，清除瀏覽器資料會一起刪掉，重要的作品記得匯出備份"],
+  ["要付費嗎？", "編輯、智慧排版、主題、動畫與匯出都可以免費使用"],
+  ["做好的網站怎麼上線？", "在網站工作區匯出 React 專案，放到 GitHub Pages、Netlify 等靜態主機即可，也能設定自己的網域"],
+  ["聯絡表單收得到留言嗎？", "可以，在表單填入 Formspree 等收件服務的網址，匯出的網站就會把留言送到那裡；編輯時的預覽不會真的送出"],
 ];
 export function HomeFaq() {
   return (

@@ -60,7 +60,7 @@ export function CopySuggest({ kind, text, brief, onPick }: { kind: CopyKind; tex
       setState({ phase: "done", options });
     } catch (e) {
       if (controller.signal.aborted) return;
-      setState({ phase: "error", options: [], message: e instanceof GenerationError ? e.message : "暫時想不出來，請稍後再試。" });
+      setState({ phase: "error", options: [], message: e instanceof GenerationError ? e.message : "暫時想不出來，請稍後再試" });
     }
   };
   return (
@@ -73,7 +73,7 @@ export function CopySuggest({ kind, text, brief, onPick }: { kind: CopyKind; tex
       {state.phase === "error" && <p className="copy-note bad" role="status">{state.message}</p>}
       {state.phase === "done" && (
         <div className="copy-options" role="group" aria-label="AI 建議的說法">
-          <p className="copy-note">AI 只給建議，選了才會換掉；不喜歡可以還原。</p>
+          <p className="copy-note">挑一個喜歡的就會換上，不喜歡再按還原</p>
           {state.options.map((o) => (
             <button key={o} type="button" onClick={() => { onPick(o); setState({ phase: "idle", options: [] }); }}>
               <span>用這個</span>

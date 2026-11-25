@@ -31,13 +31,13 @@ export class PageStorageError extends Error {
   constructor(public code: StorageCode) {
     super(
       {
-        UNAVAILABLE: "無法開啟本機儲存，請允許網站儲存資料後重試。",
-        CORRUPT: "頁面資料損毀，原始紀錄已保留。",
-        UNSUPPORTED: "頁面版本不支援，原始紀錄已保留。",
-        CONFLICT: "這份專案已在其他分頁更新，請重新載入。",
-        QUOTA: "儲存空間不足，修改仍保留在本頁。",
-        ABORTED: "儲存已中斷，修改仍保留在本頁。",
-        INVALID: "頁面資料無效，未寫入本機。",
+        UNAVAILABLE: "瀏覽器不讓網站存資料，請在設定裡允許後再試",
+        CORRUPT: "頁面資料讀不到，請重新整理",
+        UNSUPPORTED: "這份頁面版本太舊，請重新開始",
+        CONFLICT: "這份專案已在其他分頁更新，請重新載入",
+        QUOTA: "儲存空間不足，修改仍保留在本頁",
+        ABORTED: "儲存已中斷，修改仍保留在本頁",
+        INVALID: "頁面資料有問題，沒有存下來",
       }[code],
     );
   }

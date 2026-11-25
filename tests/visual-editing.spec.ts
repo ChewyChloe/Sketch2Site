@@ -112,7 +112,7 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
   await editSelection(page);
   await page.getByLabel("標題文字").fill('<img src=x onerror="alert(1)">');
   await page.getByRole("button", { name: "套用", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("修改格式或數值無效");
+  await expect(page.getByRole("alert")).toContainText("數值不對");
   await page.getByRole("button", { name: "捨棄修改", exact: true }).click();
   await page.keyboard.press("Escape");
   await expect(page.locator("[data-page-selected]")).toHaveCount(0);
@@ -216,7 +216,7 @@ test("動畫拖放、相容性、替換移除、Undo/Redo 與實際播放", asyn
   await page
     .locator('[data-effect-id="stagger-reveal"]')
     .dragTo(node(page, 4), { targetPosition: { x: 3, y: 3 } });
-  await expect(page.getByRole("alert")).toContainText("至少兩個子元素");
+  await expect(page.getByRole("alert")).toContainText("兩樣以上的內容");
   await expect(node(page, 4)).toHaveAttribute("data-effects", "");
   await page.locator('[data-effect-id="stagger-reveal"]').dragTo(node(page,1),{targetPosition:{x:3,y:3}});
   await expect(node(page,1)).toHaveAttribute("data-effects","stagger-reveal");

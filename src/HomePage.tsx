@@ -42,9 +42,9 @@ export default function HomePage({
       <section className="home-hero">
         <div className="home-hero-copy">
           <p className="home-eyebrow">視覺化網站工作台</p>
-          <h1>把草圖，變成可以上線的網站。</h1>
+          <h1>把草圖，<br />變成可以上線的網站</h1>
           <p className="home-lead">
-            在畫布上擺出標題、圖片與按鈕，Sketch2Site 幫你整理成首屏、特色、價目表等區塊，套上主題與動畫，最後匯出獨立的 React 專案。
+            在畫布上擺出標題、圖片與按鈕，Sketch2Site 幫你整理成首屏、特色、價目表等區塊，套上主題與動畫，最後匯出獨立的 React 專案
           </p>
           <div className="home-actions">
             <button className="home-primary" onClick={onOpenDraft}>
@@ -75,7 +75,7 @@ export default function HomePage({
             <button className="home-link-button" onClick={onOpenLibrary}>動畫素材庫（{motionCount}）</button>
           </div>
         </div>
-        <p className="home-note">專案存在這個瀏覽器；切換專案前會自動儲存目前的草稿。</p>
+        <p className="home-note">作品存在這個瀏覽器裡，換專案時會自動幫你存好</p>
         <div className="home-projects" aria-busy={projects === null}>
           <button className="home-new" onClick={() => actions.create()}>
             <span aria-hidden="true">＋</span>

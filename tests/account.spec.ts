@@ -25,7 +25,7 @@ test("sign in card offers Google and GitHub; signed-in menu logs out", async ({ 
   await page.goto("/?signin=failed");
   // Back from GitHub with a failure: the card explains and the address bar is tidied.
   const card = page.getByRole("dialog", { name: "登入" });
-  await expect(card.getByRole("status")).toHaveText("登入沒有成功，請再試一次。");
+  await expect(card.getByRole("status")).toHaveText("登入沒有成功，請再試一次");
   await expect(page).toHaveURL(/\/$/);
   await expect(card.getByRole("link", { name: "用 GitHub 登入" })).toHaveAttribute("href", "/api/auth/github/start");
   await expect(card.locator(".account-google")).toBeAttached();

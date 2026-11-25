@@ -164,13 +164,13 @@ export type PatchError =
   | "EFFECT_CONFLICT"
   | "SCOPE_VIOLATION";
 export const patchMessages: Record<PatchError, string> = {
-  INVALID_PATCH: "修改格式或數值無效，請檢查後重試。",
-  INVALID_PAGE: "修改不符合頁面規則，原頁面已保留。",
-  STALE_REVISION: "頁面已更新，請重新選取後再套用。",
-  TARGET_NOT_FOUND: "找不到指定元素，請重新選取。",
-  PROPERTY_NOT_ALLOWED: "此元素不支援這項修改。",
-  EFFECT_CONFLICT: "動畫不存在或已附加，請重新檢查。",
-  SCOPE_VIOLATION: "修改超出指定範圍，原頁面已保留。",
+  INVALID_PATCH: "數值不對，請檢查後再試",
+  INVALID_PAGE: "這樣改不了，頁面沒有變動",
+  STALE_REVISION: "頁面已更新，請重新選取後再套用",
+  TARGET_NOT_FOUND: "找不到指定元素，請重新選取",
+  PROPERTY_NOT_ALLOWED: "此元素不支援這項修改",
+  EFFECT_CONFLICT: "動畫不存在或已附加，請重新檢查",
+  SCOPE_VIOLATION: "這樣改不了，頁面沒有變動",
 };
 export function indexNodes(page: PageSpec) {
   const map = new Map<string, PageNode>();

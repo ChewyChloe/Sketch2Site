@@ -43,7 +43,7 @@ export async function exportFontFiles(pageText: string, load: (url: string) => P
     if (!url) continue;
     const bytes = await load(url);
     // woff2 magic bytes "wOF2"; anything else is not shipped.
-    if (bytes.length > 600_000 || bytes[0] !== 0x77 || bytes[1] !== 0x4f || bytes[2] !== 0x46 || bytes[3] !== 0x32) throw new Error("字型檔格式無效。");
+    if (bytes.length > 600_000 || bytes[0] !== 0x77 || bytes[1] !== 0x4f || bytes[2] !== 0x46 || bytes[3] !== 0x32) throw new Error("字型檔格式無效");
     files.push({ path: `src/fonts/${face.file}`, content: bytes });
     out += face.block.replace(`url(./assets/fonts/huninn/${face.file})`, `url(./fonts/${face.file})`) + "\n";
   }

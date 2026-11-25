@@ -13,7 +13,7 @@ export function createSiteCandidate(canvas: CanvasSpec): CandidateResult {
     const sub = pageDraft(canvas, page.id);
     if (!sub.nodes.length) {
       const error = new GenerationError("INVALID_INPUT");
-      error.message = `頁面「${page.name}」還沒有內容，請先放入元件或刪除這一頁。`;
+      error.message = `頁面「${page.name}」還沒有內容，請先放入元件或刪除這一頁`;
       throw error;
     }
     // Links to other pages are not resolvable inside one page; park them and restore after layout.

@@ -68,9 +68,9 @@ export function AnnotationBubble({
   const submit = (instruction: string) => {
     const result = interpretAnnotation(page, node.id, instruction);
     if (!result.ok) return setStatus({ ok: false, message: result.message });
-    if (result.patches.length && !onApply(result.patches, result.scope)) return setStatus({ ok: false, message: "這個修改沒有通過檢查，頁面維持原樣。" });
+    if (result.patches.length && !onApply(result.patches, result.scope)) return setStatus({ ok: false, message: "這樣改不了，頁面沒有變動" });
     const extra = result.skipped.length ? `（看不懂：${result.skipped.join("、")}）` : "";
-    setStatus({ ok: true, message: "已" + result.summary.join("、") + "。" + extra });
+    setStatus({ ok: true, message: "已" + result.summary.join("、") + (extra ? "，" + extra.replace(/^[，。\s]+/, "") : "") });
     setText("");
   };
 
@@ -132,7 +132,7 @@ export function AnnotationBubble({
         ))}
       </div>
       <p className={"note-status" + (status && !status.ok ? " bad" : "")} role="status" aria-live="polite">
-        {status ? status.message + (status.ok ? " 可按「撤銷修改」復原。" : "") : "要改文字請用引號：改成「新的標題」"}
+        {status ? status.message + (status.ok ? " 可按「撤銷修改」復原" : "") : "要改文字請用引號：改成「新的標題」"}
       </p>
     </div>
   );

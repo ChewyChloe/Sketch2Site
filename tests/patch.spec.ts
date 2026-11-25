@@ -58,7 +58,7 @@ test("依 ID 選取、套用、Diff、撤銷重做、非法修改與草稿隔離
   await expect(page.getByLabel("動畫時長（毫秒）")).toHaveValue("700");
   await setFadeDuration(page, "99999");
   await page.getByRole("button", { name: "套用", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("修改格式或數值無效");
+  await expect(page.getByRole("alert")).toContainText("數值不對");
   await expect(heading).toHaveText("我的作品集");
   await expect(page.getByRole("button", { name: "撤銷修改" })).toBeEnabled();
   await setFadeDuration(page, "700");
@@ -73,7 +73,7 @@ test("依 ID 選取、套用、Diff、撤銷重做、非法修改與草稿隔離
   await editSelection(page);
   await page.getByLabel("標題文字").fill("我的作品集");
   await page.getByRole("button", { name: "套用", exact: true }).click();
-  await expect(page.getByText("沒有需要套用的變更。")).toBeVisible();
+  await expect(page.getByText("沒有需要套用的變更")).toBeVisible();
   await page.screenshot({
     path: "test-results/patch-desktop.png",
     fullPage: true,

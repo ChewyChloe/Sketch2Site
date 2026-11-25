@@ -56,7 +56,8 @@ export function TextToolbar({ style, type, count, onChange, themeColors }: { sty
       {count > 1 && <span className="tt-count" style={{ display: "inline" }}>{count} 段文字</span>}
       <label className="tt-font">
         <span className="visually-hidden">字型</span>
-        <select aria-label="字型" title="字型" value={style.font ?? "sans"} style={{ fontFamily: fontStacks[style.font ?? "sans"] }} onChange={(e) => onChange({ font: e.target.value === "sans" ? undefined : (e.target.value as TextStyle["font"]) })}>
+        <select aria-label="字型" title="字型" value={style.font ?? ""} style={style.font ? { fontFamily: fontStacks[style.font] } : undefined} onChange={(e) => onChange({ font: (e.target.value || undefined) as TextStyle["font"] })}>
+          <option value="">預設字型</option>
           {fontIds.map((f) => (
             <option key={f} value={f} style={{ fontFamily: fontStacks[f] }}>{fontLabels[f]}</option>
           ))}

@@ -45,7 +45,7 @@ it("selects an ID, applies a patch through the form and safely rejects invalid t
   );
   fireEvent.click(screen.getByRole("button", { name: "套用" }));
   expect(screen.getByRole("heading", { name: "我的作品集" })).toBeTruthy();
-  expect(screen.getByText("已套用。")).toBeTruthy();
+  expect(screen.getByText("已套用")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "撤銷修改" }));
   expect(screen.getByRole("heading", { name: target.content! })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "重做修改" }));
@@ -54,7 +54,7 @@ it("selects an ID, applies a patch through the form and safely rejects invalid t
     target: { value: "<script>alert(1)</script>" },
   });
   fireEvent.click(screen.getByRole("button", { name: "套用" }));
-  expect(screen.getByRole("alert").textContent).toContain("修改格式或數值無效");
+  expect(screen.getByRole("alert").textContent).toContain("數值不對");
   expect(screen.getByRole("heading", { name: "我的作品集" })).toBeTruthy();
   expect(screen.getByTestId("page-save-status").textContent).toBe("尚未套用");
   const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);

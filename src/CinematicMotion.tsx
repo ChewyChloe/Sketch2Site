@@ -66,7 +66,7 @@ export function useCinematicMotion(node: PageNode, ref: RefObject<HTMLElement | 
                 image.src = url;
             else {
                 const message = document.createElement('small');
-                message.textContent = '預覽圖片尚未就緒，請重新選擇。';
+                message.textContent = '預覽圖片尚未就緒，請重新選擇';
                 message.setAttribute('role', 'status');
                 r.append(message);
             }

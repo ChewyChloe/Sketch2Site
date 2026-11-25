@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { blank, CanvasSchema, type CanvasSpec } from "./spec";
 import { createBlock } from "./blockTemplates";
 import { createSiteCandidate } from "./siteGeneration";
-import { BrandSchema, brandCss, inkOn } from "./pageSpec";
+import { BrandSchema, brandCss, contrast, fixContrast, inkOn, smartPalette } from "./pageSpec";
 import { exportProjectFiles } from "./exportProject";
 
 function branded(): CanvasSpec {
@@ -32,5 +32,31 @@ describe("brand kit", () => {
     } finally {
       globalThis.fetch = original;
     }
+  });
+});
+
+describe("brand colour roles", () => {
+  it("builds a readable palette from one main colour", () => {
+    for (const main of ["#ffc53d", "#0d74ce", "#e5484d", "#111111", "#30a46c"]) {
+      const p = smartPalette(main);
+      expect(contrast(p.neutral, "#ffffff")).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(p.neutral, p.secondary)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(p.accent, "#ffffff")).toBeGreaterThanOrEqual(3);
+    }
+  });
+  it("fixes faint colours to the WCAG minimum and leaves good ones alone", () => {
+    expect(contrast("#ffffff", "#000000")).toBeCloseTo(21, 0);
+    const fixed = fixContrast("#ffc53d", "#ffffff", 3);
+    expect(contrast(fixed, "#ffffff")).toBeGreaterThanOrEqual(3);
+    expect(fixContrast("#0d74ce", "#ffffff", 3)).toBe("#0d74ce");
+  });
+  it("puts the English font before the Chinese one and maps the roles to page variables", () => {
+    const css = brandCss({ colors: [], primary: "#0d74ce", secondary: "#eef4ff", accent: "#f76b15", neutral: "#1b2430", headingFont: "serif", headingFontLatin: "serif", bodyFontLatin: "geometric" }) as Record<string, string>;
+    expect(css["--pg-soft"]).toBe("#eef4ff");
+    expect(css["--pg-highlight"]).toBe("#f76b15");
+    expect(css["--ink"]).toBe("#1b2430");
+    expect(css["--pg-heading-font"]).toMatch(/^Georgia.*Noto Serif TC/);
+    expect(css.fontFamily).toMatch(/^"Avenir Next".*var\(--font/);
+    expect(BrandSchema.safeParse({ colors: [], bodyFontLatin: "comic" }).success).toBe(false);
   });
 });

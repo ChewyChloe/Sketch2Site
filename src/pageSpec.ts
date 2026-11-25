@@ -100,7 +100,7 @@ export function lookStyle(look: ImageLook | undefined) {
 // Only system font stacks: no remote fonts are loaded.
 export const fontIds = ["sans", "serif", "rounded", "kai", "mono"] as const;
 export type FontId = (typeof fontIds)[number];
-export const fontLabels: Record<FontId, string> = { sans: "黑體（預設）", serif: "明體", rounded: "圓體", kai: "楷體（手寫感）", mono: "等寬" };
+export const fontLabels: Record<FontId, string> = { sans: "黑體", serif: "明體", rounded: "粉圓體", kai: "楷體", mono: "等寬" };
 export const fontStacks: Record<FontId, string> = {
   sans: 'system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif',
   serif: '"Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", Georgia, serif',
@@ -147,30 +147,97 @@ export function textCss(t: TextStyle | undefined, fluid = true) {
   };
 }
 // Brand kit: the project's own colours, fonts and logo (set in the editor only).
+// Latin-only font stacks: used before the Chinese stack, so English and numbers take this
+// font while Chinese characters fall through to the Chinese font.
+export const latinFontIds = ["sans", "geometric", "serif", "classic", "rounded", "mono"] as const;
+export type LatinFontId = (typeof latinFontIds)[number];
+export const latinFontLabels: Record<LatinFontId, string> = { sans: "Helvetica 無襯線", geometric: "Avenir 幾何", serif: "Georgia 襯線", classic: "Palatino 古典", rounded: "Rounded 圓體", mono: "Menlo 等寬" };
+export const latinFontStacks: Record<LatinFontId, string> = {
+  sans: '"Helvetica Neue", Helvetica, Arial',
+  geometric: '"Avenir Next", Avenir, "Century Gothic", Futura',
+  serif: 'Georgia, "Times New Roman", Times',
+  classic: '"Palatino Linotype", Palatino, "Book Antiqua"',
+  rounded: '"Arial Rounded MT Bold", "Varela Round", "Nunito"',
+  mono: '"SF Mono", Menlo, Consolas, "Courier New"',
+};
 export const BrandSchema = z
   .object({
     colors: z.array(hex).max(10),
-    // Main brand colour: buttons, links and the closing band use it instead of the theme accent.
+    // 主色: buttons, links and the closing band use it instead of the theme accent.
     primary: hex.optional(),
+    // 副色: soft section backgrounds. 強調色: highlights and focus rings. 中性色: body text.
+    secondary: hex.optional(),
+    accent: hex.optional(),
+    neutral: hex.optional(),
     headingFont: z.enum(fontIds).optional(),
     bodyFont: z.enum(fontIds).optional(),
+    headingFontLatin: z.enum(latinFontIds).optional(),
+    bodyFontLatin: z.enum(latinFontIds).optional(),
     logo: imageSource.optional(),
   })
   .strict();
 export type Brand = z.infer<typeof BrandSchema>;
+const channel = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+/** WCAG relative luminance of a #rrggbb colour. */
+export function luminance(color: string) {
+  const [r, g, b] = [1, 3, 5].map((i) => channel(parseInt(color.slice(i, i + 2), 16) / 255));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+/** WCAG contrast ratio between two colours (1–21). */
+export function contrast(a: string, b: string) {
+  const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m);
+  return (x + 0.05) / (y + 0.05);
+}
 /** Black or white, whichever reads better on the colour (WCAG relative luminance). */
 export function inkOn(color: string) {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-  const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return (l + 0.05) / 0.05 > 1.05 / (l + 0.05) ? "#111111" : "#ffffff";
+  return contrast(color, "#111111") >= contrast(color, "#ffffff") ? "#111111" : "#ffffff";
 }
+function toHsl(color: string): [number, number, number] {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (!d) return [0, 0, l];
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(h * 60 + 360) % 360, s, l];
+}
+function fromHsl(h: number, s: number, l: number) {
+  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return "#" + [r, g, b].map((v) => Math.round(Math.min(1, Math.max(0, v + m)) * 255).toString(16).padStart(2, "0")).join("");
+}
+/** Moves a colour's lightness (keeping hue) until it reaches `min` contrast against `against`. */
+export function fixContrast(color: string, against: string, min: number) {
+  if (contrast(color, against) >= min) return color;
+  const [h, s, l] = toHsl(color);
+  const darker = luminance(against) > 0.18;
+  for (let step = 1; step <= 100; step++) {
+    const next = fromHsl(h, s, Math.min(1, Math.max(0, l + (darker ? -step : step) / 100)));
+    if (contrast(next, against) >= min) return next;
+  }
+  return darker ? "#000000" : "#ffffff";
+}
+/** A starting palette from one main colour: readable text, a soft background and a lively highlight. */
+export function smartPalette(primary: string) {
+  const [h, s] = toHsl(primary);
+  return {
+    secondary: fromHsl(h, Math.min(0.55, s), 0.94),
+    accent: fixContrast(fromHsl((h + 150) % 360, Math.max(0.6, s), 0.5), "#ffffff", 3),
+    neutral: fixContrast(fromHsl(h, Math.min(0.18, s), 0.16), "#ffffff", 7),
+  };
+}
+const fontWith = (latin: LatinFontId | undefined, cjk: string) => (latin ? `${latinFontStacks[latin]}, ${cjk}` : cjk);
 /** CSS variables a brand sets on the rendered page. */
 export function brandCss(b: Brand | undefined) {
   if (!b) return {};
+  const headingCjk = b.headingFont ? fontStacks[b.headingFont] : "var(--heading-font, inherit)";
+  const bodyCjk = b.bodyFont ? fontStacks[b.bodyFont] : "var(--font, inherit)";
   return {
     ...(b.primary ? { "--accent": b.primary, "--pg-accent-ink": inkOn(b.primary), "--accent-soft": `color-mix(in srgb, ${b.primary} 14%, #ffffff)` } : {}),
-    ...(b.headingFont ? { "--pg-heading-font": fontStacks[b.headingFont] } : {}),
-    ...(b.bodyFont ? { fontFamily: fontStacks[b.bodyFont] } : {}),
+    ...(b.secondary ? { "--pg-soft": b.secondary } : {}),
+    ...(b.accent ? { "--pg-highlight": b.accent } : {}),
+    ...(b.neutral ? { "--ink": b.neutral } : {}),
+    ...(b.headingFont || b.headingFontLatin ? { "--pg-heading-font": fontWith(b.headingFontLatin, headingCjk) } : {}),
+    ...(b.bodyFont || b.bodyFontLatin ? { fontFamily: fontWith(b.bodyFontLatin, bodyCjk) } : {}),
   };
 }
 export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta"] as const;
@@ -443,7 +510,7 @@ export function validatePage(input: unknown) {
           : "頁面資料不符合格式";
   return {
     ok: false as const,
-    error: "預覽失敗：" + reason + "。請修正檔案後重新載入。",
+    error: "預覽失敗：" + reason + "，請修正檔案後重新載入",
   };
 }
 // Reuse unchanged validated branches, allowing React.memo to skip unrelated components.

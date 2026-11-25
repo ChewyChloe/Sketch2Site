@@ -114,7 +114,7 @@ function SiteForm({ node }: { node: PageNode }) {
       })}
       <button type="submit" className="page-button" disabled={state === "sending"}>{state === "sending" ? "送出中…" : "送出"}</button>
       <p className="page-form-status" role="status" aria-live="polite">
-        {state === "sent" ? "已送出，謝謝你的留言。" : state === "failed" ? "送出失敗，請稍後再試。" : state === "preview" ? "預覽中不會送出；匯出網站後才會寄到接收網址。" : ""}
+        {state === "sent" ? "已送出，謝謝你的留言" : state === "failed" ? "送出失敗，請稍後再試" : state === "preview" ? "預覽時不會真的送出，網站上線後才會收到" : ""}
       </p>
     </form>
   );
@@ -181,7 +181,7 @@ function LoadedImage({ node }: { node: PageNode }) {
   if (resolved === null)
     return (
       <div className="page-image-error" role="status">
-        找不到本機圖片，請重新匯入。
+        找不到本機圖片，請重新匯入
       </div>
     );
   return failed ? (
@@ -355,7 +355,7 @@ class RenderBoundary extends Component<
   render() {
     return this.state.failed ? (
       <p role="alert" className="preview-error">
-        預覽失敗：頁面無法顯示。請重新載入檔案。
+        預覽失敗：頁面無法顯示，請重新載入檔案
       </p>
     ) : (
       this.props.children

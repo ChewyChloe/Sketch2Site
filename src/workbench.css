@@ -1548,3 +1548,49 @@ input[type="range"] {
 [data-testid="canvas"] .effect-tags:empty { display: none; }
 /* Text toolbar slot: breathing room from the top bar and both side panels. */
 @media (min-width: 761px) { .text-toolbar-slot { margin: 12px 16px 6px; } }
+/* Text toolbar v3: nothing reserved; a floating bar appears over the canvas only while text is selected. */
+@media (min-width: 761px) {
+  .text-toolbar-slot { height: 0 !important; margin: 0 16px !important; position: relative; z-index: 14; }
+  .text-toolbar-slot > .text-toolbar { position: absolute; top: 62px; left: 50%; right: auto; translate: -50% 0; width: max-content; max-width: 100%; box-shadow: 4px 4px 0 #0d0e11, 0 12px 30px rgb(13 14 17 / .18); }
+  .text-toolbar-slot > .text-toolbar.is-idle { min-height: 0; padding: 8px 16px; border-style: solid; font-size: 14px; color: #0d0e11; background: #fff; }
+}
+/* Every control in the toolbar shares one height and centres its icon. */
+.text-toolbar { align-items: center; }
+.text-toolbar > *, .text-toolbar .tt-group, .text-toolbar .tt-pop, .text-toolbar .tt-size { display: inline-flex; align-items: center; }
+.text-toolbar button { display: inline-flex !important; align-items: center; justify-content: center; height: 40px; min-height: 40px; padding-top: 0 !important; padding-bottom: 0 !important; line-height: 1; vertical-align: middle; }
+.text-toolbar svg { display: block; width: 18px; height: 18px; flex: none; }
+.text-toolbar .tt-spacing, .text-toolbar .tt-clear { display: inline-flex; align-items: center; gap: 4px; line-height: 1; }
+.text-toolbar .tt-mark { display: inline-grid; place-items: center; }
+/* Brand kit v2: colour roles with contrast checks. */
+.brand-colors-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.brand-colors-head h3 { margin: 0; }
+.brand-smart { min-height: 36px; padding: 0 14px; border: 2px solid #0d0e11; border-radius: 999px; background: #10e560; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.brand-roles { display: grid; gap: 8px; }
+.brand-role { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto auto auto; align-items: center; gap: 10px; padding: 8px; border: 2px solid #e2e4de; border-radius: 16px; background: #fff; }
+.brand-role.is-empty { border-style: dashed; }
+.brand-swatch { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border: 2px solid #0d0e11; border-radius: 14px; background: #f4f4f0; font-size: 22px; font-weight: 800; color: #62655f; cursor: pointer; overflow: hidden; }
+.brand-swatch input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.brand-role-text { display: grid; gap: 2px; min-width: 0; }
+.brand-role-text strong { font-size: 15px; }
+.brand-role-text small { color: #62655f; font-size: 12px; overflow-wrap: anywhere; }
+.brand-contrast { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.brand-contrast.is-ok { background: #e3fbe9; color: #075c2a; }
+.brand-contrast.is-low { background: #ffe8e6; color: #a3271f; }
+.brand-fix { min-height: 34px; padding: 0 10px; border: 2px solid #a3271f; border-radius: 999px; background: #fff; color: #a3271f; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.brand-remove-role { width: 30px; height: 30px; border: 0; border-radius: 50%; background: #f1f1ec; font-size: 16px; cursor: pointer; }
+.brand-rule { margin: 8px 0 0; font-size: 12px; color: #62655f; }
+.brand-fonts { grid-template-columns: 1fr 1fr; }
+.brand-preview mark { padding: 0 4px; border-radius: 4px; }
+@media (max-width: 520px) { .brand-role { grid-template-columns: 52px minmax(0, 1fr) auto; } .brand-role .brand-fix { grid-column: 2 / -1; justify-self: start; } .brand-fonts { grid-template-columns: 1fr; } }
+@media (min-width: 761px) {
+  .text-toolbar-slot.is-placed > .text-toolbar:not(.is-idle) { top: var(--tt-top); left: var(--tt-left); translate: none; }
+  .text-toolbar-slot.is-moving > .text-toolbar:not(.is-idle) { opacity: 0; pointer-events: none; }
+}
+/* Topbar: hide the word mark a little earlier so 登入 always fits. */
+@media (min-width: 761px) and (max-width: 1520px) { .topbar:not(.home) .brand.home-link .brand-name { display: none; } }
+/* Zoomed far out (phones): motion tags shrink to small green dots so they never cover content. */
+[data-testid="canvas"].is-tiny .effect-tags { top: calc(-4px / var(--s, 1)); left: calc(4px / var(--s, 1)); gap: calc(3px / var(--s, 1)); }
+[data-testid="canvas"].is-tiny .effect-tags span { font-size: 0; padding: 0; width: calc(9px / var(--s, 1)); height: calc(9px / var(--s, 1)); border-width: calc(1.5px / var(--s, 1)); justify-content: center; }
+[data-testid="canvas"].is-tiny .effect-tags span::before { width: calc(5px / var(--s, 1)); height: calc(5px / var(--s, 1)); }
+/* Room above the page so the floating text toolbar can sit above even the topmost text. */
+@media (min-width: 761px) { .canvas-scroll { padding-top: 84px !important; } }

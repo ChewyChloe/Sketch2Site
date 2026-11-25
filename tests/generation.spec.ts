@@ -173,7 +173,7 @@ test("key 缺失、生成失敗與返回草稿都保留原內容", async ({ page
     }),
   );
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("生成失敗");
+  await expect(page.getByRole("alert")).toContainText("沒有生成成功");
   expect(await savedPage(page)).toBeUndefined();
   await page.unroute("**/api/generation");
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
@@ -277,7 +277,7 @@ test("透過既有元件庫建立標題、圖片與可操作按鈕再生成", as
   await page.getByLabel("按鈕連結").press("Enter");
   await expect(page.getByLabel("按鈕連結")).toHaveValue("javascript:alert(1)");
   await expect(page.getByLabel("按鈕連結")).toHaveAttribute("aria-invalid","true");
-  await expect(page.getByText(/輸入已保留，尚未套用/)).toBeVisible();
+  await expect(page.getByText(/這個網址不能用/)).toBeVisible();
   await page.getByLabel("按鈕連結").fill("https://example.com");
   await page.getByLabel("按鈕連結").press("Enter");
   await page.getByRole("button", { name: "生成網站", exact: true }).click();

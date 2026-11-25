@@ -3,7 +3,7 @@ test('public HTTPS remains after blur; invalid URL stays visible with a reason; 
  await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');await page.getByRole('button',{name:'新增按鈕',exact:true}).click();await page.getByRole('tab',{name:'編輯元素'}).click();
  const url=page.getByLabel('按鈕連結');await url.fill('https://discord.com/channels/123456789012345678/987654321098765432');await url.press('Tab');await expect(url).toHaveValue(/discord/);
  await page.getByRole('button',{name:'儲存草稿',exact:true}).click();await expect(page.getByRole('button',{name:'儲存草稿',exact:true})).toHaveText('已儲存');
- await url.fill('javascript:alert(1)');await url.press('Tab');await expect(url).toHaveValue('javascript:alert(1)');await expect(page.getByRole('alert')).toContainText('尚未套用');
+ await url.fill('javascript:alert(1)');await url.press('Tab');await expect(url).toHaveValue('javascript:alert(1)');await expect(page.getByRole('alert')).toContainText('這個網址不能用');
  page.once('dialog',d=>d.accept());await page.reload();await page.getByTestId('canvas-node').click();await page.getByRole('tab',{name:'編輯元素'}).click();await expect(page.getByLabel('按鈕連結')).toHaveValue(/discord/);
 });
 for(const width of [1440,768,375])test(`preview reflects the current draft without a model call and updates after editing ${width}`,async({page})=>{

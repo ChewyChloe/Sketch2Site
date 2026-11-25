@@ -100,7 +100,7 @@ export async function exportProjectFiles(
     {
       path: "README.md",
       content:
-        "# 匯出網站\n\n使用 Node.js 24 LTS，執行 `npm ci`、`npm run dev`；正式建置為 `npm run build`，預覽產物為 `npm run preview`。首次安裝需連線 npm，網站執行不需 Sketch2Site 後端。\n\n內容來自經驗證的頁面，文字、素材與已套用的受控動畫隨專案提供。修改後可自行建置；動畫遵守 prefers-reduced-motion。只包含目前頁面，不包含草稿、註記、編輯歷史、使用者秘密或 AI 呼叫功能。\n",
+        "# 匯出網站\n\n使用 Node.js 24 LTS，執行 `npm ci`、`npm run dev`；正式建置為 `npm run build`，預覽產物為 `npm run preview`，首次安裝需連線 npm，網站執行不需 Sketch2Site 後端，\n\n內容來自經驗證的頁面，文字、素材與已套用的受控動畫隨專案提供，修改後可自行建置；動畫遵守 prefers-reduced-motion，只包含目前頁面，不包含草稿、註記、編輯歷史、使用者秘密或 AI 呼叫功能，\n",
     },
   ];
   files.push({ path: "src/assetRef.ts", content: assetSchema });
@@ -109,7 +109,7 @@ export async function exportProjectFiles(
   for (const ref of refs)
     if (isLocalAsset(ref)) {
       const image = await readAsset(ref);
-      if (!image) throw new Error("找不到本機圖片，請重新匯入。");
+      if (!image) throw new Error("找不到本機圖片，請重新匯入");
       files.push({
         path: "public" + ref,
         content: new Uint8Array(await image.blob.arrayBuffer()),
@@ -119,17 +119,17 @@ export async function exportProjectFiles(
     const response = await fetch(
       import.meta.env.BASE_URL + builtin.slice(1),
     );
-    if (!response.ok) throw new Error("內建素材無法讀取。");
+    if (!response.ok) throw new Error("內建素材無法讀取");
     if (builtin.endsWith(".jpg")) {
       // Sample photos ship as JPEG; verify the magic bytes and a sane size.
       const bytes = new Uint8Array(await response.arrayBuffer());
-      if (bytes.length > 400000 || bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("內建素材格式無效。");
+      if (bytes.length > 400000 || bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("內建素材格式無效");
       files.push({ path: "public" + builtin, content: bytes });
       continue;
     }
     const asset = await response.text();
     if (asset.length > 100000 || !asset.includes("<svg"))
-      throw new Error("內建素材格式無效。");
+      throw new Error("內建素材格式無效");
     files.push({ path: "public"+builtin, content: asset });
   }
   return files;

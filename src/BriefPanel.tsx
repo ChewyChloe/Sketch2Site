@@ -120,7 +120,7 @@ export function BriefPanel({
         <button type="button" className="brief-close" aria-label="關閉" onClick={() => onClose(brief)}>×</button>
       </div>
       <p className="brief-sentence">
-        這是一個給 {blank("audience")} 看的 {blank("purpose")} 網站，感覺要 {blank("mood")}，最想讓人注意到 {blank("focus")}。
+        這是一個給 {blank("audience")} 看的 {blank("purpose")} 網站，感覺要 {blank("mood")}，最想讓人注意到 {blank("focus")}
       </p>
       {active && (
         <div className="brief-choices" id="brief-choices" role="group" aria-label={"選擇" + blankLabels[active]}>
@@ -135,14 +135,14 @@ export function BriefPanel({
       )}
       <GhostField id="brief-note" label="一句話補充（選填）" value={brief.note} purpose={brief.purpose} maxLength={100} placeholder="例如：主色想用學校的藍色" onChange={(v) => set("note", v)} onEscape={() => onClose(brief)} />
       {moreOpen ? (
-        <GhostField id="brief-details" label="詳細說明（選填）" multiline value={brief.details ?? ""} purpose={brief.purpose} maxLength={600} placeholder="想寫多少都可以：目標、風格參考、哪些內容要特別強調……" onChange={(v) => set("details", v)} onEscape={() => onClose(brief)} />
+        <GhostField id="brief-details" label="詳細說明（選填）" multiline value={brief.details ?? ""} purpose={brief.purpose} maxLength={600} placeholder="例如：目標、喜歡的風格、想強調的內容" onChange={(v) => set("details", v)} onEscape={() => onClose(brief)} />
       ) : (
         <button type="button" className="brief-more" onClick={() => setMoreOpen(true)}>想寫更多？展開詳細說明</button>
       )}
       <p className="brief-note">
         {aiReady
-          ? "AI 會參考以上所有描述排版；不會改寫或新增你的文字內容。"
-          : "「感覺」會決定配色，「最想被注意的」會排在前面。"}
+          ? "AI 會照這些描述排版，你寫的字一個都不會改"
+          : "選的感覺會換成搭配的顏色，想被注意的區塊會放前面"}
       </p>
       <div className="brief-actions">
         <button type="button" className="brief-reset" onClick={() => { setBrief(emptyBrief); setActive("audience"); }}>全部清除</button>

@@ -29,7 +29,7 @@ test("site edits survive going back to the draft and updating the site", async (
   await page.keyboard.type("今天見");
   await page.keyboard.press("Enter");
   await page.getByRole("button", { name: "預覽", exact: true }).click();
-  await expect(page.getByText("草稿有新的變更，網站還沒更新。")).toBeVisible();
+  await expect(page.getByText("草稿有新的變更，網站還沒更新")).toBeVisible();
   await page.getByRole("button", { name: "更新網站" }).click();
   await expect(page.getByText(/已保留你在網站上的 \d+ 項版面修改/)).toBeVisible();
   await page.getByRole("button", { name: "使用此版本" }).click();
@@ -37,6 +37,6 @@ test("site edits survive going back to the draft and updating the site", async (
   await expect(frame.getByRole("heading", { name: "今天見" })).toBeVisible();
   await expect(frame.getByRole("heading", { level: 1, name: "我們在乎的事" })).toBeVisible();
   await expect(frame.locator(".rendered-page")).toHaveAttribute("data-theme", "ocean");
-  await expect(page.getByText("草稿有新的變更，網站還沒更新。")).toHaveCount(0);
+  await expect(page.getByText("草稿有新的變更，網站還沒更新")).toHaveCount(0);
   expect(errors).toEqual([]);
 });

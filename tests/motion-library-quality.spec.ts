@@ -21,9 +21,9 @@ for(const width of [1440,768,375])test(`native library review: readable, directl
  expect(await slide.locator('[data-page-id]').first().getAttribute('data-page-id')).toBe(before);
  for(const button of await library.locator('.asset-actions button').all())expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
  await page.screenshot({path:`test-results/library-readable-${width}.png`});
- const flip=library.locator('[data-effect-id="flip-card"]');await flip.scrollIntoViewIfNeeded();await flip.getByRole('button',{name:'查看背面'}).click();await expect(flip.getByText('把細節，說清楚。')).toBeVisible();
+ const flip=library.locator('[data-effect-id="flip-card"]');await flip.scrollIntoViewIfNeeded();await flip.getByRole('button',{name:'查看背面'}).click();await expect(flip.getByText('把細節，說清楚')).toBeVisible();
  await flip.getByRole('button',{name:'查看正面'}).focus();await page.keyboard.press('Space');await expect(flip.getByText('從想法到作品')).toBeVisible();
- const fold=library.locator('[data-effect-id="fold-reveal"]');await fold.scrollIntoViewIfNeeded();await fold.getByRole('button',{name:'折頁切換'}).click();await expect(fold.getByText('下一層，藏著新想法。')).toBeVisible();
+ const fold=library.locator('[data-effect-id="fold-reveal"]');await fold.scrollIntoViewIfNeeded();await fold.getByRole('button',{name:'折頁切換'}).click();await expect(fold.getByText('下一層，藏著新想法')).toBeVisible();
  const physics=library.locator('[data-effect-id="physics-tag-field"]');await physics.scrollIntoViewIfNeeded();const canvas=physics.locator('canvas');await expect(canvas).toBeVisible();expect((await canvas.boundingBox())!.height).toBeCloseTo(180, 1);
  await physics.getByRole('button',{name:'拖曳標籤',exact:true}).click();await expect(canvas).toHaveCSS('touch-action','none');
  await expect.poll(()=>canvas.evaluate((el:HTMLCanvasElement)=>el.getContext('2d')!.getImageData(0,0,el.width,el.height).data.some((v,i)=>i%4===3&&v>0))).toBe(true);

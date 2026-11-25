@@ -29,7 +29,7 @@ function loadGoogle(): Promise<GoogleId> {
   });
   return gisLoading;
 }
-const signinNotes: Record<string, string> = { ok: "", failed: "登入沒有成功，請再試一次。", cancelled: "已取消登入。", busy: "試太多次了，請等一分鐘再試。", unavailable: "現在無法登入，請稍後再試。" };
+const signinNotes: Record<string, string> = { ok: "", failed: "登入沒有成功，請再試一次", cancelled: "已取消登入", busy: "試太多次了，請等一分鐘再試", unavailable: "現在無法登入，請稍後再試" };
 
 export function AccountButton() {
   const [me, setMe] = useState<Me | null>(null);
@@ -92,7 +92,7 @@ export function AccountButton() {
         slot.current.replaceChildren();
         g.accounts.id.renderButton(slot.current, { theme: "outline", size: "large", shape: "pill", text: "signin_with", locale: "zh-TW", width: 260 });
       })
-      .catch(() => live && setNote("連不到 Google，請檢查網路後再試。"));
+      .catch(() => live && setNote("連不到 Google，請檢查網路後再試"));
     return () => { live = false; };
   }, [open, me]);
   async function logout() {
@@ -120,13 +120,13 @@ export function AccountButton() {
           {user ? (
             <>
               <p className="account-who"><strong>{user.name}</strong>{user.email && <small>{user.email}</small>}<small>{user.provider === "github" ? "用 GitHub 登入" : "用 Google 登入"}</small></p>
-              <p className="account-help">你的作品還是存在這台裝置上。</p>
+              <p className="account-help">你的作品還是存在這台裝置上</p>
               <button type="button" className="account-logout" disabled={busy} onClick={() => void logout()}>登出</button>
             </>
           ) : (
             <>
               <h2>登入</h2>
-              <p className="account-help">{soon ? "登入功能即將開放，現在不用登入也能使用全部功能。" : "只會拿到你的名字和 Email。"}</p>
+              <p className="account-help">{soon ? "登入功能即將開放，現在不用登入也能使用全部功能" : "只會拿到你的名字和 Email"}</p>
               {soon && (
                 <div className="account-soon">
                   <button type="button" disabled>用 Google 登入（即將開放）</button>

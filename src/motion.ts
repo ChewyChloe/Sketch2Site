@@ -78,16 +78,16 @@ export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 
         return id === 'stagger-reveal' && !target.children?.length && target.type !== 'card' ? '依序顯示需要子元件' : null;
     const def = motionCatalog[id];
     if (!def.targetType.includes(target.type))
-        return '此效果不適用於目前元件。';
+        return '此效果不適用於目前元件';
     if (['stagger-reveal','focus-transfer','disclosure-panel','card-deck-fan','layered-parallax','grid-diagonal-turn'].includes(id) && !(target.children ? target.children.length >= 2 : target.type === 'card' && (target.content ?? '').split('\n').filter(s => s.trim()).length >= 2))
-        return '此效果需要至少兩個子元素；草稿卡片請填兩行內容。';
+        return '這個效果要有兩樣以上的內容，卡片請寫兩行';
     if(structuredGroupMotions.includes(id as typeof structuredGroupMotions[number])){
         const items=target.children,lines=(target.content??'').split('\n');const count=items?.length??lines.length;
-        if(count<(id==='card-stack-shuffle'?3:2)||count>5||items?.some(n=>!n||typeof n!=='object'||!('type' in n)||n.type!=='card')||!items&&lines.some(line=>!line.trim()))return '需要'+(id==='card-stack-shuffle'?'3':'2')+'至5張真實子卡片；草稿卡片每行代表一張卡片。';
+        if(count<(id==='card-stack-shuffle'?3:2)||count>5||items?.some(n=>!n||typeof n!=='object'||!('type' in n)||n.type!=='card')||!items&&lines.some(line=>!line.trim()))return '需要'+(id==='card-stack-shuffle'?'3':'2')+'至5張真實子卡片；草稿卡片每行代表一張卡片';
     }
-    if (id === 'numeric-gauge-sweep' && (!/^\s*(?:\d{1,3})(?:\.\d{1,4})?\s*[%％]?\s*$/.test(target.content ?? '') || !numericContent(target.content ?? '') || numericContent(target.content ?? '')!.endValue > 100)) return '儀表需使用0到100的真實數字或百分比。';
+    if (id === 'numeric-gauge-sweep' && (!/^\s*(?:\d{1,3})(?:\.\d{1,4})?\s*[%％]?\s*$/.test(target.content ?? '') || !numericContent(target.content ?? '') || numericContent(target.content ?? '')!.endValue > 100)) return '儀表需使用0到100的真實數字或百分比';
     if (id === 'count-up' && !numericContent(target.content ?? ''))
-        return '數字遞增只適用於既有數字內容。';
+        return '數字遞增只適用於既有數字內容';
     return null;
 }
 export function compatibleMotion(target: MotionTarget, e: MotionInstance): boolean {
@@ -106,28 +106,28 @@ export function compatibleMotion(target: MotionTarget, e: MotionInstance): boole
 export function combinationReason(effects: readonly Pick<MotionInstance, "presetId">[]): string | null {
     const ids = new Set(effects.map(e => e.presetId));
     if (ids.has('hover-glow') && ids.has('breathing-glow'))
-        return '光暈效果不可重複套用。';
+        return '光暈效果不可重複套用';
     if (ids.has('count-up') && ids.has('curved-path-text'))
-        return '數字與曲線文字不可同時套用。';
+        return '數字與曲線文字不可同時套用';
     if (['flip-card', 'physics-tag-field', 'fold-reveal','focus-transfer','disclosure-panel'].filter(id => ids.has(id as MotionId)).length > 1)
-        return '互動內容效果一次只能套用一種。';
+        return '互動內容效果一次只能套用一種';
     if (ids.has('physics-tag-field') && ids.has('stagger-reveal'))
-        return '物理標籤不能再套用逐項進場。';
+        return '物理標籤不能再套用逐項進場';
     if (['typewriter','marquee-text','gradient-text-flow','letter-assembly','accent-stroke','count-up','curved-path-text','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','kinetic-text-wave','numeric-gauge-sweep','text-morph-transition','elastic-word-bounce','text-spotlight-reveal','typographic-stretch'].filter(id=>ids.has(id as MotionId)).length>1)
-        return '文字呈現效果一次只能套用一種。';
+        return '文字呈現效果一次只能套用一種';
     if(ids.has('magnetic-control') && ['hover-lift','slide-up','press-feedback'].some(id=>ids.has(id as MotionId)))
-        return '磁吸回饋不能與其他位移或按壓效果重疊。';
+        return '磁吸按鈕不能和其他會移動或按壓的動畫一起用';
     const imageModes=['image-reveal','venetian-reveal','circular-mask-expansion','cinematic-image-pan','pixel-dissolve','shutter-lens-transition','glitch-slice-reveal','liquid-distortion-reveal','scroll-image-sequence'];
-    if(imageModes.filter(id=>ids.has(id as MotionId)).length>1)return '圖片動態一次只能使用一種，以保留完整遮罩與尺寸。';
-    if(ids.has('perspective-tilt')&&['hover-lift','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '透視傾斜不能與其他根節點位移效果重疊。';
+    if(imageModes.filter(id=>ids.has(id as MotionId)).length>1)return '一張圖片一次只能用一種圖片動畫';
+    if(ids.has('perspective-tilt')&&['hover-lift','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '透視傾斜不能和其他會移動位置的動畫一起用';
     const childrenModes=['card-deck-fan','layered-parallax','grid-diagonal-turn','stagger-reveal','focus-transfer','disclosure-panel','fold-reveal','flip-card','physics-tag-field'];
-    if(['card-deck-fan','layered-parallax','grid-diagonal-turn'].some(id=>ids.has(id as MotionId)) && childrenModes.filter(id=>ids.has(id as MotionId)).length>1)return '子項動態或互動內容一次只能使用一種。';
+    if(['card-deck-fan','layered-parallax','grid-diagonal-turn'].some(id=>ids.has(id as MotionId)) && childrenModes.filter(id=>ids.has(id as MotionId)).length>1)return '這類動畫一次只能用一種';
     const scene=effects.filter(e=>cinematicMotionIds.includes(e.presetId as typeof cinematicMotionIds[number]));
-    if(scene.length>1)return '第三批場景動態每個目標一次套用一種，避免遮罩或互動互相覆寫。';
-    if(scene.length&&['card-stack-shuffle','horizontal-scroll-gallery','sticky-section-morph','pinned-story-panels'].some(id=>ids.has(id as MotionId))&&effects.length>1)return '敘事群組必須獨立套用，避免改寫同一組子項。';
-    if(ids.has('spring-drag-snap')&&effects.length>1)return '拖曳吸附不可與其他位置效果同時套用。';
-    if(['float-idle','jelly-press'].some(id=>ids.has(id as MotionId))&&['hover-lift','slide-up','scale-in','perspective-tilt','magnetic-control','press-feedback','float-idle','jelly-press','blur-in'].filter(id=>ids.has(id as MotionId)).length>1)return '漂浮或彈跳不能與其他位移效果重疊。';
-    if(ids.has('blur-in')&&['fade-in','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '進場效果一次只能套用一種。';
+    if(scene.length>1)return '這類場景動畫一個元件只能用一種';
+    if(scene.length&&['card-stack-shuffle','horizontal-scroll-gallery','sticky-section-morph','pinned-story-panels'].some(id=>ids.has(id as MotionId))&&effects.length>1)return '這個效果不能和其他動畫一起用';
+    if(ids.has('spring-drag-snap')&&effects.length>1)return '拖曳吸附不可與其他位置效果同時套用';
+    if(['float-idle','jelly-press'].some(id=>ids.has(id as MotionId))&&['hover-lift','slide-up','scale-in','perspective-tilt','magnetic-control','press-feedback','float-idle','jelly-press','blur-in'].filter(id=>ids.has(id as MotionId)).length>1)return '漂浮或彈跳不能與其他位移效果重疊';
+    if(ids.has('blur-in')&&['fade-in','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '進場效果一次只能套用一種';
     return null;
 }
 /** Per-document resource limits, in addition to each preset's own bounds. */

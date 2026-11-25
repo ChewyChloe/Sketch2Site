@@ -88,7 +88,7 @@ it("deduplicates immutable images, verifies stored content hashes and rejects ta
 });
 it("enforces the count limit atomically and preserves valid existing images on failure", async () => {
   for (let i = 0; i < 10; i++) await storeAsset(png(i), 1, 1);
-  await expect(storeAsset(png(11), 1, 1)).rejects.toThrow("上限");
+  await expect(storeAsset(png(11), 1, 1)).rejects.toThrow("放滿 10 張");
   expect((await storeAsset(png(0), 1, 1)).ref).toMatch(/\.png$/);
   const native = IDBObjectStore.prototype.put,
     spy = vi
@@ -102,7 +102,7 @@ it("enforces the count limit atomically and preserves valid existing images on f
         return native.apply(this, args);
       });
   try {
-    await expect(storeAsset(png(0), 1, 1)).rejects.toThrow("儲存失敗");
+    await expect(storeAsset(png(0), 1, 1)).rejects.toThrow("沒存成功");
   } finally {
     spy.mockRestore();
   }

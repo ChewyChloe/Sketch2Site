@@ -158,7 +158,7 @@ test("配額失敗保留記憶體內容並可重試", async ({ page }) => {
   await edit(page, "配額不足時的內容");
   await expect(page.getByTestId("page-save-status")).toHaveText("儲存失敗");
   await expect(
-    page.getByText("儲存空間不足，修改仍保留在本頁。"),
+    page.getByText("儲存空間不足，修改仍保留在本頁"),
   ).toBeVisible();
   await expect(page.locator(".rendered-page h1")).toHaveText(
     "配額不足時的內容",
@@ -241,7 +241,7 @@ test("損毀資料不進 Renderer、不被範例覆蓋；確認後原子備份�
   );
   await page.reload();
   await openWebsiteWorkspace(page);
-  await expect(page.getByRole("alert")).toContainText("原始紀錄已保留");
+  await expect(page.getByRole("alert")).toContainText("重新開始");
   await expect(page.locator("[data-page-id]")).toHaveCount(0);
   expect(await disk(page)).toEqual(bad);
   await page.screenshot({
@@ -284,7 +284,7 @@ test("禁止 IndexedDB 時安全失敗且不顯示預設範例", async ({ page }
   });
   await page.goto("/");
   await openWebsiteWorkspace(page);
-  await expect(page.getByRole("alert")).toContainText("無法開啟本機儲存");
+  await expect(page.getByRole("alert")).toContainText("瀏覽器不讓網站存資料");
   await expect(page.locator("[data-page-id]")).toHaveCount(0);
 });
 test("關閉 Chromium 程序後使用同一隔離 profile 可恢復已保存頁面", async ({}, testInfo) => {

@@ -29,7 +29,7 @@ test("swap photos between frames by dragging, and smart crop", async ({ page }) 
   // Smart crop moves the focus and zooms a little; it is one undo step.
   await circle.click();
   await page.getByRole("button", { name: "自動對準重點" }).click();
-  await expect(page.getByText("已自動對準照片重點").first()).toBeVisible();
+  await expect(page.getByText("已對準照片重點").first()).toBeVisible();
   await expect(circle.locator(".page-frame-photo")).toHaveAttribute("style", /scale\(1\.15, 1\.15\)/);
   // Drag the circle's photo onto the empty heart: the photo moves into the heart.
   const before = (await circle.boundingBox())!, target = (await heart.boundingBox())!;

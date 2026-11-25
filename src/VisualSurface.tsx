@@ -272,7 +272,7 @@ export function VisualSurface({
       </svg>
       {mode === "pen" && visibleAnnotations.length < annotations.length && (
         <small className="annotation-status">
-          版面已變更，舊註記暫時隱藏。
+          版面已變更，舊註記暫時隱藏
         </small>
       )}
     </div>

@@ -127,7 +127,7 @@ describe("contact form", () => {
   const withEndpoint = (spec: CanvasSpec, href: string) => ({ ...spec, nodes: spec.nodes.map((n) => (n.type === "form" ? { ...n, href } : n)) });
   it("blocks generation until the form has an https endpoint", () => {
     const spec = templatedDraft("頁面", ["hero", "contact"]);
-    expect(() => createDemoCandidate(spec)).toThrow(/接收網址/);
+    expect(() => createDemoCandidate(spec)).toThrow(/收件網址/);
     expect(CanvasSchema.safeParse(withEndpoint(spec, "#" + spec.nodes[0].id)).success).toBe(false);
     expect(CanvasSchema.safeParse(withEndpoint(spec, "http://example.com/f")).success).toBe(false);
   });

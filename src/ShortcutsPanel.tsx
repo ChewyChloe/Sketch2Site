@@ -33,7 +33,7 @@ export function ShortcutsPanel({ onClose }: { onClose: () => void }) {
           <h2>快捷鍵</h2>
           <button type="button" aria-label="關閉快捷鍵說明" onClick={onClose}>×</button>
         </div>
-        <p>不用背，滑鼠一樣都做得到；想快一點再用鍵盤。</p>
+        <p>不用背，用滑鼠一樣做得到，想快一點再用鍵盤</p>
         <div className="shortcuts-grid">
           {groups.map(([title, items]) => (
             <section key={title}>

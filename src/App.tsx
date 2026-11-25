@@ -23,7 +23,7 @@ import { CopySuggest } from "./CopySuggest";
 import { textCss, type TextStyle } from "./pageSpec";
 import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {
   blank,
   canvasMaxHeight,
@@ -255,7 +255,7 @@ export default function App() {
     if (generating || abortRef.current || !ready || loadError) return;
     const target = previewRef.current?.target();
     if (!target) {
-      setGenerationError("請先套用或捨棄預覽中的修改，並完成頁面保存。");
+      setGenerationError("網站那邊還有沒套用的修改，請先套用或取消");
       return;
     }
     const version = canvasVersion.current,
@@ -294,18 +294,18 @@ export default function App() {
       report(
         result.mode !== "live"
           ? multiPage && !demo
-            ? `網站做好了，共 ${spec.metadata.pages!.length} 頁。`
+            ? `網站做好了，共 ${spec.metadata.pages!.length} 頁`
             : usedLocal && !demo
             ? "網站做好了！"
             : "網站做好了！"
-          : "AI 排好了，看看喜不喜歡。",
+          : "AI 排好了，看看喜不喜歡",
       );
       setCandidate({ result, canvasVersion: version, target, previewOnly, aiFallback: usedLocal && !demo });
       setMode("preview");
     } catch (e) {
       if (run === generationRun.current)
         setGenerationError(
-          e instanceof GenerationError ? e.message : "生成失敗，原版本已保留。",
+          e instanceof GenerationError ? e.message : "生成失敗，原版本已保留",
         );
     } finally {
       if (run === generationRun.current) {
@@ -347,7 +347,7 @@ export default function App() {
         setSyncSaves((n) => n + 1);
         setCandidate(null);
       } else
-        setGenerationError((result.error ?? "儲存失敗") + " 剛做好的網站還在，可以再按一次「使用此版本」。");
+        setGenerationError((result.error ?? "儲存失敗") + " 剛做好的網站還在，可以再按一次「使用此版本」");
     } finally {
       setAccepting(false);
     }
@@ -383,7 +383,7 @@ export default function App() {
       report("草稿已就緒");
     } catch {
       setLoadError(true);
-      report("無法讀取草稿。請允許網站儲存資料後，按「重新載入」重試。", true);
+      report("無法讀取草稿，請允許網站儲存資料後，按「重新載入」重試", true);
     } finally {
       setReady(true);
     }
@@ -397,7 +397,7 @@ export default function App() {
       setHistory((h) => commit(h, next));
       return true;
     } catch {
-      report("修改超出畫布範圍或資料限制，請調整後重試。", true);
+      report("這樣會超出畫布，請調整後再試", true);
       return false;
     }
   };
@@ -421,23 +421,23 @@ export default function App() {
     try {
       const asset = await importImage(file);
       if (canvasVersion.current !== originalVersion) {
-        setImageFeedback("草稿剛剛變了，請再選一次照片。");setImageError(true);
-        report("草稿剛剛變了，請再選一次照片。", true);
+        setImageFeedback("草稿剛剛變了，請再選一次照片");setImageError(true);
+        report("草稿剛剛變了，請再選一次照片", true);
         return;
       }
       if (id) {
         const now = state.current.present.nodes.find((n) => n.id === id);
         if (!now || now.assetId !== previous?.assetId) {
-          setImageFeedback("圖片已存於本機，但原元素已變更，請重新選取素材。");setImageError(true);
-          report("圖片已存於本機，但原元素已變更，請重新選取素材。", true);
+          setImageFeedback("照片存好了，但原本的位置變了，請再選一次");setImageError(true);
+          report("照片存好了，但原本的位置變了，請再選一次", true);
           return;
         }
         if(!patch(id, { assetId: asset.ref }))throw new Error("image patch rejected");
         setSelected(id);
       } else {
         if (state.current.present.nodes.length >= 100) {
-          setImageFeedback("草稿已達元素上限，圖片保留於本機素材。");setImageError(true);
-          report("草稿已達元素上限，圖片保留於本機素材。", true);
+          setImageFeedback("畫布上的東西已經滿了，照片先幫你存起來");setImageError(true);
+          report("畫布上的東西已經滿了，照片先幫你存起來", true);
           return;
         }
         let position={x:80,y:80};
@@ -486,7 +486,7 @@ export default function App() {
     if (change({ ...spec, nodes: [...spec.nodes, next] })) {
       setSelected(next.id);
       setTab("properties");
-      report(`已新增${frameLabels[frame]}相框：拖入照片，或按「放入照片」。`);
+      report(`已新增${frameLabels[frame]}相框：拖入照片，或按「放入照片」`);
     }
   }
   // Crop mode (double-click a framed photo): drag to move the photo, wheel or slider to zoom.
@@ -519,7 +519,7 @@ export default function App() {
   // ---- Projects (home workspace) ----
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null);
   const refreshProjects = async () => {
-    try { setProjects(await listProjects()); } catch { setProjects([]); report("無法讀取專案清單，請重新整理。", true); }
+    try { setProjects(await listProjects()); } catch { setProjects([]); report("無法讀取專案清單，請重新整理", true); }
   };
   useEffect(() => { if (mode === "home" && ready) void refreshProjects(); }, [mode, ready]);
   // Save the open draft (if changed) before any switch, then reload into the target project.
@@ -530,7 +530,7 @@ export default function App() {
       projectSwitch.reloading = true;
       location.reload();
     } catch (e) {
-      report(e instanceof Error ? e.message : "專案操作失敗，目前草稿已保留。", true);
+      report(e instanceof Error ? e.message : "專案操作失敗，目前草稿已保留", true);
       void refreshProjects();
     }
   }
@@ -545,34 +545,34 @@ export default function App() {
         await renameProject(id, name);
         if (projects?.find((p) => p.id === id)?.active && name.trim()) change({ ...state.current.present, metadata: { ...state.current.present.metadata, name: name.trim().slice(0, 80) } });
         await refreshProjects();
-      } catch (e) { report(e instanceof Error ? e.message : "改名失敗。", true); }
+      } catch (e) { report(e instanceof Error ? e.message : "改名失敗", true); }
     },
     duplicate: async (id: string) => {
       try {
         if (dirty && projects?.find((p) => p.id === id)?.active) await save();
         await duplicateProject(id);
         await refreshProjects();
-        report("已建立副本。");
-      } catch (e) { report(e instanceof Error ? e.message : "複製失敗。", true); }
+        report("已建立副本");
+      } catch (e) { report(e instanceof Error ? e.message : "複製失敗", true); }
     },
     remove: async (id: string) => {
       try {
         const wasActive = await deleteProject(id);
         if (wasActive) { projectSwitch.reloading = true; location.reload(); return; }
         await refreshProjects();
-        report("已刪除專案。");
-      } catch (e) { report(e instanceof Error ? e.message : "刪除失敗。", true); }
+        report("已刪除專案");
+      } catch (e) { report(e instanceof Error ? e.message : "刪除失敗", true); }
     },
   };
   function loadDemo(fixture: CanvasSpec) {
-    if (dirty && !window.confirm("載入範例會取代目前的草稿（可以按還原回來）。要繼續嗎？")) return false;
+    if (dirty && !window.confirm("載入範例會取代目前的草稿（可以按還原回來），要繼續嗎？")) return false;
     if (!change(fixture.metadata.layoutMode ? fixture : { ...fixture, metadata: { ...fixture.metadata, layoutMode: "reflow" } })) return false;
     setSelected(null);
     setPending(null);
     setMoving(null);
     drag.current = null;
     setCandidate(null);
-    report("已載入範例草稿，可以按還原回來。");
+    report("已載入範例草稿，可以按還原回來");
     return true;
   }
   // ---- Generation brief (fill-in description) ----
@@ -612,11 +612,11 @@ export default function App() {
   function addPage() {
     const s = state.current.present;
     const pages = s.metadata.pages ?? [{ id: crypto.randomUUID(), name: "首頁" }];
-    if (pages.length >= 10) { report("一個網站最多 10 頁。", true); return; }
+    if (pages.length >= 10) { report("一個網站最多 10 頁", true); return; }
     const id = crypto.randomUUID();
     if (change({ ...s, metadata: { ...s.metadata, pages: [...pages, { id, name: `第 ${pages.length + 1} 頁` }] } })) {
       setActivePage(id); setSelected(null);
-      report("已新增頁面，雙擊分頁名稱可以改名。");
+      report("已新增頁面，雙擊分頁名稱可以改名");
     }
   }
   function renamePage(id: string, name: string) {
@@ -644,14 +644,14 @@ export default function App() {
     const { pages: _old, ...metadata } = s.metadata;
     if (change({ ...s, metadata: single ? metadata : { ...metadata, pages: rest }, nodes })) {
       setActivePage(null); setSelected(null);
-      report("已刪除頁面與上面的元件，可還原。");
+      report("已刪除頁面與上面的元件，可還原");
     }
   }
   function addBlock(id: BlockTemplateId) {
     if (!ready || loadError) return;
     const block = createBlock({ ...spec, nodes: spec.nodes.filter((n) => onCurrentPage(n, spec)) }, id);
     if (!block) {
-      report("畫布已達上限，請先刪除部分元件。", true);
+      report("畫布已達上限，請先刪除部分元件", true);
       return;
     }
     const { height } = block;
@@ -662,7 +662,7 @@ export default function App() {
     nodes = nodes.map((n) => lively.nodes.find((m) => m.id === n.id) ?? n);
     if (change({ ...spec, metadata: { ...spec.metadata, height }, nodes: [...spec.nodes, ...nodes] })) {
       setSelected(nodes[0].id);
-      report("已新增區塊：" + blockTemplateInfo(id).label + "，點選文字即可修改。");
+      report("已新增區塊：" + blockTemplateInfo(id).label + "，點選文字即可修改");
       requestAnimationFrame(() => document.querySelector(`[data-node-id="${nodes[0].id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
     }
   }
@@ -672,29 +672,29 @@ export default function App() {
     const page = { ...spec, nodes: spec.nodes.filter((n) => onCurrentPage(n, spec)) };
     const next = remove ? stillDraft(page, ids) : enlivenDraft(page, undefined, ids);
     const touched = next.nodes.filter((n, i) => n !== page.nodes[i]).length;
-    if (!touched) return report(remove ? "沒有可移除的動態。" : "選取的元件都已有動態，或沒有適合的動態。");
+    if (!touched) return report(remove ? "沒有可移除的動態" : "選到的東西都已經有動畫，或沒有適合的動畫");
     const byId = new Map(next.nodes.map((n) => [n.id, n]));
     if (change({ ...spec, nodes: spec.nodes.map((n) => byId.get(n.id) ?? n) }))
-      report(remove ? `已移除 ${touched} 個元件的動態。` : `已替 ${touched} 個元件加上動態，可在右側個別調整。`);
+      report(remove ? `已移除 ${touched} 個元件的動態` : `已替 ${touched} 個元件加上動態，可在右側個別調整`);
   }
   function attach(effect: Effect, id: string, controls?:MotionControls) {
     const n = state.current.present.nodes.find((n) => n.id === id);
     if (!n) return;
     if (effect === "stagger-reveal" && n.type !== "card") {
-      report("依序顯示僅適用於卡片。", true);
+      report("依序顯示只能用在卡片上", true);
       return;
     }
     if (n.effects.some(e=>e.presetId===effect)) {
-      report("這個元件已經有這個動畫了。");
+      report("這個元件已經有這個動畫了");
       return;
     }
     if(targetReason(n,effect)){report(targetReason(n,effect)!,true);return;}
     const conflict=combinationReason([...n.effects,{presetId:effect}]);if(conflict){report(conflict,true);return;}
-    let motion; try {motion=createMotion(effect,id,controls??{});}catch{if(controls){report("請檢查動畫必填內容與數值範圍。",true);return;}setPending(effect);setTarget(id);setPendingControls({...defaultControls(effect),...(effect==="count-up"?(numericContent(n.content)??{}):{})});report("請填寫動畫內容與設定，再確認附加。",true);return;}
+    let motion; try {motion=createMotion(effect,id,controls??{});}catch{if(controls){report("動畫設定有地方沒填好，或數字超出範圍",true);return;}setPending(effect);setTarget(id);setPendingControls({...defaultControls(effect),...(effect==="count-up"?(numericContent(n.content)??{}):{})});report("先填好動畫需要的內容，再按「加上動畫」",true);return;}
     patch(id, { effects: [...n.effects, motion] });
     setSelected(id);
     setPending(null);
-    report("已加上「" + effects[effect] + "」，到「預覽」就能看到它動。");
+    report("已加上「" + effects[effect] + "」，到「預覽」就能看到它動");
   }
   async function save() {
     if (!ready || loadError) return;
@@ -714,7 +714,7 @@ export default function App() {
     } catch {
       savePending.current = null;
       report(
-        "儲存失敗，可能空間不足或被瀏覽器封鎖。草稿仍保留於工作區，請檢查後重試。",
+        "沒存成功，可能是瀏覽器空間不夠，草稿還在，請再試一次",
         true,
       );
     } finally {
@@ -725,22 +725,22 @@ export default function App() {
   function remove() {
     const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(!ids.length)return;
     const free=ids.filter(id=>!spec.nodes.find(n=>n.id===id)?.locked);
-    if(!free.length){report('元件已鎖定，先解鎖才能刪除。',true);return;}
-    if(change(deleteNodes(spec,free))){setSelected(null);report(free.length<ids.length?'已刪除未鎖定的元件；鎖定的元件保留。':'已刪除選取元件，可還原。');}
+    if(!free.length){report('元件已鎖定，先解鎖才能刪除',true);return;}
+    if(change(deleteNodes(spec,free))){setSelected(null);report(free.length<ids.length?'已刪除，鎖定的元件留著':'已刪除選取元件，可還原');}
   }
   const selection = () => (selectedIds.length ? selectedIds : selected ? [selected] : []);
   const layerWords: Record<LayerMove, string> = { front: "移到最上層", forward: "上移一層", backward: "下移一層", back: "移到最下層" };
   function layer(move: LayerMove) {
     const ids = selection();
-    if (ids.length && change(reorder(spec, ids, move))) report("已" + layerWords[move] + "，可還原。");
+    if (ids.length && change(reorder(spec, ids, move))) report("已" + layerWords[move] + "，可還原");
   }
   function align(mode: AlignMode) {
     const ids = selection();
-    if (ids.length && change(alignSelection(spec, ids, mode))) report(ids.length > 1 ? "已對齊選取的元件。" : "已對齊畫布。");
+    if (ids.length && change(alignSelection(spec, ids, mode))) report(ids.length > 1 ? "已對齊選取的元件" : "已對齊畫布");
   }
   function spread(axis: "h" | "v") {
     const ids = selection();
-    if (ids.length >= 3 && change(distribute(spec, ids, axis))) report(axis === "h" ? "已左右平均分配。" : "已上下平均分配。");
+    if (ids.length >= 3 && change(distribute(spec, ids, axis))) report(axis === "h" ? "已左右平均分配" : "已上下平均分配");
   }
   // ---- Text styling (text toolbar and shortcuts) ----
   const textTypes = ["heading", "text", "button", "card"];
@@ -812,16 +812,42 @@ export default function App() {
     document.fonts?.addEventListener?.("loadingdone", done);
     return () => { live = false; document.fonts?.removeEventListener?.("loadingdone", done); };
   }, []);
+  // The floating text toolbar sits right above the selected text (below it when there is no
+  // room), inside the visible canvas, so it never covers what you are editing.
+  const ttSlot = useRef<HTMLDivElement>(null);
+  const [ttPos, setTtPos] = useState<{ top: number; left: number } | null>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      const slot = ttSlot.current, bar = slot?.querySelector<HTMLElement>(".text-toolbar:not(.is-idle)");
+      const picked = [...document.querySelectorAll<HTMLElement>('[data-testid="canvas-node"].selected')];
+      if (!slot || !bar || !picked.length || window.innerWidth <= 760) { setTtPos((p) => (p ? null : p)); return; }
+      const s = slot.getBoundingClientRect(), view = canvasScroll.current?.getBoundingClientRect() ?? s;
+      const rects = picked.map((e) => e.getBoundingClientRect());
+      const top = Math.min(...rects.map((r) => r.top)), bottom = Math.max(...rects.map((r) => r.bottom));
+      const left = Math.min(...rects.map((r) => r.left)), right = Math.max(...rects.map((r) => r.right));
+      const h = bar.offsetHeight, w = bar.offsetWidth;
+      let y = top - h - 14;
+      if (y < view.top + 6) y = Math.min(bottom + 14, view.bottom - h - 6);
+      const x = Math.min(Math.max((left + right) / 2 - w / 2, view.left + 8), Math.max(view.left + 8, view.right - w - 8));
+      const next = { top: Math.round(y - s.top), left: Math.round(x - s.left) };
+      setTtPos((p) => (p && p.top === next.top && p.left === next.left ? p : next));
+    };
+    place();
+    const el = canvasScroll.current;
+    el?.addEventListener("scroll", place, { passive: true });
+    window.addEventListener("resize", place);
+    return () => { el?.removeEventListener("scroll", place); window.removeEventListener("resize", place); };
+  });
   const textFitKey = spec.nodes.filter((n) => textTypes.includes(n.type)).map((n) => `${n.id}:${n.width}:${n.height}:${n.content.length}:${JSON.stringify(n.textStyle ?? "")}`).join("|");
   useEffect(() => {
-    if (!ready || !fontsReady || editing || moving) return;
+    if (!ready || !fontsReady || editing || moving || generating || accepting) return;
     const t = window.setTimeout(() => {
       const present = state.current.present;
       const fitted = withFittedText(present, present.nodes.filter((n) => textTypes.includes(n.type) && n.type !== "button").map((n) => n.id));
       if (fitted !== present && CanvasSchema.safeParse(fitted).success) setHistory((h) => (h.present === present ? { ...h, present: fitted } : h));
     }, 250);
     return () => window.clearTimeout(t);
-  }, [textFitKey, ready, fontsReady, editing, moving, currentPage]);
+  }, [textFitKey, ready, fontsReady, editing, moving, currentPage, generating, accepting]);
   /** Applies a style change (or null = clear) to every selected text element, as one undo step. */
   function styleText(patch: Partial<TextStyle> | null, ids?: string[]) {
     const targets = ids ? spec.nodes.filter((n) => ids.includes(n.id)) : textTargets();
@@ -837,7 +863,7 @@ export default function App() {
     );
     const styled = { ...spec, nodes: spec.nodes.map((n) => next.get(n.id) ?? n) };
     const fitted = withFittedText(styled, [...next.keys()]);
-    if (change(fitted)) report((patch ? "已套用文字樣式" : "已清除文字樣式") + (fitted !== styled ? "，文字框已自動變高並把下方元件往下移" : "") + "，可還原。");
+    if (change(fitted)) report((patch ? "已套用文字樣式" : "已清除文字樣式") + (fitted !== styled ? "，文字框已自動變高並把下方元件往下移" : "") + "，可還原");
   }
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   // Single-key shortcuts only act on the canvas, so Tab still moves through buttons elsewhere.
@@ -847,7 +873,7 @@ export default function App() {
     const ids = selection();
     if (!ids.length) return;
     const r = toggleLock(spec, ids);
-    if (change(r.canvas)) report(r.locked ? "已鎖定：不會被拖動、改大小或刪除。" : "已解鎖。");
+    if (change(r.canvas)) report(r.locked ? "已鎖定，不能拖動、改大小或刪除" : "已解鎖");
   }
   // Resize handles (like a slide editor): corners and edges, Shift on a corner keeps the ratio.
   type Dir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
@@ -886,28 +912,28 @@ export default function App() {
   const [brush, setBrush] = useState(false);
   function copyFormat() {
     const n = state.current.present.nodes.find((v) => v.id === (selected ?? selectedIds[0]));
-    if (!n) { report("請先選取要複製格式的元件。", true); return false; }
+    if (!n) { report("請先選取要複製格式的元件", true); return false; }
     formatClip.current = formatOf(n);
-    report(`已複製格式：${Math.round(n.width)} × ${Math.round(n.height)}${n.effects.length ? `、${n.effects.length} 個動畫` : ""}。`);
+    report(`已複製格式：${Math.round(n.width)} × ${Math.round(n.height)}${n.effects.length ? `、${n.effects.length} 個動畫` : ""}`);
     return true;
   }
   function pasteFormat(ids: readonly string[]) {
-    if (!formatClip.current) { report("還沒有複製格式，先選取元件按 Ctrl/⌘＋Shift＋C。", true); return; }
-    if (!ids.length) { report("請先選取要套用格式的元件。", true); return; }
+    if (!formatClip.current) { report("還沒有複製格式，先選取元件按 Ctrl/⌘＋Shift＋C", true); return; }
+    if (!ids.length) { report("請先選取要套用格式的元件", true); return; }
     try {
       const result = applyFormat(state.current.present, ids, formatClip.current);
-      if (change(result.canvas)) report(`已套用格式到 ${ids.length} 個元件${result.skippedEffects ? `，${result.skippedEffects} 個動畫不適用此類型已略過` : ""}。`);
-    } catch { report("格式無法套用到這個元件。", true); }
+      if (change(result.canvas)) report(`已套用格式到 ${ids.length} 個元件${result.skippedEffects ? `，${result.skippedEffects} 個動畫不適用此類型已略過` : ""}`);
+    } catch { report("格式無法套用到這個元件", true); }
   }
   function copySelection(cut=false){
     const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(!ids.length)return;
     clipboard.current=encodeNodes(spec,ids);void navigator.clipboard?.writeText(clipboard.current).catch(()=>{});
-    if(cut)remove();else report(`已複製 ${ids.length} 個元件。`);
+    if(cut)remove();else report(`已複製 ${ids.length} 個元件`);
   }
   async function pasteSelection(){
     let value=clipboard.current;try{const text=await navigator.clipboard?.readText();if(text?.startsWith('Sketch2Site/CanvasNodes/v1:'))value=text;}catch{/* Internal clipboard remains available. */}
     const nodes=decodeNodes(value);if(!nodes.length)return;
-    const copies=cloneNodes(nodes,24,24,state.current.present.metadata.height);const available=new Set([...state.current.present.nodes,...copies].map(n=>n.id).concat((state.current.present.metadata.pages??[]).map(p=>p.id)));copies.forEach(n=>{if(n.href?.startsWith('#')&&!available.has(n.href.slice(1)))n.href=null;if(state.current.present.metadata.pages&&currentPage)n.pageId=currentPage;else delete n.pageId;});if(change({...state.current.present,nodes:[...state.current.present.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));report(`已貼上 ${copies.length} 個元件，可還原。`);}
+    const copies=cloneNodes(nodes,24,24,state.current.present.metadata.height);const available=new Set([...state.current.present.nodes,...copies].map(n=>n.id).concat((state.current.present.metadata.pages??[]).map(p=>p.id)));copies.forEach(n=>{if(n.href?.startsWith('#')&&!available.has(n.href.slice(1)))n.href=null;if(state.current.present.metadata.pages&&currentPage)n.pageId=currentPage;else delete n.pageId;});if(change({...state.current.present,nodes:[...state.current.present.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));report(`已貼上 ${copies.length} 個元件，可還原`);}
   }
   function duplicate(){const ids=selectedIds.length?selectedIds:selected?[selected]:[];const copies=cloneNodes(spec.nodes.filter(n=>ids.includes(n.id)),24,24,spec.metadata.height);if(!copies.length)return;if(change({...spec,nodes:[...spec.nodes,...copies]})){setPrimarySelected(copies[0].id);setSelectedIds(copies.map(n=>n.id));}}
   useEffect(() => {
@@ -944,9 +970,9 @@ export default function App() {
         else pasteFormat(selectedIds.length ? selectedIds : selected ? [selected] : []);
       } else if(mod&&['a','c','v','x','g'].includes(e.key.toLowerCase())){
         e.preventDefault();const k=e.key.toLowerCase();
-        if(k==='a'){const current=state.current.present.nodes.filter(n=>onCurrentPage(n));setSelectedIds(current.map(n=>n.id));setPrimarySelected(current[0]?.id??null);report(`已選取 ${current.length} 個元件。`);}
+        if(k==='a'){const current=state.current.present.nodes.filter(n=>onCurrentPage(n));setSelectedIds(current.map(n=>n.id));setPrimarySelected(current[0]?.id??null);report(`已選取 ${current.length} 個元件`);}
         if(k==='c')copySelection();if(k==='x')copySelection(true);if(k==='v')void pasteSelection();
-        if(k==='g'){const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(ids.length>=2||e.shiftKey){change(groupSelection(spec,ids,e.shiftKey));report(e.shiftKey?'已取消群組，可還原。':'已建立群組，可一起移動；Shift＋點選可多選。');}}
+        if(k==='g'){const ids=selectedIds.length?selectedIds:selected?[selected]:[];if(ids.length>=2||e.shiftKey){change(groupSelection(spec,ids,e.shiftKey));report(e.shiftKey?'已取消群組，可還原':'已組成群組，可以一起移動');}}
       } else if (mod && !e.shiftKey && ["b", "i", "u"].includes(e.key.toLowerCase()) && textTargets().length) {
         e.preventDefault();
         const key = ({ b: "bold", i: "italic", u: "underline" } as const)[e.key.toLowerCase() as "b" | "i" | "u"];
@@ -993,7 +1019,7 @@ export default function App() {
         e.preventDefault();
         remove();
       } else if (e.key === "Escape") {
-        if (brush) { setBrush(false); report("已取消格式刷。"); return; }
+        if (brush) { setBrush(false); report("已取消格式刷"); return; }
         setSelected(null);
         setPending(null);
       } else if (
@@ -1003,7 +1029,7 @@ export default function App() {
         e.preventDefault();
         const step=e.shiftKey?10:1;
         const movable=(selectedIds.length?selectedIds:[node.id]).filter(id=>!spec.nodes.find(n=>n.id===id)?.locked);
-        if(!movable.length){report('元件已鎖定，先解鎖才能移動。',true);return;}
+        if(!movable.length){report('元件已鎖定，先解鎖才能移動',true);return;}
         change(translateSelection(spec,movable,e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0,e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0));
       }
     };
@@ -1065,19 +1091,19 @@ export default function App() {
         }
       }
     } catch {
-      report("無法辨識拖曳內容，請從元件庫重試。", true);
+      report("這個拖不進來，請從左邊的素材再拖一次", true);
     }
   }
   function startEditing(n: CanvasNode) {
     if (!ready || loadError || disabled) return;
-    if (n.locked) { report("元件已鎖定，在右側「位置」解鎖後才能修改。"); return; }
+    if (n.locked) { report("元件已鎖定，在右側「位置」解鎖後才能修改"); return; }
     if (n.type === "image") {
       // Double-click a framed photo to adjust its crop; an empty frame asks for a photo.
       if (isPhoto(n)) {
         setPrimarySelected(n.id);
         setSelectedIds([n.id]);
         setCropping({ id: n.id, look: { ...(n.look ?? {}) } });
-        report("拖曳移動照片，滾輪或滑桿縮放；按「完成」或 Enter 套用，Esc 取消。");
+        report("拖曳照片調位置，用滾輪或滑桿縮放，按「完成」或 Enter 確定，Esc 取消");
         return;
       }
       imageTarget.current = n.id;
@@ -1098,14 +1124,14 @@ export default function App() {
     const single = n.type === "heading" || n.type === "button";
     const value = single ? editDraft.replace(/\n+/g, " ").trim() : editDraft;
     if ((single || n.type === "form") && !value.trim()) {
-      report(labels[n.type] + "不能是空白，已保留原文字。", true);
+      report(labels[n.type] + "不能是空白，已保留原文字", true);
       return;
     }
     const content = n.type === "button" ? value.slice(0, 120) : value.slice(0, 2000);
     const current = state.current.present;
     const typed = { ...current, nodes: current.nodes.map((v) => (v.id === id ? { ...v, content } : v)) };
     if (!change(withFittedText(typed, [id], { [id]: content })))
-      report("內容無法套用，已保留原文字。", true);
+      report("內容無法套用，已保留原文字", true);
   }
   function begin(e: React.PointerEvent, n: CanvasNode) {
     if (e.button !== 0 || !ready || loadError || editing === n.id) return;
@@ -1116,12 +1142,18 @@ export default function App() {
       e.stopPropagation(); setBrush(false); setSelected(n.id); pasteFormat([n.id]); return;
     }
     if(e.shiftKey){selectNode(n.id,true);return;}
-    const own=n.groupId?spec.nodes.filter(v=>v.groupId===n.groupId).map(v=>v.id):[n.id];
-    const multi=selectedIds.includes(n.id)&&selectedIds.some(id=>!own.includes(id));
+    const groupIds=n.groupId?spec.nodes.filter(v=>v.groupId===n.groupId).map(v=>v.id):[n.id];
+    // Like slide editors: the first press picks the whole group; once the group (or this one
+    // element) is already selected, pressing it again picks and drags just this element.
+    const alone=selectedIds.length===1&&selectedIds[0]===n.id;
+    const groupAlready=groupIds.length>1&&groupIds.every(id=>selectedIds.includes(id))&&selectedIds.length===groupIds.length;
+    const own=alone||groupAlready?[n.id]:groupIds;
+    const multi=selectedIds.includes(n.id)&&selectedIds.some(id=>!own.includes(id))&&!groupAlready;
     let ids=multi?selectedIds:own;
     setPrimarySelected(n.id);setSelectedIds(ids);
+    if(groupAlready)report('只選了這一個，可以單獨移動或修改');
     // Locked elements can be selected but not dragged.
-    if(n.locked){report('元件已鎖定，在右側「位置」解鎖後才能移動。');return;}
+    if(n.locked){report('元件已鎖定，在右側「位置」解鎖後才能移動');return;}
     ids=ids.filter(id=>!spec.nodes.find(v=>v.id===id)?.locked);
     let anchor=n;
     let copies:CanvasNode[]|undefined;
@@ -1131,13 +1163,10 @@ export default function App() {
       copies=cloneNodes(sources,0,0,spec.metadata.height);
       if(copies.length){
         anchor=copies[sources.findIndex(v=>v.id===n.id)]??copies[0];ids=copies.map(c=>c.id);
-        report('放開滑鼠就會放下複製的元件。');
+        report('放開滑鼠就會放下複製的元件');
       }else copies=undefined;
     }
-    // Like slide editors: the first click picks the whole group; clicking it again (without
-    // dragging) picks just the element under the pointer.
-    const groupAlready=own.length>1&&!multi&&own.every(id=>selectedIds.includes(id))&&selectedIds.length===own.length;
-    drag.current = { ids,node: anchor, copies, startX: e.clientX, startY: e.clientY, scale, collapseTo: e.altKey?undefined:multi?own:groupAlready?[n.id]:undefined };
+    drag.current = { ids,node: anchor, copies, startX: e.clientX, startY: e.clientY, scale, collapseTo: e.altKey?undefined:multi?own:undefined };
     e.currentTarget.setPointerCapture(e.pointerId);
   }
   function move(e: React.PointerEvent) {
@@ -1194,7 +1223,7 @@ export default function App() {
         const swapped = spec.nodes.map((n) =>
           n.id === a.id ? { ...n, assetId: b.assetId, content: b.content, ...(Object.keys(lookA).length ? { look: lookA } : {}) } :
           n.id === b.id ? { ...n, assetId: a.assetId, content: a.content, ...(Object.keys(lookB).length ? { look: lookB } : {}) } : n);
-        if (change({ ...spec, nodes: swapped })) report("已交換兩個相框的照片，可還原。");
+        if (change({ ...spec, nodes: swapped })) report("已交換兩個相框的照片，可還原");
       }
       drag.current = null;
       setMoving(null);
@@ -1205,11 +1234,11 @@ export default function App() {
     const copies=drag.current?.copies;
     if(moving&&drag.current&&copies){
       if(change(translateSelection({...spec,nodes:[...spec.nodes,...copies]},drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y))){
-        setPrimarySelected(drag.current.node.id);setSelectedIds(drag.current.ids);report(`已複製 ${copies.length} 個元件，可還原。`);
+        setPrimarySelected(drag.current.node.id);setSelectedIds(drag.current.ids);report(`已複製 ${copies.length} 個元件，可還原`);
       }
     }
     else if(moving&&drag.current)change(translateSelection(spec,drag.current.ids,moving.x-drag.current.node.x,moving.y-drag.current.node.y));
-    else if(drag.current?.collapseTo){setSelectedIds(drag.current.collapseTo);if(drag.current.collapseTo.length===1&&drag.current.ids.length>1)report('現在只選了這一個元件，可以單獨修改。');}
+    else if(drag.current?.collapseTo)setSelectedIds(drag.current.collapseTo);
     drag.current = null;
     setMoving(null);
     setGuides([]);
@@ -1242,7 +1271,7 @@ node ? (
                           hasPhoto={isPhoto(node)}
                           onChange={(look) => patch(node.id, { look })}
                           onPickPhoto={() => { imageTarget.current = node.id; imageInput.current?.click(); }}
-                          onClearPhoto={() => { patch(node.id, { assetId: localAssets[0], look: node.look ? { ...node.look, focusX: undefined, focusY: undefined, zoom: undefined } : undefined }); report("已清空相框，形狀保留。"); }}
+                          onClearPhoto={() => { patch(node.id, { assetId: localAssets[0], look: node.look ? { ...node.look, focusX: undefined, focusY: undefined, zoom: undefined } : undefined }); report("已清空相框，形狀保留"); }}
                           onCrop={() => setCropping({ id: node.id, look: { ...(node.look ?? {}) } })}
                           onSmartCrop={async () => {
                             const id = node.id, ref = node.assetId!;
@@ -1250,9 +1279,9 @@ node ? (
                               const f = await smartFocus(imageUrls[ref] || import.meta.env.BASE_URL + ref.slice(1));
                               const now = state.current.present.nodes.find((v) => v.id === id);
                               if (!now || now.assetId !== ref) return;
-                              if (patch(id, { look: { ...now.look, ...f, zoom: Math.max(now.look?.zoom ?? 1, 1.15) } })) report("已自動對準照片重點；不滿意可以雙擊再調整或還原。");
+                              if (patch(id, { look: { ...now.look, ...f, zoom: Math.max(now.look?.zoom ?? 1, 1.15) } })) report("已對準照片重點，不滿意就雙擊照片自己調");
                             } catch {
-                              report("這張照片無法自動分析，請雙擊手動調整。", true);
+                              report("這張照片無法自動分析，請雙擊手動調整", true);
                             }
                           }}
                         />
@@ -1277,7 +1306,7 @@ node ? (
                         onPick={(value) => {
                           const current = state.current.present;
                           const typed = { ...current, nodes: current.nodes.map((v) => (v.id === node.id ? { ...v, content: value } : v)) };
-                          if (change(withFittedText(typed, [node.id], { [node.id]: value }))) report("已換成 AI 建議的說法，不喜歡可以還原。");
+                          if (change(withFittedText(typed, [node.id], { [node.id]: value }))) report("已換成 AI 建議的說法，不喜歡可以還原");
                         }}
                       />
                     )}
@@ -1312,7 +1341,7 @@ node ? (
                           {importingImage ? "正在匯入圖片…" : "替換圖片"}
                         </button>
                         <p className="note">
-                          PNG 或 JPEG，每張最多 5 MB。也可以直接把照片拖到相框上。
+                          PNG 或 JPEG，每張最多 5 MB，也可以直接把照片拖到相框上
                         </p>
                       </div>
                     )}
@@ -1326,9 +1355,9 @@ node ? (
                           onChange={(e) => {setLinkDraft(e.target.value);setLinkError("");}}
                           onBlur={() => {
                             if (!patch(node.id, { href: linkDraft.trim() || null })) {
-                              setLinkError("請使用有效的公開 HTTPS 網址或本頁元素連結。輸入已保留，尚未套用。");
-                              report("連結尚未套用，請修正網址。", true);
-                            } else {setLinkError("");if(linkError)report("連結已更新，草稿尚未儲存。");}
+                              setLinkError("這個網址不能用，請貼 https:// 開頭的網址，或選頁面裡的位置");
+                              report("連結尚未套用，請修正網址", true);
+                            } else {setLinkError("");if(linkError)report("連結已更新，草稿尚未儲存");}
                           }}
                           aria-invalid={Boolean(linkError)}
                           aria-describedby={linkError?"draft-link-error":undefined}
@@ -1337,7 +1366,7 @@ node ? (
                           }}
                         />
                         {linkError && <small id="draft-link-error" role="alert">{linkError}</small>}
-                        <small>支援公開 HTTPS 網址或頁面中的元素連結。</small>
+                        <small>可以貼 https:// 開頭的網址，或連到頁面裡的位置</small>
                       </label>
                     )}
                     {node.type === "button" && pagesList && (
@@ -1348,7 +1377,7 @@ node ? (
                           value={pagesList.some((p) => "#" + p.id === node.href) ? node.href! : ""}
                           onChange={(e) => {
                             if (!e.target.value) return;
-                            if (patch(node.id, { href: e.target.value })) { setLinkDraft(e.target.value); setLinkError(""); report("按鈕會切換到「" + pagesList.find((p) => "#" + p.id === e.target.value)?.name + "」。"); }
+                            if (patch(node.id, { href: e.target.value })) { setLinkDraft(e.target.value); setLinkError(""); report("按鈕會切換到「" + pagesList.find((p) => "#" + p.id === e.target.value)?.name + "」"); }
                           }}
                         >
                           <option value="">選擇網站中的頁面…</option>
@@ -1366,9 +1395,9 @@ node ? (
                           onChange={(e) => {setLinkDraft(e.target.value);setLinkError("");}}
                           onBlur={() => {
                             if (!patch(node.id, { href: linkDraft.trim() || null })) {
-                              setLinkError("請貼上有效的公開 HTTPS 接收網址。輸入已保留，尚未套用。");
-                              report("接收網址尚未套用，請修正。", true);
-                            } else {setLinkError("");if(linkError)report("接收網址已更新，草稿尚未儲存。");}
+                              setLinkError("這個網址不能用，請貼 https:// 開頭的收件網址");
+                              report("接收網址尚未套用，請修正", true);
+                            } else {setLinkError("");if(linkError)report("接收網址已更新，草稿尚未儲存");}
                           }}
                           aria-invalid={Boolean(linkError)}
                           aria-describedby={linkError?"draft-form-error":undefined}
@@ -1377,7 +1406,7 @@ node ? (
                           }}
                         />
                         {linkError && <small id="draft-form-error" role="alert">{linkError}</small>}
-                        <small>在 Formspree 等服務建立表單後，貼上它提供的網址。內容欄每行是一個欄位。</small>
+                        <small>在 Formspree 等服務建立表單後，貼上它提供的網址，內容欄每行是一個欄位</small>
                       </label>
                     )}
                     <h3 className="property-section-title">位置與尺寸</h3>
@@ -1429,7 +1458,7 @@ node ? (
                         </div>
                       ))
                     ) : (
-                      <p className="note">尚未附加動畫效果。</p>
+                      <p className="note">尚未附加動畫效果</p>
                     )}
                     <div className="field">
                       <button onClick={duplicate}>複製元件</button>
@@ -1440,7 +1469,7 @@ node ? (
                   <>{arrange}</>
                 ) : (
                   <p className="note">
-                    點一下畫布上的東西，就能在這裡改內容、位置和動畫。
+                    點一下畫布上的東西，就能在這裡改內容、位置和動畫
                   </p>
                 )
   );
@@ -1507,7 +1536,7 @@ node ? (
                 if(mode==="draft"&&spec.nodes.length&&!generating&&!spec.metadata.siteBuiltFrom){
                   if(!previewRef.current?.target()){setMode("preview");return;}
                   const missing=spec.nodes.find(n=>n.type==="button"&&!n.href);
-                  if(missing){setSelected(missing.id);setTab("properties");setPanel(true);setGenerationError("請先為「"+missing.content+"」設定按鈕連結，再預覽。");return;}
+                  if(missing){setSelected(missing.id);setTab("properties");setPanel(true);setGenerationError("請先為「"+missing.content+"」設定按鈕連結，再預覽");return;}
                   void generate(true,true);
                 }else setMode("preview");
               }}
@@ -1528,7 +1557,7 @@ node ? (
           )}
           {/* Secondary actions: inline on desktop, one swipeable row on phones. */}
           <div className="secondary-actions">
-          {mode === "draft" && <label className="layout-choice" title="智慧排版：自動整理成首屏、特色、價目表等區塊；保留草稿位置：維持相對位置，手機單欄"><select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="reflow">智慧排版</option><option value="preserve">保留草稿位置</option></select></label>}
+          {mode === "draft" && <label className="layout-choice" title="智慧排版會整理成首屏、特色、價目表，保留草稿位置會照你擺的位置排"><select aria-label="生成布局" value={spec.metadata.layoutMode??'preserve'} disabled={generating} onChange={e=>change({...spec,metadata:{...spec.metadata,layoutMode:e.target.value as 'preserve'|'reflow'}})}><option value="reflow">智慧排版</option><option value="preserve">保留草稿位置</option></select></label>}
           {mode === "draft" && (
             <button
               className={"describe-site brand-button" + (spec.metadata.brand ? " has-brief" : "")}
@@ -1600,7 +1629,7 @@ node ? (
                     if (
                       !dirty ||
                       window.confirm(
-                        "尚有未儲存的修改，重新載入會捨棄這些修改。是否繼續？",
+                        "尚有未儲存的修改，重新載入會捨棄這些修改，是否繼續？",
                       )
                     )
                       void restore();
@@ -1624,7 +1653,7 @@ node ? (
           onChange={(brand) => {
             const { brand: _old, ...meta } = state.current.present.metadata;
             void _old;
-            if (change({ ...state.current.present, metadata: brand ? { ...meta, brand } : meta })) report("已更新品牌設定，生成網站時會套用，可還原。");
+            if (change({ ...state.current.present, metadata: brand ? { ...meta, brand } : meta })) report("已更新品牌設定，生成網站時會套用，可還原");
           }}
           onImportLogo={async (file) => {
             try {
@@ -1644,7 +1673,7 @@ node ? (
           onClose={(brief) => { saveBrief(brief); setBriefOpen(false); }}
           onGenerate={(brief) => {
             setBriefOpen(false);
-            if (!spec.nodes.length) { saveBrief(brief); report("先在畫布放一些內容，再生成網站。", true); return; }
+            if (!spec.nodes.length) { saveBrief(brief); report("先在畫布放一些內容，再生成網站", true); return; }
             saveBrief(brief);
             setPendingGenerate(true);
           }}
@@ -1657,7 +1686,7 @@ node ? (
       )}
       {generating && (
         <p className="generation-notice" role="status">
-          正在生成，可繼續編輯；變更草稿後需重新生成。
+          正在生成，可繼續編輯；變更草稿後需重新生成
         </p>
       )}
       <input
@@ -1680,9 +1709,9 @@ node ? (
         >
           {siteOutdated(spec) && !generating && (
             <div className="site-update-bar" role="status">
-              <span>草稿有新的變更，網站還沒更新。</span>
+              <span>草稿有新的變更，網站還沒更新</span>
               <button type="button" className="primary" onClick={() => void generate()}>更新網站</button>
-              <small>你在網站上的修改會保留。</small>
+              <small>你在網站上的修改會保留</small>
             </div>
           )}
           <Preview ref={previewRef} onSiteChange={syncFromSite} />
@@ -1760,7 +1789,7 @@ node ? (
                     title="格式刷：複製選取元件的尺寸與動畫，再點一下要套用的元件（Esc 取消）"
                     onClick={() => {
                       if (brush) { setBrush(false); return; }
-                      if (copyFormat()) { setBrush(true); report("格式刷已開啟：點一下要套用格式的元件。"); }
+                      if (copyFormat()) { setBrush(true); report("格式刷已開啟：點一下要套用格式的元件"); }
                     }}
                   >
                     格式刷
@@ -1773,19 +1802,11 @@ node ? (
                   </button>
                 </div>
               </div>
-              <div className="text-toolbar-slot">{(() => {
+              <div ref={ttSlot} className={"text-toolbar-slot" + (ttPos ? " is-placed" : "") + (moving ? " is-moving" : "")} style={ttPos ? ({ "--tt-top": ttPos.top + "px", "--tt-left": ttPos.left + "px" } as CSSProperties) : undefined}>{(() => {
                 const targets = textTargets();
-                // The row is always there (no jumping canvas); without text selected it explains itself.
-                if (!targets.length || cropping)
-                  return (
-                    <div className="text-toolbar is-idle" role="note">
-                      {cropping
-                        ? "拖曳移動照片、滾輪縮放，按「完成」套用。"
-                        : selectedNodes.some((n) => n.type === "image")
-                          ? "圖片：右側可以換相框、濾鏡；雙擊照片可以調整裁切。"
-                          : "點一下文字，這裡就能改字型、大小、顏色和粗體。"}
-                    </div>
-                  );
+                // Floats over the canvas only while text is selected (or a photo is being cropped).
+                if (cropping) return <div className="text-toolbar is-idle" role="note">拖曳移動照片、滾輪縮放，按「完成」套用</div>;
+                if (!targets.length) return null;
                 const first = targets[0];
                 return (
                   <TextToolbar
@@ -1829,14 +1850,14 @@ node ? (
                 className="canvas-scroll"
                 style={{ "--draft-scale": scale } as React.CSSProperties}
               >
-                {draftEffect && <span className="draft-drop-hint" role="status">{draftHover && spec.nodes.find(n=>n.id===draftHover) ? (draftDropReason(spec.nodes.find(n=>n.id===draftHover)!,draftEffect) ?? "放開以附加動畫") : "拖到綠框元件以附加動畫；不會新增元件"}</span>}
+                {draftEffect && <span className="draft-drop-hint" role="status">{draftHover && spec.nodes.find(n=>n.id===draftHover) ? (draftDropReason(spec.nodes.find(n=>n.id===draftHover)!,draftEffect) ?? "放開以附加動畫") : "拖到有綠框的東西上就能加動畫"}</span>}
                 <div
                   className="canvas-wrap"
                   style={{ width: 1440 * scale, height: spec.metadata.height * scale }}
                 >
                   <div
                     ref={board}
-                    className={"canvas" + (brush ? " brush-active" : "")}
+                    className={"canvas" + (brush ? " brush-active" : "") + (scale < 0.45 ? " is-tiny" : "")}
                     data-testid="canvas"
                     aria-label="草稿畫布"
                     style={{
@@ -1877,7 +1898,7 @@ node ? (
                       if (!ids.length) return;
                       setSelectedIds((prev) => (marquee.additive ? [...new Set([...prev, ...ids])] : ids));
                       setPrimarySelected(ids[0]);
-                      report(ids.length > 1 ? `已選取 ${ids.length} 個元件，按 Ctrl/⌘＋G 建立群組。` : "已選取 1 個元件。");
+                      report(ids.length > 1 ? `已選取 ${ids.length} 個元件，按 Ctrl/⌘＋G 建立群組` : "已選取 1 個元件");
                     }}
                     onPointerCancel={() => setMarquee(null)}
                   >
@@ -1914,7 +1935,7 @@ node ? (
                             <span className="kao" aria-hidden="true">٩(ˊᗜˋ)و</span>從範本開始
                           </button>
                         </div>
-                        <small>也可以從左邊把東西拖進來。</small>
+                        <small>也可以從左邊把東西拖進來</small>
                       </div>
                     )}
                     {displayedNodes.map((n) => {
@@ -2042,7 +2063,7 @@ node ? (
                           !imageUrls[n.assetId!] ? (
                             <span>
                               {imageUrls[n.assetId!] === null
-                                ? "找不到本機圖片，請重新匯入。"
+                                ? "找不到本機圖片，請重新匯入"
                                 : "正在載入圖片…"}
                             </span>
                           ) : n.type === "image" && (n.assetId === localAssets[0] || brokenImages.has(n.id + n.assetId)) ? (
@@ -2213,12 +2234,12 @@ node ? (
                         t.toLowerCase().includes(search.toLowerCase()),
                       ) && (
                         <p className="note">
-                          找不到符合的元件或動畫，請換個關鍵字。
+                          找不到符合的元件或動畫，請換個關鍵字
                         </p>
                       )}
                     <div className="library">
                       <p className="library-intro">
-                        拖曳到畫布，或點一下新增。
+                        拖曳到畫布，或點一下新增
                       </p>
                       <button
                         className="import-image"

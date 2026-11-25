@@ -33,35 +33,35 @@ export const generationCodes = [
 ] as const;
 export type GenerationCode = (typeof generationCodes)[number];
 export const generationMessages: Record<GenerationCode, string> = {
-  NOT_CONFIGURED: "AI 尚未設定，可在草稿選單使用智慧排版。",
-  INVALID_INPUT: "草稿無法生成：請檢查元素、按鈕連結與設計限制。",
-  INVALID_OUTPUT: "生成失敗：結果未符合頁面或內容規則，原版本已保留。",
-  REFUSED: "模型未提供布局，原版本已保留。",
-  INCOMPLETE: "生成結果不完整，請縮小草稿後重試。",
-  TIMEOUT: "生成逾時，請稍後重新發起。",
-  BUSY: "已有生成正在進行，請稍後再試。",
-  LIMIT: "已達生成用量上限，請檢查後端額度設定。",
-  OWNER_REQUIRED: "請使用正式擁有者帳號登入私人網站。",
-  ORIGIN_INVALID: "請從原本的私人網站操作，請求來源不符。",
-  CSRF_INVALID: "安全驗證失敗（CSRF_INVALID），請停止測試並回報。",
-  VERSION_MISMATCH: "網站前後端版本尚未同步，請完整重新載入；未送出生成。",
-  DRAFT_APPROVAL_INVALID: "草稿已變更或核准已過期，未送出AI生成；請重新核對目前草稿。",
-  DRAFT_HASH_MISMATCH: "草稿不符（DRAFT_HASH_MISMATCH）：目前草稿超出已核准的測試範圍，請使用「載入核准測試草稿（免費）」。",
-  FORBIDDEN: "無法驗證生成請求，請重新整理後重試。",
-  DUPLICATE: "這次生成請求已處理，請重新發起。",
-  UNAVAILABLE: "無法連線至生成服務，原版本已保留；可在草稿選單使用智慧排版。",
-  STALE: "草稿或頁面已更新，請重新生成。",
+  NOT_CONFIGURED: "現在用不了 AI，可以先用智慧排版",
+  INVALID_INPUT: "這份草稿還不能生成，請檢查按鈕連結和內容",
+  INVALID_OUTPUT: "這次沒有生成成功，原本的版本還在",
+  REFUSED: "這次沒有生成成功，原本的版本還在",
+  INCOMPLETE: "草稿太大了，請刪掉一些內容再試",
+  TIMEOUT: "等太久了，請稍後再試",
+  BUSY: "正在生成中，請等一下",
+  LIMIT: "今天的生成次數用完了",
+  OWNER_REQUIRED: "請先登入再使用 AI",
+  ORIGIN_INVALID: "請從這個網站本身操作",
+  CSRF_INVALID: "安全檢查沒有通過，請重新整理頁面",
+  VERSION_MISMATCH: "網站剛更新，請重新整理頁面",
+  DRAFT_APPROVAL_INVALID: "草稿剛剛變了，請再按一次生成",
+  DRAFT_HASH_MISMATCH: "這份草稿現在不能用 AI 生成，可以先用智慧排版",
+  FORBIDDEN: "請重新整理頁面再試",
+  DUPLICATE: "請再按一次生成",
+  UNAVAILABLE: "連不上 AI，可以先用智慧排版",
+  STALE: "草稿或頁面已更新，請重新生成",
 };
 export class GenerationError extends Error {
   code: GenerationCode;
   constructor(code: GenerationCode, reason?: "BUTTON_LINK" | "GROUP_EFFECT" | "FORM_ENDPOINT") {
     super(
       reason === "BUTTON_LINK"
-        ? "請先設定每個按鈕的有效連結。"
+        ? "請先設定每個按鈕的有效連結"
         : reason === "FORM_ENDPOINT"
-        ? "請先為表單設定接收網址（例如 Formspree 的 https 網址）。"
+        ? "請先幫表單填收件網址（例如 Formspree 的 https 網址）"
         : reason === "GROUP_EFFECT"
-          ? "依序出現動畫目前只能附加至卡片。"
+          ? "依序顯示只能用在卡片上"
           : generationMessages[code],
     );
     this.code = code;

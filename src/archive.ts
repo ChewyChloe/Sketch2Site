@@ -5,7 +5,7 @@ const crcTable = Uint32Array.from({length:256},(_,i)=>{let value=i;for(let n=0;n
 export function crc32(bytes: Uint8Array) { let crc=0xffffffff;for(const byte of bytes)crc=(crc>>>8)^crcTable[(crc^byte)&255];return (crc^0xffffffff)>>>0; }
 export function zipProject(files: readonly ProjectFile[]): ArrayBuffer {
   if (!files.length || files.length > 100)
-    throw new Error("匯出檔案數量無效。");
+    throw new Error("匯出檔案數量無效");
   const seen = new Set<string>();
   let offset = 0;
   const local: Uint8Array[] = [],
@@ -17,7 +17,7 @@ export function zipProject(files: readonly ProjectFile[]): ArrayBuffer {
       file.path.split("/").some((p) => !p || p === "." || p === "..") ||
       seen.has(file.path)
     )
-      throw new Error("匯出路徑無效。");
+      throw new Error("匯出路徑無效");
     seen.add(file.path);
     const name = encoder.encode(file.path),
       data =
@@ -29,7 +29,7 @@ export function zipProject(files: readonly ProjectFile[]): ArrayBuffer {
       data.length > 24 * 1024 * 1024 ||
       offset + data.length > 32 * 1024 * 1024
     )
-      throw new Error("匯出檔案超過容量限制。");
+      throw new Error("匯出檔案超過容量限制");
     const header = new Uint8Array(30 + name.length),
       h = new DataView(header.buffer);
     h.setUint32(0, 0x04034b50, true);

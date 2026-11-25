@@ -37,7 +37,7 @@ export function StoryGroup({ effect, children, demo=false }: {
   <div ref={ref} className="story-viewport" tabIndex={0} aria-label="敘事捲動區域" style={simple ? undefined : { height }}>
    {simple ? <div className={effect.presetId === 'horizontal-scroll-gallery' ? 'story-native-gallery' : 'story-vertical'}>{parts}</div> : <div className="story-range" style={{ height: height * Math.max(2, parts.length) * motionNumber(effect, 'travel', 1) }}><div className="story-pin" style={{ height }}><div ref={track} className={'story-track ' + (effect.presetId === 'pinned-story-panels' ? 'story-panels' : '')} style={{ '--story-transition': `${motionNumber(effect, 'transitionMs', 220)}ms` } as React.CSSProperties}>{parts.map((child, i) => <div className="story-panel" key={i} aria-hidden={effect.presetId === 'pinned-story-panels' && scene !== i ? true : undefined} inert={effect.presetId === 'pinned-story-panels' && scene !== i} data-active={scene === i}>{child}</div>)}</div></div></div>}
   </div>
-  {!simple && <small className="story-step">{effect.presetId === 'pinned-story-panels' ? `分鏡 ${scene + 1} / ${parts.length}` : '在此區塊內捲動；不攔截全頁捲動'}</small>}
+  {!simple && <small className="story-step">{effect.presetId === 'pinned-story-panels' ? `分鏡 ${scene + 1} / ${parts.length}` : '在這個區塊裡捲動'}</small>}
  </div>;
 }
 export function CardShuffle({ effect, children }: {
@@ -85,5 +85,5 @@ export function FrameSequence({ effect, original, alt, urls }: {
         images.push(image);
     } return () => images.forEach(img => { img.onload = null; img.onerror = null; img.removeAttribute('src'); }); }, [index, effect, urls]);
     return <div className="cin-sequence"><label>影格 {index + 1} / {frames.length}<input aria-label="序列影格進度" type="range" min="0" max="100" value={Math.round((reduced?0:p) * 100)} disabled={reduced} onChange={e => { const value = Number(e.target.value) / 100; setP(value); if (ref.current)
-        ref.current.scrollTop = value * (ref.current.scrollHeight - ref.current.clientHeight); }}/></label><div ref={ref} className="sequence-scroll" style={{ height }} tabIndex={0} aria-label="圖片序列捲動區域"><div style={{ height: reduced ? height : height * 3 }}><div className="sequence-pin" style={{ height }}>{src ? <img src={src} alt={alt} onError={() => setFailed(old => new Set([...old, index]))}/> : <span role="status">圖片尚未就緒，請重新選擇素材。</span>}</div></div></div>{(failed.has(index) || !selected) && src && <small role="status">此影格無法載入，顯示原始圖片。</small>}</div>;
+        ref.current.scrollTop = value * (ref.current.scrollHeight - ref.current.clientHeight); }}/></label><div ref={ref} className="sequence-scroll" style={{ height }} tabIndex={0} aria-label="圖片序列捲動區域"><div style={{ height: reduced ? height : height * 3 }}><div className="sequence-pin" style={{ height }}>{src ? <img src={src} alt={alt} onError={() => setFailed(old => new Set([...old, index]))}/> : <span role="status">圖片尚未就緒，請重新選擇素材，</span>}</div></div></div>{(failed.has(index) || !selected) && src && <small role="status">此影格無法載入，顯示原始圖片</small>}</div>;
 }

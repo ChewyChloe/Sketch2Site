@@ -41,7 +41,7 @@ export function FrameControls({ look, hasPhoto, onChange, onPickPhoto, onClearPh
       <div className="frame-actions">
         <button type="button" className={hasPhoto ? undefined : "frame-primary"} onClick={onPickPhoto}>{hasPhoto ? "換照片" : "放入照片"}</button>
         <button type="button" disabled={!hasPhoto} onClick={onCrop} title="也可以雙擊圖片">調整裁切</button>
-        <button type="button" disabled={!hasPhoto} onClick={onSmartCrop} title="依照片細節估計重點，自動移到畫面中">自動對準重點</button>
+        <button type="button" disabled={!hasPhoto} onClick={onSmartCrop} title="找出照片的重點，移到畫面中間">自動對準重點</button>
         <button type="button" disabled={!hasPhoto} onClick={onClearPhoto}>清空相框</button>
       </div>
       <fieldset className="frame-picker">

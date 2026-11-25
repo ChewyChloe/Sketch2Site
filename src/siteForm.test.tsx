@@ -30,7 +30,7 @@ describe("site form", () => {
     expect(screen.getByLabelText("Email")).toHaveAttribute("type", "email");
     expect(screen.getByLabelText("訊息").tagName).toBe("TEXTAREA");
     fill();
-    await waitFor(() => expect(screen.getByText("已送出，謝謝你的留言。")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("已送出，謝謝你的留言")).toBeInTheDocument());
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://formspree.io/f/abc123");
     expect((init.body as FormData).get("Email")).toBe("a@b.co");
@@ -39,14 +39,14 @@ describe("site form", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
     render(<PageRuntime input={contactPage()} />);
     fill();
-    await waitFor(() => expect(screen.getByText("送出失敗，請稍後再試。")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("送出失敗，請稍後再試")).toBeInTheDocument());
   });
   it("never sends from the editor preview", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     render(<PageRenderer input={contactPage()} />);
     fill();
-    await waitFor(() => expect(screen.getByText(/預覽中不會送出/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/預覽時不會真的送出/)).toBeInTheDocument());
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -127,7 +127,7 @@ export async function openProject(id: string) {
   return withStores("readwrite", async (s) => {
     const { index, active } = await ensureIndex(s);
     if (id === active) return;
-    if (!index.some((p) => p.id === id)) throw new Error("找不到這個專案。");
+    if (!index.some((p) => p.id === id)) throw new Error("找不到這個專案");
     await activate(s, index, active, id);
     s.drafts.put(touch(touch(index, active), id), INDEX_KEY);
   });
@@ -136,7 +136,7 @@ export async function openProject(id: string) {
 export async function createProject(name = "未命名草稿", from?: CanvasSpec) {
   return withStores("readwrite", async (s) => {
     const { index, active } = await ensureIndex(s);
-    if (index.length >= maxProjects) throw new Error(`最多 ${maxProjects} 個專案，請先刪除不需要的專案。`);
+    if (index.length >= maxProjects) throw new Error(`最多 ${maxProjects} 個專案，請先刪除不需要的專案`);
     const id = crypto.randomUUID(), at = now();
     const draft = CanvasSchema.parse(from ? { ...from, metadata: { ...from.metadata, name: name.slice(0, 80), layoutMode: from.metadata.layoutMode ?? "reflow" } } : freshDraft(name.slice(0, 80)));
     await activate(s, index, active, id, { draft, page: null });
@@ -148,7 +148,7 @@ export async function createProject(name = "未命名草稿", from?: CanvasSpec)
 export async function duplicateProject(id: string) {
   return withStores("readwrite", async (s) => {
     const { index, active } = await ensureIndex(s);
-    if (index.length >= maxProjects) throw new Error(`最多 ${maxProjects} 個專案，請先刪除不需要的專案。`);
+    if (index.length >= maxProjects) throw new Error(`最多 ${maxProjects} 個專案，請先刪除不需要的專案`);
     const source = id === active ? await activeSnapshot(s) : ParkedSchema.parse(await req(s.drafts.get(recordKey(id))));
     const copy = crypto.randomUUID(), at = now();
     const name = (source.draft.metadata.name + " 副本").slice(0, 80);
@@ -160,7 +160,7 @@ export async function duplicateProject(id: string) {
 
 export async function renameProject(id: string, name: string) {
   const clean = name.trim().slice(0, 80);
-  if (!clean) throw new Error("專案名稱不能空白。");
+  if (!clean) throw new Error("專案名稱不能空白");
   return withStores("readwrite", async (s) => {
     const { index, active } = await ensureIndex(s);
     if (id === active) {
@@ -178,7 +178,7 @@ export async function renameProject(id: string, name: string) {
 export async function deleteProject(id: string): Promise<boolean> {
   return withStores("readwrite", async (s) => {
     const { index, active } = await ensureIndex(s);
-    if (index.length <= 1) throw new Error("至少要保留一個專案。");
+    if (index.length <= 1) throw new Error("至少要保留一個專案");
     const rest = index.filter((p) => p.id !== id);
     if (id === active) {
       const next = [...rest].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];

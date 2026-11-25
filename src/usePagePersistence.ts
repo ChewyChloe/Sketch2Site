@@ -147,7 +147,7 @@ export function usePagePersistence() {
       now.sessionId !== target.sessionId ||
       now.revision !== target.revision
     )
-      return { ok: false as const, error: "頁面已更新，請重新生成。" };
+      return { ok: false as const, error: "頁面已更新，請重新生成" };
     const oldStatus = status,
       token = saver.current?.token() ?? null;
     const generation = ++epoch.current;
@@ -166,7 +166,7 @@ export function usePagePersistence() {
     try {
       const saved = await savePage(recordOf(next), token);
       if (generation !== epoch.current)
-        return { ok: false as const, error: "頁面已更新，請重新載入。" };
+        return { ok: false as const, error: "頁面已更新，請重新載入" };
       publish(next);
       dirty.current = false;
       setStatus({ kind: "saved", revision: next.revision });

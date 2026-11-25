@@ -759,3 +759,11 @@
 .sig-confetti { position: absolute; width: 8px; height: 12px; border-radius: 2px; pointer-events: none; }
 .sig-shine { position: absolute; top: -10%; bottom: -10%; left: 0; width: 40%; background: linear-gradient(90deg, transparent, rgb(255 255 255 / .55), transparent); transform: translateX(-120%) skewX(-20deg); pointer-events: none; z-index: 2; }
 @media (prefers-reduced-motion: reduce) { .sig-caret { animation: none; } }
+
+/* Brand roles: 強調色 for highlights, selection and focus rings (falls back to the main colour). */
+.rendered-page :focus-visible { outline-color: var(--pg-highlight, var(--accent)); }
+.rendered-page ::selection { background: color-mix(in srgb, var(--pg-highlight, var(--accent)) 35%, transparent); }
+.rendered-page[data-theme] .page-card:hover { border-color: var(--pg-highlight, var(--accent)); }
+.rendered-page[data-theme] .page-heading { color: var(--ink); }
+/* The dark theme keeps its own text and soft background colours; brand 中性色／副色 are for light pages. */
+.rendered-page[data-theme="midnight"] { --ink: #eef0ff !important; --pg-soft: #11142a !important; }

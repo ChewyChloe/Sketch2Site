@@ -37,16 +37,16 @@ function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
   const page = useMemo(() => {
     const paragraph=(index:number,content:string)=>({id:ids[index],type:"paragraph",content,style:{padding:"none",gap:"none"}});
     const persistent=advancedMotionIds.includes(id as typeof advancedMotionIds[number])||id in signatureFamily||["breathing-glow","curved-path-text","count-up","flip-card","fold-reveal","physics-tag-field","magnetic-control","press-feedback","focus-transfer","scroll-progress","disclosure-panel"].includes(id);
-    const controls=id==="count-up"?{endValue:128,durationMs:1200}:id==="curved-path-text"?{curvature:"medium"}:id==="flip-card"?{backText:"把細節，說清楚。"}:id==="fold-reveal"?{underText:"下一層，藏著新想法。"}:id==="physics-tag-field"?{labels:["設計","工程","研究"]}:{};
+    const controls=id==="count-up"?{endValue:128,durationMs:1200}:id==="curved-path-text"?{curvature:"medium"}:id==="flip-card"?{backText:"把細節，說清楚"}:id==="fold-reveal"?{underText:"下一層，藏著新想法"}:id==="physics-tag-field"?{labels:["設計","工程","研究"]}:{};
     const button=["confetti-burst","jelly-press","shine-sweep","cursor-spotlight","liquid-button-fill","radial-ink-ripple","orbiting-icon","border-light-trace","hover-glow","breathing-glow","magnetic-control","press-feedback"].includes(id);
     const leaf=["typewriter","marquee-text","gradient-text-flow","character-decode","split-line-assembly","rolling-characters","hand-drawn-highlight","kinetic-text-wave","numeric-gauge-sweep","count-up","curved-path-text","letter-assembly","accent-stroke"].includes(id);
-    const content:Record<string,string>={"fade-in":"讓內容自然出現","slide-up":"向上，回到原位。","scale-in":"讓重點被看見","hover-lift":"移入，輕輕浮起。","flip-card":"從想法到作品","fold-reveal":"把這一頁揭開。"};
+    const content:Record<string,string>={"fade-in":"讓內容自然出現","slide-up":"向上，回到原位","scale-in":"讓重點被看見","hover-lift":"移入，輕輕浮起","flip-card":"從想法到作品","fold-reveal":"把這一頁揭開"};
     return PageSchema.parse({schemaVersion:2,metadata:{title:"動畫素材示意",language:"zh-Hant"},typography:"sans",styles:"neutral",responsive:{mobileColumns:1,desktopColumns:1},sections:[{
       id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:[{
         id:ids[1],type:["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?"image":button?"button":leaf?"paragraph":id==="physics-tag-field"?"container":"card",
         style:{padding:button?"small":leaf||id==="physics-tag-field"?"none":"small",gap:"small",tone:button?"accent":"plain"},
         effects:active||persistent?[createMotion(id,ids[1],controls)]:[],
-        ...(["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?{src:["blur-in","float-idle","cinematic-image-pan"].includes(id)?"/assets/samples/cafe.jpg":"/assets/samples/camera.jpg",alt:"圖片動畫示意"}:button?{content:id==="confetti-burst"?"報名成功！":id==="jelly-press"?"點我試試":id==="shine-sweep"?"立即購買":"看看作品",href:"#"+ids[1]}:leaf?{content:id==="numeric-gauge-sweep"?"75%":id==="character-decode"?"Decode 想像 2026":id==="split-line-assembly"?"每一行靈感\n組成完整作品":id==="rolling-characters"?"2026 創作":id==="kinetic-text-wave"?"讓文字起舞":id==="hand-drawn-highlight"?"標記真正重要的事":id==="count-up"?"128":id==="letter-assembly"?"把靈感，拼成作品。":id==="accent-stroke"?"讓重點被記住":id==="typewriter"?"你好，歡迎光臨！":id==="marquee-text"?"本週新品上市 · 第二杯半價 · 歡迎預約":id==="gradient-text-flow"?"把想法變成網站":"讓想法流動"}:{children:id==="physics-tag-field"?[]:["stagger-reveal","focus-transfer","disclosure-panel","scroll-progress","card-deck-fan","layered-parallax","grid-diagonal-turn","svg-path-drawing","scroll-milestones"].includes(id)?[paragraph(2,"構思"),paragraph(3,"設計"),paragraph(4,"實作")]:[paragraph(2,content[id]??"內容示意")]}),
+        ...(["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?{src:["blur-in","float-idle","cinematic-image-pan"].includes(id)?"/assets/samples/cafe.jpg":"/assets/samples/camera.jpg",alt:"圖片動畫示意"}:button?{content:id==="confetti-burst"?"報名成功！":id==="jelly-press"?"點我試試":id==="shine-sweep"?"立即購買":"看看作品",href:"#"+ids[1]}:leaf?{content:id==="numeric-gauge-sweep"?"75%":id==="character-decode"?"Decode 想像 2026":id==="split-line-assembly"?"每一行靈感\n組成完整作品":id==="rolling-characters"?"2026 創作":id==="kinetic-text-wave"?"讓文字起舞":id==="hand-drawn-highlight"?"標記真正重要的事":id==="count-up"?"128":id==="letter-assembly"?"把靈感，拼成作品":id==="accent-stroke"?"讓重點被記住":id==="typewriter"?"你好，歡迎光臨！":id==="marquee-text"?"本週新品上市 · 第二杯半價 · 歡迎預約":id==="gradient-text-flow"?"把想法變成網站":"讓想法流動"}:{children:id==="physics-tag-field"?[]:["stagger-reveal","focus-transfer","disclosure-panel","scroll-progress","card-deck-fan","layered-parallax","grid-diagonal-turn","svg-path-drawing","scroll-milestones"].includes(id)?[paragraph(2,"構思"),paragraph(3,"設計"),paragraph(4,"實作")]:[paragraph(2,content[id]??"內容示意")]}),
       }],
     }]});
   },[id,active,ids]);
@@ -106,7 +106,7 @@ export function AnimationLibrary({
         <p>
           {selectedLabel
             ? `目前選取：${selectedLabel}`
-            : "先點一下要動的元件，再按「套用」；用電腦也可以直接拖過去。"}
+            : "先點要加動畫的東西，再按「套用」，用電腦也能直接拖過去"}
         </p>
       </div>
       <div className="motion-library-filters">
@@ -117,7 +117,7 @@ export function AnimationLibrary({
           ))}
         </div>
       </div>
-      {!visibleIds.length && <p role="status">找不到符合的動畫，請調整搜尋或情境。</p>}
+      {!visibleIds.length && <p role="status">找不到符合的動畫，請調整搜尋或情境</p>}
       <div className="animation-groups">
         {families.map((family,index)=>visibleIds.some(id=>motionFamily(id)===index)&&<section className="animation-family" key={family} aria-label={family}><h3>{family}</h3><div className="animation-assets" role="list">
         {visibleIds.filter(id=>motionFamily(id)===index).map((id) => {

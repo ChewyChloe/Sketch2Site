@@ -21,10 +21,10 @@ export class AssetError extends Error {}
 export function assetErrorMessage(error: unknown) {
   return error instanceof AssetError
     ? error.message
-    : "圖片處理失敗，原資料已保留，請重試。";
+    : "照片處理失敗，請再試一次";
 }
 const failure = () =>
-  new AssetError("圖片無效：請使用 5 MB 以內的 PNG 或 JPEG。");
+  new AssetError("圖片無效：請使用 5 MB 以內的 PNG 或 JPEG");
 export function inspectRaster(bytes: Uint8Array, mime: string) {
   if (bytes.length > assetLimits.rawBytes) throw failure();
   let width = 0,
@@ -167,7 +167,7 @@ export async function storeAsset(blob: Blob, width: number, height: number) {
                 v.blob.size > assetLimits.bytes,
             )
           ) {
-            error = new AssetError("本機素材紀錄異常，原資料已保留。");
+            error = new AssetError("照片資料讀不到，請重新整理頁面");
             t.abort();
             return;
           }
@@ -181,22 +181,22 @@ export async function storeAsset(blob: Blob, width: number, height: number) {
               assetLimits.totalBytes
           ) {
             error = new AssetError(
-              "本機素材已達 10 張或 20 MB 上限，請重用既有圖片。",
+              "照片已經放滿 10 張，請用已經放進來的照片",
             );
             t.abort();
             return;
           }
           store.put(value, ref);
         } catch {
-          error = new AssetError("圖片儲存失敗，請檢查本機空間。");
+          error = new AssetError("照片沒存成功，可能是瀏覽器空間不夠");
           t.abort();
         }
       };
       t.oncomplete = () => resolve();
       t.onabort = () =>
-        reject(error ?? new AssetError("圖片儲存失敗，原頁面已保留。"));
+        reject(error ?? new AssetError("照片沒存成功，請再試一次"));
       t.onerror = () =>
-        reject(new AssetError("圖片儲存失敗，請檢查本機空間。"));
+        reject(new AssetError("照片沒存成功，可能是瀏覽器空間不夠"));
     });
   } finally {
     db.close();
@@ -213,7 +213,7 @@ export async function readAsset(ref: string) {
     value = await new Promise((resolve, reject) => {
       const r = db.transaction("assets").objectStore("assets").get(ref);
       r.onsuccess = () => resolve(r.result);
-      r.onerror = () => reject(new AssetError("無法讀取本機圖片。"));
+      r.onerror = () => reject(new AssetError("無法讀取本機圖片"));
     });
   } finally {
     db.close();
@@ -231,7 +231,7 @@ export async function listAssetRefs(): Promise<string[]> {
             (v): v is string => typeof v === "string" && isLocalAsset(v),
           ),
         );
-      r.onerror = () => reject(new AssetError("無法讀取本機素材。"));
+      r.onerror = () => reject(new AssetError("無法讀取本機素材"));
     });
   } finally {
     db.close();
@@ -284,7 +284,7 @@ export async function importImage(file: File) {
       }
     }
     if (blob.size > assetLimits.bytes)
-      throw new AssetError("圖片轉換後超過 2 MB，請縮小後重試。");
+      throw new AssetError("圖片轉換後超過 2 MB，請縮小後重試");
     return await storeAsset(blob, canvas.width, canvas.height);
   } finally {
     bitmap.close();

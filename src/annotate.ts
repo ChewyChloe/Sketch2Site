@@ -126,7 +126,7 @@ function motionPatches(node: PageNode, wanted: MotionId[], replace: boolean): St
     };
   }
   const names = wanted.map((id) => motionCatalog[id].nameZh).join("、");
-  return { error: `${typeNames[node.type] ?? "這個元件"}不適合「${names}」，可以試試其他動態。` };
+  return { error: `${typeNames[node.type] ?? "這個元件"}不適合「${names}」，可以試試其他動態` };
 }
 
 function clause(text: string, ctx: Ctx): Step {
@@ -137,14 +137,14 @@ function clause(text: string, ctx: Ctx): Step {
   // 1. Replace text: only with the user's own quoted words.
   const quoted = /[「『“"]([^」』”"]{1,2000})[」』”"]/.exec(t);
   if (quoted && /改|換|寫|變成|標題|文字|按鈕/.test(t)) {
-    if (!["heading", "paragraph", "button"].includes(node.type)) return { error: `請直接點選要改的文字，${typeNames[node.type] ?? "這個元件"}本身沒有文字。` };
+    if (!["heading", "paragraph", "button"].includes(node.type)) return { error: `請直接點選要改的文字，${typeNames[node.type] ?? "這個元件"}本身沒有文字` };
     return { patches: [{ operation: "set-text", targetId: node.id, payload: { content: quoted[1] } }], summary: `把文字改成「${quoted[1]}」` };
   }
 
   // 2. Links.
   const url = /https:\/\/[^\s，。」』"]+/.exec(t);
   if (url) {
-    if (node.type !== "button") return { error: "只有按鈕可以設定連結。" };
+    if (node.type !== "button") return { error: "只有按鈕可以設定連結" };
     return { patches: [{ operation: "set-property", targetId: node.id, payload: { property: "href", value: url[0] } }], summary: "更新按鈕連結" };
   }
 
@@ -259,7 +259,7 @@ function clause(text: string, ctx: Ctx): Step {
   const cols = /(一|二|兩|三|1|2|3)\s*(欄|排|列|個一排)/.exec(t);
   if (cols) {
     const grid = node.type === "grid" ? node : nearest(ctx, "grid");
-    if (!grid) return { error: "這個元件不在網格裡，無法改欄數。" };
+    if (!grid) return { error: "這個元件不在網格裡，無法改欄數" };
     const value = ({ 一: 1, 1: 1, 二: 2, 兩: 2, 2: 2, 三: 3, 3: 3 } as Record<string, 1 | 2 | 3>)[cols[1]];
     return { patches: [{ operation: "set-property", targetId: grid.id, payload: { property: "columns", value } }], summary: `改成一排 ${value} 欄` };
   }
@@ -290,7 +290,7 @@ function clause(text: string, ctx: Ctx): Step {
       const width = bigger ? "full" : "narrow";
       return { patches: [{ operation: "set-style", targetId: node.id, payload: { width } }], summary: bigger ? "寬度放到最大" : "寬度縮窄" };
     }
-    return { error: `${typeNames[node.type] ?? "這個元件"}的大小由版面決定，可以試試「標題大一點」或「卡片放大」。` };
+    return { error: `${typeNames[node.type] ?? "這個元件"}的大小由版面決定，可以試試「標題大一點」或「卡片放大」` };
   }
 
   // 10. Spacing of the surrounding section.
@@ -326,9 +326,9 @@ function retarget(text: string, ctx: Ctx): Ctx {
 /** Reads an instruction for the selected element. Several requests can be joined with ，、；或「然後」. */
 export function interpretAnnotation(page: PageSpec, targetId: string, instruction: string): AnnotationResult {
   const text = instruction.trim().slice(0, 300);
-  if (!text) return { ok: false, message: "請輸入想怎麼改，例如「標題大一點」。" };
+  if (!text) return { ok: false, message: "請輸入想怎麼改，例如「標題大一點」" };
   const chain = chainOf(page, targetId);
-  if (!chain) return { ok: false, message: "找不到選取的元件，請重新點選。" };
+  if (!chain) return { ok: false, message: "找不到選取的元件，請重新點選" };
   const ctx: Ctx = { page, node: chain[chain.length - 1], chain, looks: new Map(), texts: new Map() };
   // Keep quoted text intact while splitting into clauses.
   const parts: string[] = [];
@@ -352,7 +352,7 @@ export function interpretAnnotation(page: PageSpec, targetId: string, instructio
     }
   }
   if (!patches.length && !summary.length)
-    return { ok: false, message: errors[0] ?? `還看不懂「${skipped.join("、") || text}」。可以試試：標題大一點、置中、換成藍色、加動態、改成「新的文字」。` };
+    return { ok: false, message: errors[0] ?? `還看不懂「${skipped.join("、") || text}」，可以試試：標題大一點、置中、換成藍色、加動態、改成「新的文字」` };
   // Only the last look / text style per element is needed: it already includes the earlier clauses.
   const last = new Map<string, number>();
   const keyOf = (p: unknown) => {

@@ -33,8 +33,8 @@ export default function CandidatePreview({
             {previewOnly ? "網站預覽" : "你的網站"}
           </strong>
           <small>
-            滿意就按「使用此版本」，不喜歡可以返回草稿再改。
-            {kept > 0 && ` 已保留你在網站上的 ${kept} 項版面修改。`}
+            滿意就按「使用此版本」，不喜歡可以返回草稿再改
+            {kept > 0 && ` 已保留你在網站上的 ${kept} 項版面修改`}
           </small>
         </div>
         <div>
@@ -80,7 +80,7 @@ export default function CandidatePreview({
       </div>
       {stale && (
         <p role="alert" className="preview-error">
-          草稿已更新，請返回草稿重新生成。
+          草稿已更新，請返回草稿重新生成
         </p>
       )}
       <div className="preview-scroll">

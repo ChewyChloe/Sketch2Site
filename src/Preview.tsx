@@ -77,7 +77,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
   const selectionHead = useRef<string[]>([]);
   function confirmDiscard() {
     if (!pendingEdits.current) return true;
-    if (!window.confirm("修改尚未套用。捨棄並繼續？")) return false;
+    if (!window.confirm("修改尚未套用，捨棄並繼續？")) return false;
     resetProperties.current();
     pendingEdits.current = false;
     return true;
@@ -99,7 +99,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
       pendingEdits.current ? null : persistence.generationTarget(),
     accept: async (page, target) => {
       if (pendingEdits.current)
-        return { ok: false, error: "請先套用或捨棄屬性修改。" };
+        return { ok: false, error: "請先套用或捨棄屬性修改" };
       const result = await persistence.acceptGeneration(page, target);
       if (result.ok) {
         setSource("");
@@ -303,7 +303,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
   }, []);
   function reportLoadError(message: string) {
     setPatchError(true);
-    setNotice(message + " 原頁面與未套用修改已保留。");
+    setNotice(message + " 原頁面與未套用修改已保留");
   }
   function install(input: unknown) {
     const checked = validatePage(input);
@@ -333,7 +333,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
     const startedSession = current.current.sessionId,
       startedRevision = current.current.revision;
     if (file.size > 200000) {
-      reportLoadError("預覽失敗：檔案超過 200 KB。請縮小檔案後重試。");
+      reportLoadError("預覽失敗：檔案超過 200 KB，請縮小檔案後重試");
       return;
     }
     try {
@@ -343,13 +343,13 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
         startedSession !== current.current.sessionId ||
         startedRevision !== current.current.revision
       ) {
-        reportLoadError("頁面已更新，請重新載入檔案。");
+        reportLoadError("頁面已更新，請重新載入檔案");
         return;
       }
       if (install(parsed)) setSource("");
     } catch {
       if (sequence !== loadSequence.current) return;
-      reportLoadError("預覽失敗：檔案格式無效。請修正檔案後重試。");
+      reportLoadError("預覽失敗：檔案格式無效，請修正檔案後重試");
     }
   }
   useEffect(() => {
@@ -403,20 +403,20 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
       return;
     }
     update(result.state);
-    setNotice(result.changed ? "已套用。" : "沒有需要套用的變更。");
+    setNotice(result.changed ? "已套用" : "沒有需要套用的變更");
     return result.ok;
   }
   function attach(id: string, value: string) {
     const target = indexNodes(current.current.history.present).get(id);
     if (!target || !effectIds.includes(value as (typeof effectIds)[number])) {
       setPatchError(true);
-      setNotice("不支援的動畫。");
+      setNotice("不支援的動畫");
       return;
     }
     const effectId = value as (typeof effectIds)[number];
     if (!effectCompatible(target, effectId)) {
       setPatchError(true);
-      setNotice(targetReason(target,effectId)??"此效果不適用於目前元件。");
+      setNotice(targetReason(target,effectId)??"此效果不適用於目前元件");
       return;
     }
     const conflict=combinationReason([...target.effects,{presetId:effectId}]);if(conflict){setPatchError(true);setNotice(conflict);return;}
@@ -495,7 +495,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
     if (!ready || loadError || !confirmDiscard()) return;
     update(travelPage(current.current, direction));
     setPatchError(false);
-    setNotice(direction === "undo" ? "已撤銷修改。" : "已重做修改。");
+    setNotice(direction === "undo" ? "已撤銷修改" : "已重做修改");
   }
 
   const pageActions = (
@@ -549,10 +549,10 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
               const {downloadProject}=await import("./exportProject");
               await downloadProject(snapshot);
               setPatchError(false);
-              setNotice("已匯出 React 專案。");
+              setNotice("已匯出 React 專案");
             } catch {
               setPatchError(true);
-              setNotice("匯出失敗，請檢查頁面與素材後重試。");
+              setNotice("匯出失敗，請檢查頁面與素材後重試");
             } finally {
               setExporting(false);
             }
@@ -781,7 +781,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
             onClick={() => {
               if (
                 window.confirm(
-                  "將保留原始紀錄備份，並以範例重新開始，是否繼續？",
+                  "要用範例重新開始嗎？舊的資料會另外備份",
                 )
               ) {
                 loadSequence.current++;
@@ -840,8 +840,8 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                 <p role="alert" className="preview-error">
                   {loadError.message}{" "}
                   {["CORRUPT", "UNSUPPORTED"].includes(loadError.code)
-                    ? "請重試載入，或確認後重新開始。"
-                    : "請檢查瀏覽器儲存權限後重試。"}
+                    ? "請重試載入，或確認後重新開始"
+                    : "請檢查瀏覽器儲存權限後重試"}
                 </p>
               ) : (
                 <VisualSurface
@@ -886,7 +886,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                   onAnnotation={(a) => {
                     if (annotations.present.length >= 80) {
                       setPatchError(true);
-                      setNotice("註記已達 80 筆，請先清除。");
+                      setNotice("註記已達 80 筆，請先清除");
                       return;
                     }
                     setAnnotations((h) => commitHistory(h, [...h.present, a]));
@@ -998,7 +998,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                   if (selected) attach(selected, id);
                   else {
                     setPatchError(false);
-                    setNotice("請先選取元件，或將動畫拖至目標。");
+                    setNotice("請先選取元件，或將動畫拖至目標");
                   }
                 }}
                 onDragStart={(id, data) => {
@@ -1020,7 +1020,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
               </button>
             )}
             {panelTab === "properties" && !selectedIds.length && (
-              <p className="panel-empty">點選預覽上的元件以編輯屬性。</p>
+              <p className="panel-empty">點選預覽上的元件以編輯屬性</p>
             )}
             {panelTab === "properties" &&
               ready &&
@@ -1031,7 +1031,7 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                     <h2>已選取 {selectedIds.length} 個元件</h2>
                     <button onClick={() => setSelectedIds([])}>取消選取</button>
                   </div>
-                  <p className="note">請單選一個元件以編輯屬性。</p>
+                  <p className="note">請單選一個元件以編輯屬性</p>
                   <ul className="selection-summary">
                     {selectedIds.map((id) => (
                       <li key={id}>
@@ -1200,19 +1200,19 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                       />
                     </label>
                     <p className="note">
-                      PNG／JPEG，原圖最多 5 MB，圖片只保存在此瀏覽器。
+                      PNG／JPEG，原圖最多 5 MB，圖片只保存在此瀏覽器
                     </p>
                   </div>
                 )}
                 <div className="effect-editor">
                   <h2>已附加動畫</h2>
                   {!node.effects.length && (
-                    <p className="note">從動畫效果庫拖入，或單擊效果套用。</p>
+                    <p className="note">從動畫素材拖過來，或點一下效果套用</p>
                   )}
                   {compose && compose.targetId===node.id && <div className="effect-edit-row">
-                    <h3>{effectLabels[compose.id]}</h3><p className="note">請提供實際內容，確認後才會套用。</p>
+                    <h3>{effectLabels[compose.id]}</h3><p className="note">請填好內容，按確定才會套用</p>
                     <MotionControlsFields id={compose.id} values={compose.controls} onChange={controls=>setCompose({...compose,controls})}/>
-                    <button type="button" onClick={()=>{try{const effect=createMotion(compose.id,compose.targetId,compose.controls);if(patch([{operation:"attach-effect",targetId:compose.targetId,payload:effect}],compose.targetId,compose.revision))setCompose(null);}catch{setPatchError(true);setNotice("請檢查動畫的必填內容與數值範圍。");}}}>確認附加動畫</button>
+                    <button type="button" onClick={()=>{try{const effect=createMotion(compose.id,compose.targetId,compose.controls);if(patch([{operation:"attach-effect",targetId:compose.targetId,payload:effect}],compose.targetId,compose.revision))setCompose(null);}catch{setPatchError(true);setNotice("動畫設定有地方沒填好，或數字超出範圍");}}}>確認附加動畫</button>
                     <button type="button" onClick={()=>setCompose(null)}>取消附加</button>
                   </div>}
                   {node.effects.map((effect) => (
@@ -1227,10 +1227,10 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
                               .value as (typeof effectIds)[number];
                             if (!effectCompatible(node, effectId)) {
                               setPatchError(true);
-                              setNotice(targetReason(node,effectId)??"此效果不適用於目前元件。");
+                              setNotice(targetReason(node,effectId)??"此效果不適用於目前元件");
                               return;
                             }
-                            if(Object.values(motionCatalog[effectId].controls).some(c=>c.required)){setPatchError(true);setNotice("請先移除原效果，再從素材庫填寫新效果的內容。");return;}
+                            if(Object.values(motionCatalog[effectId].controls).some(c=>c.required)){setPatchError(true);setNotice("請先移除舊的動畫，再加新的");return;}
                             patch(
                               [
                                 {
