@@ -18,6 +18,7 @@ import { TextToolbar, defaultSize, stepSize } from "./TextToolbar";
 import { ShortcutsPanel } from "./ShortcutsPanel";
 import { BrandPanel } from "./BrandPanel";
 import { smartFocus } from "./smartCrop";
+import { CopySuggest } from "./CopySuggest";
 import { textCss, type TextStyle } from "./pageSpec";
 import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
@@ -537,10 +538,11 @@ export default function App() {
   const [briefOpen, setBriefOpen] = useState(false);
   const [aiReady, setAiReady] = useState(false);
   const [pendingGenerate, setPendingGenerate] = useState(false);
+  // Checked on start and whenever the brief opens: AI features show only when AI is set up.
   useEffect(() => {
-    if (!briefOpen) return;
+    if (import.meta.env.VITE_SITES_FRONTEND_ONLY === "true") return;
     let live = true;
-    fetch("/api/generation/status", { credentials: "same-origin", cache: "no-store" })
+    fetch("/api/generation/ready", { credentials: "same-origin", cache: "no-store" })
       .then((r) => r.json())
       .then((s: { configured?: boolean }) => { if (live) setAiReady(Boolean(s?.configured)); })
       .catch(() => { if (live) setAiReady(false); });
@@ -1199,6 +1201,18 @@ node ? (
                         }
                       />
                     </label>
+                    {aiReady && !node.locked && ["heading", "text", "button", "card"].includes(node.type) && (
+                      <CopySuggest
+                        kind={node.type === "heading" ? "heading" : node.type === "button" ? "button" : "paragraph"}
+                        text={node.content}
+                        brief={spec.metadata.brief}
+                        onPick={(value) => {
+                          const current = state.current.present;
+                          const typed = { ...current, nodes: current.nodes.map((v) => (v.id === node.id ? { ...v, content: value } : v)) };
+                          if (change(withFittedText(typed, [node.id], { [node.id]: value }))) report("已換成 AI 建議的說法，不喜歡可以還原。");
+                        }}
+                      />
+                    )}
                     {node.type === "image" && (
                       <div className="image-controls">
                         <label className="field">

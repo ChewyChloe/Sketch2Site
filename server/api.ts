@@ -7,6 +7,7 @@ import {
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { CanvasSchema } from "../src/spec";
+import { CopyRequestSchema, cleanOptions, type CopyRequest } from "../src/copySuggest";
 import {
   prepareIntent,
   materialize,
@@ -72,6 +73,9 @@ export function createGenerationServer(options: Options = {}) {
       address !== "::ffff:127.0.0.1"
     )
       return failure(res, 403, "FORBIDDEN");
+    // Read-only availability check for the editor (no session is created).
+    if (req.method === "GET" && req.url === "/api/generation/ready")
+      return json(res, 200, { configured: Boolean(options.provider) });
     if (req.method === "GET" && (req.url === "/api/generation/status" || req.url === "/api/generation/check")) {
       for (const [key, s] of sessions)
         if (s.expires < Date.now()) sessions.delete(key);
@@ -99,7 +103,7 @@ export function createGenerationServer(options: Options = {}) {
         csrfToken: sessions.get(id)!.csrf,
       });
     }
-    if ((req.url !== "/api/generation" && req.url !== "/api/generation/check") || req.method !== "POST")
+    if ((req.url !== "/api/generation" && req.url !== "/api/generation/check" && req.url !== "/api/generation/copy") || req.method !== "POST")
       return json(res, 404, { code: "UNAVAILABLE" });
     const id = req.headers.cookie?.match(
       /(?:^|; )sketch_generation_session=([a-f0-9]{64})(?:;|$)/,
@@ -136,6 +140,64 @@ export function createGenerationServer(options: Options = {}) {
       body = Buffer.concat(chunks).toString("utf8");
     } catch {
       return failure(res, 400, "INVALID_INPUT");
+    }
+    // Copy suggestions share the session, CSRF, size, rate, call-count and budget guards.
+    if (req.url === "/api/generation/copy") {
+      let copy: CopyRequest;
+      try {
+        copy = CopyRequestSchema.parse(JSON.parse(body));
+      } catch {
+        return failure(res, 400, "INVALID_INPUT");
+      }
+      const provider = options.provider;
+      if (!provider?.suggestCopy) return failure(res, 503, "NOT_CONFIGURED");
+      if (used.has(copy.requestId)) return failure(res, 409, "DUPLICATE");
+      if (active >= 1) return failure(res, 429, "BUSY");
+      const now = Date.now();
+      while (arrivals[0] && arrivals[0] < now - 60000) arrivals.shift();
+      const reserve = ((Buffer.byteLength(JSON.stringify(copy)) + 2000) * (options.inputRate ?? 2)) / 1e6 + (1024 * (options.outputRate ?? 8)) / 1e6;
+      if (arrivals.length >= (options.maxPerMinute ?? 3) || calls >= (options.maxCalls ?? 5) || reserved + reserve > (options.budgetUsd ?? 0.25))
+        return failure(res, 429, "LIMIT");
+      arrivals.push(now);
+      calls++;
+      reserved += reserve;
+      used.add(copy.requestId);
+      active++;
+      const started = Date.now(), controller = new AbortController();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        const result = await Promise.race([
+          provider.suggestCopy(copy, controller.signal),
+          new Promise<never>((_, reject) => {
+            timer = setTimeout(() => {
+              controller.abort();
+              reject(new GenerationError("TIMEOUT"));
+            }, options.timeoutMs ?? 30000);
+          }),
+        ]);
+        if (!validUsage(result) || result.outputTokens > 1024) throw new GenerationError("INVALID_OUTPUT");
+        const cleaned = cleanOptions(copy.kind, copy.text, result.options);
+        if (!cleaned.length) throw new GenerationError("INVALID_OUTPUT");
+        const cached = result.cachedInputTokens ?? 0;
+        const usage = {
+          inputTokens: result.inputTokens,
+          outputTokens: result.outputTokens,
+          cachedInputTokens: result.cachedInputTokens ?? null,
+          reasoningTokens: result.reasoningTokens ?? null,
+          estimatedCostUsd: ((result.inputTokens - cached) * (options.inputRate ?? 2) + cached * (options.cachedInputRate ?? options.inputRate ?? 2) + result.outputTokens * (options.outputRate ?? 8)) / 1e6,
+          latencyMs: Date.now() - started,
+        };
+        options.onUsage?.({ requestId: copy.requestId, kind: "copy", outcome: "PASS", ...usage });
+        json(res, 200, { requestId: copy.requestId, options: cleaned, usage });
+      } catch (error) {
+        const code = error instanceof GenerationError ? error.code : "UNAVAILABLE";
+        options.onUsage?.({ requestId: copy.requestId, kind: "copy", outcome: code, reservedUsd: reserve, latencyMs: Date.now() - started });
+        failure(res, code === "TIMEOUT" ? 504 : 502, code);
+      } finally {
+        active--;
+        if (timer) clearTimeout(timer);
+      }
+      return;
     }
     let request: z.infer<typeof requestSchema>;
     try {

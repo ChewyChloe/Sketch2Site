@@ -1504,3 +1504,15 @@ input[type="range"] {
 }
 .library .frame-library button:focus-visible, .library .frame-library button:active, .library .frame-library button:focus { background: #fff; color: #0d0e11; outline: 3px solid #10e560; outline-offset: 1px; }
 .neo-inspector .frame-actions .frame-primary { background: #10e560; color: #0d0e11; border-color: #10e560; font-weight: 800; }
+
+/* ===== AI copy suggestions ===== */
+.copy-suggest { margin: -8px 0 16px; }
+.neo-inspector .copy-ask { width: 100%; min-height: 42px; border-radius: 12px; border: 1px dashed #10e560; background: #142a1d; color: #b8ffd2; font-weight: 700; }
+.neo-inspector .copy-ask:disabled { opacity: .5; }
+.copy-options { display: grid; gap: 8px; }
+.copy-note { margin: 0; font-size: 12.5px; color: #b9c1b3; }
+.copy-note.bad { color: #ffb4a8; margin-top: 6px; }
+.neo-inspector .copy-options button { display: grid; gap: 2px; justify-items: start; text-align: left; min-height: 48px; padding: 8px 12px; border-radius: 12px; background: #202629; color: #f2f5ef; border: 1px solid #3e464a; line-height: 1.45; white-space: pre-wrap; }
+.neo-inspector .copy-options button span { font-size: 11px; font-weight: 800; color: #10e560; }
+.neo-inspector .copy-options button:hover { border-color: #10e560; }
+.neo-inspector .copy-options .copy-dismiss { justify-items: center; text-align: center; min-height: 38px; background: transparent; border-style: dashed; color: #b9c1b3; }

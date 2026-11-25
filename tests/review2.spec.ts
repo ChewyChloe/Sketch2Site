@@ -18,6 +18,8 @@ for (const width of [1440, 768, 375])
     await page.emulateMedia({ reducedMotion: "reduce" });
     const network: string[] = [];
     page.on("request", (r) => {
+      // The read-only "is AI set up?" probe sends no draft data and creates no session.
+      if (r.url().endsWith("/api/generation/ready")) return;
       if (
         r.url().includes("/api/") ||
         new URL(r.url()).hostname !== "127.0.0.1"

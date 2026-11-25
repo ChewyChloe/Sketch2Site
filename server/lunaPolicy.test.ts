@@ -1,6 +1,6 @@
 import {it,expect,vi} from 'vitest';
 import {prepareIntent} from '../src/generation';
-import {generationFixtures,mockLayout} from '../tests/fixtures/generation';
+import {generationFixtures,mockLayout,mockRefine} from '../tests/fixtures/generation';
 import {buildLunaRequest,openAIProvider} from './provider';
 import {LUNA_MODEL} from './lunaPolicy';
 const intent=()=>prepareIntent(generationFixtures()[0]);
@@ -9,7 +9,7 @@ it('pins Luna/Standard/30m/no tools and counts the exact generation input and st
  const provider=openAIProvider('synthetic-policy-key',LUNA_MODEL,async(url,init)=>{
   const body=JSON.parse(String(init?.body));calls.push({url:String(url),body});
   if(String(url).endsWith('/input_tokens'))return Response.json({object:'response.input_tokens',input_tokens:1791});
-  return Response.json({id:'resp_mock',object:'response',status:'completed',service_tier:'default',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(mockLayout(intent()))}]}],output_text:JSON.stringify(mockLayout(intent())),usage:{input_tokens:1791,output_tokens:600,input_tokens_details:{cached_tokens:100,cache_write_tokens:300,cache_write_tokens_details:{ttl_30m_tokens:300,ttl_12h_tokens:0}},output_tokens_details:{reasoning_tokens:50}}});
+  return Response.json({id:'resp_mock',object:'response',status:'completed',service_tier:'default',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(mockRefine(intent()))}]}],output_text:JSON.stringify(mockRefine(intent())),usage:{input_tokens:1791,output_tokens:600,input_tokens_details:{cached_tokens:100,cache_write_tokens:300,cache_write_tokens_details:{ttl_30m_tokens:300,ttl_12h_tokens:0}},output_tokens_details:{reasoning_tokens:50}}});
  });
  expect(await provider.countInputTokens!(intent(),new AbortController().signal)).toBe(1791);
  const generated=await provider.generate(intent(),new AbortController().signal);
@@ -24,7 +24,8 @@ it('refuses a non-Luna provider before any SDK request',()=>{
  const fetcher=vi.fn();expect(()=>openAIProvider('synthetic-policy-key','gpt-6.1-sol',fetcher)).toThrow();expect(fetcher).not.toHaveBeenCalled();
 });
 it('refuses oversized complete requests before the free counter or generator',async()=>{
- const tooLarge=intent();tooLarge.canvas.metadata.name='x'.repeat(20000);
+ // Outlines keep normal drafts small; the size guard still refuses anything oversized.
+ const tooLarge=intent();tooLarge.canvas.constraints=Array(3000).fill('layout:stack') as never;
  const fetcher=vi.fn(),p=openAIProvider('synthetic-policy-key',LUNA_MODEL,fetcher);
  await expect(p.countInputTokens!(tooLarge,new AbortController().signal)).rejects.toThrow();
  await expect(p.generate(tooLarge,new AbortController().signal)).rejects.toThrow();expect(fetcher).not.toHaveBeenCalled();

@@ -37,7 +37,9 @@ for (const width of [1440, 768, 375])
     const unexpected: string[] = [];
     // The demo must work even with all backend endpoints unavailable.
     await page.route("**/api/**", (r) => {
-      unexpected.push(r.request().url());
+      // The read-only "is AI set up?" probe sends no draft data and creates no session;
+      // it is aborted too, and the demo must still work.
+      if (!r.request().url().endsWith("/api/generation/ready")) unexpected.push(r.request().url());
       return r.abort();
     });
     await page.route("https://**/*", (r) => {

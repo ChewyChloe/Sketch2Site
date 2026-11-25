@@ -4,6 +4,7 @@ import {
   generationFixtures,
   mockProvider,
   mockLayout,
+  mockRefine,
 } from "../tests/fixtures/generation";
 import { GenerationError } from "../src/generation";
 import { configFromEnv, defaultModel } from "./config";
@@ -191,7 +192,7 @@ it("OpenAI official SDK adapter uses strict output, no tools, no retry, store:fa
               content: [
                 {
                   type: "output_text",
-                  text: JSON.stringify(mockLayout(intent)),
+                  text: JSON.stringify(mockRefine(intent)),
                   annotations: [],
                 },
               ],
@@ -206,7 +207,8 @@ it("OpenAI official SDK adapter uses strict output, no tools, no retry, store:fa
     },
   );
   const result = await provider.generate(intent, new AbortController().signal);
-  expect(result.layout).toEqual(mockLayout(intent));
+  // The model's refinement is applied to the local plan by trusted code.
+  expect(result.layout).toMatchObject({ version: 2, theme: "ocean" });
   expect(result.cachedInputTokens).toBe(100);
   expect(result.reasoningTokens).toBe(50);
   expect(calls).toHaveLength(1);

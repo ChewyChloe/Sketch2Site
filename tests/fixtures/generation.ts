@@ -1,3 +1,4 @@
+import { outlineOf } from "../../src/outline";
 export { generationFixtures } from "../../src/demoFixtures";
 import type { Layout, LayoutV1 } from "../../src/generation";
 import type { Intent, LayoutProvider } from "../../server/provider";
@@ -31,4 +32,20 @@ export const mockProvider: LayoutProvider = {
   async generate(intent) {
     return { layout: mockLayout(intent), inputTokens: 250, outputTokens: 400 };
   },
+  // Deterministic stand-in for copy suggestions (test server only).
+  async suggestCopy(input) {
+    const base = input.text.replace(/\s+/g, " ").slice(0, input.kind === "button" ? 6 : 20);
+    return { options: [`${base}（建議一）`, `${base}（建議二）`, `看看 https://evil.example`, base], inputTokens: 120, outputTokens: 60 };
+  },
 };
+
+/** A valid outline refinement for the real-provider adapter tests (keeps the local plan's order). */
+export function mockRefine(intent: { canvas: Parameters<typeof outlineOf>[0] }) {
+  const outline = outlineOf(intent.canvas);
+  return {
+    theme: "ocean",
+    nav: outline.sections.length >= 3,
+    order: outline.sections.map((s) => s.i),
+    sections: outline.sections.map((s) => ({ i: s.i, role: s.role, layout: s.layout, columns: s.columns, tone: "soft" })),
+  };
+}
