@@ -1,6 +1,6 @@
 import { createDemoCandidate, type CandidateResult } from "./demo";
 import { GenerationError } from "./generation";
-import { PageSchema, allSections, type PageNode, type PageSpec } from "./pageSpec";
+import { PageSchema, allSections, navChrome, type PageNode, type PageSpec } from "./pageSpec";
 import { pageDraft, type CanvasSpec } from "./spec";
 
 // Multi-page sites: every page is laid out on its own with the same trusted
@@ -38,7 +38,7 @@ export function createSiteCandidate(canvas: CanvasSpec): CandidateResult {
   const [home, ...rest] = built;
   const site = PageSchema.parse({
     ...home.spec,
-    chrome: { nav: true, footer: true },
+    chrome: { ...navChrome(canvas.metadata.nav, true), footer: true },
     home: { id: home.page.id, title: home.page.name },
     subpages: rest.map(({ page, spec }) => ({
       id: page.id,

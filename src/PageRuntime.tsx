@@ -316,25 +316,119 @@ function firstHeading(node: PageNode): PageNode | undefined {
   }
   return undefined;
 }
-function PageNav({ page, view, sections }: { page: PageSpec; view: string | null; sections: PageNode[] }) {
-  // Multi-page sites list their pages; single pages list their own section headings.
-  const pages = page.subpages?.length && page.home ? [{ id: page.home.id, label: page.home.title }, ...page.subpages.map((p) => ({ id: p.id, label: p.title }))] : null;
-  const current = view ?? page.home?.id ?? null;
-  const links = pages ?? sections
-    .filter((s) => s.role !== "hero")
-    .map((s) => ({ id: s.id, label: firstHeading(s)?.content }))
-    .filter((l): l is { id: string; label: string } => !!l.label && l.label.length <= 24)
-    .slice(0, 5);
+type NavLink = { key: string; target: string; label: string; hero?: boolean };
+const firstText = (n: PageNode): string | undefined => {
+  if (n.content?.trim()) return n.content.split("\n")[0].trim();
+  for (const c of n.children ?? []) { const t = firstText(c); if (t) return t; }
+  return undefined;
+};
+/** Headings and cards in reading order: what a saved menu can link to. */
+function linkable(nodes: PageNode[]): NavLink[] {
+  const out: NavLink[] = [];
+  const walk = (n: PageNode) => {
+    if (n.type === "heading" && n.content?.trim()) { out.push({ key: n.id, target: n.id, label: n.content.split("\n")[0].trim() }); return; }
+    if (n.type === "card") { const t = firstText(n); if (t) out.push({ key: n.id, target: n.id, label: t }); return; }
+    n.children?.forEach(walk);
+  };
+  nodes.forEach(walk);
+  return out;
+}
+/** Links for the site navigation: pages, or the page's own headings, then the saved order, names and hidden items. */
+export function navLinks(page: PageSpec, sections: PageNode[], placed?: PageNode[]): NavLink[] {
+  const pages = page.subpages?.length && page.home ? [{ key: page.home.id, target: page.home.id, label: page.home.title }, ...page.subpages.map((p) => ({ key: p.id, target: p.id, label: p.title }))] : null;
+  const saved = page.chrome?.navItems;
+  if (!saved) {
+    // No choices made: pages, or each section's heading (not the opening one), at most five.
+    const auto: NavLink[] = pages ?? (placed
+      ? placed.filter((n) => n.type === "heading" && n.content).map((n, i) => ({ key: n.id, target: n.id, label: n.content!, hero: i === 0 }))
+      : sections.flatMap((s) => { const h = firstHeading(s); return h?.content ? [{ key: h.id, target: s.id, label: h.content, hero: s.role === "hero" }] : []; }));
+    return auto.filter((l) => !l.hero && l.label.length <= 24).slice(0, 5);
+  }
+  const candidates = pages ?? linkable(placed ?? sections);
+  const byKey = new Map(candidates.map((l) => [l.key, l]));
+  // Saved items in their order; anything added later is left out until it is switched on.
+  return saved.flatMap((item) => { const l = byKey.get(item.id); return l && !item.hidden ? [{ ...l, label: item.label ?? l.label }] : []; }).slice(0, 8);
+}
+/** The element that scrolls the page: the preview panel in the editor, the window on a live site. */
+function scrollRoot(el: HTMLElement | null): HTMLElement | Window {
+  for (let p = el?.parentElement; p; p = p.parentElement) { const o = getComputedStyle(p).overflowY; if ((o === "auto" || o === "scroll") && p.scrollHeight > p.clientHeight) return p; }
+  return window;
+}
+function PageNav({ page, view, sections, placed }: { page: PageSpec; view: string | null; sections: PageNode[]; placed?: PageNode[] }) {
+  const style = page.chrome?.navStyle ?? "top-sticky";
+  const links = navLinks(page, sections, placed);
+  const isPages = !!(page.subpages?.length && page.home);
+  const currentPage = view ?? page.home?.id ?? null;
+  const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [active, setActive] = useState<string | null>(null);
+  const ref = useRef<HTMLElement>(null);
+  const side = style === "side-left" || style === "side-right";
+  // Hide-on-scroll for the top bar, and "you are here" for the side list.
+  useEffect(() => {
+    if (style !== "top-autohide" && !side) return;
+    const root = scrollRoot(ref.current);
+    const top = () => (root instanceof Window ? root.scrollY : root.scrollTop);
+    let last = top();
+    const onScroll = () => {
+      const y = top();
+      if (style === "top-autohide") { if (Math.abs(y - last) > 6) { setHidden(y > last && y > 80); last = y; } return; }
+      if (isPages) return;
+      const rootTop = root instanceof Window ? 0 : root.getBoundingClientRect().top;
+      let current: string | null = null;
+      for (const l of links) { const t = ref.current?.ownerDocument.getElementById("page-" + l.target); if (t && t.getBoundingClientRect().top - rootTop < 140) current = l.target; }
+      setActive(current);
+    };
+    onScroll();
+    root.addEventListener("scroll", onScroll, { passive: true });
+    return () => root.removeEventListener("scroll", onScroll);
+  }, [style, side, isPages, links.map((l) => l.target).join()]);
+  if (style === "none") return null;
+  const brand = <a className="page-brand" href={"#page-" + (page.home?.id ?? sections[0]?.id ?? placed?.[0]?.id)}>{page.brand?.logo && <BrandLogo src={page.brand.logo} />}<span>{page.metadata.title}</span></a>;
+  const list = links.length > 0 && (
+    <nav aria-label={isPages ? "網站頁面" : "頁面導覽"} id="page-nav-links">
+      {links.map((l) => (
+        <a key={l.key} href={"#page-" + l.target} aria-current={isPages ? (l.target === currentPage ? "page" : undefined) : l.target === active ? "location" : undefined} onClick={() => setOpen(false)}>{l.label}</a>
+      ))}
+    </nav>
+  );
+  const menu = links.length > 0 && (
+    <button type="button" className="page-nav-menu" aria-expanded={open} aria-controls="page-nav-links" onClick={() => setOpen((v) => !v)}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">{open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</svg>
+      <span>{open ? "關閉選單" : "選單"}</span>
+    </button>
+  );
+  if (side)
+    return (
+      <div className={"page-side-col" + (collapsed ? " is-collapsed" : "")}>
+      <aside ref={ref} className={"page-nav nav-side nav-" + style + (collapsed ? " is-collapsed" : "") + (open ? " is-open" : "")} data-nav-style={style}>
+        <div className="page-nav-head">
+          {brand}
+          <button type="button" className="page-nav-collapse" aria-expanded={!collapsed} aria-label={collapsed ? "展開目錄" : "收起目錄"} title={collapsed ? "展開目錄" : "收起目錄"} onClick={() => setCollapsed((v) => !v)}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={(style === "side-left") !== collapsed ? "M15 6l-6 6 6 6" : "M9 6l6 6-6 6"} /></svg>
+          </button>
+          {menu}
+        </div>
+        {list}
+      </aside>
+      </div>
+    );
+  if (style === "floating")
+    return (
+      <div className="page-nav-float" data-nav-style={style}>
+        <header ref={ref} className={"page-nav nav-floating" + (open ? " is-open" : "")}>
+          {brand}
+          {list}
+          {menu}
+        </header>
+      </div>
+    );
   return (
-    <header className="page-nav">
-      <a className="page-brand" href={"#page-" + (page.home?.id ?? sections[0].id)}>{page.brand?.logo && <BrandLogo src={page.brand.logo} />}{page.metadata.title}</a>
-      {links.length > 0 && (
-        <nav aria-label={pages ? "網站頁面" : "頁面導覽"}>
-          {links.map((l) => (
-            <a key={l.id} href={"#page-" + l.id} aria-current={pages && l.id === current ? "page" : undefined}>{l.label}</a>
-          ))}
-        </nav>
-      )}
+    <header ref={ref} className={"page-nav nav-" + style + (hidden && !open ? " is-hidden" : "") + (open ? " is-open" : "")} data-nav-style={style}>
+      {brand}
+      {list}
+      {menu}
     </header>
   );
 }
@@ -469,7 +563,17 @@ export function PageRuntime({
             }
           }}
         >
-          {current.draftLayout?<div className="draft-layout" style={{aspectRatio:`1440 / ${current.draftLayout.height}`}}>{[...current.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/current.draftLayout!.height*100}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/current.draftLayout!.height*100}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:<>{(page.chrome?.nav||page.subpages?.length)&&<PageNav page={page} view={sub?.id ?? null} sections={current.sections}/>}<main className="page-main">{current.sections.map(section=><RenderNode key={section.id} node={section}/>)}</main>{page.chrome?.footer&&<footer className="page-footer"><span className="page-footer-brand">{page.brand?.logoAlt && <BrandLogo src={page.brand.logoAlt}/>}{page.metadata.title}</span><a href={"#page-"+current.sections[0].id}>回到頂端 ↑</a></footer>}</>}
+          {(() => {
+            const navStyle = page.chrome?.navStyle;
+            // Saved draft positions keep their own look: a nav appears only when one was chosen.
+            const showNav = current.draftLayout ? !!(page.chrome?.nav && navStyle && navStyle !== "none") : !!(page.chrome?.nav || page.subpages?.length);
+            const placed = current.draftLayout ? [...current.draftLayout.items].sort((a, b) => a.y - b.y || a.x - b.x).map((p) => sources.get(p.id)!).filter(Boolean) : undefined;
+            const nav = showNav ? <PageNav page={page} view={sub?.id ?? null} sections={current.sections} placed={placed} /> : null;
+            const body = <>{current.draftLayout?<div className="draft-layout" style={{aspectRatio:`1440 / ${current.draftLayout.height}`}}>{[...current.draftLayout.items].sort((a,b)=>a.y-b.y||a.x-b.x).map(p=><div className="draft-placement" key={p.id} style={{aspectRatio:`${p.width} / ${p.height}`,'--draft-left':`${p.x/14.4}%`,'--draft-top':`${p.y/current.draftLayout!.height*100}%`,'--draft-width':`${p.width/14.4}%`,'--draft-height':`${p.height/current.draftLayout!.height*100}%`,zIndex:p.zIndex} as CSSProperties}><RenderNode node={sources.get(p.id)!}/></div>)}</div>:<><main className="page-main">{current.sections.map(section=><RenderNode key={section.id} node={section}/>)}</main>{page.chrome?.footer&&<footer className="page-footer"><span className="page-footer-brand">{page.brand?.logoAlt && <BrandLogo src={page.brand.logoAlt}/>}{page.metadata.title}</span><a href={"#page-"+current.sections[0].id}>回到頂端 ↑</a></footer>}</>}</>;
+            if (!nav) return body;
+            if (navStyle === "side-left" || navStyle === "side-right") return <div className={"page-with-side " + navStyle}>{nav}<div className="page-side-body">{body}</div></div>;
+            return <>{nav}{body}</>;
+          })()}
         </div>
       </RenderBoundary>
     </ThemedPage.Provider></MotionPreview.Provider></AssetUrls.Provider>

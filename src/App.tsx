@@ -15,6 +15,7 @@ import { FrameBox } from "./PageRuntime";
 import { FrameControls, FrameThumb } from "./FrameControls";
 import { ArrangePanel } from "./ArrangePanel";
 import { TextToolbar, defaultSize, stepSize } from "./TextToolbar";
+import { NavPanel } from "./NavPanel";
 import { ShortcutsPanel } from "./ShortcutsPanel";
 import { AccountButton } from "./AccountButton";
 import { InspectorSection } from "./InspectorSection";
@@ -249,6 +250,7 @@ export default function App() {
   const onCurrentPage = (n: CanvasNode, s: CanvasSpec = state.current.present) => !s.metadata.pages || pageOfNode(s, n) === currentPage;
   const withPage = <T extends CanvasNode>(n: T): T => (state.current.present.metadata.pages && currentPage ? { ...n, pageId: currentPage } : n);
   const [brandOpen, setBrandOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const imageUrls = useAssetUrls(
     // Canvas images, the brand logo, and (only while the brand kit is open) the other local images.
     [...spec.nodes.flatMap((n) => (n.assetId ? [n.assetId] : [])), ...(brandOpen ? localImages : []), ...[spec.metadata.brand?.logo, spec.metadata.brand?.logoAlt, spec.metadata.brand?.icon].filter((r): r is string => Boolean(r))],
@@ -1585,7 +1587,7 @@ node ? (
               aria-expanded={brandOpen}
               title="品牌色、字型和標誌，套用到整個網站"
               disabled={disabled || generating}
-              onClick={() => { setBriefOpen(false); setShortcutsOpen(false); setBrandOpen((v) => !v); }}
+              onClick={() => { setNavOpen(false); setBriefOpen(false); setShortcutsOpen(false); setBrandOpen((v) => !v); }}
             >
               <span className="brand-dot" style={spec.metadata.brand?.primary ? { background: spec.metadata.brand.primary } : undefined} aria-hidden="true" />
               品牌
@@ -1597,7 +1599,7 @@ node ? (
               aria-expanded={briefOpen}
               title={spec.metadata.brief ? briefSentence({ ...emptyBrief, ...spec.metadata.brief }) : "用幾個選項描述你想要的網站"}
               disabled={disabled || generating}
-              onClick={() => { setBrandOpen(false); setShortcutsOpen(false); setBriefOpen((v) => !v); }}
+              onClick={() => { setNavOpen(false); setBrandOpen(false); setShortcutsOpen(false); setBriefOpen((v) => !v); }}
             >
               描述網站{spec.metadata.brief ? " ✓" : ""}
             </button>
@@ -1636,6 +1638,17 @@ node ? (
         <AccountButton />
       </header>
       {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
+      {navOpen && mode === "draft" && (
+        <NavPanel
+          spec={spec}
+          onClose={() => setNavOpen(false)}
+          onChange={(nav) => {
+            const { nav: _old, ...meta } = state.current.present.metadata;
+            void _old;
+            if (change({ ...state.current.present, metadata: nav ? { ...meta, nav } : meta })) report(nav ? "已更新導覽列，生成網站時會套用，可還原" : "導覽列已恢復預設，可還原");
+          }}
+        />
+      )}
       {brandOpen && mode === "draft" && (
         <BrandPanel
           brand={spec.metadata.brand}
@@ -1831,6 +1844,10 @@ node ? (
                   );
                 })}
                 <button className="page-tab-add" onClick={addPage} disabled={(pagesList?.length ?? 1) >= 10}>＋ 新增頁面</button>
+                <button type="button" className={"page-nav-settings" + (spec.metadata.nav ? " is-set" : "")} aria-haspopup="dialog" aria-expanded={navOpen} title="網站選單的樣式和項目" disabled={disabled || generating} onClick={() => { setBrandOpen(false); setBriefOpen(false); setShortcutsOpen(false); setNavOpen((v) => !v); }}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13" /></svg>
+                  導覽列
+                </button>
               </div>
               <div
                 ref={canvasScroll}
@@ -1950,7 +1967,7 @@ node ? (
                           <button type="button" disabled={disabled} onClick={() => addBlock("collage")}>
                             <span className="kao" aria-hidden="true">[◉¯]</span>放幾張照片
                           </button>
-                          <button type="button" disabled={disabled} onClick={() => { setBrandOpen(false); setBriefOpen(true); }}>
+                          <button type="button" disabled={disabled} onClick={() => { setBrandOpen(false); setNavOpen(false); setBriefOpen(true); }}>
                             <span className="kao" aria-hidden="true">( ˘▽˘)っ</span>告訴我想做什麼網站
                           </button>
                           <button type="button" onClick={() => setMode("home")}>
@@ -2416,7 +2433,7 @@ node ? (
           </span>
 
           {mode === "draft" && (
-            <button type="button" className="footer-shortcuts" aria-haspopup="dialog" onClick={() => { setBrandOpen(false); setBriefOpen(false); setShortcutsOpen(true); }}>快捷鍵</button>
+            <button type="button" className="footer-shortcuts" aria-haspopup="dialog" onClick={() => { setNavOpen(false); setBrandOpen(false); setBriefOpen(false); setShortcutsOpen(true); }}>快捷鍵</button>
           )}
         </footer>
       )}

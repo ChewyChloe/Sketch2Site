@@ -10,6 +10,7 @@ import {
   sectionRoles,
   type PageNode,
   type PageSpec,
+  navChrome,
 } from "./pageSpec";
 export const generationCodes = [
   "NOT_CONFIGURED",
@@ -390,7 +391,8 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
           theme: moodThemes[canvas.metadata.brief?.mood ?? ""] ?? layout.theme,
           // The brand kit comes from the draft only, never from the model.
           ...(canvas.metadata.brand ? { brand: canvas.metadata.brand } : {}),
-          chrome: { nav: layout.nav, footer: layout.footer },
+          // Navigation settings come from the draft only, like the brand kit.
+          chrome: { ...navChrome(canvas.metadata.nav, layout.nav), footer: layout.footer },
         }),
     responsive: { mobileColumns: 1, desktopColumns: 3 },
   });

@@ -1,6 +1,17 @@
 import { imageSource } from "./assetRef";
 import { z } from "zod";
 import { motionIds, MotionSchema, bindMotionInput, compatibleMotion, combinationReason, targetReason, withinMotionBudget, type MotionInstance } from "./motion";
+// Site navigation set in the draft (導覽列). Items are keyed by the heading or page they link to;
+// order, a custom label and hiding are all optional. Without settings the site picks its own.
+export const navStyles = ["top-sticky", "top-static", "top-autohide", "side-left", "side-right", "floating", "none"] as const;
+export type NavStyle = (typeof navStyles)[number];
+export const NavItemSchema = z.object({ id: z.string().uuid(), label: z.string().trim().min(1).max(24).optional(), hidden: z.boolean().optional() }).strict();
+export const NavSettingsSchema = z.object({ style: z.enum(navStyles), items: z.array(NavItemSchema).max(40).optional() }).strict();
+export type NavSettings = z.infer<typeof NavSettingsSchema>;
+/** Page chrome for a site built from a draft with (or without) navigation settings. */
+export function navChrome(nav: NavSettings | undefined, fallback: boolean): { nav: boolean; navStyle?: NavStyle; navItems?: NavSettings["items"] } {
+  return nav ? { nav: nav.style !== "none", navStyle: nav.style, ...(nav.items?.length ? { navItems: nav.items } : {}) } : { nav: fallback };
+}
 export const effectIds = motionIds;
 export const EffectSchema = MotionSchema;
 export const localAssets = ["/assets/workspace.svg"] as const;
@@ -457,7 +468,7 @@ const PageObject = z
     styles: z.enum(["neutral", "warm"]),
     theme: z.enum(themeIds).optional(),
     brand: BrandSchema.optional(),
-    chrome: z.object({ nav: z.boolean(), footer: z.boolean() }).strict().optional(),
+    chrome: z.object({ nav: z.boolean(), footer: z.boolean(), navStyle: z.enum(navStyles).optional(), navItems: z.array(NavItemSchema).max(40).optional() }).strict().optional(),
     responsive: z
       .object({
         mobileColumns: z.literal(1),
