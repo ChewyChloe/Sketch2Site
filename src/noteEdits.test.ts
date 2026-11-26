@@ -40,4 +40,14 @@ describe("batch notes", () => {
     expect(outcomes[0].by).toBe("none");
     expect(outcomes[0].summary).toContain("看不懂");
   });
+  it("sends the brief along and treats the same text back as no change", async () => {
+    const { page, heading } = site();
+    const ask = vi.fn(async () => [{ n: 1, newText: "資管系迎新茶會", commands: [] }]);
+    const brief = { audience: "新生", purpose: "活動", mood: "活潑" };
+    const { outcomes } = await processNotes(page, [{ key: "a", nodeId: heading.id, text: "寫得更熱情一點" }], ask, new AbortController().signal, brief);
+    expect((ask.mock.calls[0] as unknown[])[2]).toEqual(brief);
+    expect(outcomes[0].by).toBe("none");
+    expect(outcomes[0].patches).toEqual([]);
+    expect(outcomes[0].summary).toContain("AI 沒有改這則");
+  });
 });

@@ -33,7 +33,7 @@ import { applyPatchBatch, indexNodes, travelPage, type Change } from "./patch";
 import { AnnotationBubble, typeNames as annotationNames } from "./AnnotationBubble";
 import { LayerTree } from "./LayerTree";
 import { SiteToolbar } from "./SiteToolbar";
-import { NoteMarkers, NoteTray, type StagedNote } from "./NoteBatch";
+import { NoteMarkers, NoteTray, type StagedNote, type NoteBrief } from "./NoteBatch";
 import { themeIds, themeLabels, allSections } from "./pageSpec";
 function changeLabel(c: Change) {
   return c.property === "style.align"
@@ -78,7 +78,7 @@ export type PreviewHandle = {
   ): Promise<{ ok: boolean; error?: string }>;
 };
 import { DeviceToggle } from "./DeviceToggle";
-export default function Preview({ ref, onSiteChange, device: deviceProp, onDeviceChange }: { ref?: Ref<PreviewHandle>; onSiteChange?: (before: import("./pageSpec").PageSpec, after: import("./pageSpec").PageSpec) => void; device?: "desktop" | "mobile"; onDeviceChange?: (d: "desktop" | "mobile") => void }) {
+export default function Preview({ ref, brief, onSiteChange, device: deviceProp, onDeviceChange }: { ref?: Ref<PreviewHandle>; brief?: NoteBrief; onSiteChange?: (before: import("./pageSpec").PageSpec, after: import("./pageSpec").PageSpec) => void; device?: "desktop" | "mobile"; onDeviceChange?: (d: "desktop" | "mobile") => void }) {
   const pendingEdits = useRef(false);
   const resetProperties = useRef<() => void>(() => {});
   const selectionHead = useRef<string[]>([]);
@@ -940,6 +940,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
         {ready && !loadError && (
           <NoteTray
             page={page}
+            brief={brief}
             notes={notes}
             onRemove={(key) => setNotes((list) => list.filter((n) => n.key !== key))}
             onClear={() => setNotes([])}

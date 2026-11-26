@@ -8,6 +8,9 @@ import { allSections, type PageNode, type PageSpec } from "./pageSpec";
 // Each note is read locally first (free); only what is not understood goes to the AI,
 // all in one request. Nothing changes until the user presses 套用 on the summary.
 
+/** What 描述網站 says about the site, so a rewrite fits who it is for. */
+export type NoteBrief = { audience?: string; purpose?: string; mood?: string };
+const short = (v?: string) => (v && v.trim() ? v.trim().slice(0, 20) : undefined);
 export type StagedNote = { key: string; nodeId: string; text: string };
 export type NoteOutcome = { n: number; note: StagedNote; by: "local" | "ai" | "none"; summary: string; patches: unknown[]; scope: string[] };
 
@@ -25,6 +28,7 @@ const generic = ["大一點", "小一點", "粗體", "置中", "靠左", "淡入
 export async function requestNoteEdits(
   notes: { n: number; kind: NoteKind; text: string; note: string; allowed: string[] }[],
   signal: AbortSignal,
+  brief?: NoteBrief,
 ): Promise<NoteEdit[]> {
   if (import.meta.env.VITE_SITES_FRONTEND_ONLY === "true") throw new GenerationError("NOT_CONFIGURED");
   let config: { configured?: boolean; csrfToken?: string };
@@ -43,7 +47,7 @@ export async function requestNoteEdits(
       credentials: "same-origin",
       signal,
       headers: { "Content-Type": "application/json", "X-Sketch-CSRF": config.csrfToken! },
-      body: JSON.stringify({ requestId, notes }),
+      body: JSON.stringify({ requestId, notes, audience: short(brief?.audience), purpose: short(brief?.purpose), mood: short(brief?.mood) }),
     });
   } catch {
     throw new GenerationError("UNAVAILABLE");
@@ -72,6 +76,7 @@ export async function processNotes(
   notes: StagedNote[],
   ask: typeof requestNoteEdits,
   signal: AbortSignal,
+  brief?: NoteBrief,
 ): Promise<{ outcomes: NoteOutcome[]; aiError?: string }> {
   const outcomes: NoteOutcome[] = [];
   const pending: { outcome: NoteOutcome; leftover: string }[] = [];
@@ -94,11 +99,13 @@ export async function processNotes(
       return { n: outcome.n, kind, text, note: leftover.slice(0, 300), allowed: [...new Set([...suggestionsFor(page, outcome.note.nodeId), ...generic])].filter((c) => c.length <= 20).slice(0, 16) };
     });
     try {
-      const edits = await ask(asks, signal);
+      const edits = await ask(asks, signal, brief);
       for (const { outcome } of pending) {
         const edit = edits.find((e) => e.n === outcome.n);
         if (!edit) continue;
-        const instruction = [...(edit.newText ? [`改成「${edit.newText}」`] : []), ...edit.commands].join("，");
+        const current = asks.find((a) => a.n === outcome.n)?.text ?? "";
+        const newText = edit.newText && edit.newText.trim() !== current.trim() ? edit.newText : "";
+        const instruction = [...(newText ? [`改成「${newText}」`] : []), ...edit.commands].join("，");
         const read = instruction ? interpretAnnotation(page, outcome.note.nodeId, instruction) : null;
         if (read?.ok && read.patches.length) {
           outcome.patches = [...outcome.patches, ...read.patches];
@@ -111,7 +118,7 @@ export async function processNotes(
       const code = e instanceof GenerationError ? e.code : "UNAVAILABLE";
       aiError = code === "NOT_CONFIGURED" || code === "UNAVAILABLE" ? "AI 目前沒有開啟，看不懂的註解先跳過" : code === "LIMIT" ? "AI 這次的次數用完了，看不懂的註解先跳過" : "AI 這次沒有回應，看不懂的註解先跳過";
     }
-    for (const { outcome } of pending) if (!outcome.patches.length) { outcome.by = "none"; outcome.summary = "看不懂，換個說法試試，例如「大一點」或改成「新的文字」"; }
+    for (const { outcome } of pending) if (!outcome.patches.length) { outcome.by = "none"; outcome.summary = aiError ? "看不懂，換個說法試試，例如「大一點」或改成「新的文字」" : "AI 沒有改這則，換個說法試試，例如改成「新的文字」"; }
   }
   return { outcomes, aiError };
 }
@@ -154,12 +161,14 @@ export function NoteMarkers({ notes, stage, page }: { notes: StagedNote[]; stage
 export function NoteTray({
   page,
   notes,
+  brief,
   onRemove,
   onClear,
   onApply,
 }: {
   page: PageSpec;
   notes: StagedNote[];
+  brief?: NoteBrief;
   onRemove: (key: string) => void;
   onClear: () => void;
   onApply: (patches: unknown[], scope: string[]) => boolean;
@@ -173,7 +182,7 @@ export function NoteTray({
     setPhase("working");
     setError("");
     const controller = new AbortController();
-    const out = await processNotes(page, notes, requestNoteEdits, controller.signal);
+    const out = await processNotes(page, notes, requestNoteEdits, controller.signal, brief);
     setResult(out);
     setPhase("review");
   };

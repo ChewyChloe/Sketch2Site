@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-26",
+  "purpose": "Verify author section order, replace-site flow and batch notes with the real AI before the competition deck",
+  "authorization": { "maxCalls": 4, "maxUsd": 0.20, "givenBy": "project owner in chat" },
+  "model": "gpt-6-luna",
+  "keyHandling": "Network secret on the personal cloud environment, injected by the proxy; the server got a placeholder value. Never in code, logs, chat or git. The browser script counted and capped provider requests; server stopped after each run.",
+  "providerCalls": 3,
+  "unusedCalls": 1,
+  "failedOrRetried": 0,
+  "totalEstimatedUsd": 0.0003486,
+  "runs": [
+    { "n": 1, "draft": "template 社團招生頁 + 描述網站 學生/社團招生/活潑, replacing a local-built site", "kind": "layout", "in": 828, "out": 113, "usd": 0.0001393, "ms": 2487, "result": "PASS; section order identical to the author's (local) order, theme midnight -> blossom; 取代網站 confirm and 換回上一版 shown" },
+    { "n": 2, "draft": "3 staged notes: 置中 (local), heading 寫得更熱情一點, paragraph 改短一點", "kind": "notes", "in": 534, "out": 44, "usd": 0.0000754, "ms": 1307, "result": "PARTIAL; 置中 local OK; AI skipped the heading (shown as 看不懂) and returned an almost unchanged paragraph. Cause: rules did not require a real change and the brief was not sent" },
+    { "n": 3, "draft": "same notes after the fix (brief sent, rules require a clear change), server restarted", "kind": "notes", "in": 639, "out": 140, "usd": 0.0001339, "ms": 2362, "result": "PASS; heading -> 新生快來找答案，一起加入！, paragraph -> 沒相機也能參加嗎？, 置中 local; applied with one undo step" }
+  ],
+  "fixedDuringTest": [
+    "Batch notes send 描述網站 (audience, purpose, mood) with the request",
+    "Note rules: a rewrite or tone change must read clearly different; shortening must be clearly shorter; never return the text unchanged",
+    "Same text back from the AI is not counted as a change; the summary says AI 沒有改這則 instead of 看不懂"
+  ],
+  "openFindings": [
+    "The menu label follows the section heading, so a long rewritten heading makes a long 導覽列 item (can be renamed in 導覽列)",
+    "Template 社團招生頁 gallery still shows grey placeholders (no photos)"
+  ]
+}

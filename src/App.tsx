@@ -1763,7 +1763,7 @@ node ? (
               <small>你在網站上的修改會保留</small>
             </div>
           )}
-          <Preview ref={previewRef} onSiteChange={syncFromSite} device={phoneView ? "mobile" : "desktop"} onDeviceChange={(d) => setPhoneView(d === "mobile")} />
+          <Preview ref={previewRef} brief={spec.metadata.brief} onSiteChange={syncFromSite} device={phoneView ? "mobile" : "desktop"} onDeviceChange={(d) => setPhoneView(d === "mobile")} />
         </div>
         {mode === "home" && (
           <HomePage
