@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
-import { allSections, conceptIds, conceptText, themeIds, themeLabels, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
+import { useEffect, useMemo, useState } from "react";
+import { deleteHabit, readHabits, saveHabit, type Habit } from "./habits";
+import { allSections, conceptIds, conceptText, pickableThemes, themeIds, themeLabels, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import { ThumbnailRender } from "./PageRuntime";
 import type { CandidateResult } from "./demo";
 import { DeviceToggle } from "./DeviceToggle";
-import { applyDirection, directionsFor, firstTwo, sameDirection, variantAccent, variantsFor, type Ask } from "./directions";
+import { applyDirection, directionsFor, firstTwo, sameDirection, variantAccent, variantsFor, type Ask, type Variant } from "./directions";
 export default function CandidatePreview({
   candidate,
   previewOnly=false,
@@ -48,13 +49,24 @@ export default function CandidatePreview({
   const directions = useMemo(() => candidate.directions ?? directionsFor(candidate.page, brief), [candidate, brief]);
   const [variant, setVariant] = useState(0);
   const [compareOpen, setCompareOpen] = useState(true);
-  const current = { name: "", why: "", theme, concept: concept ?? ("none" as const), composition: composition === "editorial" ? ("editorial" as const) : ("tidy" as const) };
+  // 我的風格: saved looks offered again, never applied on their own.
+  const [habits, setHabits] = useState<Habit[]>(readHabits);
+  useEffect(() => {
+    const changed = () => setHabits(readHabits());
+    window.addEventListener("sketch-habits-changed", changed);
+    return () => window.removeEventListener("sketch-habits-changed", changed);
+  }, []);
+  const [habitVariant, setHabitVariant] = useState<{ id: string; variant: Variant } | null>(null);
+  const [saving2, setSaving2] = useState<string | null>(null);
+  const [habitNote, setHabitNote] = useState("");
+  const current = { name: "", why: "", theme: theme === "sunrise" ? ("classic" as const) : theme, concept: concept ?? ("none" as const), composition: composition === "editorial" ? ("editorial" as const) : ("tidy" as const) };
   const variants = variantsFor(current);
   const page = useMemo(() => {
     const base = { ...candidate.page, theme, concept, composition, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) };
-    return variant ? applyDirection(base, current, variants[variant]) : base;
+    const chosen = habitVariant?.variant ?? (variant ? variants[variant] : undefined);
+    return chosen ? applyDirection(base, current, chosen) : base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candidate.page, theme, concept, composition, extras, variant]);
+  }, [candidate.page, theme, concept, composition, extras, variant, habitVariant]);
   const thumbs = useMemo(() => directions.map((d) => firstTwo(applyDirection(candidate.page, d, undefined))), [directions, candidate.page]);
   const chooseDirection = (i: number) => {
     const d = directions[i];
@@ -62,6 +74,21 @@ export default function CandidatePreview({
     setConcept(d.concept === "none" ? undefined : d.concept);
     setComposition(d.composition === "editorial" ? "editorial" : undefined);
     setVariant(0);
+    setHabitVariant(null);
+  };
+  const applyHabit = (h: Habit) => {
+    setTheme(h.direction.theme);
+    setConcept(h.direction.concept === "none" ? undefined : h.direction.concept);
+    setComposition(h.direction.composition === "editorial" ? "editorial" : undefined);
+    setVariant(-1);
+    setHabitVariant({ id: h.id, variant: { label: h.variantLabel, brand: h.variant } });
+  };
+  const currentName = directions.find((d) => sameDirection(d, theme, concept, composition))?.name ?? "我的風格";
+  const keepHabit = (name: string) => {
+    const v = habitVariant?.variant ?? variants[Math.max(variant, 0)];
+    const saved = saveHabit({ name, direction: { ...current, name: currentName, why: "我存下來的風格" }, variant: v.brand, variantLabel: v.label, ...(brief?.ask ? { ask: brief.ask } : {}) });
+    setHabitNote(saved ? `已存成「${saved.name}」，下次可以一鍵套用` : "這個瀏覽器沒辦法儲存，請檢查是否開了無痕模式");
+    setSaving2(null);
   };
   const roles = new Set(allSections(candidate.page).map((s) => s.role));
   return (
@@ -146,7 +173,7 @@ export default function CandidatePreview({
       </div>
       <div className="theme-picker" role="radiogroup" aria-label="網站主題">
         <span>主題</span>
-        {themeIds.map((id) => (
+        {pickableThemes.map((id) => (
           <button
             key={id}
             role="radio"
@@ -188,12 +215,33 @@ export default function CandidatePreview({
         <div className="theme-picker variant-picker" role="radiogroup" aria-label="同一方向的變化">
           <span>再挑一種變化</span>
           {variants.map((v, i) => (
-            <button key={v.label} type="button" role="radio" aria-checked={variant === i} className="concept-chip" onClick={() => setVariant(i)}>
+            <button key={v.label} type="button" role="radio" aria-checked={variant === i} className="concept-chip" onClick={() => { setVariant(i); setHabitVariant(null); }}>
               {variantAccent(v) && <i className="variant-dot" style={{ background: variantAccent(v) }} aria-hidden="true" />}
               {v.label}
             </button>
           ))}
+          {saving2 === null ? (
+            <button type="button" className="concept-chip habit-save" onClick={() => setSaving2(currentName)}>存成我的風格</button>
+          ) : (
+            <form className="habit-form" onSubmit={(e) => { e.preventDefault(); if (saving2.trim()) keepHabit(saving2.trim()); }}>
+              <input aria-label="風格名稱" maxLength={12} value={saving2} autoFocus onChange={(e) => setSaving2(e.target.value)} />
+              <button type="submit" className="concept-chip">儲存</button>
+              <button type="button" className="concept-chip" onClick={() => setSaving2(null)}>取消</button>
+            </form>
+          )}
         </div>
+        {habitNote && <p className="habit-note" role="status">{habitNote}</p>}
+        {habits.length > 0 && (
+          <div className="theme-picker habit-picker" role="group" aria-label="我的風格">
+            <span>我的風格</span>
+            {habits.map((h) => (
+              <span key={h.id} className="habit-chip">
+                <button type="button" className="concept-chip" aria-pressed={habitVariant?.id === h.id} title={h.variantLabel} onClick={() => applyHabit(h)}>{h.name}</button>
+                <button type="button" className="habit-del" aria-label={"刪除我的風格：" + h.name} onClick={() => { deleteHabit(h.id); if (habitVariant?.id === h.id) setHabitVariant(null); }}>×</button>
+              </span>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );

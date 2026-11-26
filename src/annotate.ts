@@ -20,7 +20,7 @@ const typeNames: Record<string, string> = { heading: "標題", paragraph: "文�
 const colorThemes: [RegExp, ThemeId][] = [
   [/藍|海|專業/, "ocean"],
   [/粉|桃|可愛|活潑/, "blossom"],
-  [/橘|橙|暖|咖啡|陽光/, "sunrise"],
+  [/暖|咖啡|木頭|書/, "forest"],
   [/綠|自然|森林|植物/, "forest"],
   [/黑白|灰|簡約|極簡|素/, "mono"],
   [/深色|暗|黑|夜|科技|紫/, "midnight"],

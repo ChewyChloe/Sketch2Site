@@ -10,7 +10,7 @@ import { moodThemes, withFocusFirst } from "./brief";
 type Section = LayoutV2["sections"][number];
 
 const themeHints: [RegExp, ThemeId][] = [
-  [/咖啡|餐|料理|甜點|麵包|烘焙|美食|食堂|飲/, "sunrise"],
+  [/咖啡|餐|料理|甜點|麵包|烘焙|美食|食堂|飲/, "forest"],
   [/活動|派對|音樂|演唱|展演|祭|夜|遊戲|電競|live/i, "midnight"],
   [/作品|設計|攝影|portfolio|藝術|插畫|工作室/i, "mono"],
   [/自然|植物|農|旅|山|森|茶|露營|戶外|環境|永續/, "forest"],

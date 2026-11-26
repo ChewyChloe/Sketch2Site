@@ -359,4 +359,4 @@
 - [x] DONE：三個方向並排（AI 同一次呼叫回傳；無 AI 時本機挑）＋同方向三種變化。
 - [x] DONE：拿掉 AI 味（晨光配色、Instrument Serif）。
 - [ ] NOT STARTED：標題三選一（成果導向）。
-- [ ] NOT STARTED：定案後鎖成設計規範，多頁沿用。
+- [x] DONE：我的風格（存成可重複套用、不強制的習慣）。

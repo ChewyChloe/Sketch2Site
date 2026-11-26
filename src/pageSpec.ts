@@ -72,6 +72,9 @@ export const styleSchema = z
 // Visual themes are fixed, reviewed token sets; never model-supplied CSS.
 export const themeIds = ["classic", "midnight", "sunrise", "ocean", "forest", "mono", "blossom"] as const;
 export type ThemeId = (typeof themeIds)[number];
+// 晨光 was retired (2026-11-26, user feedback): sites already using it still render, but it is never
+// offered, picked by the AI or chosen by the local planner.
+export const pickableThemes = ["classic", "midnight", "ocean", "forest", "mono", "blossom"] as const satisfies readonly ThemeId[];
 export const themeLabels: Record<ThemeId, string> = {
   classic: "經典綠",
   midnight: "午夜",

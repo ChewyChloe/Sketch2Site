@@ -920,3 +920,9 @@ body{background:var(--neo-cream)}
 .brief-ask-chips{display:flex;flex-wrap:wrap;gap:6px}
 .brief-ask-chips button{min-height:32px;padding:4px 12px;border:1.5px solid #cfcdc4;border-radius:999px;background:#fff;font:inherit;font-size:13px;cursor:pointer}
 .brief-ask-chips button[aria-pressed=true],.brief-ask-chips button[aria-checked=true]{border-color:#1d2420;background:#1d2420;color:#fff}
+/* Project card: hovering the picture shows its own frame, not a square band cut by the card edge. */
+.home-project-open:hover,.home-project-open:active{background:transparent!important;box-shadow:none!important;transform:none!important}
+.home-project-open:hover .home-thumb{border-color:var(--neo-dark);box-shadow:0 0 0 1px var(--neo-dark)}
+.home-project-open .home-thumb{transition:border-color .15s,box-shadow .15s}
+/* The design-tools sheet slides over the site at narrow widths: it sits above the floating element toolbar. */
+.preview-inspector { z-index: 40 !important; }

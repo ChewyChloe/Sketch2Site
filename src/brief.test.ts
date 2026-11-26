@@ -63,7 +63,7 @@ describe("deterministic rules applied to any layout plan", () => {
     const scrambled = { ...plan, theme: "mono" as const, sections: [hero, plan.sections.find((s) => s.role === "features")!, plan.sections.find((s) => s.role === "pricing")!] };
     scrambled.sections[0] = { ...hero, intro: hero.intro.map((i) => (i.presentation === "heading" ? i : { ...i, align: "center" as const })) };
     const page = materialize(spec, scrambled);
-    expect(page.theme).toBe("sunrise");
+    expect(page.theme).toBe("forest");
     expect(page.sections.map((s) => s.role)).toEqual(["hero", "pricing", "features"]);
     const aligns = new Set<string>();
     const walk = (n: { type: string; style: { align: string }; children?: unknown[] }) => { if (["heading", "paragraph", "button"].includes(n.type)) aligns.add(n.style.align); (n.children as typeof n[] | undefined)?.forEach(walk); };

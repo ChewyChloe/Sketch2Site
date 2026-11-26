@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { allSections, conceptIds, conceptText, themeIds, themeLabels, type Brand, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
+import { allSections, conceptIds, conceptText, pickableThemes, themeLabels, type Brand, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 
 // Diverge, then converge (docs/WORKFLOW_STUDY.md): ask a few questions, show three clearly
 // different directions side by side, then three variants of the chosen one. The person picks.
@@ -41,7 +41,7 @@ export const DirectionSchema = z
     name: z.string().trim().min(1).max(12),
     why: z.string().trim().min(1).max(60),
     concept: z.enum([...conceptIds, "none"]),
-    theme: z.enum(themeIds),
+    theme: z.enum(pickableThemes),
     composition: z.enum(compositionIds),
   })
   .strict();
@@ -59,7 +59,7 @@ export function cleanDirections(input: unknown): Direction[] | null {
   return parsed.data;
 }
 
-type Combo = { concept: ConceptId | "none"; theme: ThemeId; composition: "tidy" | "editorial"; light: Lightness; photos?: number; hero?: HeroPref; moods: string[]; name: string };
+type Combo = { concept: ConceptId | "none"; theme: (typeof pickableThemes)[number]; composition: "tidy" | "editorial"; light: Lightness; photos?: number; hero?: HeroPref; moods: string[]; name: string };
 // Reviewed combinations; each reads clearly different from the others.
 const combos: Combo[] = [
   { concept: "exhibition", theme: "midnight", composition: "tidy", light: "dark", photos: 2, hero: "photo", moods: ["質感", "簡約", "專業"], name: "展覽空間" },
@@ -71,7 +71,7 @@ const combos: Combo[] = [
   { concept: "none", theme: "midnight", composition: "editorial", light: "dark", photos: 1, hero: "photo", moods: ["科技感", "專業"], name: "夜色編排" },
   { concept: "generative-grid", theme: "classic", composition: "tidy", light: "bold", moods: ["活潑", "科技感"], name: "生成網格" },
   { concept: "none", theme: "forest", composition: "editorial", light: "editorial", moods: ["自然", "溫暖"], name: "書頁編排" },
-  { concept: "none", theme: "sunrise", composition: "editorial", light: "light", photos: 1, hero: "photo", moods: ["溫暖", "活潑", "清爽"], name: "晨光編排" },
+  { concept: "none", theme: "classic", composition: "editorial", light: "light", photos: 1, hero: "photo", moods: ["溫暖", "活潑", "清爽"], name: "清爽編排" },
 ];
 const whyFor = (c: Combo) =>
   (c.concept !== "none" ? conceptText[c.concept].idea : c.composition === "editorial" ? "每一段排法不同，大字和照片互相壓疊" : "整齊清楚，一眼看懂") + "，" + themeLabels[c.theme] + "色調";
@@ -144,7 +144,7 @@ export function directionsFor(page: PageSpec, brief?: { mood?: string; ask?: Ask
     name: page.concept ? conceptText[page.concept].name : themeLabels[page.theme ?? "classic"] + (page.composition === "editorial" ? "編排" : "整齊"),
     why: page.concept ? conceptText[page.concept].idea : "照你的描述選的色調，每一段" + (page.composition === "editorial" ? "排法不同" : "整齊排好"),
     concept: page.concept ?? "none",
-    theme: page.theme ?? "classic",
+    theme: page.theme && page.theme !== "sunrise" ? page.theme : "classic",
     composition: page.composition === "editorial" ? "editorial" : "tidy",
   };
   const light = lightOf(current.theme, page.concept);

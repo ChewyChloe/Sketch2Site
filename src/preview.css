@@ -374,3 +374,18 @@
 /* The live preview never shrinks to a strip: when space runs out, the whole preview area scrolls. */
 .preview-workspace:has(> .direction-compare) { overflow-y: auto; }
 .preview-workspace:has(> .direction-compare) > .preview-scroll { flex: 1 0 auto; min-height: 460px; height: 460px; }
+/* 我的風格: saved looks, offered again but never applied on their own. */
+.habit-save { border-style: dashed !important; }
+.habit-form { display: inline-flex; gap: 6px; align-items: center; }
+.habit-form input { min-height: 34px; width: 140px; padding: 0 10px; border: 1px solid var(--ink); border-radius: 8px; font: inherit; font-size: 13px; }
+.habit-note { margin: 2px 0 8px; font-size: 12.5px; color: var(--muted); }
+.habit-picker { border-bottom: 0 !important; padding-left: 0 !important; background: transparent !important; }
+.habit-chip { display: inline-flex; align-items: center; gap: 2px; }
+.habit-del { width: 26px; height: 26px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 15px; cursor: pointer; }
+.habit-del:hover { background: var(--line); color: var(--ink); }
+/* A sticky site nav sticks to the scroller's top edge: no padding above it, or the page shows through
+   a strip above the nav while scrolling. The gap moves onto the frame instead. */
+.preview-scroll { padding-top: 0 !important; }
+.preview-scroll > .preview-frame { margin-top: var(--s4); }
+/* The rows above the live preview keep their height; the whole area scrolls instead of squeezing them. */
+.preview-workspace:has(> .direction-compare) > * { flex-shrink: 0; }

@@ -49,10 +49,10 @@ describe("smart local layout", () => {
     expect(layout.sections.map((s) => s.role)).toEqual(["hero", "features", "gallery", "cta"]);
     expect(layout.sections[1].columns).toBe(3);
     expect(layout.nav).toBe(true);
-    expect(layout.theme).toBe("sunrise");
+    expect(layout.theme).toBe("forest");
     const page = materialize(spec, layout);
     expect(roles(page.sections)).toEqual(["hero", "features", "gallery", "cta"]);
-    expect(page.theme).toBe("sunrise");
+    expect(page.theme).toBe("forest");
     expect(page.chrome).toEqual({ nav: true, footer: true });
     expect(page.draftLayout).toBeUndefined();
     expect(() => verifyPreservation(spec, page)).not.toThrow();

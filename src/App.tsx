@@ -1579,7 +1579,8 @@ node ? (
           hidden={mode !== "preview" || Boolean(candidate)}
         />
         <div className="toolbar-actions">
-          <div className="workspace-modes" role="group" aria-label="工作區模式">
+          {/* The steps belong to a project; the home page has its own "開始畫草稿". */}
+          <div className="workspace-modes" role="group" aria-label="工作區模式" hidden={mode === "home"}>
             <button
               aria-label="草稿"
               aria-pressed={mode === "draft"&&!motionFull}

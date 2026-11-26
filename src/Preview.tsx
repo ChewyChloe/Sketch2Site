@@ -34,7 +34,7 @@ import { AnnotationBubble, typeNames as annotationNames } from "./AnnotationBubb
 import { LayerTree } from "./LayerTree";
 import { SiteToolbar } from "./SiteToolbar";
 import { NoteMarkers, NoteTray, type StagedNote, type NoteBrief } from "./NoteBatch";
-import { themeIds, themeLabels, allSections } from "./pageSpec";
+import { pickableThemes, themeIds, themeLabels, allSections } from "./pageSpec";
 function changeLabel(c: Change) {
   return c.property === "style.align"
     ? "對齊"
@@ -729,7 +729,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
             重播動畫
           </button>
           <div className="menu-label">主題</div>
-          {themeIds.map((id) => {
+          {pickableThemes.map((id) => {
             const page = current.current.history.present;
             return (
               <button

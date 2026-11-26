@@ -17,7 +17,7 @@ export type BriefField = keyof typeof briefOptions;
 export const moodThemes: Record<string, ThemeId> = {
   活潑: "blossom",
   專業: "ocean",
-  溫暖: "sunrise",
+  溫暖: "forest",
   簡約: "mono",
   自然: "forest",
   科技感: "midnight",

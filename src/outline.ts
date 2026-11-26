@@ -1,7 +1,7 @@
 import { cleanDirections, DirectionSchema } from "./directions";
 import { toJSONSchema, z } from "zod";
 import type { CanvasSpec } from "./spec";
-import { conceptIds, sectionRoles, themeIds } from "./pageSpec";
+import { conceptIds, pickableThemes, sectionRoles } from "./pageSpec";
 import { LayoutV2Schema, type LayoutV2 } from "./generation";
 import { smartLayout } from "./smartLayout";
 
@@ -13,7 +13,7 @@ import { smartLayout } from "./smartLayout";
 
 export const RefineSchema = z
   .object({
-    theme: z.enum(themeIds),
+    theme: z.enum(pickableThemes),
     // One design concept the whole site follows (docs/REFERENCE_STUDY.md), or none.
     concept: z.enum([...conceptIds, "none"]),
     // Three clearly different directions for the author to compare (docs/WORKFLOW_STUDY.md).

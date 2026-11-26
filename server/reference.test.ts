@@ -65,7 +65,7 @@ it("reads a picture's look locally and picks a direction", () => {
   const pale = new Array(20 * 20 * 4).fill(0).map((_, i) => (i % 4 === 3 ? 255 : i % 4 === 2 ? 236 : 244));
   const s = styleFromPixels(pale, 20, 20)!;
   expect([s.lightness, s.space]).toEqual(["light", "airy"]);
-  expect(directionFor({ ...s, mood: "warm", typeFamily: "serif", temperature: "warm" })).toBe("sunrise");
+  expect(directionFor({ ...s, mood: "warm", typeFamily: "serif", temperature: "warm" })).toBe("forest");
   // One blue filling the frame, crossed by slanted lines: colour field and diagonal lines.
   const lanes: number[] = [];
   for (let y = 0; y < 40; y++) for (let x = 0; x < 40; x++) { const line = (x + y * 2) % 12 < 1; lanes.push(...(line ? [240, 244, 248, 255] : [40, 110, 200, 255])); }

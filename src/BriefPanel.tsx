@@ -3,6 +3,7 @@ import { describeStyle, prepareReference } from "./referenceStyle";
 import { requestReferenceStyle } from "./referenceRequest";
 import { useEscapeToClose } from "./useEscape";
 import { briefOptions, emptyBrief, suggestion, type Brief, type BriefField } from "./brief";
+import { readHabits } from "./habits";
 import { avoidIds, avoidLabels, heroIds, heroLabels, lightnessIds, lightnessLabels, type Ask } from "./directions";
 
 /**
@@ -122,6 +123,7 @@ export function BriefPanel({
   };
   const set = (field: keyof Brief, value: string) => setBrief((b) => ({ ...b, [field]: value }));
   const ask: Ask = brief.ask ?? {};
+  const [habitsWithAsk] = useState(() => readHabits().filter((h) => h.ask));
   const setAsk = (patch: Partial<Ask>) => setBrief((b) => {
     const next = { ...(b.ask ?? {}), ...patch };
     for (const k of Object.keys(next) as (keyof Ask)[]) if (next[k] === undefined || (Array.isArray(next[k]) && k === "lightness" && !(next[k] as unknown[]).length)) delete next[k];
@@ -182,6 +184,14 @@ export function BriefPanel({
           <strong>先問清楚（選填）</strong>
           <small>答得越具體，三個方向越準</small>
         </div>
+        {habitsWithAsk.length > 0 && (
+          <div className="brief-ask-row" role="group" aria-label="帶入我的風格">
+            <span>帶入我的風格（之後還能改）</span>
+            <div className="brief-ask-chips">
+              {habitsWithAsk.map((h) => <button key={h.id} type="button" onClick={() => setBrief((b) => ({ ...b, ask: h.ask }))}>{h.name}</button>)}
+            </div>
+          </div>
+        )}
         <label className="brief-ask-row">
           <span>喜歡哪些網站或品牌</span>
           <input aria-label="喜歡哪些網站或品牌" maxLength={80} placeholder="例如：無印良品、蔦屋書店、某個學校網站" value={ask.refs ?? ""} onChange={(e) => setAsk({ refs: e.target.value || undefined })} />

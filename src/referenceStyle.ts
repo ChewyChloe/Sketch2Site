@@ -47,13 +47,13 @@ export function describeStyle(s: ReferenceStyle) {
 export function directionFor(s: Omit<ReferenceStyle, "direction">): ThemeId {
   if (s.lightness === "dark") return "midnight";
   if (s.principles.includes("soft-gradient")) return "blossom";
-  if (s.principles.includes("serif-display") || s.principles.includes("paper-grain")) return s.temperature === "warm" ? "sunrise" : "forest";
+  if (s.principles.includes("serif-display") || s.principles.includes("paper-grain")) return "forest";
   if (s.principles.includes("big-type") && s.colorMode === "mono") return "mono";
   if (s.principles.includes("color-field") && s.temperature === "cool") return "ocean";
   if (s.colorMode === "mono" && s.contrast === "strong" && s.temperature === "neutral") return "mono";
   if (s.colorMode === "mono" && s.temperature === "cool" && s.contrast === "strong") return "ocean";
   if (s.mood === "natural" || (s.typeFamily === "serif" && s.temperature !== "warm")) return "forest";
-  if (s.mood === "warm" || (s.temperature === "warm" && s.typeFamily === "serif")) return "sunrise";
+  if (s.mood === "warm" || (s.temperature === "warm" && s.typeFamily === "serif")) return "forest";
   if (s.mood === "playful" || (s.contrast === "soft" && s.colorMode === "multi")) return "blossom";
   if (s.mood === "technical" || s.temperature === "cool") return "ocean";
   if (s.mood === "premium") return "mono";
