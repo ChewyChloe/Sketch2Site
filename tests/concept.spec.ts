@@ -10,6 +10,7 @@ test("exhibition concept: picked on the candidate, kept on the saved site, reada
   await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：社團招生頁" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await buildSite(page);
+  await page.getByText("細調：構圖、設計概念、主題").click();
   const picker = page.getByRole("radiogroup", { name: "設計概念" });
   await expect(picker.getByRole("radio", { name: "不用概念" })).toHaveAttribute("aria-checked", "true");
   await picker.getByRole("radio", { name: "展覽空間" }).click();
@@ -39,6 +40,7 @@ test("every concept changes the whole site and stays inside a phone screen", asy
   await clubCandidate(page, 390);
   await buildSite(page);
   const candidate = page.locator("main[aria-label='生成候選預覽'] .rendered-page").first();
+  await page.getByText("細調：構圖、設計概念、主題").click();
   const picker = page.getByRole("radiogroup", { name: "設計概念" });
   const looks = new Set<string>();
   for (const [name, id] of [["研究檔案", "archive"], ["作品牆", "gallery-wall"], ["暗場", "darkroom"], ["單色海報", "poster"], ["生成網格", "generative-grid"]]) {
@@ -110,6 +112,7 @@ test("editorial composition: each section gets its own arrangement, phone stays 
   await clubCandidate(page, 390);
   await buildSite(page);
   const candidate = page.locator("main[aria-label='生成候選預覽'] .rendered-page").first();
+  await page.getByText("細調：構圖、設計概念、主題").click();
   const compose = page.getByRole("radiogroup", { name: "構圖" });
   await expect(compose.getByRole("radio", { name: "整齊" })).toHaveAttribute("aria-checked", "true");
   await compose.getByRole("radio", { name: "編排" }).click();

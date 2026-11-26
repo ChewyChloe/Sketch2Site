@@ -156,6 +156,8 @@ const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
 const sampleImage = "/assets/workspace.svg";
 const ThemedPage = createContext(false);
 const noExtras = {};
+/** Inside a small preview card: no element ids, so the page shown full size keeps the only copy. */
+export const ThumbnailRender = createContext(false);
 const PageExtras = createContext<{ pricingBuilder?: boolean; galleryViews?: boolean }>({});
 /** Reads a price such as "NT$ 1,200 / 杯" from a card's lines (the first number on the price line). */
 export function priceOf(card: PageNode): number | null {
@@ -334,7 +336,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   const assembly=node.effects.find(e=>e.presetId==="letter-assembly"),accent=node.effects.find(e=>e.presetId==="accent-stroke"),disclosure=node.effects.find(e=>e.presetId==="disclosure-panel");
   const advancedText=node.effects.find(e=>advancedTextIds.includes(e.presetId));
   const cinematicText=node.effects.find(e=>cinematicTextIds.includes(e.presetId)),story=node.effects.find(e=>storyGroupIds.includes(e.presetId)),shuffle=node.effects.find(e=>e.presetId==="card-stack-shuffle"),sequence=node.effects.find(e=>e.presetId==="scroll-image-sequence");
-  const extras=useContext(PageExtras);
+  const extras=useContext(PageExtras), thumbnail=useContext(ThumbnailRender);
   const kids=node.children?.map(child=><RenderNode key={child.id} node={child}/>);
   const children=node.type==="section"&&node.role==="pricing"&&extras.pricingBuilder?<>{kids}<PricingBuilder section={node}/></>:node.type==="section"&&node.role==="gallery"&&extras.galleryViews&&!isLogoWall(node)?<GalleryViews>{kids}</GalleryViews>:kids;
   const style = {
@@ -352,8 +354,8 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   return (
     <Tag
       ref={ref as never}
-      id={"page-" + node.id}
-      data-page-id={node.id}
+      id={thumbnail ? undefined : "page-" + node.id}
+      data-page-id={thumbnail ? undefined : node.id}
       data-page-type={node.type}
       data-text-style={node.text ? "" : undefined}
       data-pause-hover={breathing?.validatedControls.pauseOnHover===true}
@@ -663,7 +665,7 @@ export function PageRuntime({
           data-theme={page.theme}
           data-art={page.art?.principles.join(" ") || undefined}
           data-concept={page.concept}
-          data-compose={page.composition}
+          data-compose={page.concept ? undefined : page.composition}
           data-parallax={page.concept && parallaxConcepts.includes(page.concept) ? "" : undefined}
           data-branded={page.brand?.primary ? "" : undefined}
           lang={page.metadata.language}

@@ -112,7 +112,7 @@ for (const [index, canvas] of fixtures.entries()) {
         ).toBe(true);
         expect(
           await page
-            .locator('[aria-label="生成候選預覽"] .rendered-page')
+            .locator('[aria-label="生成候選預覽"] .preview-frame .rendered-page')
             .evaluate((el) => el.scrollWidth <= el.clientWidth),
         ).toBe(true);
         await page.screenshot({

@@ -1,3 +1,4 @@
+import { DirectionSchema } from "./directions";
 import {structuredGroupMotions} from "./motion";
 import { moodThemes, withFocusFirst } from "./brief";
 import { z } from "zod";
@@ -193,6 +194,7 @@ export const LayoutV2Schema = z
     typography: z.enum(["sans", "serif"]),
     theme: z.enum(themeIds),
     concept: z.enum(conceptIds).optional(),
+    directions: z.array(DirectionSchema).length(3).optional(),
     nav: z.boolean(),
     footer: z.boolean(),
     sections: z
@@ -513,6 +515,8 @@ export const GenerationResponseSchema = z
   .object({
     requestId: z.string().uuid(),
     page: PageSchema,
+    // Three directions to compare; without them the browser works out three itself.
+    directions: z.array(DirectionSchema).length(3).optional(),
     usage: UsageSchema,
     mode: z.enum(["mock", "live"]),
   })

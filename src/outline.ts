@@ -1,3 +1,4 @@
+import { cleanDirections, DirectionSchema } from "./directions";
 import { toJSONSchema, z } from "zod";
 import type { CanvasSpec } from "./spec";
 import { conceptIds, sectionRoles, themeIds } from "./pageSpec";
@@ -15,6 +16,8 @@ export const RefineSchema = z
     theme: z.enum(themeIds),
     // One design concept the whole site follows (docs/REFERENCE_STUDY.md), or none.
     concept: z.enum([...conceptIds, "none"]),
+    // Three clearly different directions for the author to compare (docs/WORKFLOW_STUDY.md).
+    directions: z.array(DirectionSchema).length(3),
     nav: z.boolean(),
     // Kept for compatibility; trusted code keeps the author's section order and ignores it.
     order: z.array(z.number().int().min(0).max(19)).max(20),
@@ -90,7 +93,8 @@ export function applyRefine(plan: LayoutV2, refine: Refine): LayoutV2 {
   // Section order is the author's: the draft's reading order (plus the brief's focus, which the
   // local planner already applied). The model's order is not used (paid test finding).
   const ordered = sections;
-  const next = { ...plan, theme: refine.theme, nav: refine.nav, sections: ordered, ...(refine.concept && refine.concept !== "none" ? { concept: refine.concept } : {}) };
+  const directions = cleanDirections(refine.directions);
+  const next = { ...plan, theme: refine.theme, nav: refine.nav, sections: ordered, ...(refine.concept && refine.concept !== "none" ? { concept: refine.concept } : {}), ...(directions ? { directions } : {}) };
   const parsed = LayoutV2Schema.safeParse(next);
   return parsed.success ? (parsed.data as LayoutV2) : plan;
 }

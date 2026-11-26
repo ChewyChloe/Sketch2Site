@@ -2501,3 +2501,6 @@ END OF TERMS AND CONDITIONS
 ## Noto Sans TC（思源黑體）
 Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'. Noto is a trademark of Google Inc.
 SIL Open Font License 1.1。自 Google Fonts 下載可變字重（100–900）、依 unicode-range 分成 108 個 woff2 檔，存於 src/assets/fonts/noto-sans-tc/，授權全文 src/assets/fonts/noto-sans-tc/OFL.txt。匯出網站只帶頁面用到的分檔與授權檔。
+
+## EB Garamond
+Copyright 2017 The EB Garamond Project Authors (https://github.com/octaviopardo/EBGaramond12)。SIL Open Font License 1.1。自 Google Fonts 下載拉丁字母分檔（正體可變字重、義大利體），存於 src/assets/fonts/display/，授權見同資料夾 OFL.txt。取代原本的 Instrument Serif。

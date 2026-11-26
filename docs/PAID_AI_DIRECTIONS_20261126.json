@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-26",
+  "model": "gpt-6-luna",
+  "authorization": "使用者同意新流程並授權 API；自訂上限 4 次、US$0.05（伺服器 MAX_CALLS=4、BUDGET=0.05）",
+  "calls": 2,
+  "estimatedCostUsd": 0.000757,
+  "checks": {
+    "threeDirections": "PASS：兩次都回三個不同方向，名稱與理由為乾淨的繁體中文、無連結",
+    "followsAnswers": "PASS：社團（深色＋雜誌感＋大字配照片）→ 暗房展場／影像檔案／雜誌影牆；咖啡店（淺色＋大膽色塊）→ 暖紙日常／晨光海報／花影咖啡",
+    "found": [
+      "AI 沿用舊的主題描述把晨光叫「暖紙」→ 已更新晨光說明",
+      "AI 會把設計概念和編排同時開，兩者互相打架、標題被裁 → 有概念時不套用編排，並寫進指示"
+    ]
+  },
+  "runs": [
+    {
+      "tpl": "社團招生頁",
+      "resp": {
+        "status": 200,
+        "directions": [
+          {
+            "name": "暗房展場",
+            "why": "以沉靜暗色襯托作品，適合熱愛攝影的新生。",
+            "concept": "exhibition",
+            "theme": "midnight",
+            "composition": "editorial"
+          },
+          {
+            "name": "影像檔案",
+            "why": "像編輯式作品紀錄，讓社團成果清晰易讀。",
+            "concept": "archive",
+            "theme": "forest",
+            "composition": "tidy"
+          },
+          {
+            "name": "雜誌影牆",
+            "why": "以大字與作品錯落呈現，展現青春攝影視角。",
+            "concept": "gallery-wall",
+            "theme": "mono",
+            "composition": "editorial"
+          }
+        ],
+        "theme": "midnight",
+        "concept": "exhibition",
+        "usage": {
+          "inputTokens": 1830,
+          "outputTokens": 541,
+          "cachedInputTokens": 0,
+          "reasoningTokens": 285,
+          "estimatedCostUsd": 0.0004535,
+          "latencyMs": 5942
+        }
+      },
+      "shown": [
+        "暗房展場：以沉靜暗色襯托作品，適合熱愛攝影的新生。",
+        "影像檔案：像編輯式作品紀錄，讓社團成果清晰易讀。",
+        "雜誌影牆：以大字與作品錯落呈現，展現青春攝影視角。"
+      ]
+    },
+    {
+      "tpl": "巷口咖啡小店",
+      "resp": {
+        "status": 200,
+        "directions": [
+          {
+            "name": "暖紙日常",
+            "why": "暖紙與清楚留白，適合日常咖啡與輕鬆點單。",
+            "concept": "none",
+            "theme": "sunrise",
+            "composition": "tidy"
+          },
+          {
+            "name": "晨光海報",
+            "why": "醒目的色塊與大字，讓小店特色一眼可見。",
+            "concept": "poster",
+            "theme": "classic",
+            "composition": "editorial"
+          },
+          {
+            "name": "花影咖啡",
+            "why": "柔和花影與錯落圖片，營造悠閒的店內氣氛。",
+            "concept": "gallery-wall",
+            "theme": "blossom",
+            "composition": "editorial"
+          }
+        ],
+        "theme": "sunrise",
+        "concept": null,
+        "usage": {
+          "inputTokens": 1782,
+          "outputTokens": 482,
+          "cachedInputTokens": 1285,
+          "reasoningTokens": 221,
+          "estimatedCostUsd": 0.00030355000000000003,
+          "latencyMs": 4266
+        }
+      },
+      "shown": [
+        "暖紙日常：暖紙與清楚留白，適合日常咖啡與輕鬆點單。",
+        "晨光海報：醒目的色塊與大字，讓小店特色一眼可見。",
+        "花影咖啡：柔和花影與錯落圖片，營造悠閒的店內氣氛。"
+      ]
+    }
+  ]
+}

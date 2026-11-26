@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { allSections, conceptIds, conceptText, themeIds, themeLabels, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
+import { ThumbnailRender } from "./PageRuntime";
 import type { CandidateResult } from "./demo";
 import { DeviceToggle } from "./DeviceToggle";
+import { applyDirection, directionsFor, firstTwo, sameDirection, variantAccent, variantsFor, type Ask } from "./directions";
 export default function CandidatePreview({
   candidate,
   previewOnly=false,
@@ -14,6 +16,7 @@ export default function CandidatePreview({
   mobile: mobileProp,
   onMobile,
   replacing = false,
+  brief,
 }: {
   candidate: CandidateResult;
   previewOnly?:boolean;
@@ -28,6 +31,8 @@ export default function CandidatePreview({
   onMobile?: (mobile: boolean) => void;
   /** A site was built before: confirm before replacing it. */
   replacing?: boolean;
+  /** The author's description, used to work out directions when the AI gave none. */
+  brief?: { mood?: string; ask?: Ask } | null;
 }) {
   const [confirming, setConfirming] = useState(false);
   const [mobileState, setMobileState] = useState(false),
@@ -39,7 +44,25 @@ export default function CandidatePreview({
   const [concept, setConcept] = useState<ConceptId | undefined>(candidate.page.concept);
   const [extras, setExtras] = useState(candidate.page.extras ?? {});
   const [composition, setComposition] = useState(candidate.page.composition);
-  const page = useMemo(() => ({ ...candidate.page, theme, concept, composition, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) }), [candidate.page, theme, concept, composition, extras]);
+  // Diverge, then converge: three directions side by side, then three variants of the chosen one.
+  const directions = useMemo(() => candidate.directions ?? directionsFor(candidate.page, brief), [candidate, brief]);
+  const [variant, setVariant] = useState(0);
+  const [compareOpen, setCompareOpen] = useState(true);
+  const current = { name: "", why: "", theme, concept: concept ?? ("none" as const), composition: composition === "editorial" ? ("editorial" as const) : ("tidy" as const) };
+  const variants = variantsFor(current);
+  const page = useMemo(() => {
+    const base = { ...candidate.page, theme, concept, composition, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) };
+    return variant ? applyDirection(base, current, variants[variant]) : base;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidate.page, theme, concept, composition, extras, variant]);
+  const thumbs = useMemo(() => directions.map((d) => firstTwo(applyDirection(candidate.page, d, undefined))), [directions, candidate.page]);
+  const chooseDirection = (i: number) => {
+    const d = directions[i];
+    setTheme(d.theme);
+    setConcept(d.concept === "none" ? undefined : d.concept);
+    setComposition(d.composition === "editorial" ? "editorial" : undefined);
+    setVariant(0);
+  };
   const roles = new Set(allSections(candidate.page).map((s) => s.role));
   return (
     <main className="preview-workspace" aria-label="生成候選預覽">
@@ -98,6 +121,15 @@ export default function CandidatePreview({
           </button>
         </div>
       </div>
+      {(roles.has("pricing") || roles.has("gallery")) && (
+        <div className="theme-picker extras-picker" role="group" aria-label="互動功能">
+          <span>互動功能</span>
+          {roles.has("pricing") && <button type="button" className="concept-chip" aria-pressed={!!extras.pricingBuilder} title="訪客勾選項目，馬上算出合計" onClick={() => setExtras((x) => ({ ...x, pricingBuilder: !x.pricingBuilder }))}>互動價目表</button>}
+          {roles.has("gallery") && <button type="button" className="concept-chip" aria-pressed={!!extras.galleryViews} title="訪客可以切換大圖、網格、清單" onClick={() => setExtras((x) => ({ ...x, galleryViews: !x.galleryViews }))}>作品瀏覽切換</button>}
+        </div>
+      )}
+      <details className="fine-tune">
+        <summary>細調：構圖、設計概念、主題</summary>
       <div className="theme-picker concept-picker" role="radiogroup" aria-label="構圖">
         <span>構圖</span>
         <button role="radio" aria-checked={!composition} className="concept-chip" title="每一段整齊排好" onClick={() => setComposition(undefined)}>整齊</button>
@@ -112,13 +144,6 @@ export default function CandidatePreview({
           </button>
         ))}
       </div>
-      {(roles.has("pricing") || roles.has("gallery")) && (
-        <div className="theme-picker extras-picker" role="group" aria-label="互動功能">
-          <span>互動功能</span>
-          {roles.has("pricing") && <button type="button" className="concept-chip" aria-pressed={!!extras.pricingBuilder} title="訪客勾選項目，馬上算出合計" onClick={() => setExtras((x) => ({ ...x, pricingBuilder: !x.pricingBuilder }))}>互動價目表</button>}
-          {roles.has("gallery") && <button type="button" className="concept-chip" aria-pressed={!!extras.galleryViews} title="訪客可以切換大圖、網格、清單" onClick={() => setExtras((x) => ({ ...x, galleryViews: !x.galleryViews }))}>作品瀏覽切換</button>}
-        </div>
-      )}
       <div className="theme-picker" role="radiogroup" aria-label="網站主題">
         <span>主題</span>
         {themeIds.map((id) => (
@@ -134,6 +159,7 @@ export default function CandidatePreview({
           </button>
         ))}
       </div>
+      </details>
       {stale && (
         <p role="alert" className="preview-error">
           草稿已更新，請返回草稿重新生成
@@ -144,6 +170,31 @@ export default function CandidatePreview({
           <PageRenderer input={page} />
         </div>
       </div>
+      {/* After the live preview in the page order (so it stays the first rendered page); shown above it. */}
+      <section className="direction-compare" aria-label="比較三個方向">
+        <div className="direction-compare-head">
+          <h3>先選一個方向</h3>
+          <button type="button" className="direction-toggle" aria-expanded={compareOpen} onClick={() => setCompareOpen((v) => !v)}>{compareOpen ? "收起方向" : "比較三個方向"}</button>
+        </div>
+        {compareOpen && <div className="direction-cards" role="radiogroup" aria-label="三個方向">
+          {directions.map((d, i) => (
+            <button key={d.name + i} type="button" role="radio" aria-label={d.name + "：" + d.why} aria-checked={sameDirection(d, theme, concept, composition)} className="direction-card" onClick={() => chooseDirection(i)}>
+              <span className="direction-thumb" aria-hidden="true" inert><span className="direction-thumb-page"><ThumbnailRender.Provider value={true}><PageRenderer input={thumbs[i]} /></ThumbnailRender.Provider></span></span>
+              <strong>{d.name}</strong>
+              <small>{d.why}</small>
+            </button>
+          ))}
+        </div>}
+        <div className="theme-picker variant-picker" role="radiogroup" aria-label="同一方向的變化">
+          <span>再挑一種變化</span>
+          {variants.map((v, i) => (
+            <button key={v.label} type="button" role="radio" aria-checked={variant === i} className="concept-chip" onClick={() => setVariant(i)}>
+              {variantAccent(v) && <i className="variant-dot" style={{ background: variantAccent(v) }} aria-hidden="true" />}
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+import { cleanDirections } from "../src/directions";
 import {generationProtocol} from '../src/generationProtocol';
 import {
   createServer,
@@ -428,9 +429,11 @@ export function createGenerationServer(options: Options = {}) {
         latencyMs: Date.now() - started,
       };
       options.onUsage?.({ requestId: request.requestId, outcome: "PASS", ...usage });
+      const directions = cleanDirections((result.layout as { directions?: unknown }).directions);
       json(res, 200, {
         requestId: request.requestId,
         page,
+        ...(directions ? { directions } : {}),
         usage,
         mode: options.testMode ? "mock" : "live",
       });

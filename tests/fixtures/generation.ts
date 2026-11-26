@@ -40,11 +40,18 @@ export const mockProvider: LayoutProvider = {
 };
 
 /** A valid outline refinement for the real-provider adapter tests (keeps the local plan's order). */
+// Three directions as the model returns them (test fixture, not evidence of AI quality).
+export const mockDirections = [
+  { name: "海洋整齊", why: "整齊清楚，一眼看懂", concept: "none", theme: "ocean", composition: "tidy" },
+  { name: "雜誌大字", why: "大字當主角，黑白克制", concept: "none", theme: "mono", composition: "editorial" },
+  { name: "研究檔案", why: "像一份研究檔案，編號清楚", concept: "archive", theme: "classic", composition: "tidy" },
+] as const;
 export function mockRefine(intent: { canvas: Parameters<typeof outlineOf>[0] }) {
   const outline = outlineOf(intent.canvas);
   return {
     theme: "ocean",
     concept: "none",
+    directions: mockDirections,
     nav: outline.sections.length >= 3,
     order: outline.sections.map((s) => s.i),
     sections: outline.sections.map((s) => ({ i: s.i, role: s.role, layout: s.layout, columns: s.columns, tone: "soft" })),

@@ -913,3 +913,10 @@ body{background:var(--neo-cream)}
 .brief-reference-principles strong{font-size:14px}
 .brief-reference-principles span{font-size:12.5px;color:#4a4d47;line-height:1.5}
 .brief-reference-principles small{font-size:12px;color:#17402a;font-weight:700}
+.brief-ask{display:grid;gap:10px;padding:12px;border:2px solid #e2e0d8;border-radius:16px;background:#fbfaf6}
+.brief-ask-row{display:grid;gap:6px;font-size:13px}
+.brief-ask-row>span{font-weight:700;color:#3b403c}
+.brief-ask-row input{min-height:36px;padding:0 10px;border:1.5px solid #cfcdc4;border-radius:10px;font:inherit;font-size:14px;background:#fff}
+.brief-ask-chips{display:flex;flex-wrap:wrap;gap:6px}
+.brief-ask-chips button{min-height:32px;padding:4px 12px;border:1.5px solid #cfcdc4;border-radius:999px;background:#fff;font:inherit;font-size:13px;cursor:pointer}
+.brief-ask-chips button[aria-pressed=true],.brief-ask-chips button[aria-checked=true]{border-color:#1d2420;background:#1d2420;color:#fff}

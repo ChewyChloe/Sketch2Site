@@ -1,3 +1,4 @@
+import { mockDirections } from "../tests/fixtures/generation";
 import { describe, expect, it } from "vitest";
 import { blank, CanvasSchema, type CanvasSpec } from "./spec";
 import { createBlock, type BlockTemplateId } from "./blockTemplates";
@@ -33,7 +34,7 @@ describe("outline-based AI", () => {
     const plan = smartLayout(d);
     const n = plan.sections.length;
     const order = [0, ...Array.from({ length: n - 1 }, (_, i) => n - 1 - i)];
-    const refine = RefineSchema.parse({ theme: "midnight", concept: "none", nav: true, order, sections: plan.sections.map((s, i) => ({ i, role: s.role, layout: s.layout, columns: s.columns, tone: i % 2 ? "soft" : "plain" })) });
+    const refine = RefineSchema.parse({ theme: "midnight", concept: "none", directions: [...mockDirections], nav: true, order, sections: plan.sections.map((s, i) => ({ i, role: s.role, layout: s.layout, columns: s.columns, tone: i % 2 ? "soft" : "plain" })) });
     const next = applyRefine(plan, refine);
     expect(next.theme).toBe("midnight");
     expect(next.sections[0].role).toBe("hero");
@@ -47,13 +48,13 @@ describe("outline-based AI", () => {
     const d = draft(["hero", "features", "cta"]);
     const plan = smartLayout(d);
     // Not a permutation, hero moved, grid without items, unknown section number.
-    const r = RefineSchema.parse({ theme: "ocean", concept: "none", nav: true, order: [2, 2, 0], sections: [{ i: 0, role: "faq", layout: "grid", columns: 3, tone: "soft" }, { i: 19, role: "faq", layout: "stack", columns: 1, tone: "plain" }] });
+    const r = RefineSchema.parse({ theme: "ocean", concept: "none", directions: [...mockDirections], nav: true, order: [2, 2, 0], sections: [{ i: 0, role: "faq", layout: "grid", columns: 3, tone: "soft" }, { i: 19, role: "faq", layout: "stack", columns: 1, tone: "plain" }] });
     const next = applyRefine(plan, r);
     expect(next.sections.map((s) => s.role)).toEqual(plan.sections.map((s) => s.role));
     expect(next.sections[0].layout).toBe(plan.sections[0].layout);
     expect(RefineSchema.safeParse({ theme: "ocean", nav: true, order: [], sections: [], text: "hi" }).success).toBe(false);
     // A refinement that tries to move the hero away keeps it first.
-    const moved = applyRefine(plan, RefineSchema.parse({ theme: "ocean", concept: "none", nav: true, order: [1, 2, 0].slice(0, plan.sections.length), sections: [] }));
+    const moved = applyRefine(plan, RefineSchema.parse({ theme: "ocean", concept: "none", directions: [...mockDirections], nav: true, order: [1, 2, 0].slice(0, plan.sections.length), sections: [] }));
     expect(moved.sections[0].role).toBe("hero");
   });
 });
@@ -62,6 +63,6 @@ it("keeps FAQs as a list even if the model asks for a grid (paid test finding)",
   const d = draft(["hero", "faq", "cta"]);
   const plan = smartLayout(d);
   const i = plan.sections.findIndex((s) => s.role === "faq");
-  const next = applyRefine(plan, RefineSchema.parse({ theme: "blossom", concept: "none", nav: true, order: plan.sections.map((_, k) => k), sections: [{ i, role: "faq", layout: "grid", columns: 3, tone: "soft" }] }));
+  const next = applyRefine(plan, RefineSchema.parse({ theme: "blossom", concept: "none", directions: [...mockDirections], nav: true, order: plan.sections.map((_, k) => k), sections: [{ i, role: "faq", layout: "grid", columns: 3, tone: "soft" }] }));
   expect(next.sections[i]).toMatchObject({ role: "faq", layout: "stack", columns: 1 });
 });

@@ -3,6 +3,7 @@ import { describeStyle, prepareReference } from "./referenceStyle";
 import { requestReferenceStyle } from "./referenceRequest";
 import { useEscapeToClose } from "./useEscape";
 import { briefOptions, emptyBrief, suggestion, type Brief, type BriefField } from "./brief";
+import { avoidIds, avoidLabels, heroIds, heroLabels, lightnessIds, lightnessLabels, type Ask } from "./directions";
 
 /**
  * Text field with an inline, greyed-out continuation from a local phrase list.
@@ -120,6 +121,12 @@ export function BriefPanel({
     onGenerate(brief);
   };
   const set = (field: keyof Brief, value: string) => setBrief((b) => ({ ...b, [field]: value }));
+  const ask: Ask = brief.ask ?? {};
+  const setAsk = (patch: Partial<Ask>) => setBrief((b) => {
+    const next = { ...(b.ask ?? {}), ...patch };
+    for (const k of Object.keys(next) as (keyof Ask)[]) if (next[k] === undefined || (Array.isArray(next[k]) && k === "lightness" && !(next[k] as unknown[]).length)) delete next[k];
+    return { ...b, ask: Object.keys(next).length ? next : undefined };
+  });
   const choose = (field: BriefField, value: string) => {
     set(field, value.trim().slice(0, 20));
     setCustom("");
@@ -170,6 +177,40 @@ export function BriefPanel({
       ) : (
         <button type="button" className="brief-more" onClick={() => setMoreOpen(true)}>想寫更多？展開詳細說明</button>
       )}
+      <section className="brief-ask" aria-label="先問清楚">
+        <div className="brief-reference-head">
+          <strong>先問清楚（選填）</strong>
+          <small>答得越具體，三個方向越準</small>
+        </div>
+        <label className="brief-ask-row">
+          <span>喜歡哪些網站或品牌</span>
+          <input aria-label="喜歡哪些網站或品牌" maxLength={80} placeholder="例如：無印良品、蔦屋書店、某個學校網站" value={ask.refs ?? ""} onChange={(e) => setAsk({ refs: e.target.value || undefined })} />
+        </label>
+        <div className="brief-ask-row" role="group" aria-label="想要的感覺">
+          <span>想要的感覺（可複選）</span>
+          <div className="brief-ask-chips">
+            {lightnessIds.map((id) => {
+              const on = ask.lightness?.includes(id) ?? false;
+              return <button key={id} type="button" aria-pressed={on} onClick={() => setAsk({ lightness: on ? ask.lightness!.filter((x) => x !== id) : [...(ask.lightness ?? []), id] })}>{lightnessLabels[id]}</button>;
+            })}
+          </div>
+        </div>
+        <div className="brief-ask-row" role="radiogroup" aria-label="首屏怎麼講">
+          <span>首屏怎麼講</span>
+          <div className="brief-ask-chips">
+            {heroIds.map((id) => <button key={id} type="button" role="radio" aria-checked={ask.hero === id} onClick={() => setAsk({ hero: ask.hero === id ? undefined : id })}>{heroLabels[id]}</button>)}
+          </div>
+        </div>
+        <div className="brief-ask-row" role="group" aria-label="一定不要">
+          <span>一定不要（點掉就允許）</span>
+          <div className="brief-ask-chips">
+            {avoidIds.map((id) => {
+              const on = (ask.avoid ?? avoidIds).includes(id);
+              return <button key={id} type="button" aria-pressed={on} onClick={() => { const cur = ask.avoid ?? [...avoidIds]; setAsk({ avoid: on ? cur.filter((x) => x !== id) : [...cur, id] }); }}>{avoidLabels[id]}</button>;
+            })}
+          </div>
+        </div>
+      </section>
       <section className="brief-reference" aria-label="參考圖片">
         <div className="brief-reference-head">
           <strong>參考圖片（選填）</strong>

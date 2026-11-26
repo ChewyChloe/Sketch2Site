@@ -1,3 +1,4 @@
+import { AskSchema } from "./directions";
 import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
 import { imageSource } from "./assetRef";
@@ -70,6 +71,8 @@ export const CanvasSchema = z
           details: z.string().trim().max(600).optional(),
           // What a reference picture taught (fixed choices only; the picture is never stored).
           style: ReferenceStyleSchema.optional(),
+          // Answers asked before generating: references, what to avoid, lightness, the opening.
+          ask: AskSchema.optional(),
         }).strict().optional(),
         // Pages of a multi-page site, in order; the first is the home page.
         pages: z.array(z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(30) }).strict()).min(1).max(10).optional(),

@@ -1782,6 +1782,7 @@ node ? (
         {mode === "preview" && candidate && (
           <CandidatePreview
             replacing={Boolean(spec.metadata.siteBuiltFrom)}
+            brief={spec.metadata.brief}
             mobile={phoneView}
             onMobile={setPhoneView}
             candidate={candidate.result}
