@@ -105,44 +105,50 @@ export default function CandidatePreview({
         </div>
         <div>
           <DeviceToggle mobile={mobile} onChange={setMobile} />
-          {confirming ? (
-            <span className="replace-confirm" role="group" aria-label="確認取代目前的網站">
-              <span>會取代目前的網站，之後可以換回上一版</span>
-              <button
-                className="primary"
-                disabled={stale || saving}
-                onClick={async () => {
-                  setSaving(true);
-                  try {
-                    await onAccept(page);
-                  } finally {
-                    setSaving(false);
-                    setConfirming(false);
-                  }
-                }}
-              >
-                {saving ? "儲存中…" : "取代網站"}
-              </button>
-              <button type="button" disabled={saving} onClick={() => setConfirming(false)}>先不要</button>
-            </span>
-          ) : (
-          <button
-            className="primary"
-            disabled={stale || saving}
-            onClick={async () => {
-              // Replacing an existing site asks once; the first site is used right away.
-              if (replacing) { setConfirming(true); return; }
-              setSaving(true);
-              try {
-                await onAccept(page);
-              } finally {
-                setSaving(false);
-              }
-            }}
-          >
-            {saving ? "儲存中…" : "使用此版本"}
-          </button>
-          )}
+          {/* 使用此版本 stays put; replacing an earlier site asks in a small card below it. */}
+          <span className="replace-anchor">
+            <button
+              className="primary"
+              aria-expanded={replacing ? confirming : undefined}
+              disabled={stale || saving}
+              onClick={async () => {
+                // Replacing an existing site asks once; the first site is used right away.
+                if (replacing) { setConfirming((v) => !v); return; }
+                setSaving(true);
+                try {
+                  await onAccept(page);
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              {saving && !confirming ? "儲存中…" : "使用此版本"}
+            </button>
+            {confirming && (
+              <span className="replace-confirm" role="group" aria-label="確認取代目前的網站">
+                <span>會取代目前的網站，之後可以換回上一版</span>
+                <span className="replace-confirm-actions">
+                  <button type="button" disabled={saving} onClick={() => setConfirming(false)}>先不要</button>
+                  <button
+                    type="button"
+                    className="primary"
+                    disabled={stale || saving}
+                    onClick={async () => {
+                      setSaving(true);
+                      try {
+                        await onAccept(page);
+                      } finally {
+                        setSaving(false);
+                        setConfirming(false);
+                      }
+                    }}
+                  >
+                    {saving ? "儲存中…" : "取代網站"}
+                  </button>
+                </span>
+              </span>
+            )}
+          </span>
           <button disabled={saving} onClick={onBack}>
             返回草稿
           </button>

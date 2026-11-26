@@ -926,3 +926,10 @@ body{background:var(--neo-cream)}
 .home-project-open .home-thumb{transition:border-color .15s,box-shadow .15s}
 /* The design-tools sheet slides over the site at narrow widths: it sits above the floating element toolbar. */
 .preview-inspector { z-index: 40 !important; }
+/* Replace confirmation: a small card under 使用此版本, buttons in the toolbar's own style. */
+.replace-anchor { position: relative; display: inline-flex; }
+.replace-anchor > .replace-confirm { position: absolute; top: calc(100% + 8px); right: 0; z-index: 50; display: grid; gap: 10px; width: max-content; max-width: 300px; padding: 12px 14px; border: 1px solid var(--line, #d7d9d2); border-radius: 12px; background: #fff; box-shadow: 0 8px 24px rgb(0 0 0 / .14); font-size: 13px; font-weight: 500; color: #1d2420; }
+.replace-anchor > .replace-confirm > span:first-child { white-space: normal; line-height: 1.5; }
+.replace-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.replace-anchor > .replace-confirm button { min-height: 34px; padding: 0 14px; border-radius: 8px; font: inherit; font-weight: 700; }
+@media (max-width: 760px) { .replace-anchor > .replace-confirm { right: auto; left: 50%; translate: -50% 0; border-radius: 12px; } }
