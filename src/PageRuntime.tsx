@@ -32,6 +32,7 @@ import {
   lookStyle,
   textCss,
   brandCss,
+  shortNavLabel,
 } from "./pageSpec";
 import "./pageRuntime.css";
 type Effect = PageNode["effects"][number];
@@ -328,8 +329,8 @@ const firstText = (n: PageNode): string | undefined => {
 function linkable(nodes: PageNode[]): NavLink[] {
   const out: NavLink[] = [];
   const walk = (n: PageNode) => {
-    if (n.type === "heading" && n.content?.trim()) { out.push({ key: n.id, target: n.id, label: n.content.split("\n")[0].trim() }); return; }
-    if (n.type === "card") { const t = firstText(n); if (t) out.push({ key: n.id, target: n.id, label: t }); return; }
+    if (n.type === "heading" && n.content?.trim()) { out.push({ key: n.id, target: n.id, label: shortNavLabel(n.content) }); return; }
+    if (n.type === "card") { const t = firstText(n); if (t) out.push({ key: n.id, target: n.id, label: shortNavLabel(t) }); return; }
     n.children?.forEach(walk);
   };
   nodes.forEach(walk);
@@ -342,9 +343,9 @@ export function navLinks(page: PageSpec, sections: PageNode[], placed?: PageNode
   if (!saved) {
     // No choices made: pages, or each section's heading (not the opening one), at most five.
     const auto: NavLink[] = pages ?? (placed
-      ? placed.filter((n) => n.type === "heading" && n.content).map((n, i) => ({ key: n.id, target: n.id, label: n.content!, hero: i === 0 }))
-      : sections.flatMap((s) => { const h = firstHeading(s); return h?.content ? [{ key: h.id, target: s.id, label: h.content, hero: s.role === "hero" }] : []; }));
-    return auto.filter((l) => !l.hero && l.label.length <= 24).slice(0, 5);
+      ? placed.filter((n) => n.type === "heading" && n.content).map((n, i) => ({ key: n.id, target: n.id, label: shortNavLabel(n.content!), hero: i === 0 }))
+      : sections.flatMap((s) => { const h = firstHeading(s); return h?.content ? [{ key: h.id, target: s.id, label: shortNavLabel(h.content), hero: s.role === "hero" }] : []; }));
+    return auto.filter((l) => !l.hero).slice(0, 5);
   }
   const candidates = pages ?? linkable(placed ?? sections);
   const byKey = new Map(candidates.map((l) => [l.key, l]));

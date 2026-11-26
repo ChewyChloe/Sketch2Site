@@ -9,6 +9,19 @@ export const NavItemSchema = z.object({ id: z.string().uuid(), label: z.string()
 export const NavSettingsSchema = z.object({ style: z.enum(navStyles), items: z.array(NavItemSchema).max(40).optional() }).strict();
 export type NavSettings = z.infer<typeof NavSettingsSchema>;
 /** Page chrome for a site built from a draft with (or without) navigation settings. */
+/**
+ * A menu-sized name from a heading: the part before the first punctuation mark
+ * (新生快來找答案，一起加入！ → 新生快來找答案), cut to about ten Chinese characters.
+ */
+export function shortNavLabel(text: string) {
+  const line = text.split("\n")[0].trim();
+  const head = line.split(/[，,。！!？?：:；;、～~｜|—]/)[0].trim() || line;
+  const cjk = /[\u3400-\u9fff]/.test(head), max = cjk ? 10 : 18;
+  if (head.length <= max) return head;
+  // English is cut at a space, never mid-word.
+  const cut = cjk ? head.slice(0, max) : head.slice(0, max + 1).replace(/\s+\S*$/, "") || head.slice(0, max);
+  return cut.trimEnd() + "…";
+}
 export function navChrome(nav: NavSettings | undefined, fallback: boolean): { nav: boolean; navStyle?: NavStyle; navItems?: NavSettings["items"] } {
   return nav ? { nav: nav.style !== "none", navStyle: nav.style, ...(nav.items?.length ? { navItems: nav.items } : {}) } : { nav: fallback };
 }

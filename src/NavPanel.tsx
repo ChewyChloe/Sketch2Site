@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useEscapeToClose } from "./useEscape";
-import type { NavSettings, NavStyle } from "./pageSpec";
+import { shortNavLabel, type NavSettings, type NavStyle } from "./pageSpec";
 import type { CanvasSpec } from "./spec";
 
 // 導覽列 settings: where the site's menu sits and which headings (or pages) it lists.
@@ -38,7 +38,7 @@ export function navCandidates(spec: CanvasSpec): NavCandidate[] {
   return spec.nodes
     .filter((n) => (n.type === "heading" || n.type === "card") && n.content.trim())
     .sort((a, b) => a.y - b.y || a.x - b.x)
-    .map((n) => ({ id: n.id, label: n.content.split("\n")[0].trim().slice(0, 24), place: n.type === "heading" ? "標題" : "卡片" }));
+    .map((n) => ({ id: n.id, label: shortNavLabel(n.content), place: n.type === "heading" ? "標題" : "卡片" }));
 }
 /** First time: headings after the page title are shown; with no such headings, card titles are. */
 function defaultHidden(candidates: NavCandidate[], multi: boolean): Set<string> {

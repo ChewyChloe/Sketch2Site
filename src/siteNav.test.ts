@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { navLinks } from "./PageRuntime";
-import { navChrome, NavSettingsSchema, type PageNode, type PageSpec } from "./pageSpec";
+import { navChrome, NavSettingsSchema, shortNavLabel, type PageNode, type PageSpec } from "./pageSpec";
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const heading = (n: number, content: string): PageNode => ({ id: id(n), type: "heading", content, effects: [] } as unknown as PageNode);
@@ -27,5 +27,14 @@ describe("site navigation links", () => {
     expect(parse({ style: "sideways" })).toBe(false);
     expect(parse({ style: "floating", items: [{ id: id(1), label: "x".repeat(25) }] })).toBe(false);
     expect(parse({ style: "floating", items: [{ id: "not-an-id" }] })).toBe(false);
+  });
+  it("shortens long headings for the menu, keeping the part before the first punctuation", () => {
+    expect(shortNavLabel("新生快來找答案，一起加入！")).toBe("新生快來找答案");
+    expect(shortNavLabel("我們的堅持")).toBe("我們的堅持");
+    expect(shortNavLabel("這是一個非常非常長而且沒有標點的標題")).toBe("這是一個非常非常長而…");
+    expect(shortNavLabel("Pricing & Plans for Every Team")).toBe("Pricing & Plans…");
+    expect(shortNavLabel("！")).toBe("！");
+    const long = [section(1, "hero", [heading(11, "首頁")]), section(2, "faq", [heading(12, "新生快來找答案，一起加入！")])];
+    expect(navLinks({ ...page(), sections: long } as PageSpec, long).map((l) => l.label)).toEqual(["新生快來找答案"]);
   });
 });

@@ -5,7 +5,9 @@ import type { builtInAssets } from "./assetRef";
 
 // Starter templates for the home page: block templates with sample copy for a
 // campus or everyday use case. They are clearly sample content to replace.
-type Starter = { name: string; blocks: BlockTemplateId[]; copy: string[][]; heroImage?: (typeof builtInAssets)[number] };
+type Asset = (typeof builtInAssets)[number];
+// galleryImages fill the gallery block's pictures in order, so no sample shows a grey placeholder.
+type Starter = { name: string; blocks: BlockTemplateId[]; copy: string[][]; heroImage?: Asset; galleryImages?: Asset[] };
 
 const starters: Starter[] = [
   {
@@ -22,16 +24,19 @@ const starters: Starter[] = [
   {
     name: "社團招生頁",
     heroImage: "/assets/samples/camera.jpg",
+    galleryImages: ["/assets/samples/club-exhibit.jpg", "/assets/samples/club-camera.jpg", "/assets/samples/club-shadow.jpg"],
     blocks: ["hero", "gallery", "faq", "cta"],
     copy: [
       ["攝影社，新學期招生中", "不用有相機，手機也能拍出好照片。每週三晚上社團活動。", "立即報名", "社課照片"],
-      ["上學期作品", "外拍作品一", "外拍作品二", "期末展覽"],
+      ["上學期作品", "期末展覽", "外拍作品一", "外拍作品二"],
       ["新生常見問題", "沒有相機可以參加嗎？\n可以，社團有器材可借。", "社費怎麼算？\n一學期 300 元，含外拍交通。", "每週要花多少時間？\n社課兩小時，外拍自由參加。"],
       ["一起拍下這學期", "報名表三分鐘填完，我們會在社群通知你。", "填寫報名表"],
     ],
   },
   {
     name: "課程專題展示",
+    heroImage: "/assets/samples/course-dashboard.jpg",
+    galleryImages: ["/assets/samples/course-result.jpg", "/assets/samples/course-data.jpg", "/assets/samples/course-slide.jpg"],
     blocks: ["hero", "features", "gallery", "cta"],
     copy: [
       ["圖書館座位即時預測", "用課堂學到的資料分析，預測期末週的空位時段，幫同學少跑一趟。", "看專題成果", "專題成果圖"],
@@ -50,11 +55,16 @@ export function starterDrafts(): CanvasSpec[] {
       const block = createBlock(spec, id);
       if (!block) return;
       const lines = starter.copy[i] ?? [];
-      const nodes = block.nodes.map((n, j) => ({
-        ...n,
-        ...(lines[j] ? { content: lines[j] } : {}),
-        ...(id === "hero" && n.type === "image" && starter.heroImage ? { assetId: starter.heroImage } : {}),
-      }));
+      let picture = 0;
+      const nodes = block.nodes.map((n, j) => {
+        const gallery = id === "gallery" && n.type === "image" ? starter.galleryImages?.[picture++] : undefined;
+        return {
+          ...n,
+          ...(lines[j] ? { content: lines[j] } : {}),
+          ...(id === "hero" && n.type === "image" && starter.heroImage ? { assetId: starter.heroImage } : {}),
+          ...(gallery ? { assetId: gallery } : {}),
+        };
+      });
       spec = { ...spec, metadata: { ...spec.metadata, height: block.height }, nodes: [...spec.nodes, ...nodes] };
     });
     // Starters show off the motion library: every element gets a fitting preset.

@@ -889,3 +889,5 @@ body{background:var(--neo-cream)}
 /* Narrow stage: the toolbar wraps onto more rows instead of running off the side. */
 .site-toolbar { flex-wrap: wrap; }
 .site-toolbar > .text-toolbar { min-width: 0; flex-wrap: wrap; row-gap: 4px; }
+/* In the preview step the project name is shown but not edited; keep it readable. */
+.topbar .project-name:disabled { color: #0d0e11; -webkit-text-fill-color: #0d0e11; opacity: 1; cursor: default; }
