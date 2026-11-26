@@ -1,0 +1,89 @@
+{
+  "date": "2026-11-26",
+  "model": "gpt-6-luna",
+  "authorization": "使用者授權使用 API；自訂上限 6 次、US$0.10（伺服器 MAX_CALLS=4、BUDGET=0.10）",
+  "calls": 3,
+  "estimatedCostUsd": 0.0006665,
+  "checks": {
+    "referenceVision": "PASS：gpt-6-luna 接受低解析度圖片，只回固定選項（5 個設計手法、方向 midnight），沒有文字或內容",
+    "aiPicksConcept": "PASS：社團攝影社選了 exhibition（展覽空間），編輯器的設計概念選項同步勾選；咖啡店選了不用概念",
+    "imageNeverInLayoutRequest": "PASS：排版請求只帶風格選項"
+  },
+  "runs": [
+    {
+      "tpl": "社團招生頁",
+      "ref": true,
+      "answers": {
+        "reference": {
+          "mood": "calm",
+          "colorMode": "duo",
+          "temperature": "cool",
+          "lightness": "dark",
+          "contrast": "soft",
+          "typeFamily": "serif",
+          "typeScale": "modest",
+          "space": "airy",
+          "imagery": "full-bleed",
+          "motion": "gentle",
+          "principles": [
+            "color-field",
+            "negative-space",
+            "soft-gradient",
+            "paper-grain",
+            "full-bleed-photo"
+          ],
+          "direction": "midnight"
+        },
+        "layout": {
+          "status": 200,
+          "concept": "exhibition",
+          "usage": {
+            "inputTokens": 1166,
+            "outputTokens": 230,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 109,
+            "estimatedCostUsd": 0.00023160000000000002,
+            "latencyMs": 2335
+          },
+          "keys": [
+            "requestId",
+            "page",
+            "usage",
+            "mode"
+          ]
+        }
+      },
+      "siteConcept": "exhibition",
+      "siteTheme": "midnight",
+      "siteArt": "color-field negative-space soft-gradient paper-grain full-bleed-photo",
+      "pickerChecked": "展覽空間"
+    },
+    {
+      "tpl": "巷口咖啡小店",
+      "ref": false,
+      "answers": {
+        "layout": {
+          "status": 200,
+          "usage": {
+            "inputTokens": 1091,
+            "outputTokens": 264,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 144,
+            "estimatedCostUsd": 0.00024110000000000003,
+            "latencyMs": 2860
+          },
+          "keys": [
+            "requestId",
+            "page",
+            "usage",
+            "mode"
+          ]
+        }
+      },
+      "siteConcept": null,
+      "siteTheme": "sunrise",
+      "siteArt": null,
+      "pickerChecked": "不用概念"
+    }
+  ]
+}

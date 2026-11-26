@@ -3,7 +3,7 @@ import { z } from "zod";
 import { motionIds, MotionSchema, bindMotionInput, compatibleMotion, combinationReason, targetReason, withinMotionBudget, type MotionInstance } from "./motion";
 // Site navigation set in the draft (導覽列). Items are keyed by the heading or page they link to;
 // order, a custom label and hiding are all optional. Without settings the site picks its own.
-export const navStyles = ["top-sticky", "top-static", "top-autohide", "side-left", "side-right", "floating", "none"] as const;
+export const navStyles = ["top-sticky", "top-static", "top-autohide", "side-left", "side-right", "floating", "dots", "none"] as const;
 export type NavStyle = (typeof navStyles)[number];
 export const NavItemSchema = z.object({ id: z.string().uuid(), label: z.string().trim().min(1).max(24).optional(), hidden: z.boolean().optional() }).strict();
 export const NavSettingsSchema = z.object({ style: z.enum(navStyles), items: z.array(NavItemSchema).max(40).optional() }).strict();
@@ -91,11 +91,18 @@ export const imageFilters = ["none", "mono", "warm", "cool", "vintage", "vivid",
 export const filterLabels: Record<(typeof imageFilters)[number], string> = { none: "原圖", mono: "黑白", warm: "暖調", cool: "冷調", vintage: "復古", vivid: "鮮豔", fade: "褪色", noir: "高對比黑白" };
 // Design concepts (docs/REFERENCE_STUDY.md): one idea the whole site follows, deciding type,
 // numbering, lines, navigation and how pictures are shown. Stronger than a theme's colours.
-export const conceptIds = ["exhibition"] as const;
+export const conceptIds = ["exhibition", "archive", "gallery-wall", "darkroom", "poster", "generative-grid"] as const;
 export type ConceptId = (typeof conceptIds)[number];
 export const conceptText: Record<ConceptId, { name: string; idea: string }> = {
   exhibition: { name: "展覽空間", idea: "像走進展場：一進來是一整面照片，之後一次只看一件作品，標籤小而寬" },
+  archive: { name: "研究檔案", idea: "像一份研究檔案：等寬字、00001 編號、細線框，照片像資料圖" },
+  "gallery-wall": { name: "作品牆", idea: "介面退到最後，讓作品說話：無框作品牆、兩層圖說" },
+  darkroom: { name: "暗場", idea: "全黑的房間，作品像在發光，字極小" },
+  poster: { name: "單色海報", idea: "一個大膽的底色、超粗的字、像封鎖線的標語條，一眼記住" },
+  "generative-grid": { name: "生成網格", idea: "用網站名稱長出一張專屬的彩色數字網格，每個網站都不一樣" },
 };
+/** Concepts whose pictures drift with the scroll (CSS only, off for reduced motion). */
+export const parallaxConcepts: readonly ConceptId[] = ["exhibition", "archive", "darkroom"];
 // Design techniques learned from a reference picture (參考圖片). Each one is a reason something
 // looks good, written by us, and each changes the site in a concrete way (pageRuntime.css,
 // [data-art~=...]). The AI may only pick from this list, so nothing from the picture is copied.
@@ -581,6 +588,8 @@ const PageObject = z
     // Design techniques from a reference picture, applied on top of the theme.
     art: z.object({ principles: z.array(z.enum(principleIds)).max(5) }).strict().optional(),
     concept: z.enum(conceptIds).optional(),
+    // Interactive extras the author switched on: a pricing builder and a gallery view switch.
+    extras: z.object({ pricingBuilder: z.boolean().optional(), galleryViews: z.boolean().optional() }).strict().optional(),
     brand: BrandSchema.optional(),
     chrome: z.object({ nav: z.boolean(), footer: z.boolean(), navStyle: z.enum(navStyles).optional(), navItems: z.array(NavItemSchema).max(40).optional() }).strict().optional(),
     responsive: z

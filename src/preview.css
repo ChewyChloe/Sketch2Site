@@ -339,3 +339,8 @@
 .note-chip { position: absolute; z-index: 5; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 4px 12px 4px 10px; border: 2px solid #17231e; border-radius: 999px; background: #10e560; color: #0d0e11; font: inherit; font-size: 13px; font-weight: 800; box-shadow: 3px 3px 0 #17231e; cursor: pointer; }
 .note-chip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
 .note-chip:focus-visible { outline: 3px solid #087b36; outline-offset: 2px; }
+/* 設計概念 / 互動功能 chips: same family as the theme swatches. */
+.concept-chip { display: inline-flex; align-items: center; flex: none; min-height: 36px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+.concept-chip:hover { border-color: var(--ink); }
+.concept-chip[aria-checked="true"], .concept-chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--panel); font-weight: 650; }
+.concept-picker, .extras-picker { border-bottom: var(--border); }

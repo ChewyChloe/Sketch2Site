@@ -272,7 +272,14 @@ export async function importImage(file: File) {
     // Photos stay JPEG; PNG keeps transparency. A PNG that is too large becomes a JPEG
     // on a white background. Re-encoding always drops metadata.
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    let blob = mime === "image/jpeg" ? await encode("image/jpeg", 0.9) : await encode("image/png");
+    // Photos are kept light (most under 700 KB): the reference sites that felt slow carried 15–47 MB
+    // of pictures (docs/REFERENCE_STUDY.md). Quality steps down only while a photo is still heavy.
+    let blob = mime === "image/jpeg" ? await encode("image/jpeg", 0.82) : await encode("image/png");
+    if (mime === "image/jpeg")
+      for (const quality of [0.76, 0.7]) {
+        if (blob.size <= 700 * 1024) break;
+        blob = await encode("image/jpeg", quality);
+      }
     if (blob.size > assetLimits.bytes) {
       context.globalCompositeOperation = "destination-over";
       context.fillStyle = "#fff";

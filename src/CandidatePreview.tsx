@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { conceptIds, conceptText, themeIds, themeLabels, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
+import { allSections, conceptIds, conceptText, themeIds, themeLabels, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import type { CandidateResult } from "./demo";
 import { DeviceToggle } from "./DeviceToggle";
@@ -37,7 +37,9 @@ export default function CandidatePreview({
   const setMobile = (v: boolean) => (onMobile ? onMobile(v) : setMobileState(v));
   // Theme is a reviewed token set; switching it never touches content.
   const [concept, setConcept] = useState<ConceptId | undefined>(candidate.page.concept);
-  const page = useMemo(() => ({ ...candidate.page, theme, concept }), [candidate.page, theme, concept]);
+  const [extras, setExtras] = useState(candidate.page.extras ?? {});
+  const page = useMemo(() => ({ ...candidate.page, theme, concept, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) }), [candidate.page, theme, concept, extras]);
+  const roles = new Set(allSections(candidate.page).map((s) => s.role));
   return (
     <main className="preview-workspace" aria-label="生成候選預覽">
       <div className="preview-tools">
@@ -104,6 +106,13 @@ export default function CandidatePreview({
           </button>
         ))}
       </div>
+      {(roles.has("pricing") || roles.has("gallery")) && (
+        <div className="theme-picker extras-picker" role="group" aria-label="互動功能">
+          <span>互動功能</span>
+          {roles.has("pricing") && <button type="button" className="concept-chip" aria-pressed={!!extras.pricingBuilder} title="訪客勾選項目，馬上算出合計" onClick={() => setExtras((x) => ({ ...x, pricingBuilder: !x.pricingBuilder }))}>互動價目表</button>}
+          {roles.has("gallery") && <button type="button" className="concept-chip" aria-pressed={!!extras.galleryViews} title="訪客可以切換大圖、網格、清單" onClick={() => setExtras((x) => ({ ...x, galleryViews: !x.galleryViews }))}>作品瀏覽切換</button>}
+        </div>
+      )}
       <div className="theme-picker" role="radiogroup" aria-label="網站主題">
         <span>主題</span>
         {themeIds.map((id) => (

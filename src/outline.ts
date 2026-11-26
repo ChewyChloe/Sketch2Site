@@ -1,6 +1,6 @@
 import { toJSONSchema, z } from "zod";
 import type { CanvasSpec } from "./spec";
-import { sectionRoles, themeIds } from "./pageSpec";
+import { conceptIds, sectionRoles, themeIds } from "./pageSpec";
 import { LayoutV2Schema, type LayoutV2 } from "./generation";
 import { smartLayout } from "./smartLayout";
 
@@ -13,6 +13,8 @@ import { smartLayout } from "./smartLayout";
 export const RefineSchema = z
   .object({
     theme: z.enum(themeIds),
+    // One design concept the whole site follows (docs/REFERENCE_STUDY.md), or none.
+    concept: z.enum([...conceptIds, "none"]),
     nav: z.boolean(),
     // Kept for compatibility; trusted code keeps the author's section order and ignores it.
     order: z.array(z.number().int().min(0).max(19)).max(20),
@@ -88,7 +90,7 @@ export function applyRefine(plan: LayoutV2, refine: Refine): LayoutV2 {
   // Section order is the author's: the draft's reading order (plus the brief's focus, which the
   // local planner already applied). The model's order is not used (paid test finding).
   const ordered = sections;
-  const next = { ...plan, theme: refine.theme, nav: refine.nav, sections: ordered };
+  const next = { ...plan, theme: refine.theme, nav: refine.nav, sections: ordered, ...(refine.concept && refine.concept !== "none" ? { concept: refine.concept } : {}) };
   const parsed = LayoutV2Schema.safeParse(next);
   return parsed.success ? (parsed.data as LayoutV2) : plan;
 }

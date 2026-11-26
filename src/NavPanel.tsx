@@ -12,6 +12,7 @@ const styles: { id: NavStyle; name: string; hint: string }[] = [
   { id: "side-left", name: "左側目錄", hint: "像論文目錄，可收起" },
   { id: "side-right", name: "右側目錄", hint: "像論文目錄，可收起" },
   { id: "floating", name: "懸浮", hint: "浮在頁面上方的膠囊" },
+  { id: "dots", name: "側邊點點", hint: "每段一個點，捲到哪裡亮哪裡" },
   { id: "none", name: "不顯示", hint: "網站沒有選單" },
 ];
 
@@ -25,7 +26,8 @@ function Thumb({ id }: { id: NavStyle }) {
       {id === "side-left" && <rect x="0.5" y="0.5" width="15" height="43" rx="5" className="t-bar" />}
       {id === "side-right" && <rect x="48.5" y="0.5" width="15" height="43" rx="5" className="t-bar" />}
       {id === "floating" && <rect x="14" y="4" width="36" height="7" rx="3.5" className="t-bar" />}
-      {id === "side-left" ? lines(21, 37, 9) : id === "side-right" ? lines(6, 37, 9) : lines(8, 48, id === "none" ? 8 : 16)}
+      {id === "dots" && [0, 1, 2, 3].map((i) => <circle key={i} cx="57" cy={12 + i * 7} r={i === 1 ? 2.6 : 1.8} className="t-bar" />)}
+      {id === "side-left" ? lines(21, 37, 9) : id === "side-right" ? lines(6, 37, 9) : lines(8, id === "dots" ? 40 : 48, id === "none" || id === "dots" ? 8 : 16)}
     </svg>
   );
 }

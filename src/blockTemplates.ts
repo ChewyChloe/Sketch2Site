@@ -3,7 +3,7 @@ import type { FrameId } from "./pageSpec";
 
 // Starter sections for the draft canvas. They are ordinary, editable canvas
 // nodes (placeholder copy the user replaces), grouped so they move together.
-export type BlockTemplateId = "hero" | "features" | "gallery" | "collage" | "pricing" | "faq" | "contact" | "cta";
+export type BlockTemplateId = "hero" | "features" | "gallery" | "collage" | "pricing" | "faq" | "contact" | "cta" | "stats" | "logos";
 
 // Optional 7th value: the frame shape for image parts (empty frames to drop photos into).
 type Part = [CanvasNode["type"], string, number, number, number, number, FrameId?];
@@ -83,6 +83,29 @@ const templates: Record<BlockTemplateId, { label: string; hint: string; height: 
       ["heading", "與我們聯絡", 80, 0, 480, 72],
       ["text", "留下你的問題，我們會盡快回覆。", 80, 88, 480, 64],
       ["form", "姓名\nEmail\n訊息", 640, 0, 640, 320],
+    ],
+  },
+  stats: {
+    label: "數字證明",
+    hint: "用三個數字說服人，例如人數、年資、作品數",
+    height: 230,
+    parts: [
+      ["heading", "用數字說話", 80, 0, 400, 72],
+      ["card", "120+\n上學期參加的同學", 80, 88, 400, 142],
+      ["card", "36\n辦過的外拍活動", 520, 88, 400, 142],
+      ["card", "4.9\n社員滿意度（5 分）", 960, 88, 400, 142],
+    ],
+  },
+  logos: {
+    label: "合作夥伴",
+    hint: "一排合作單位或媒體的標誌，網站上會自動轉成灰階",
+    height: 200,
+    parts: [
+      ["heading", "合作夥伴", 80, 0, 400, 72],
+      ["image", "合作夥伴標誌一", 80, 96, 240, 96],
+      ["image", "合作夥伴標誌二", 360, 96, 240, 96],
+      ["image", "合作夥伴標誌三", 640, 96, 240, 96],
+      ["image", "合作夥伴標誌四", 920, 96, 240, 96],
     ],
   },
   cta: {

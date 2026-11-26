@@ -44,6 +44,7 @@ export function mockRefine(intent: { canvas: Parameters<typeof outlineOf>[0] }) 
   const outline = outlineOf(intent.canvas);
   return {
     theme: "ocean",
+    concept: "none",
     nav: outline.sections.length >= 3,
     order: outline.sections.map((s) => s.i),
     sections: outline.sections.map((s) => ({ i: s.i, role: s.role, layout: s.layout, columns: s.columns, tone: "soft" })),

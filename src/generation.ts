@@ -7,6 +7,7 @@ import {
   EffectSchema,
   styleSchema,
   themeIds,
+  conceptIds,
   sectionRoles,
   type PageNode,
   type PageSpec,
@@ -191,6 +192,7 @@ export const LayoutV2Schema = z
     version: z.literal(2),
     typography: z.enum(["sans", "serif"]),
     theme: z.enum(themeIds),
+    concept: z.enum(conceptIds).optional(),
     nav: z.boolean(),
     footer: z.boolean(),
     sections: z
@@ -396,6 +398,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
           styles: "neutral",
           // An explicit mood choice decides the theme; then a reference picture's direction; then the plan.
           theme: moodThemes[canvas.metadata.brief?.mood ?? ""] ?? canvas.metadata.brief?.style?.direction ?? layout.theme,
+          ...(layout.concept ? { concept: layout.concept } : {}),
           ...(canvas.metadata.brief?.style?.principles?.length ? { art: { principles: [...canvas.metadata.brief.style.principles] } } : {}),
           // The brand kit comes from the draft only, never from the model.
           ...(canvas.metadata.brand ? { brand: canvas.metadata.brand } : {}),

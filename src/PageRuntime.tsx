@@ -34,6 +34,7 @@ import {
   textCss,
   brandCss,
   shortNavLabel,
+  parallaxConcepts,
 } from "./pageSpec";
 import "./pageRuntime.css";
 type Effect = PageNode["effects"][number];
@@ -154,6 +155,56 @@ const AssetUrls = createContext<Readonly<Record<string, string | null>>>({});
 // Only themed (generated) pages use the frame; pixel-reading motions keep the real <img>.
 const sampleImage = "/assets/workspace.svg";
 const ThemedPage = createContext(false);
+const noExtras = {};
+const PageExtras = createContext<{ pricingBuilder?: boolean; galleryViews?: boolean }>({});
+/** Reads a price such as "NT$ 1,200 / 杯" from a card's lines (the first number on the price line). */
+export function priceOf(card: PageNode): number | null {
+  const lines = (card.children ?? []).filter((c) => c.type === "paragraph").map((c) => c.content ?? "");
+  const all = lines.length ? lines : (card.content ?? "").split("\n");
+  for (const line of all.slice(1)) { const m = line.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/); if (m) return Number(m[1]); }
+  return null;
+}
+// A row of partner logos (pictures described as 標誌) is not a gallery of works.
+const imagesOf = (n: PageNode): PageNode[] => (n.type === "image" ? [n] : (n.children ?? []).flatMap(imagesOf));
+const isLogoWall = (n: PageNode) => { const imgs = imagesOf(n); return imgs.length > 0 && imgs.every((i) => (i.alt ?? "").includes("標誌")); };
+const cardsOf = (n: PageNode): PageNode[] => (n.type === "card" ? [n] : (n.children ?? []).flatMap(cardsOf));
+const firstLine = (n: PageNode) => ((n.children ?? []).find((c) => c.type === "paragraph")?.content ?? n.content ?? "").split("\n")[0].trim();
+// 互動價目表: pick the plans or items you want and see the total. It only adds up; nothing is paid here.
+function PricingBuilder({ section }: { section: PageNode }) {
+  const items = cardsOf(section).map((c) => ({ id: c.id, name: firstLine(c), price: priceOf(c) })).filter((i): i is { id: string; name: string; price: number } => i.price !== null && Boolean(i.name));
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  if (items.length < 2) return null;
+  const total = items.filter((i) => picked.has(i.id)).reduce((t, i) => t + i.price, 0);
+  return (
+    <div className="pricing-builder" role="group" aria-label="自己組合">
+      <span className="pricing-builder-label">自己組合</span>
+      <div className="pricing-builder-items">
+        {items.map((i) => (
+          <label key={i.id} className={picked.has(i.id) ? "is-on" : undefined}>
+            <input type="checkbox" checked={picked.has(i.id)} onChange={() => setPicked((s) => { const x = new Set(s); if (x.has(i.id)) x.delete(i.id); else x.add(i.id); return x; })} />
+            {i.name}<small>{i.price.toLocaleString("zh-TW")}</small>
+          </label>
+        ))}
+      </div>
+      <output className="pricing-builder-total" aria-live="polite">{picked.size ? `已選 ${picked.size} 項，合計 ${total.toLocaleString("zh-TW")}` : "勾選想要的項目，馬上算出合計"}</output>
+    </div>
+  );
+}
+// 作品瀏覽切換: visitors choose how to look at a gallery (one at a time, a grid or a list).
+const galleryViewNames = { big: "大圖", grid: "網格", list: "清單" } as const;
+function GalleryViews({ children }: { children: ReactNode }) {
+  const [view, setView] = useState<keyof typeof galleryViewNames>("grid");
+  return (
+    <div className="gallery-views" data-view={view}>
+      <div className="gallery-views-switch" role="radiogroup" aria-label="瀏覽方式">
+        {(Object.keys(galleryViewNames) as (keyof typeof galleryViewNames)[]).map((v) => (
+          <button key={v} type="button" role="radio" aria-checked={view === v} onClick={() => setView(v)}>{galleryViewNames[v]}</button>
+        ))}
+      </div>
+      {children}
+    </div>
+  );
+}
 // These read the image pixels, so they keep a real <img>; clip/mask motions animate the frame fine.
 const pixelMotions = new Set(["cinematic-image-pan", "pixel-dissolve", "shutter-lens-transition", "glitch-slice-reveal", "liquid-distortion-reveal", "scroll-image-sequence"]);
 function SafeImage({ node }: { node: PageNode }) {
@@ -256,7 +307,9 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   const assembly=node.effects.find(e=>e.presetId==="letter-assembly"),accent=node.effects.find(e=>e.presetId==="accent-stroke"),disclosure=node.effects.find(e=>e.presetId==="disclosure-panel");
   const advancedText=node.effects.find(e=>advancedTextIds.includes(e.presetId));
   const cinematicText=node.effects.find(e=>cinematicTextIds.includes(e.presetId)),story=node.effects.find(e=>storyGroupIds.includes(e.presetId)),shuffle=node.effects.find(e=>e.presetId==="card-stack-shuffle"),sequence=node.effects.find(e=>e.presetId==="scroll-image-sequence");
-  const children=node.children?.map(child=><RenderNode key={child.id} node={child}/>);
+  const extras=useContext(PageExtras);
+  const kids=node.children?.map(child=><RenderNode key={child.id} node={child}/>);
+  const children=node.type==="section"&&node.role==="pricing"&&extras.pricingBuilder?<>{kids}<PricingBuilder section={node}/></>:node.type==="section"&&node.role==="gallery"&&extras.galleryViews&&!isLogoWall(node)?<GalleryViews>{kids}</GalleryViews>:kids;
   const style = {
     "--breathing-cycle":(breathing?motionNumber(breathing,"cycleMs"):3200)+"ms",
     "--breathing-spread":(breathing?motionNumber(breathing,"spreadPx"):12)+"px",
@@ -280,6 +333,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       tabIndex={(lift||glow)&&node.type!=="button"?0:undefined}
       data-effects={node.effects.map((e) => e.presetId).join(" ")}
       data-caption={node.type === "image" ? node.alt : undefined}
+      data-stat={node.type === "card" && /^[\d,.]+[+%萬千]?\+?$/.test(firstLine(node)) ? "" : undefined}
       className={[
         "page-node",
         entry.className,
@@ -360,6 +414,23 @@ function scrollRoot(el: HTMLElement | null): HTMLElement | Window {
   for (let p = el?.parentElement; p; p = p.parentElement) { const o = getComputedStyle(p).overflowY; if ((o === "auto" || o === "scroll") && p.scrollHeight > p.clientHeight) return p; }
   return window;
 }
+// 生成網格: a field of coloured numbers grown from the site's name. The same name always gives
+// the same field, so it is the site's own pattern; it sits behind the opening and never takes input.
+const gridColours = ["#ff4d2e", "#1f6bff", "#13b26b", "#ff9f1c", "#b04bff", "#111111", "#ff5fa2", "#00a6c8"];
+function GenerativeGrid({ seed }: { seed: string }) {
+  let h = 2166136261;
+  for (const ch of seed) h = Math.imul(h ^ ch.codePointAt(0)!, 16777619);
+  const rand = () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0) / 4294967296;
+  const cells = Array.from({ length: 48 }, () => {
+    const r = rand();
+    return r < 0.38 ? null : { n: 1 + Math.floor(rand() * 50), c: gridColours[Math.floor(rand() * gridColours.length)], faint: rand() < 0.45 };
+  });
+  return (
+    <div className="pg-gen-grid" aria-hidden="true">
+      {cells.map((c, i) => <span key={i} style={c ? { color: c.c, opacity: c.faint ? 0.22 : 1 } : undefined}>{c ? c.n : ""}</span>)}
+    </div>
+  );
+}
 function PageNav({ page, view, sections, placed }: { page: PageSpec; view: string | null; sections: PageNode[]; placed?: PageNode[] }) {
   const style = page.chrome?.navStyle ?? "top-sticky";
   const links = navLinks(page, sections, placed);
@@ -373,7 +444,7 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
   const side = style === "side-left" || style === "side-right";
   // Hide-on-scroll for the top bar, and "you are here" for the side list.
   useEffect(() => {
-    if (style !== "top-autohide" && !side) return;
+    if (style !== "top-autohide" && !side && style !== "dots") return;
     const root = scrollRoot(ref.current);
     const top = () => (root instanceof Window ? root.scrollY : root.scrollTop);
     let last = top();
@@ -419,6 +490,28 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
         {list}
       </aside>
       </div>
+    );
+  // Side dots: the name stays on top; each section is a dot on the right that lights up when you are there.
+  if (style === "dots")
+    return (
+      <>
+        <header ref={ref} className={"page-nav nav-dots" + (open ? " is-open" : "")} data-nav-style={style}>
+          {brand}
+          {menu}
+          {list}
+        </header>
+        {links.length > 0 && !isPages && (
+          <div className="page-dots-rail" aria-hidden="true">
+            <div className="page-dots">
+              {links.map((l) => (
+                <a key={l.key} href={"#page-" + l.target} tabIndex={-1} className={l.target === active ? "is-here" : undefined}>
+                  <span>{l.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </>
     );
   if (style === "floating")
     return (
@@ -530,7 +623,7 @@ export function PageRuntime({
   };
   const sources=new Map<string,PageNode>();const collect=(n:PageNode)=>{sources.set(n.id,n);n.children?.forEach(collect);};current.sections.forEach(collect);
   return (
-    <AssetUrls.Provider value={assetUrls}><MotionPreview.Provider value={motionPreview}><ThemedPage.Provider value={!!page.theme}>
+    <AssetUrls.Provider value={assetUrls}><MotionPreview.Provider value={motionPreview}><ThemedPage.Provider value={!!page.theme}><PageExtras.Provider value={page.extras ?? noExtras}>
       <RenderBoundary resetKey={input}>
         <div
           ref={rootRef}
@@ -543,6 +636,7 @@ export function PageRuntime({
           data-theme={page.theme}
           data-art={page.art?.principles.join(" ") || undefined}
           data-concept={page.concept}
+          data-parallax={page.concept && parallaxConcepts.includes(page.concept) ? "" : undefined}
           data-branded={page.brand?.primary ? "" : undefined}
           lang={page.metadata.language}
           aria-label={page.metadata.title}
@@ -572,6 +666,7 @@ export function PageRuntime({
             }
           }}
         >
+          {page.concept === "generative-grid" && <GenerativeGrid seed={page.metadata.title} />}
           {(() => {
             const navStyle = page.chrome?.navStyle;
             // Saved draft positions keep their own look: a nav appears only when one was chosen.
@@ -585,6 +680,6 @@ export function PageRuntime({
           })()}
         </div>
       </RenderBoundary>
-    </ThemedPage.Provider></MotionPreview.Provider></AssetUrls.Provider>
+    </PageExtras.Provider></ThemedPage.Provider></MotionPreview.Provider></AssetUrls.Provider>
   );
 }
