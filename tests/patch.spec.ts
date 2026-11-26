@@ -28,7 +28,7 @@ test("依 ID 選取、套用、Diff、撤銷重做、非法修改與草稿隔離
   const other = page.locator(".rendered-page .page-paragraph").first(),
     otherText = await other.textContent();
   await heading.click();
-  await openPanel(page, "元件");
+  await openPanel(page, "圖層");
   await expect(page.locator(`[data-component-id="${id}"]`)).toHaveAttribute(
     "aria-pressed",
     "true",

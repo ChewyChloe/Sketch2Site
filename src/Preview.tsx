@@ -30,7 +30,9 @@ import { effectCompatible, effectIds, type PageNode } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import { validatePage } from "./pageSpec";
 import { applyPatchBatch, indexNodes, travelPage, type Change } from "./patch";
-import { AnnotationBubble } from "./AnnotationBubble";
+import { AnnotationBubble, typeNames as annotationNames } from "./AnnotationBubble";
+import { LayerTree } from "./LayerTree";
+import { SiteToolbar } from "./SiteToolbar";
 import { NoteMarkers, NoteTray, type StagedNote } from "./NoteBatch";
 import { themeIds, themeLabels, allSections } from "./pageSpec";
 function changeLabel(c: Change) {
@@ -142,9 +144,10 @@ export default function Preview({ ref, onSiteChange, device: deviceProp, onDevic
   const selected = selectedIds.length === 1 ? selectedIds[0] : null;
   // The annotation button / note box is anchored inside this stage.
   const stageRef = useRef<HTMLDivElement>(null);
-  function setSelected(id: string | null) {
+  // keepTab: picking from 圖層 stays in the layer list instead of jumping to 屬性.
+  function setSelected(id: string | null, keepTab = false) {
     if (!setSelectedIds(id ? [id] : [])) return false;
-    if (id && (!compact || panelOpen)) {
+    if (id && !keepTab && (!compact || panelOpen)) {
       setPanelTab("properties");
       setPanelOpen(true);
     }
@@ -190,6 +193,7 @@ export default function Preview({ ref, onSiteChange, device: deviceProp, onDevic
   const [replacedWith, setReplacedWith] = useState<import("./pageSpec").PageSpec | null>(null);
   // Notes left on several elements, sent together (NoteBatch.tsx).
   const [notes, setNotes] = useState<StagedNote[]>([]);
+  const [noteToken, setNoteToken] = useState(0);
   const [notice, setNotice] = useState(""),
     [patchError, setPatchError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -231,12 +235,7 @@ export default function Preview({ ref, onSiteChange, device: deviceProp, onDevic
   }, [ready, persistence.restored]);
   const page = session.history.present,
     nodes = indexNodes(page),
-    depths = new Map<string, number>(),
     node = selected ? nodes.get(selected) : undefined;
-  {
-    const walk = (n: PageNode, d: number) => { depths.set(n.id, d); n.children?.forEach((c) => walk(c, d + 1)); };
-    allSections(page).forEach((n) => walk(n, 0));
-  }
   const [effectDurations, setEffectDurations] = useState<
     Record<string, string>
   >({});
@@ -914,12 +913,25 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
               )}
             </div>
             {mode === "browse" && ready && !loadError && node && (
+              <SiteToolbar
+                key={"tb" + node.id}
+                node={node}
+                stage={stageRef}
+                themeColors={[...(page.brand?.primary ? [page.brand.primary] : []), ...(page.brand?.colors ?? [])]}
+                onApply={(patches, scope) => Boolean(patch(patches, scope))}
+                onNote={() => setNoteToken((t) => t + 1)}
+                noteLabel={"註解：說說這個" + (annotationNames[node.type] ?? "元件") + "要怎麼改"}
+              />
+            )}
+            {mode === "browse" && ready && !loadError && node && (
               <AnnotationBubble
                 page={page}
                 node={node}
                 stage={stageRef}
                 onApply={(patches, scope) => Boolean(patch(patches, scope))}
                 onStage={(text) => { setNotes((list) => [...list, { key: crypto.randomUUID(), nodeId: node.id, text }]); return notes.length + 1; }}
+                chip={false}
+                openToken={noteToken}
               />
             )}
             {notes.length > 0 && <NoteMarkers notes={notes} stage={stageRef} page={page} />}
@@ -961,7 +973,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
           >
             {(
               [
-                ["elements", "元件"],
+                ["elements", "圖層"],
                 ["animations", "動畫"],
                 ["properties", "屬性"],
               ] as const
@@ -982,28 +994,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
             key={panelTab + (panelTab === "properties" ? selected : "")}
           >
             {panelTab === "elements" && (
-              <section className="element-browser">
-                <h2>頁面元件</h2>
-                <ul>
-                  {[...nodes.values()].map((n) => (
-                    <li
-                      key={n.id}
-                      // Layout wrappers stay selectable (columns, spacing) but read as structure.
-                      className={["section", "container", "grid", "stack"].includes(n.type) ? "structural" : undefined}
-                      style={{ "--depth": depths.get(n.id) ?? 0 } as React.CSSProperties}
-                    >
-                      <button
-                        data-component-id={n.id}
-                        aria-pressed={selectedIds.includes(n.id)}
-                        onClick={() => setSelected(n.id)}
-                      >
-                        <small>{nodeLabels[n.type]}</small>
-                        {(n.content || n.alt) && <span>{(n.content || n.alt)!.slice(0, 36)}</span>}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+              <LayerTree page={page} selectedIds={selectedIds} onSelect={(id) => setSelected(id, true)} />
             )}
             {panelTab === "animations" && (
               <AnimationLibrary

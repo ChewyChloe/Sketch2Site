@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Select } from "./Select";
 import { useEscapeToClose } from "./useEscape";
+import { paletteFromFile, paletteGroups, palettes, type Palette, type PaletteGroup } from "./palettes";
 import { brandRadii, radiusLabels, radiusPx, contrast, fixContrast, fontIds, fontLabels, fontStacks, inkOn, latinFontIds, latinFontLabels, latinFontStacks, smartPalette, type Brand, type FontId, type LatinFontId } from "./pageSpec";
 
 const weightLabels: Record<number, string> = { 400: "一般", 500: "中等", 600: "半粗", 700: "粗", 800: "特粗", 900: "最粗" };
@@ -69,6 +70,30 @@ export function BrandPanel({
       <Select label={label} value={b[key] ?? ""} buttonStyle={b[key] ? { fontFamily: latinFontStacks[b[key]!] } : undefined} onChange={(v) => set({ [key]: (v || undefined) as LatinFontId | undefined })} options={[{ value: "", label: "跟中文一樣" }, ...latinFontIds.map((f) => ({ value: f, label: latinFontLabels[f], style: { fontFamily: latinFontStacks[f] } }))]} />
     </div>
   );
+  const [group, setGroup] = useState<PaletteGroup>(paletteGroups[0]);
+  const [mine, setMine] = useState<Palette | null>(null);
+  const [reading, setReading] = useState(false);
+  const [pickNote, setPickNote] = useState("");
+  const pictureInput = useRef<HTMLInputElement>(null);
+  const usePalette = (p: Palette) => set({ primary: p.primary, secondary: p.secondary, accent: p.accent, neutral: p.neutral });
+  const isUsed = (p: Palette) => b.primary === p.primary && b.secondary === p.secondary && b.accent === p.accent && b.neutral === p.neutral;
+  const card = (p: Palette, name: string) => (
+    <button key={name} type="button" className="palette-card" aria-pressed={isUsed(p)} aria-label={"使用配色：" + name} onClick={() => usePalette(p)}>
+      <span className="palette-mini" aria-hidden="true" style={{ background: p.secondary }}>
+        <i className="pm-nav" style={{ background: p.neutral }} />
+        <i className="pm-title" style={{ background: p.neutral }} />
+        <i className="pm-line" style={{ background: p.neutral }} />
+        <span className="pm-row">
+          <i className="pm-btn" style={{ background: p.primary }} />
+          <i className="pm-dot" style={{ background: p.accent }} />
+        </span>
+      </span>
+      <span className="palette-stripes" aria-hidden="true">
+        {[p.primary, p.secondary, p.accent, p.neutral].map((c, i) => <i key={i} style={{ background: c }} />)}
+      </span>
+      <span className="palette-name">{name}</span>
+    </button>
+  );
   const [uploading, setUploading] = useState<"logo" | "logoAlt" | "icon" | null>(null);
   const logoPicker = (key: "logo" | "logoAlt" | "icon", name: string, hint: string) => (
     <div className="brand-logo-group">
@@ -108,6 +133,39 @@ export function BrandPanel({
               ))}
             </div>
           )}
+          <div className="palette-library" role="group" aria-label="配色庫">
+            <div className="palette-head">
+              <strong>配色庫</strong>
+              <button type="button" className="palette-from-picture" disabled={reading} onClick={() => pictureInput.current?.click()}>{reading ? "讀取中…" : "從我的圖片取色"}</button>
+            </div>
+            <div className="palette-groups" role="tablist" aria-label="配色風格">
+              {paletteGroups.map((g) => <button key={g} type="button" role="tab" aria-selected={group === g} onClick={() => setGroup(g)}>{g}</button>)}
+            </div>
+            <div className="palette-grid">
+              {mine && card(mine, "你的圖片")}
+              {palettes.filter((p) => p.group === group).map((p) => card(p, p.name))}
+            </div>
+            {pickNote && <p className="palette-note" role="status">{pickNote}</p>}
+            <input
+              ref={pictureInput}
+              hidden
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              aria-label="選一張圖片取色"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                setReading(true);
+                const p = await paletteFromFile(file);
+                setReading(false);
+                if (!p) { setPickNote("這張圖讀不到顏色，換一張 PNG 或 JPG 試試"); return; }
+                setMine(p);
+                usePalette(p);
+                setPickNote("已用圖片的顏色配好，圖片只在你的電腦上讀取");
+              }}
+            />
+          </div>
           <div className="brand-roles">
             {roles.map((r) => {
               const value = b[r.key];

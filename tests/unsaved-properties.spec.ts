@@ -44,7 +44,7 @@ for (const width of [1440, 768, 375])
     ).toBeDisabled();
     await page.keyboard.press("Escape");
     // Use the component list so this works even when the narrow inspector covers the canvas.
-    await openPanel(page, "元件");
+    await openPanel(page, "圖層");
     page.once("dialog", (d) => d.dismiss());
     await page.locator(`[data-component-id="${id(3)}"]`).click();
     await editSelection(page);

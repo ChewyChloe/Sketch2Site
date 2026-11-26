@@ -78,7 +78,7 @@ for (const width of [1440, 768, 375])
     await list.getByRole("tab", { name: "屬性", exact: true }).focus();
     await page.keyboard.press("Home");
     await expect(
-      list.getByRole("tab", { name: "元件", exact: true }),
+      list.getByRole("tab", { name: "圖層", exact: true }),
     ).toBeFocused();
     await page.keyboard.press("ArrowRight");
     await expect(

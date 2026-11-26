@@ -185,7 +185,7 @@ for (const id of cinematicMotionIds)
         await openWebsiteWorkspace(page);
         await expect(target(page, id)).toHaveAttribute('data-effects', id);
         await page.getByRole('button', { name: '選取', exact: true }).click();
-        await openPanel(page,'元件');
+        await openPanel(page,'圖層');
         await page.locator(`.element-browser [data-component-id="${thirdId(cinematicMotionIds.indexOf(id)*20+2)}"]`).click();
         await editSelection(page);
         await expect(page.getByLabel(label, { exact: true })).toHaveValue(value);

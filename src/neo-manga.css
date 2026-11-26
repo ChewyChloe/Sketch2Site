@@ -843,3 +843,49 @@ body{background:var(--neo-cream)}
 .preview-body:has(.note-bubble) .note-tray { width: auto; }
 .preview-body:has(.note-bubble) .note-tray :is(ol, footer, .note-tray-msg) { display: none; }
 .preview-body:has(.note-bubble) .note-tray header { padding: 8px 14px; }
+
+/* ---- 圖層: readable layers in the site preview ---- */
+.layer-tree .layer-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.layer-tree .layer-head h2 { margin: 0; }
+.layer-structure { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted, #62655f); cursor: pointer; }
+.layer-structure input { width: 14px; height: 14px; accent-color: #10e560; }
+.layer-page { margin: 12px 0 4px; font-size: 12px; font-weight: 800; color: var(--muted, #62655f); }
+.layer-tree ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.layer-tree .layer-row { display: flex; align-items: center; gap: 2px; padding-left: calc(min(var(--depth, 0), 5) * 14px); }
+.layer-tree .layer-row button.layer-name { flex: 1; min-width: 0; display: flex !important; align-items: center; gap: 8px; min-height: 34px; padding: 4px 8px !important; border: 0 !important; border-radius: 8px !important; background: transparent; text-align: left; font-size: 13px; color: inherit; cursor: pointer; }
+.layer-tree .layer-row button.layer-name:hover { background: color-mix(in srgb, #10e560 12%, transparent); }
+.layer-tree .layer-row button.layer-name[aria-pressed=true] { background: #0d0e11; color: #fff; }
+.layer-tree .layer-row button.layer-name[aria-pressed=true] small { color: #10e560; }
+.layer-tree .layer-name small { flex: none; font-size: 11px; color: var(--muted, #62655f); }
+.layer-tree .layer-name span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layer-tree .kind-section > .layer-name span { font-weight: 800; }
+.layer-toggle { flex: none; display: grid; place-items: center; width: 22px; height: 22px; padding: 0 !important; border: 0 !important; background: transparent !important; color: inherit; cursor: pointer; border-radius: 6px !important; }
+.layer-toggle svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
+.layer-toggle[aria-expanded=true] svg { transform: rotate(90deg); }
+.layer-toggle-space { flex: none; width: 22px; }
+.layer-icon { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
+.layer-t { flex: none; display: grid; place-items: center; width: 18px; height: 18px; font: 800 13px/1 ui-serif, Georgia, serif; opacity: .85; }
+.layer-thumb { flex: none; width: 26px; height: 20px; object-fit: cover; border-radius: 4px; border: 1px solid #d5d5cd; }
+.layer-tree .structural > .layer-name { color: var(--muted, #62655f); font-size: 12px; min-height: 28px; }
+.preview-frame .layer-hover { outline: 2px dashed #10e560 !important; outline-offset: 3px; }
+.layer-tree li.layer-row > button.layer-toggle { width: 22px !important; min-width: 22px; height: 22px; padding: 0 !important; border-bottom: 0 !important; justify-content: center; }
+.layer-tree li.layer-row > button.layer-name { width: auto !important; border-bottom: 0 !important; padding: 4px 8px !important; }
+.layer-tree li.layer-row > button.layer-name small { min-width: 0; }
+
+/* ---- Toolbar on the site, right above the picked element ---- */
+.site-toolbar { position: absolute; z-index: 30; display: flex; align-items: center; gap: 6px; padding: 5px 6px; border: 2px solid #0d0e11; border-radius: 16px; background: #fff; box-shadow: 4px 4px 0 #0d0e11; max-width: calc(100% - 16px); }
+.site-toolbar > .text-toolbar { margin: 0; padding: 0; border: 0; box-shadow: none; background: transparent; flex-wrap: nowrap; }
+.site-tb-image { display: flex; gap: 6px; }
+.site-tb-hint { padding: 0 8px; font-size: 13px; color: #62655f; white-space: nowrap; }
+.site-tb-note { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 0 12px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #10e560; color: #0d0e11; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; flex: none; }
+.site-tb-note svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+/* While the note box is open, the toolbar steps aside. */
+.preview-zoom:has(.note-bubble) .site-toolbar { display: none; }
+/* Grid columns that size to their content push long labels past the side panel. */
+.layer-tree ul { grid-template-columns: minmax(0, 1fr); }
+.layer-tree .layer-row { min-width: 0; }
+.image-controls { grid-template-columns: minmax(0, 1fr) !important; }
+.image-controls > * { min-width: 0; }
+/* Narrow stage: the toolbar wraps onto more rows instead of running off the side. */
+.site-toolbar { flex-wrap: wrap; }
+.site-toolbar > .text-toolbar { min-width: 0; flex-wrap: wrap; row-gap: 4px; }

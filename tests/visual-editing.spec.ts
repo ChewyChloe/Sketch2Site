@@ -95,7 +95,7 @@ test("單選、框選、多選、取消、縮放與 Patch 保存不影響草稿"
   await page.getByRole("button", { name: "選取", exact: true }).click();
   await node(page, 2).click();
   await expect(node(page, 2)).toHaveAttribute("data-page-selected", "true");
-  await openPanel(page, "元件");
+  await openPanel(page, "圖層");
   await expect(page.locator(`[data-component-id="${id(2)}"]`)).toHaveAttribute(
     "aria-pressed",
     "true",

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "re
 import { interpretAnnotation, suggestionsFor } from "./annotate";
 import type { PageNode, PageSpec } from "./pageSpec";
 
-const typeNames: Record<string, string> = { heading: "標題", paragraph: "文字", button: "按鈕", card: "卡片", image: "圖片", form: "表單", grid: "網格", section: "區塊", stack: "群組" };
+export const typeNames: Record<string, string> = { heading: "標題", paragraph: "文字", button: "按鈕", card: "卡片", image: "圖片", form: "表單", grid: "網格", section: "區塊", stack: "群組" };
 
 /**
  * "Click it, say how to change it": a small note box anchored next to the selected
@@ -14,6 +14,8 @@ export function AnnotationBubble({
   stage,
   onApply,
   onStage,
+  chip = true,
+  openToken = 0,
 }: {
   page: PageSpec;
   node: PageNode;
@@ -21,6 +23,10 @@ export function AnnotationBubble({
   onApply: (patches: unknown[], scope: string[]) => boolean;
   /** Keeps the note in the list to send later (returns its number). */
   onStage?: (text: string) => number;
+  /** false: the site toolbar shows the 註解 button instead of the small chip. */
+  chip?: boolean;
+  /** Changing this opens the note box (from the toolbar's 註解 button). */
+  openToken?: number;
 }) {
   const [text, setText] = useState("");
   const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
@@ -62,6 +68,11 @@ export function AnnotationBubble({
     setText("");
     setOpen(false);
   }, [node.id]);
+  // Opens when the toolbar's 註解 is pressed, not because an earlier press left the count above zero.
+  const seenToken = useRef(openToken);
+  useEffect(() => {
+    if (openToken !== seenToken.current) { seenToken.current = openToken; setOpen(true); }
+  }, [openToken]);
   useEffect(() => {
     if (!open) return;
     box.current?.scrollIntoView?.({ block: "nearest" });
@@ -78,6 +89,7 @@ export function AnnotationBubble({
   };
 
   if (!pos) return null;
+  if (!open && !chip) return null;
   if (!open)
     return (
       <button

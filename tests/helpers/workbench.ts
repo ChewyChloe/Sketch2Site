@@ -17,7 +17,7 @@ export async function viewAction(page: Page, name: string) {
 }
 export async function openPanel(
   page: Page,
-  tab: "元件" | "動畫" | "屬性" = "屬性",
+  tab: "圖層" | "動畫" | "屬性" = "屬性",
 ) {
   const button = page.getByRole("button", { name: "工具", exact: true });
   if ((await button.getAttribute("aria-expanded")) !== "true")
