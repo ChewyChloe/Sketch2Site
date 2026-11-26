@@ -2,14 +2,16 @@ import { test, expect } from "@playwright/test";
 import { buildSite } from "./helpers/workbench";
 // Media elements: add from the library, set them up in the inspector, and use them on the site.
 test.setTimeout(90_000);
-test("video, carousel, flipbook, character and 3D object from draft to site", async ({ page }) => {
+test("video, carousel and flipbook from draft to site; character and 3D object are still in development", async ({ page }) => {
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
   // The video player is a third party; stub it so the test stays offline.
   const players: string[] = [];
   await page.route(/youtube-nocookie\.com|player\.vimeo\.com/, (r) => { players.push(r.request().url()); return r.fulfill({ contentType: "text/html", body: "<p>player</p>" }); });
   await page.goto("/");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
-  for (const kind of ["影片", "輪播圖片", "翻頁書", "動畫角色", "3D 物件"]) {
+  // Still in development: shown greyed out, cannot be added.
+  for (const soon of ["動畫角色", "3D 物件"]) await expect(page.getByRole("button", { name: soon + "（開發中）" })).toBeDisabled();
+  for (const kind of ["影片", "輪播圖片", "翻頁書"]) {
     await page.getByRole("tab", { name: "元件", exact: true }).click();
     await page.getByRole("button", { name: "新增" + kind }).click();
     await expect(page.getByRole("status")).toContainText("已新增" + kind);
@@ -24,11 +26,6 @@ test("video, carousel, flipbook, character and 3D object from draft to site", as
       await link.fill("https://youtu.be/dQw4w9WgXcQ");
       await link.press("Enter");
       await expect(page.getByText("已設定 YouTube 影片，網站上按播放才會載入")).toBeVisible();
-    }
-    if (kind === "動畫角色") {
-      await page.getByRole("radio", { name: "機器人" }).click();
-      await page.getByRole("radio", { name: "跳跳" }).click();
-      await expect(page.getByRole("radio", { name: "機器人" })).toHaveAttribute("aria-checked", "true");
     }
   }
   expect(players).toEqual([]);
@@ -51,18 +48,6 @@ test("video, carousel, flipbook, character and 3D object from draft to site", as
   await book.getByRole("button", { name: "下一頁" }).click();
   await expect(book.getByText("2 / 3")).toBeVisible();
   await expect(book.getByRole("button", { name: "上一頁" })).toBeEnabled();
-  // Character: the chosen one with its action.
-  await expect(site.locator(".media-character.act-bounce")).toBeVisible();
-  // 3D object: dragging turns it.
-  const cube = site.getByRole("img", { name: /3D 物件，可以拖曳轉動/ });
-  await cube.scrollIntoViewIfNeeded();
-  const before = await cube.locator(".m3-object").getAttribute("style");
-  const box = (await cube.boundingBox())!;
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2 + 120, box.y + box.height / 2 + 20, { steps: 6 });
-  await page.mouse.up();
-  expect(await cube.locator(".m3-object").getAttribute("style")).not.toBe(before);
 });
 
 test("看手機版 opens the preview at phone width, and the 桌面／手機 switch stays on the toolbar", async ({ page }) => {

@@ -788,3 +788,10 @@ body{background:var(--neo-cream)}
   .device-toggle.in-menu { display: flex; width: 100%; margin-bottom: 6px; }
   .device-toggle.in-menu button { flex: 1; justify-content: center; }
 }
+/* Media kinds still in development: greyed out, read-only, with a 開發中 badge over them. */
+.neo-workspace .sidebar button.is-coming { position: relative; opacity: 1 !important; cursor: not-allowed; filter: grayscale(1); }
+.neo-workspace .sidebar button.is-coming::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: rgb(60 62 60 / .55); pointer-events: none; }
+.neo-workspace .sidebar button.is-coming .coming-badge { position: absolute; top: 50%; left: 50%; translate: -50% -50%; z-index: 1; padding: 4px 10px; border-radius: 999px; background: #2a2d2b; border: 1px solid #5a5e5a; color: #d6dad3; font-size: 12px; font-weight: 800; letter-spacing: .04em; white-space: nowrap; }
+.neo-workspace .sidebar button.is-coming .coming-badge { top: 8px; left: auto; right: 8px; translate: none; padding: 2px 8px; font-size: 11px; }
+.neo-workspace .sidebar button.is-coming:hover, .neo-workspace .sidebar button.is-coming:focus-visible { border-color: #34383a !important; background: inherit; transform: none; }
+.neo-workspace .sidebar button.is-coming .coming-badge { top: 6px; left: 50%; right: auto; translate: -50% 0; padding: 1px 8px; font-size: 10.5px; line-height: 1.4; }

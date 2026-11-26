@@ -1126,7 +1126,7 @@ export default function App() {
       if (data.type === "frame" && (frameIds as readonly string[]).includes(data.value)) {
         const rect = board.current!.getBoundingClientRect();
         addFrame(data.value as FrameId, { x: Math.max(0, (e.clientX - rect.left) / scale - 100), y: Math.max(0, (e.clientY - rect.top) / scale - 100) });
-      } else if (data.type === "media" && (mediaKinds as readonly string[]).includes(data.value)) {
+      } else if (data.type === "media" && ["video", "carousel", "flipbook"].includes(data.value)) {
         const rect = board.current!.getBoundingClientRect();
         addMedia(data.value as MediaKind, { x: (e.clientX - rect.left) / scale, y: (e.clientY - rect.top) / scale });
       } else if (
@@ -2441,24 +2441,29 @@ node ? (
                           </button>
                         ))}
                       {mediaKinds.some((k) => mediaKindLabels[k].includes(search)) && <p className="library-subhead media-subhead">媒體與互動</p>}
-                      {mediaKinds.filter((k) => mediaKindLabels[k].includes(search)).map((k) => (
+                      {mediaKinds.filter((k) => mediaKindLabels[k].includes(search)).map((k) => {
+                        // Characters and 3D objects are still being built: shown, but greyed out and not usable yet.
+                        const soon = k === "character" || k === "object3d";
+                        return (
                         <button
                           key={k}
-                          draggable={!disabled}
-                          disabled={disabled || spec.nodes.length >= 100}
-                          aria-label={"新增" + mediaKindLabels[k]}
+                          className={soon ? "is-coming" : undefined}
+                          draggable={!disabled && !soon}
+                          disabled={soon || disabled || spec.nodes.length >= 100}
+                          aria-label={soon ? mediaKindLabels[k] + "（開發中）" : "新增" + mediaKindLabels[k]}
                           onDragEnd={() => { setDraftDragging(false); }}
-                          onDragStart={(e) => { setTimeout(() => setDraftDragging(true), 0); e.dataTransfer.setData(dragType, JSON.stringify({ type: "media", value: k })); }}
-                          onClick={() => addMedia(k)}
+                          onDragStart={(e) => { if (soon) { e.preventDefault(); return; } setTimeout(() => setDraftDragging(true), 0); e.dataTransfer.setData(dragType, JSON.stringify({ type: "media", value: k })); }}
+                          onClick={() => { if (!soon) addMedia(k); }}
                         >
                           <span className="glyph" aria-hidden="true"><WorkbenchIcon name={k} /></span>
                           <span>
                             <strong>{mediaKindLabels[k]}</strong>
                             <small>{{ video: "貼上 YouTube／Vimeo 網址", carousel: "多張照片左右滑動", flipbook: "照片當書頁，點一下翻頁", character: "會動的小角色", object3d: "可拖曳轉動的立體相簿" }[k]}</small>
                           </span>
-                          <WorkbenchIcon name="grip" />
+                          {soon ? <span className="coming-badge" aria-hidden="true">開發中</span> : <WorkbenchIcon name="grip" />}
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   </>
                 ) : tab === "animations" ? (
