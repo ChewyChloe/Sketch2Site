@@ -1394,26 +1394,39 @@
    so the headline can invert against the photo it crosses. */
 .rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :first-child { grid-column: 1 / 10; grid-row: 1; order: 2; align-self: end; padding-bottom: 4cqi; z-index: auto !important; isolation: auto !important; position: static !important; }
 .rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :first-child .page-stack { z-index: auto !important; isolation: auto !important; position: static !important; }
-.rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :last-child { grid-column: 6 / 13; grid-row: 1; order: 1; }
+.rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :last-child { grid-column: 6 / 13; grid-row: 1; order: 1; align-self: center; }
 .rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :last-child .page-image,
-.rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :last-child img { aspect-ratio: 4 / 5 !important; height: auto !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; width: 100%; object-fit: cover; }
+.rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :last-child img { aspect-ratio: auto !important; height: auto !important; max-height: none !important; max-width: none !important; border-radius: 0 !important; box-shadow: none !important; width: 100% !important; object-fit: contain; }
+.rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :last-child > * { width: 100% !important; max-width: none !important; }
+/* Photos are cropped tall and bold; screenshots keep their whole shape. */
+.rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :last-child .page-image[data-kind="photo"] img { aspect-ratio: 4 / 5 !important; object-fit: cover !important; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image[data-kind="photo"]:nth-child(3n+1) img { aspect-ratio: 4 / 3 !important; object-fit: cover !important; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image[data-kind="photo"]:nth-child(3n+2) img { aspect-ratio: 3 / 4 !important; object-fit: cover !important; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image[data-kind="photo"]:nth-child(3n) img { aspect-ratio: 16 / 9 !important; object-fit: cover !important; }
+/* Text never inverts over a screenshot: it would land on its own words and numbers. */
+.rendered-page[data-compose="editorial"] .role-hero:has(.page-image[data-kind="screen"]) h1.page-heading { color: var(--pg-hero-ink, var(--ink)) !important; mix-blend-mode: normal; }
+.rendered-page[data-compose="editorial"] .role-hero:has(.page-image[data-kind="screen"]) > .page-container > .page-grid > :first-child { grid-column: 1 / 7; padding-right: 3cqi; }
 .rendered-page[data-compose="editorial"] .role-hero h1.page-heading { font-size: clamp(44px, 10.5cqi, 168px) !important; line-height: .92 !important; letter-spacing: -.04em !important; font-weight: 800 !important; color: #fff !important; mix-blend-mode: difference; text-wrap: balance; max-width: none !important; margin: 0 !important; }
+/* On a coloured field the inverted letters turn into an unrelated colour: keep the theme's own ink and do not cross the picture. */
+.rendered-page[data-compose="editorial"]:is([data-theme="ocean"], [data-concept="poster"]) .role-hero h1.page-heading { color: var(--pg-hero-ink, var(--ink)) !important; mix-blend-mode: normal; }
+.rendered-page[data-compose="editorial"]:is([data-theme="ocean"], [data-concept="poster"]) .role-hero > .page-container > .page-grid > :first-child { grid-column: 1 / 7; padding-right: 3cqi; }
 .rendered-page[data-compose="editorial"] .role-hero .page-paragraph { max-width: 30cqi !important; margin-top: 3cqi !important; font-size: clamp(15px, 1.3cqi, 19px) !important; }
 .rendered-page[data-compose="editorial"] .role-hero .page-button { margin-top: 2cqi; }
 
 /* Gallery: a huge outlined title, then works at different sizes and heights, one overlapping the next. */
-.rendered-page[data-compose="editorial"] .role-gallery h2.page-heading { font-size: clamp(40px, 11cqi, 180px) !important; line-height: .9 !important; letter-spacing: -.04em !important; font-weight: 800 !important; color: transparent !important; -webkit-text-stroke: 1.5px var(--ink, #111); margin: 0 0 -3cqi !important; position: relative; z-index: 0; }
+.rendered-page[data-compose="editorial"] .role-gallery h2.page-heading { font-size: clamp(40px, 11cqi, 180px) !important; line-height: .9 !important; letter-spacing: -.04em !important; font-weight: 800 !important; margin: 0 0 3cqi !important; position: relative; z-index: 0; }
+.rendered-page[data-compose="editorial"][data-theme="midnight"] .role-gallery h2.page-heading { color: transparent !important; -webkit-text-stroke: 1px currentColor; -webkit-text-stroke-color: #f4f1ea; font-weight: 700 !important; margin-bottom: -3cqi !important; }
 .rendered-page[data-compose="editorial"] .role-gallery .page-grid { display: grid !important; grid-template-columns: repeat(12, minmax(0, 1fr)) !important; gap: 0 2cqi !important; position: relative; z-index: 1; }
 .rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image { grid-row: auto !important; margin: 0 !important; border: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; position: relative; }
-.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image img { width: 100%; height: auto !important; border-radius: 0 !important; object-fit: cover; box-shadow: none !important; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image img { width: 100%; height: auto !important; max-height: none !important; border-radius: 0 !important; object-fit: contain; box-shadow: none !important; }
 .rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+1) { grid-column: 1 / 8; }
-.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+1) img { aspect-ratio: 4 / 3 !important; }
-.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+2) { grid-column: 9 / 13; margin-top: 16cqi !important; }
-.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+2) img { aspect-ratio: 3 / 4 !important; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+1) img { aspect-ratio: auto !important; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+2) { grid-column: 8 / 13; margin-top: 12cqi !important; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+2) img { aspect-ratio: auto !important; }
 .rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n) { grid-column: 4 / 11; margin-top: -6cqi !important; z-index: 2; }
-.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n) img { aspect-ratio: 16 / 9 !important; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n) img { aspect-ratio: auto !important; }
 .rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image::after { content: attr(data-caption); display: block; margin-top: 10px; font-size: 12px; letter-spacing: .12em; color: var(--muted, #666); }
-.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+2)::after { writing-mode: vertical-rl; position: absolute; left: calc(-1 * 2cqi + -4px); top: 0; margin: 0; }
+.rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+2)::after { text-align: right; }
 
 /* FAQ: the title stays on the left while numbered questions run down the right in large type. */
 .rendered-page[data-compose="editorial"] .role-faq > .page-container { display: grid !important; grid-template-columns: 5fr 7fr; gap: 4cqi; align-items: start; }
@@ -1445,6 +1458,8 @@
   .rendered-page[data-compose="editorial"] .role-hero > .page-container > .page-grid > :last-child { grid-column: 3 / 13; grid-row: 1; }
   .rendered-page[data-compose="editorial"] .role-hero h1.page-heading { font-size: 12cqi !important; }
   .rendered-page[data-compose="editorial"] .role-hero .page-paragraph { max-width: none !important; }
+  .rendered-page[data-compose="editorial"]:is([data-theme="ocean"], [data-concept="poster"]) .role-hero > .page-container > .page-grid > :first-child,
+  .rendered-page[data-compose="editorial"] .role-hero:has(.page-image[data-kind="screen"]) > .page-container > .page-grid > :first-child { grid-column: 1 / 13; margin-top: 6cqi; padding-right: 0; }
   .rendered-page[data-compose="editorial"] .role-gallery h2.page-heading { font-size: 16cqi !important; }
   .rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+1) { grid-column: 1 / 11; }
   .rendered-page[data-compose="editorial"] .role-gallery .page-grid > .page-image:nth-child(3n+2) { grid-column: 5 / 13; margin-top: 8cqi !important; }
