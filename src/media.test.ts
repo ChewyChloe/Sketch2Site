@@ -92,3 +92,12 @@ describe("media on the generated site", () => {
     }
   });
 });
+
+describe("reading order of a hand-placed draft", () => {
+  it("reads items in the same row left to right even when one sits a little higher", async () => {
+    const { readingOrder } = await import("./smartLayout");
+    const card = (x: number, y: number, content: string) => ({ ...createNode("card", x, y, 1800), content });
+    const a = card(90, 630, "認識學長姐"), b = card(470, 660, "破冰遊戲"), c = card(860, 640, "抽獎時間"), below = card(90, 900, "下一排");
+    expect(readingOrder([c, below, b, a]).map((n) => n.content)).toEqual(["認識學長姐", "破冰遊戲", "抽獎時間", "下一排"]);
+  });
+});

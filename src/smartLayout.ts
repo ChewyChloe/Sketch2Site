@@ -37,10 +37,24 @@ function item(node: CanvasNode, patch: Partial<LayoutItem> = {}): LayoutItem {
 }
 
 const byReading = (a: CanvasNode, b: CanvasNode) => a.y - b.y || a.x - b.x || a.id.localeCompare(b.id);
+/**
+ * Reading order for a hand-placed draft: top to bottom, but items that share a row (their
+ * heights overlap by at least half) read left to right even when one sits a little higher.
+ */
+export function readingOrder(list: readonly CanvasNode[]): CanvasNode[] {
+  const rows: CanvasNode[][] = [];
+  for (const n of [...list].sort(byReading)) {
+    const row = rows[rows.length - 1];
+    const sameRow = row?.some((m) => Math.min(m.y + m.height, n.y + n.height) - Math.max(m.y, n.y) >= 0.5 * Math.min(m.height, n.height));
+    if (row && sameRow) row.push(n);
+    else rows.push([n]);
+  }
+  return rows.flatMap((r) => r.sort((a, b) => a.x - b.x || a.y - b.y || a.id.localeCompare(b.id)));
+}
 
 /** Split the draft into reading-order segments, each starting at a heading. */
 export function segmentDraft(canvas: CanvasSpec): CanvasNode[][] {
-  const nodes = [...canvas.nodes].sort(byReading);
+  const nodes = readingOrder(canvas.nodes);
   // A grouped set moves together, anchored at its top-most member.
   const anchorY = new Map<string, number>();
   for (const n of nodes) if (n.groupId && !anchorY.has(n.groupId)) anchorY.set(n.groupId, n.y);
@@ -61,7 +75,7 @@ export function segmentDraft(canvas: CanvasSpec): CanvasNode[][] {
     if (headings.includes(n)) index = headings.indexOf(n);
     segments[index].push(n);
   }
-  return segments.filter((s) => s.length).map((s) => s.sort(byReading));
+  return segments.filter((s) => s.length).map((s) => readingOrder(s));
 }
 
 const pricePattern = /(NT\$|US\$|\$|＄|¥|€)\s*[\d,]+|[\d,]+\s*(元|圓)|免費|\/\s*(月|年|次|人)|每(月|年)/;
@@ -75,8 +89,10 @@ function columnsFor(count: number): 1 | 2 | 3 {
 function planSegment(segment: CanvasNode[], index: number, isLast: boolean, titleId: string | undefined): Section[] {
   const heading = segment.find((n) => n.type === "heading" || n.id === titleId);
   const firstCard = segment.find((n) => n.type === "card");
-  const before = firstCard ? segment.filter((n) => byReading(n, firstCard) < 0) : segment;
-  const after = firstCard ? segment.filter((n) => byReading(n, firstCard) >= 0) : [];
+  // The segment is already in reading order: what comes before the first card is the intro.
+  const cardAt = firstCard ? segment.indexOf(firstCard) : -1;
+  const before = firstCard ? segment.slice(0, cardAt) : segment;
+  const after = firstCard ? segment.slice(cardAt) : [];
   const head = (n: CanvasNode, level: 1 | 2, align: LayoutItem["align"] = "start") =>
     item(n, { presentation: "heading", headingLevel: level, align, width: "full" });
   const empty = { intro: [], items: [], outro: [], aside: [] } as Pick<Section, "intro" | "items" | "outro" | "aside">;

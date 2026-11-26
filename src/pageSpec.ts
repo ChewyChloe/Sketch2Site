@@ -317,6 +317,8 @@ export function brandCss(b: Brand | undefined) {
   const bodyCjk = b.bodyFont ? fontStacks[b.bodyFont] : "var(--font, inherit)";
   return {
     ...(b.primary ? { "--accent": b.primary, "--pg-accent-ink": inkOn(b.primary), "--accent-soft": `color-mix(in srgb, ${b.primary} 14%, #ffffff)` } : {}),
+    // Raw brand colours: light themes tint their page, hero glow, lines and decorations with these.
+    ...(b.primary ? { "--brand-p": b.primary, "--brand-s": b.secondary ?? b.primary, "--brand-a": b.accent ?? b.primary } : {}),
     ...(b.secondary ? { "--pg-soft": b.secondary } : {}),
     ...(b.accent ? { "--pg-highlight": b.accent } : {}),
     ...(b.neutral ? { "--ink": b.neutral } : {}),

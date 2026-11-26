@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEscapeToClose } from "./useEscape";
 import { briefOptions, emptyBrief, suggestion, type Brief, type BriefField } from "./brief";
 
 /**
@@ -89,6 +90,7 @@ export function BriefPanel({
   onGenerate: (brief: Brief) => void;
 }) {
   const [brief, setBrief] = useState<Brief>({ ...emptyBrief, ...initial });
+  useEscapeToClose(() => onClose(brief));
   const [active, setActive] = useState<BriefField | null>(initial?.audience ? null : "audience");
   const [custom, setCustom] = useState("");
   const [moreOpen, setMoreOpen] = useState(Boolean(initial?.details));
@@ -115,7 +117,7 @@ export function BriefPanel({
     </button>
   );
   return (
-    <div className="brief-panel" role="dialog" aria-label="描述你的網站" onKeyDown={(e) => { if (e.key === "Escape") onClose(brief); }}>
+    <div className="brief-panel" role="dialog" aria-label="描述你的網站">
       <div className="brief-head">
         <h2>描述你的網站</h2>
         <button type="button" className="brief-close" aria-label="關閉" onClick={() => onClose(brief)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>

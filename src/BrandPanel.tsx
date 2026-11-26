@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Select } from "./Select";
+import { useEscapeToClose } from "./useEscape";
 import { brandRadii, radiusLabels, radiusPx, contrast, fixContrast, fontIds, fontLabels, fontStacks, inkOn, latinFontIds, latinFontLabels, latinFontStacks, smartPalette, type Brand, type FontId, type LatinFontId } from "./pageSpec";
 
 const weightLabels: Record<number, string> = { 400: "一般", 500: "中等", 600: "半粗", 700: "粗", 800: "特粗", 900: "最粗" };
@@ -42,6 +43,7 @@ export function BrandPanel({
   const fileInput = useRef<HTMLInputElement>(null);
   const first = useRef<HTMLButtonElement>(null);
   useEffect(() => first.current?.focus(), []);
+  useEscapeToClose(onClose);
   const set = (patch: Partial<Brand>) => {
     const next: Brand = { ...b, ...patch };
     for (const k of Object.keys(next) as (keyof Brand)[]) if (next[k] === undefined) delete next[k];
@@ -87,7 +89,7 @@ export function BrandPanel({
   const bodyFamily = [b.bodyFontLatin && latinFontStacks[b.bodyFontLatin], b.bodyFont ? fontStacks[b.bodyFont] : "var(--font)"].filter(Boolean).join(", ");
   return (
     <div className="brand-backdrop" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="brand-panel" role="dialog" aria-label="品牌模板設定" onKeyDown={(e) => e.key === "Escape" && (e.stopPropagation(), onClose())}>
+      <div className="brand-panel" role="dialog" aria-label="品牌模板設定">
         <div className="brief-head">
           <h2>品牌模板設定</h2>
           <button ref={first} type="button" className="brief-close" aria-label="關閉" onClick={onClose}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>

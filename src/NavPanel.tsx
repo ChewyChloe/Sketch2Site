@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useEscapeToClose } from "./useEscape";
 import type { NavSettings, NavStyle } from "./pageSpec";
 import type { CanvasSpec } from "./spec";
 
@@ -68,12 +69,7 @@ export function NavPanel({ spec, onChange, onClose }: { spec: CanvasSpec; onChan
   const rows = navRows(spec);
   const first = useRef<HTMLButtonElement>(null);
   useEffect(() => { first.current?.focus(); }, []);
-  // Esc closes the window even when focus has left it (e.g. after a button disables itself).
-  useEffect(() => {
-    const key = (e: KeyboardEvent) => { if (e.key === "Escape" && !e.defaultPrevented) { e.preventDefault(); onClose(); } };
-    document.addEventListener("keydown", key);
-    return () => document.removeEventListener("keydown", key);
-  }, [onClose]);
+  useEscapeToClose(onClose);
   const save = (next: { style?: NavStyle; rows?: typeof rows }) => {
     const r = next.rows ?? rows;
     onChange({

@@ -537,6 +537,7 @@ export function PageRuntime({
             page.styles
           }
           data-theme={page.theme}
+          data-branded={page.brand?.primary ? "" : undefined}
           lang={page.metadata.language}
           aria-label={page.metadata.title}
           style={

@@ -31,7 +31,7 @@ test("video, carousel and flipbook from draft to site; character and 3D object a
   expect(players).toEqual([]);
   await buildSite(page);
   await page.getByRole("button", { name: "使用此版本", exact: true }).click();
-  const site = page.locator(".preview-frame");
+  const site = page.getByTestId("preview-frame");
   // Video: nothing loads until play is pressed, then only the no-cookie player.
   await expect(site.locator(".media-video iframe")).toHaveCount(0);
   expect(players).toEqual([]);
@@ -60,7 +60,7 @@ test("看手機版 opens the preview at phone width, and the 桌面／手機 swi
   await expect(toggle.getByRole("button", { name: "手機" })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "使用此版本", exact: true }).click();
   await expect(page.getByRole("group", { name: "預覽寬度" }).getByRole("button", { name: "手機" })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".preview-frame")).toHaveClass(/mobile/);
+  await expect(page.getByTestId("preview-frame")).toHaveClass(/mobile/);
   await page.getByRole("group", { name: "預覽寬度" }).getByRole("button", { name: "桌面" }).click();
-  await expect(page.locator(".preview-frame")).toHaveClass(/desktop/);
+  await expect(page.getByTestId("preview-frame")).toHaveClass(/desktop/);
 });

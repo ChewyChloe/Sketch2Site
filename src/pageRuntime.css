@@ -936,3 +936,13 @@
   .mc-track { transition: none; }
   .media-character *, .media-character .ch-body { animation: none !important; }
 }
+
+/* A chosen brand colour takes over the theme's tints (page, hero glow, lines, decorations) so the
+   page reads as one palette; the theme keeps its shapes, borders, shadows and type. Dark themes keep their own page. */
+.rendered-page[data-branded]:not([data-theme="midnight"]) {
+  --pg-page: color-mix(in srgb, var(--brand-p) 4%, #ffffff);
+  --pg-hero: radial-gradient(70% 90% at 90% 10%, color-mix(in srgb, var(--brand-p) 20%, #ffffff) 0%, transparent 60%), radial-gradient(50% 70% at 5% 95%, color-mix(in srgb, var(--brand-s) 70%, #ffffff) 0%, transparent 60%), color-mix(in srgb, var(--brand-p) 4%, #ffffff);
+  --line: color-mix(in srgb, var(--brand-p) 18%, #ffffff);
+  --muted: color-mix(in srgb, var(--ink) 68%, #ffffff);
+  --pg-pop: color-mix(in srgb, var(--brand-a) 45%, #ffffff);
+}

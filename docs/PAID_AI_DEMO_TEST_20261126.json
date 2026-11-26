@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-26",
+  "purpose": "Test real AI before making the competition deck (Microsoft x NCU AI Innovation Demo Day)",
+  "authorization": { "maxCalls": 8, "maxUsd": 0.20, "givenBy": "project owner in chat" },
+  "model": "gpt-6-luna",
+  "keyHandling": "Network secret on the personal cloud environment, injected by the proxy; the server got a placeholder value. Never in code, logs, chat or git. Server stopped after each run (5 + 2 + 1 calls).",
+  "providerCalls": 8,
+  "failedOrRetried": 0,
+  "totalEstimatedUsd": 0.0012224,
+  "runs": [
+    { "n": 1, "draft": "template 巷口咖啡小店", "kind": "layout", "in": 763, "out": 114, "usd": 0.0001333, "ms": 2663, "result": "PASS; same theme (sunrise) and section order as local layout" },
+    { "n": 2, "draft": "template 社團招生頁", "kind": "layout", "in": 754, "out": 183, "usd": 0.0001669, "ms": 2175, "result": "PASS; theme midnight -> mono, order unchanged" },
+    { "n": 3, "draft": "template 課程專題展示", "kind": "layout", "in": 747, "out": 174, "usd": 0.0001617, "ms": 1968, "result": "PASS; same as local layout" },
+    { "n": 4, "draft": "社團招生頁 + 描述網站 新生/社團招生/活潑/報名按鈕", "kind": "layout", "in": 787, "out": 262, "usd": 0.0002097, "ms": 2908, "result": "PASS; theme blossom, sign-up section moved to second (matches focus)" },
+    { "n": 5, "draft": "咖啡店 heading 「每天一杯，剛剛好的手沖咖啡」", "kind": "copy", "in": 277, "out": 80, "usd": 0.0000677, "ms": 2142, "options": ["每天享受一杯手沖咖啡", "一杯手沖，陪你度過日常", "每天一杯，品味手沖咖啡"], "result": "PASS; three usable options" },
+    { "n": 6, "draft": "hand-built 資管系迎新茶會 (12 elements, rough positions, 5 motions, imported photo, carousel, brand blue, brief)", "kind": "layout", "in": 707, "out": 214, "usd": 0.0001777, "ms": 2767, "result": "PASS; all 5 motions, photo and carousel kept. Found: card order wrong (rough row), brand blue clashed with theme pink" },
+    { "n": 7, "draft": "same, via 用這個描述生成網站", "kind": "layout", "in": 707, "out": 236, "usd": 0.0001887, "ms": 3532, "result": "PASS but wasted for verification: server was started before the order fix, so it ran old code (card order still wrong). Palette fix visible." },
+    { "n": 8, "draft": "same, server restarted with the fix", "kind": "layout", "in": 707, "out": 92, "usd": 0.0001167, "ms": 2087, "result": "PASS; card order correct. AI placed FAQ before 活動內容 (questionable order choice by the model)" }
+  ],
+  "fixedDuringTest": [
+    "Reading order: items in the same row (heights overlap by half) read left to right even if one sits higher (smartLayout.readingOrder)",
+    "Brand colour now tints the page, hero glow, lines and decorations on light themes (no blue button on a pink page)",
+    "Esc closes 品牌模板設定 / 描述網站 / 導覽列 even after focus leaves the window (useEscapeToClose)"
+  ],
+  "openFindings": [
+    "AI adds little over the local layout on simple drafts: mostly theme choice; section order is the same in 5 of 7 layout runs",
+    "AI sometimes moves a section somewhere worse (run 8: FAQ before the main content)",
+    "Template 社團招生頁 gallery shows grey placeholders (no photos); FAQ '展開內容' chip placement looks odd",
+    "Smart palette suggested pure red #f00f17 as accent for blue; too harsh"
+  ],
+  "screenshots": "kept outside the repo (session scratchpad ai/); key ones sent to the owner in chat"
+}
