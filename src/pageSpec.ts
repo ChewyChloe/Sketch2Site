@@ -120,6 +120,59 @@ export const fontStacks: Record<FontId, string> = {
   mono: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Noto Sans Mono CJK TC", monospace',
 };
 const hex = z.string().regex(/^#[0-9a-f]{6}$/i);
+// ---- Media elements (媒體): video, carousel, flipbook, character, 3D object ----
+// Videos are YouTube or Vimeo links only (shown behind a play cover until pressed);
+// every picture is one of the app's own image references, never an arbitrary URL.
+export const characterIds = ["sprout", "cat", "bird", "robot", "ghost", "star"] as const;
+export const characterActions = ["wave", "bounce", "float", "blink", "spin"] as const;
+export const object3dShapes = ["cube", "coin", "ring"] as const;
+export const MediaSchema = z.discriminatedUnion("kind", [
+  // A new video has no link yet (videoId absent); the site cannot be built until one is pasted.
+  z.object({ kind: z.literal("video"), provider: z.enum(["youtube", "vimeo"]), videoId: z.string().regex(/^[A-Za-z0-9_-]{6,20}$/).optional(), autoplay: z.boolean(), loop: z.boolean() }).strict()
+    .refine((v) => v.videoId === undefined || (v.provider === "youtube" ? /^[A-Za-z0-9_-]{11}$/ : /^\d{6,12}$/).test(v.videoId), "影片網址無效"),
+  z.object({ kind: z.literal("carousel"), images: z.array(imageSource).min(1).max(12), autoplay: z.boolean(), seconds: z.number().int().min(2).max(10), arrows: z.boolean(), dots: z.boolean() }).strict(),
+  z.object({ kind: z.literal("flipbook"), images: z.array(imageSource).min(2).max(24) }).strict(),
+  z.object({ kind: z.literal("character"), character: z.enum(characterIds), action: z.enum(characterActions), color: hex }).strict(),
+  z.object({ kind: z.literal("object3d"), shape: z.enum(object3dShapes), images: z.array(imageSource).min(1).max(8), spin: z.boolean() }).strict(),
+]);
+export type Media = z.infer<typeof MediaSchema>;
+/** YouTube (watch, youtu.be, shorts, embed) or Vimeo link → provider and id; anything else is refused. */
+export function parseVideoUrl(input: string): { provider: "youtube" | "vimeo"; videoId: string } | null {
+  let u: URL;
+  try { u = new URL(input.trim()); } catch { return null; }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+  const host = u.hostname.replace(/^(www\.|m\.)/, "");
+  if (host === "youtu.be") { const id = u.pathname.slice(1).split("/")[0]; return /^[A-Za-z0-9_-]{11}$/.test(id) ? { provider: "youtube", videoId: id } : null; }
+  if (host === "youtube.com" || host === "youtube-nocookie.com") {
+    const id = u.searchParams.get("v") ?? u.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/)?.[1] ?? "";
+    return /^[A-Za-z0-9_-]{11}$/.test(id) ? { provider: "youtube", videoId: id } : null;
+  }
+  if (host === "vimeo.com" || host === "player.vimeo.com") { const id = u.pathname.match(/(?:^|\/)(\d{6,12})(?:$|[/?#])/)?.[1]; return id ? { provider: "vimeo", videoId: id } : null; }
+  return null;
+}
+/** Embed address for a video; YouTube uses its no-cookie domain. */
+export function videoEmbedUrl(m: { provider: "youtube" | "vimeo"; videoId?: string; loop: boolean }, play: boolean, muted = false) {
+  return m.provider === "youtube"
+    ? `https://www.youtube-nocookie.com/embed/${m.videoId}?rel=0&playsinline=1${play ? "&autoplay=1" : ""}${muted ? "&mute=1" : ""}${m.loop ? `&loop=1&playlist=${m.videoId}` : ""}`
+    : `https://player.vimeo.com/video/${m.videoId}?dnt=1${play ? "&autoplay=1" : ""}${muted ? "&muted=1" : ""}${m.loop ? "&loop=1" : ""}`;
+}
+export const mediaKinds = ["video", "carousel", "flipbook", "character", "object3d"] as const;
+export type MediaKind = (typeof mediaKinds)[number];
+export const mediaKindLabels: Record<MediaKind, string> = { video: "影片", carousel: "輪播圖片", flipbook: "翻頁書", character: "動畫角色", object3d: "3D 物件" };
+const samplePictures = ["/assets/samples/cafe.jpg", "/assets/samples/camera.jpg", "/assets/workspace.svg"] as const;
+/** A new media element of this kind, with sample pictures so it shows something right away. */
+export function defaultMedia(kind: MediaKind): Media {
+  switch (kind) {
+    case "video": return { kind, provider: "youtube", autoplay: false, loop: false };
+    case "carousel": return { kind, images: [...samplePictures], autoplay: true, seconds: 4, arrows: true, dots: true };
+    case "flipbook": return { kind, images: [...samplePictures] };
+    case "character": return { kind, character: "sprout", action: "float", color: "#9be7b0" };
+    case "object3d": return { kind, shape: "cube", images: [...samplePictures], spin: true };
+  }
+}
+export function mediaAssetRefs(m: Media | undefined): string[] {
+  return m && "images" in m ? [...m.images] : [];
+}
 export const TextStyleSchema = z
   .object({
     font: z.enum(fontIds).optional(),
@@ -291,6 +344,7 @@ export type PageNode = {
     | "button"
     | "form"
     | "image"
+    | "media"
     | "card"
     | "stack"
     | "grid";
@@ -302,6 +356,7 @@ export type PageNode = {
   src?: string;
   alt?: string;
   look?: ImageLook;
+  media?: Media;
   text?: TextStyle;
   columns?: 1 | 2 | 3;
   children?: PageNode[];
@@ -403,6 +458,15 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         type: z.literal("form"),
         content: z.string().min(1).max(600).refine((v) => v.split("\n").length <= 8 && v.split("\n").every((l) => l.trim().length > 0 && l.length <= 40), "表單欄位無效"),
         href: href.refine((v) => !v.startsWith("#"), "表單接收網址無效"),
+      })
+      .strict(),
+    z
+      .object({
+        ...common,
+        // Video, carousel, flipbook, animated character or 3D object; content is its caption.
+        type: z.literal("media"),
+        content: z.string().max(200),
+        media: MediaSchema,
       })
       .strict(),
     z

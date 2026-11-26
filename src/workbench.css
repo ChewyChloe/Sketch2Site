@@ -1691,3 +1691,12 @@ button:has(> .x-icon:only-child) { display: inline-grid !important; place-items:
 .nowrap-phrase { display: inline-block; }
 /* The floating text toolbar never runs past the visible canvas; on narrow screens it wraps. */
 @media (min-width: 761px) { .text-toolbar-slot.is-placed > .text-toolbar:not(.is-idle) { max-width: var(--tt-max, 100%); flex-wrap: wrap; } }
+
+/* ---- Designed tooltips (instead of the browser's grey title box) ---- */
+.ui-tooltip { position: fixed; z-index: 500; display: inline-flex; align-items: center; gap: 8px; max-width: 280px; padding: 7px 11px; border-radius: 10px; background: #0d0e11; color: #f7f6f2; font-size: 12.5px; font-weight: 600; line-height: 1.45; letter-spacing: .01em; box-shadow: 0 8px 24px rgb(13 14 17 / .28); pointer-events: none; transform: translateY(-100%); animation: ui-tip-in .14s ease-out; }
+.ui-tooltip.is-below { transform: none; }
+.ui-tooltip::after { content: ""; position: absolute; left: var(--arrow-x, 50%); bottom: -5px; width: 10px; height: 10px; margin-left: -5px; background: #0d0e11; transform: rotate(45deg); border-radius: 2px; }
+.ui-tooltip.is-below::after { bottom: auto; top: -5px; }
+.ui-tooltip kbd { flex: none; padding: 1px 7px; border-radius: 6px; background: #2a2e2b; color: #10e560; font: 700 11.5px ui-monospace, SFMono-Regular, Menlo, monospace; border: 1px solid #3b4044; }
+@keyframes ui-tip-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ui-tooltip { animation: none; } }

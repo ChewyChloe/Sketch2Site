@@ -2,7 +2,7 @@ import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
 import { imageSource } from "./assetRef";
 import { MotionSchema, bindMotionInput, compatibleMotion, combinationReason, withinMotionBudget } from "./motion";
-import { href, localAssets, ImageLookSchema, TextStyleSchema, BrandSchema, NavSettingsSchema } from "./pageSpec";
+import { href, localAssets, ImageLookSchema, TextStyleSchema, BrandSchema, NavSettingsSchema, MediaSchema, defaultMedia, mediaKindLabels, type MediaKind } from "./pageSpec";
 import { SiteOverridesSchema } from "./siteOverrides";
 export const Effect = z.enum([
   "hover-glow",
@@ -14,7 +14,7 @@ export const Effect = z.enum([
   "stagger-reveal",
 ]);
 export const canvasMaxHeight = 4800;
-export const Kind = z.enum(["text", "button", "card", "heading", "image", "form"]);
+export const Kind = z.enum(["text", "button", "card", "heading", "image", "form", "media"]);
 export const NodeSchema = z.preprocess(bindMotionInput,z
   .object({
     id: z.string().uuid(),
@@ -42,12 +42,15 @@ export const NodeSchema = z.preprocess(bindMotionInput,z
     look: ImageLookSchema.optional(),
     // Font, size, colour and emphasis from the text toolbar (text-like elements).
     textStyle: TextStyleSchema.optional(),
+    // Video, carousel, flipbook, character or 3D object (media elements only).
+    media: MediaSchema.optional(),
     // Locked elements cannot be moved, resized, edited or deleted until unlocked.
     locked: z.literal(true).optional(),
     zIndex: z.number().int().min(0).max(100),
   })
   .strict()
   .refine((n) => !n.look || n.type === "image", "只有圖片可以設定相框")
+  .refine((n) => (n.type === "media") === !!n.media && (n.type !== "media" || n.content.length <= 200), "媒體元件設定無效")
   .refine((n) => !n.textStyle || ["heading", "text", "button", "card"].includes(n.type), "這個元件不能設定文字樣式"));
 export const CanvasSchema = z
   .object({
@@ -195,6 +198,20 @@ export const blank = (): CanvasSpec => ({
   nodes: [],
   constraints: [],
 });
+const mediaSizes: Record<MediaKind, [number, number]> = { video: [480, 270], carousel: [480, 300], flipbook: [300, 400], character: [180, 180], object3d: [280, 280] };
+/** A media element (video, carousel, flipbook, character, 3D object) at x, y. */
+export function createMediaNode(kind: MediaKind, x: number, y: number, canvasHeight = 1200): CanvasNode {
+  const [width, height] = mediaSizes[kind];
+  return {
+    ...createNode("media", x, y, canvasHeight),
+    x: Math.max(0, Math.min(1440 - width, x)),
+    y: Math.max(0, Math.min(canvasHeight - height, y)),
+    width,
+    height,
+    content: kind === "character" ? "" : mediaKindLabels[kind],
+    media: defaultMedia(kind),
+  };
+}
 export function createNode(
   type: CanvasNode["type"],
   x: number,
@@ -223,11 +240,13 @@ export function createNode(
       heading: "網站標題",
       image: "內建圖片示意",
       form: "姓名\nEmail\n訊息",
+      media: "",
     }[type],
     effects: [],
     parentId: null,
     assetId: type === "image" ? localAssets[0] : null,
     ...(type === "button" || type === "form" ? { href: null } : {}),
+    ...(type === "media" ? { media: defaultMedia("video") } : {}),
     zIndex: 0,
   };
 }

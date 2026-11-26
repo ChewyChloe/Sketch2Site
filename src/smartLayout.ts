@@ -169,7 +169,8 @@ function planSegment(segment: CanvasNode[], index: number, isLast: boolean, titl
 
 export function smartLayout(canvas: CanvasSpec): LayoutV2 {
   const segments = segmentDraft(canvas);
-  const titleId = canvas.nodes.some((n) => n.type === "heading") ? undefined : segments[0]?.[0]?.id;
+  // Without a heading, the first text element becomes the title (never an image, card, form or media).
+  const titleId = canvas.nodes.some((n) => n.type === "heading") ? undefined : segments[0]?.find((n) => n.type === "text")?.id;
   let sections = segments.flatMap((segment, i) => planSegment(segment, i, i === segments.length - 1, i === 0 ? titleId : undefined));
   // A draft with no title at all still gets a calm opening instead of a bare hero.
   if (!sections.some((s) => s.intro.some((i) => i.headingLevel === 1 && i.presentation === "heading")) && sections[0]?.role === "hero")

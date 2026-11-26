@@ -57,7 +57,7 @@ function slots(spec: CanvasSpec): Map<string, Slot> {
       const kind: Slot["kind"] =
         node.type === "heading" || item.presentation === "heading"
           ? section.role === "hero" && item.headingLevel === 1 ? "title" : "heading"
-          : node.type === "text" ? "text" : node.type;
+          : node.type === "text" ? "text" : node.type === "media" ? "image" : node.type;
       out.set(node.id, { role: section.role, kind, index: cards.indexOf(item), count: cards.length });
     }
   }

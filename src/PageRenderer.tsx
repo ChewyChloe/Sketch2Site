@@ -1,6 +1,6 @@
 import {motionAssetRefs} from "./assetRef";
 import { useAssetUrls } from "./useAssetUrls";
-import { PageSchema, allSections } from "./pageSpec";
+import { PageSchema, allSections, mediaAssetRefs } from "./pageSpec";
 import type { PageNode } from "./pageSpec";
 import { useEffect, useRef, useMemo } from "react";
 import { PageRuntime, FormLive } from "./PageRuntime";
@@ -26,7 +26,7 @@ export function PageRenderer({
     refs: string[] = [];
   const walk = (node: PageNode) => {
     if (node.src) refs.push(node.src);
-    refs.push(...motionAssetRefs(node.effects));
+    refs.push(...motionAssetRefs(node.effects), ...mediaAssetRefs(node.media));
     node.children?.forEach(walk);
   };
   if (checked.success) allSections(checked.data).forEach(walk);

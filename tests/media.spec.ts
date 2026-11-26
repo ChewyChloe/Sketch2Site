@@ -1,0 +1,81 @@
+import { test, expect } from "@playwright/test";
+import { buildSite } from "./helpers/workbench";
+// Media elements: add from the library, set them up in the inspector, and use them on the site.
+test.setTimeout(90_000);
+test("video, carousel, flipbook, character and 3D object from draft to site", async ({ page }) => {
+  await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
+  // The video player is a third party; stub it so the test stays offline.
+  const players: string[] = [];
+  await page.route(/youtube-nocookie\.com|player\.vimeo\.com/, (r) => { players.push(r.request().url()); return r.fulfill({ contentType: "text/html", body: "<p>player</p>" }); });
+  await page.goto("/");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  for (const kind of ["影片", "輪播圖片", "翻頁書", "動畫角色", "3D 物件"]) {
+    await page.getByRole("tab", { name: "元件", exact: true }).click();
+    await page.getByRole("button", { name: "新增" + kind }).click();
+    await expect(page.getByRole("status")).toContainText("已新增" + kind);
+    if (kind === "影片") {
+      // No link yet: the site cannot be built.
+      await buildSite(page);
+      await expect(page.getByText("請先幫影片貼上 YouTube 或 Vimeo 網址")).toBeVisible();
+      const link = page.getByLabel("影片網址");
+      await link.fill("https://evil.example/video");
+      await link.press("Enter");
+      await expect(page.getByRole("alert").filter({ hasText: "只能貼 YouTube 或 Vimeo 的影片網址" })).toBeVisible();
+      await link.fill("https://youtu.be/dQw4w9WgXcQ");
+      await link.press("Enter");
+      await expect(page.getByText("已設定 YouTube 影片，網站上按播放才會載入")).toBeVisible();
+    }
+    if (kind === "動畫角色") {
+      await page.getByRole("radio", { name: "機器人" }).click();
+      await page.getByRole("radio", { name: "跳跳" }).click();
+      await expect(page.getByRole("radio", { name: "機器人" })).toHaveAttribute("aria-checked", "true");
+    }
+  }
+  expect(players).toEqual([]);
+  await buildSite(page);
+  await page.getByRole("button", { name: "使用此版本", exact: true }).click();
+  const site = page.locator(".preview-frame");
+  // Video: nothing loads until play is pressed, then only the no-cookie player.
+  await expect(site.locator(".media-video iframe")).toHaveCount(0);
+  expect(players).toEqual([]);
+  await site.getByRole("button", { name: /播放影片/ }).click();
+  await expect(site.locator(".media-video iframe")).toHaveAttribute("src", /^https:\/\/www\.youtube-nocookie\.com\/embed\/dQw4w9WgXcQ\?/);
+  // Carousel: next arrow and dots.
+  const carousel = site.getByRole("region", { name: "輪播圖片" });
+  await carousel.getByRole("button", { name: "第 1 張" }).click();
+  await carousel.getByRole("button", { name: "下一張" }).click();
+  await expect(carousel.getByRole("button", { name: "第 2 張" })).toHaveAttribute("aria-current", "true");
+  // Flipbook: turn a page.
+  const book = site.getByRole("group", { name: "翻頁書" });
+  await expect(book.getByText("1 / 3")).toBeVisible();
+  await book.getByRole("button", { name: "下一頁" }).click();
+  await expect(book.getByText("2 / 3")).toBeVisible();
+  await expect(book.getByRole("button", { name: "上一頁" })).toBeEnabled();
+  // Character: the chosen one with its action.
+  await expect(site.locator(".media-character.act-bounce")).toBeVisible();
+  // 3D object: dragging turns it.
+  const cube = site.getByRole("img", { name: /3D 物件，可以拖曳轉動/ });
+  await cube.scrollIntoViewIfNeeded();
+  const before = await cube.locator(".m3-object").getAttribute("style");
+  const box = (await cube.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 120, box.y + box.height / 2 + 20, { steps: 6 });
+  await page.mouse.up();
+  expect(await cube.locator(".m3-object").getAttribute("style")).not.toBe(before);
+});
+
+test("看手機版 opens the preview at phone width, and the 桌面／手機 switch stays on the toolbar", async ({ page }) => {
+  await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
+  await page.goto("/");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await page.getByRole("button", { name: "新增文字", exact: true }).click();
+  await page.getByRole("button", { name: "看手機版" }).click();
+  const toggle = page.getByRole("group", { name: "預覽寬度" });
+  await expect(toggle.getByRole("button", { name: "手機" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "使用此版本", exact: true }).click();
+  await expect(page.getByRole("group", { name: "預覽寬度" }).getByRole("button", { name: "手機" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".preview-frame")).toHaveClass(/mobile/);
+  await page.getByRole("group", { name: "預覽寬度" }).getByRole("button", { name: "桌面" }).click();
+  await expect(page.locator(".preview-frame")).toHaveClass(/desktop/);
+});

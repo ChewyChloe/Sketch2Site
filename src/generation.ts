@@ -55,12 +55,14 @@ export const generationMessages: Record<GenerationCode, string> = {
 };
 export class GenerationError extends Error {
   code: GenerationCode;
-  constructor(code: GenerationCode, reason?: "BUTTON_LINK" | "GROUP_EFFECT" | "FORM_ENDPOINT") {
+  constructor(code: GenerationCode, reason?: "BUTTON_LINK" | "GROUP_EFFECT" | "FORM_ENDPOINT" | "VIDEO_LINK") {
     super(
       reason === "BUTTON_LINK"
         ? "請先設定每個按鈕的有效連結"
         : reason === "FORM_ENDPOINT"
         ? "請先幫表單填收件網址（例如 Formspree 的 https 網址）"
+        : reason === "VIDEO_LINK"
+        ? "請先幫影片貼上 YouTube 或 Vimeo 網址"
         : reason === "GROUP_EFFECT"
           ? "依序顯示只能用在卡片上"
           : generationMessages[code],
@@ -96,6 +98,8 @@ export function prepareIntent(input: unknown) {
     throw new GenerationError("INVALID_INPUT", "BUTTON_LINK");
   if (canvas.nodes.some((n) => n.type === "form" && (!n.href || n.href.startsWith("#"))))
     throw new GenerationError("INVALID_INPUT", "FORM_ENDPOINT");
+  if (canvas.nodes.some((n) => n.media?.kind === "video" && !n.media.videoId))
+    throw new GenerationError("INVALID_INPUT", "VIDEO_LINK");
   for (const n of canvas.nodes)
     if (
       (n.type === "button" &&
@@ -153,7 +157,7 @@ export function prepareIntent(input: unknown) {
 const ItemSchema = z
   .object({
     sourceId: z.string().uuid(),
-    presentation: z.enum(["heading", "paragraph", "button", "image", "card", "form"]),
+    presentation: z.enum(["heading", "paragraph", "button", "image", "card", "form", "media"]),
     headingLevel: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     width: z.enum(["full", "content", "narrow"]),
     align: z.enum(["start", "center", "end"]),
@@ -258,6 +262,7 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         image: ["image"],
         card: ["card"],
         form: ["form"],
+        media: ["media"],
       };
       if (!(allowed[node.type] as string[]).includes(item.presentation))
         throw new GenerationError("INVALID_OUTPUT");
@@ -298,6 +303,8 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
           });
         case "form":
           return make("form", { ...common, content: node.content, href: node.href! });
+        case "media":
+          return make("media", { ...common, content: node.content, media: node.media! });
         case "image":
           return make("image", {
             ...common,
@@ -443,6 +450,7 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
       image: ["image"],
       card: ["card"],
       form: ["form"],
+      media: ["media"],
     };
     if (n && !(types[source.type] as string[]).includes(n.type))
       throw new GenerationError("INVALID_OUTPUT");
@@ -450,7 +458,12 @@ export function verifyPreservation(canvas: CanvasSpec, page: PageSpec) {
     // Text styling must come from the draft unchanged.
     if (JSON.stringify(n.text ?? null) !== JSON.stringify(source.textStyle ?? null))
       throw new GenerationError("INVALID_OUTPUT");
-    if (source.type === "image") {
+    if (source.type === "media") {
+      // Media settings and caption must come from the draft unchanged.
+      if (n.type !== "media" || n.content !== source.content || JSON.stringify(n.media) !== JSON.stringify(source.media))
+        throw new GenerationError("INVALID_OUTPUT");
+      expectedContent.push(source.content);
+    } else if (source.type === "image") {
       if (
         n.type !== "image" ||
         n.src !== source.assetId ||

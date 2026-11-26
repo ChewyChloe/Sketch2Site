@@ -72,7 +72,8 @@ export type PreviewHandle = {
     target: { sessionId: string; revision: number },
   ): Promise<{ ok: boolean; error?: string }>;
 };
-export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle>; onSiteChange?: (before: import("./pageSpec").PageSpec, after: import("./pageSpec").PageSpec) => void }) {
+import { DeviceToggle } from "./DeviceToggle";
+export default function Preview({ ref, onSiteChange, device: deviceProp, onDeviceChange }: { ref?: Ref<PreviewHandle>; onSiteChange?: (before: import("./pageSpec").PageSpec, after: import("./pageSpec").PageSpec) => void; device?: "desktop" | "mobile"; onDeviceChange?: (d: "desktop" | "mobile") => void }) {
   const pendingEdits = useRef(false);
   const resetProperties = useRef<() => void>(() => {});
   const selectionHead = useRef<string[]>([]);
@@ -111,8 +112,11 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
     },
   }));
   const [source, setSource] = useState("範例預覽"),
-    [device, setDevice] = useState<"desktop" | "mobile">("desktop"),
+    [deviceState, setDeviceState] = useState<"desktop" | "mobile">("desktop"),
     [replay, setReplay] = useState(0);
+  // Desktop or phone width; shared with the draft's 看手機版 when the app passes it in.
+  const device = deviceProp ?? deviceState;
+  const setDevice = (d: "desktop" | "mobile") => (onDeviceChange ? onDeviceChange(d) : setDeviceState(d));
   const [selectedIds, publishSelection] = useState<string[]>([]);
   selectionHead.current = selectedIds;
   function setSelectedIds(ids: string[]) {
@@ -702,21 +706,10 @@ export default function Preview({ ref, onSiteChange }: { ref?: Ref<PreviewHandle
           onChange={(v: string) => setZoom(v)}
 options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { value: "0.5", label: "50%" }]}
 />
+        <DeviceToggle mobile={device === "mobile"} onChange={(m) => setDevice(m ? "mobile" : "desktop")} className="on-toolbar" />
         <WorkbenchMenu label="檢視">
-          <div className="device-controls">
-            <button
-              aria-pressed={device === "desktop"}
-              onClick={() => setDevice("desktop")}
-            >
-              桌面
-            </button>
-            <button
-              aria-pressed={device === "mobile"}
-              onClick={() => setDevice("mobile")}
-            >
-              手機
-            </button>
-          </div>
+          {/* Narrow screens: the toolbar has no room, so the switch lives in this menu instead. */}
+          <DeviceToggle mobile={device === "mobile"} onChange={(m) => setDevice(m ? "mobile" : "desktop")} className="in-menu" />
           <button
             disabled={!ready || Boolean(loadError)}
             onClick={() => setReplay((n) => n + 1)}

@@ -7,6 +7,7 @@ import {useExtendedMotion,LetterAssembly,AccentStroke,DisclosurePanel} from "./E
 import {FoldReveal} from "./FoldReveal";
 import {PhysicsTags} from "./PhysicsTags";
 import {CountUp,CurvedText,FlipCard} from "./MotionRuntime";
+import {MediaView} from "./MediaRuntime";
 import { motionCatalog, motionIds, motionNumber, motionDuration } from "./motion";
 import {
   createContext,
@@ -223,6 +224,7 @@ export const componentRegistry: Record<PageNode["type"], RegistryEntry> = {
   stack: { tag: "div", className: "page-stack" },
   grid: { tag: "div", className: "page-grid" },
   form: { tag: "div", className: "page-form" },
+  media: { tag: "div", className: "page-media" },
 };
 export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   const ref = useRef<HTMLElement>(null);
@@ -301,7 +303,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
           }
         : {})}
     >
-      {node.type==="form"?<SiteForm node={node}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
+      {node.type==="form"?<SiteForm node={node}/>:node.type==="media"&&node.media?<MediaView media={node.media} caption={node.content??""} resolve={(r)=>motionUrls[r]||import.meta.env.BASE_URL+r.slice(1)}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
         <FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox>
       ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.content}
     </Tag>

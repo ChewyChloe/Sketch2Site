@@ -1,4 +1,5 @@
 import cinematicMotionSource from "./CinematicMotion.tsx?raw";
+import mediaRuntimeSource from "./MediaRuntime.tsx?raw";
 import cinematicTextSource from "./CinematicText.tsx?raw";
 import storyMotionSource from "./StoryMotion.tsx?raw";
 import advancedMotionSource from "./AdvancedMotion.tsx?raw";
@@ -7,7 +8,7 @@ import assetSchema from "./assetRef.ts?raw";
 import { builtInAssets, motionAssetRefs, isLocalAsset } from "./assetRef";
 import { readAsset } from "./assets";
 import type { PageNode } from "./pageSpec";
-import { PageSchema, allSections } from "./pageSpec";
+import { PageSchema, allSections, mediaAssetRefs } from "./pageSpec";
 import { zipProject, type ProjectFile } from "./archive";
 import { exportFontFiles } from "./exportFonts";
 import notices from "../THIRD_PARTY_NOTICES.md?raw";
@@ -33,6 +34,7 @@ export async function exportProjectFiles(
   const walk = (node: PageNode) => {
     if (node.src) refs.add(node.src);
     motionAssetRefs(node.effects).forEach(ref=>refs.add(ref));
+    mediaAssetRefs(node.media).forEach((ref) => refs.add(ref));
     node.children?.forEach(walk);
   };
   allSections(page).forEach(walk);
@@ -91,6 +93,7 @@ export async function exportProjectFiles(
     { path: "src/CinematicText.tsx", content: cinematicTextSource },
     { path: "src/StoryMotion.tsx", content: storyMotionSource },
     { path: "src/MotionRuntime.tsx", content: motionRuntimeSource },
+    { path: "src/MediaRuntime.tsx", content: mediaRuntimeSource },
     { path: "src/physics.ts", content: physicsSource },
     { path: "src/PhysicsTags.tsx", content: physicsTagsSource },
     { path: "src/FoldReveal.tsx", content: foldSource },

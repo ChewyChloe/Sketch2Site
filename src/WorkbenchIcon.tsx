@@ -15,6 +15,12 @@ export function WorkbenchIcon({
     | "card"
     | "button"
     | "form"
+    | "media"
+    | "video"
+    | "carousel"
+    | "flipbook"
+    | "character"
+    | "object3d"
     | "check"
     | "search";
 }) {
@@ -44,6 +50,42 @@ export function WorkbenchIcon({
       <>
         <rect x="3" y="3" width="18" height="18" rx="2" />
         <path d="M7 8h10M7 12h10M7 16h4" />
+      </>
+    ),
+    media: (
+      <>
+        <rect x="3" y="5" width="18" height="14" rx="3" />
+        <path d="M10 9v6l5-3z" />
+      </>
+    ),
+    video: (
+      <>
+        <rect x="3" y="5" width="18" height="14" rx="3" />
+        <path d="M10 9v6l5-3z" />
+      </>
+    ),
+    carousel: (
+      <>
+        <rect x="6" y="5" width="12" height="12" rx="2" />
+        <path d="M3 8v6M21 8v6M10 20h.01M12 20h.01M14 20h.01" />
+      </>
+    ),
+    flipbook: (
+      <>
+        <path d="M12 6c-2-1.5-5-2-8-1.5v14c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-14c-3-.5-6 0-8 1.5z" />
+        <path d="M12 6v14" />
+      </>
+    ),
+    character: (
+      <>
+        <circle cx="12" cy="13" r="7" />
+        <path d="M9.5 12h.01M14.5 12h.01M10 16q2 1.5 4 0M9 6 7.5 3M15 6l1.5-3" />
+      </>
+    ),
+    object3d: (
+      <>
+        <path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z" />
+        <path d="M4 7.5 12 12l8-4.5M12 12v9" />
       </>
     ),
     check: <path d="m5 12 4 4L19 6" />,

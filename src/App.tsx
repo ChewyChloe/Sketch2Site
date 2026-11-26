@@ -16,6 +16,7 @@ import { FrameControls, FrameThumb } from "./FrameControls";
 import { ArrangePanel } from "./ArrangePanel";
 import { TextToolbar, defaultSize, stepSize } from "./TextToolbar";
 import { NavPanel } from "./NavPanel";
+import { DesignedTooltips } from "./Tooltips";
 import { ShortcutsPanel } from "./ShortcutsPanel";
 import { AccountButton } from "./AccountButton";
 import { InspectorSection } from "./InspectorSection";
@@ -24,7 +25,9 @@ import { Select } from "./Select";
 import { BrandPanel } from "./BrandPanel";
 import { smartFocus } from "./smartCrop";
 import { CopySuggest } from "./CopySuggest";
-import { textCss, type TextStyle } from "./pageSpec";
+import { textCss, mediaKinds, mediaKindLabels, mediaAssetRefs, type MediaKind, type TextStyle } from "./pageSpec";
+import { MediaView } from "./MediaRuntime";
+import { MediaControls } from "./MediaControls";
 import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
@@ -35,6 +38,7 @@ import {
   pageOfNode,
   CanvasSchema,
   createNode,
+  createMediaNode,
   commit,
   undo,
   redo,
@@ -65,6 +69,7 @@ const labels = {
   heading: "標題",
   image: "圖片",
   form: "表單",
+  media: "媒體",
 };
 const effects = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameZh])) as Record<MotionId,string>;
 type Effect = keyof typeof effects;
@@ -253,7 +258,7 @@ export default function App() {
   const [navOpen, setNavOpen] = useState(false);
   const imageUrls = useAssetUrls(
     // Canvas images, the brand logo, and (only while the brand kit is open) the other local images.
-    [...spec.nodes.flatMap((n) => (n.assetId ? [n.assetId] : [])), ...(brandOpen ? localImages : []), ...[spec.metadata.brand?.logo, spec.metadata.brand?.logoAlt, spec.metadata.brand?.icon].filter((r): r is string => Boolean(r))],
+    [...spec.nodes.flatMap((n) => [...(n.assetId ? [n.assetId] : []), ...mediaAssetRefs(n.media)]), ...(brandOpen || spec.nodes.find((n) => n.id === selected)?.media ? localImages : []), ...[spec.metadata.brand?.logo, spec.metadata.brand?.logoAlt, spec.metadata.brand?.icon].filter((r): r is string => Boolean(r))],
   );
   if (canvasHead.current !== spec) {
     canvasVersion.current++;
@@ -539,6 +544,35 @@ export default function App() {
     change({ ...spec, nodes: [...spec.nodes, next] });
     setSelected(next.id);
     report("已新增" + labels[type]);
+  }
+  // 預覽: once a site was built from this draft it opens that site (with an update banner if needed);
+  // otherwise it builds a preview from the draft first.
+  const [phoneView, setPhoneView] = useState(false);
+  function openPreview() {
+    if(mode==="draft"&&spec.nodes.length&&!generating&&!spec.metadata.siteBuiltFrom){
+      if(!previewRef.current?.target()){setMode("preview");return;}
+      const missing=spec.nodes.find(n=>n.type==="button"&&!n.href);
+      if(missing){setSelected(missing.id);setTab("properties");setPanel(true);setGenerationError("請先為「"+missing.content+"」設定按鈕連結，再預覽");return;}
+      void generate(true,true);
+    }else setMode("preview");
+  }
+  // Media (video, carousel, flipbook, character, 3D object): dropped at a point, or below the content when clicked.
+  function addMedia(kind: MediaKind, at?: { x: number; y: number }) {
+    if (!ready || loadError) return;
+    const cur = state.current.present;
+    let height = cur.metadata.height, x = at?.x ?? 80, y = at?.y ?? 80;
+    if (!at) {
+      const bottom = cur.nodes.filter((n) => onCurrentPage(n, cur)).reduce((m, n) => Math.max(m, n.y + n.height), 0);
+      y = bottom ? bottom + 24 : 80;
+      const needed = y + createMediaNode(kind, 0, 0, canvasMaxHeight).height;
+      if (needed > height) { if (needed <= canvasMaxHeight) height = Math.ceil(needed / 600) * 600; else y = 80; }
+    }
+    const next = withPage(createMediaNode(kind, x, y, height));
+    if (change({ ...cur, metadata: { ...cur.metadata, height }, nodes: [...cur.nodes, next] })) {
+      setSelected(next.id);
+      setTab("properties");
+      report("已新增" + mediaKindLabels[kind] + (kind === "video" ? "，貼上 YouTube 或 Vimeo 網址就能播放" : ""));
+    }
   }
   // ---- Projects (home workspace) ----
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null);
@@ -1092,8 +1126,12 @@ export default function App() {
       if (data.type === "frame" && (frameIds as readonly string[]).includes(data.value)) {
         const rect = board.current!.getBoundingClientRect();
         addFrame(data.value as FrameId, { x: Math.max(0, (e.clientX - rect.left) / scale - 100), y: Math.max(0, (e.clientY - rect.top) / scale - 100) });
+      } else if (data.type === "media" && (mediaKinds as readonly string[]).includes(data.value)) {
+        const rect = board.current!.getBoundingClientRect();
+        addMedia(data.value as MediaKind, { x: (e.clientX - rect.left) / scale, y: (e.clientY - rect.top) / scale });
       } else if (
         data.type === "component" &&
+        data.value !== "media" &&
         Object.keys(labels).includes(data.value)
       ) {
         const rect = board.current!.getBoundingClientRect();
@@ -1290,13 +1328,13 @@ export default function App() {
       onLock={lock}
     />
   );
-  const contentLabel: Record<string, string> = { heading: "標題文字", text: "文字", button: "按鈕上的字", card: "卡片內容（每行一段）", image: "圖片說明（看不到圖的人會聽到）", form: "表單欄位（每行一個）" };
+  const contentLabel: Record<string, string> = { heading: "標題文字", text: "文字", button: "按鈕上的字", card: "卡片內容（每行一段）", image: "圖片說明（看不到圖的人會聽到）", form: "表單欄位（每行一個）", media: "說明文字（看不到的人會聽到）" };
   const inspectorContent=(
 node ? (
                   <>
                     <div className="insp-head">
-                      <span className="component-icon"><WorkbenchIcon name={node.type} /></span>
-                      <h2>{labels[node.type]}</h2>
+                      <span className="component-icon"><WorkbenchIcon name={node.media ? node.media.kind : node.type} /></span>
+                      <h2>{node.media ? mediaKindLabels[node.media.kind] : labels[node.type]}</h2>
                       <div className="insp-actions">
                         <button type="button" aria-label="複製元件" title="複製" onClick={duplicate}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h12v12H8zM4 16V4h12" /></svg></button>
                         <button type="button" aria-label="刪除元件" title="刪除" onClick={remove}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg></button>
@@ -1330,12 +1368,25 @@ node ? (
                       <p className="note">PNG 或 JPEG，每張最多 5 MB，也可以直接把照片拖到相框上</p>
                       </InspectorSection>
                     )}
+                    {node.media && (
+                      <InspectorSection id="media" title={mediaKindLabels[node.media.kind]}>
+                        <MediaControls
+                          media={node.media}
+                          urlFor={(r) => imageUrls[r] || import.meta.env.BASE_URL + r.slice(1)}
+                          library={localImages}
+                          onImport={async (file) => {
+                            try { return (await importImage(file)).ref; } catch (e) { report(assetErrorMessage(e), true); return null; }
+                          }}
+                          onChange={(media) => { if (patch(node.id, { media })) report("已更新" + mediaKindLabels[media.kind] + "，可還原"); }}
+                        />
+                      </InspectorSection>
+                    )}
                     <InspectorSection id="content" title="內容">
                     <label className="field">
                       {contentLabel[node.type] ?? "內容"}
                       <textarea
                         aria-label="元素內容"
-                        maxLength={2000}
+                        maxLength={node.type === "media" ? 200 : 2000}
                         value={node.content}
                         onChange={(e) =>
                           patch(node.id, { content: e.target.value })
@@ -1544,15 +1595,7 @@ node ? (
               aria-label="預覽"
               aria-pressed={mode === "preview"}
               disabled={accepting}
-              onClick={() => {
-                // Once a site was built from this draft, 預覽 opens that site (with an update banner if needed).
-                if(mode==="draft"&&spec.nodes.length&&!generating&&!spec.metadata.siteBuiltFrom){
-                  if(!previewRef.current?.target()){setMode("preview");return;}
-                  const missing=spec.nodes.find(n=>n.type==="button"&&!n.href);
-                  if(missing){setSelected(missing.id);setTab("properties");setPanel(true);setGenerationError("請先為「"+missing.content+"」設定按鈕連結，再預覽");return;}
-                  void generate(true,true);
-                }else setMode("preview");
-              }}
+              onClick={() => openPreview()}
             >
               <span className="neo-step">3.</span> 預覽
             </button>
@@ -1612,7 +1655,7 @@ node ? (
               </span>}
               <button
                 disabled={busy || !ready || loadError}
-                title="儲存草稿（⌘ / Ctrl S）"
+                title={"儲存草稿（" + keyHint("S") + "）"}
                 aria-label={busy?"儲存中…":"儲存草稿"}
                 onClick={() => void save()}
               >
@@ -1637,6 +1680,7 @@ node ? (
         </div>
         <AccountButton />
       </header>
+      <DesignedTooltips />
       {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
       {navOpen && mode === "draft" && (
         <NavPanel
@@ -1718,7 +1762,7 @@ node ? (
               <small>你在網站上的修改會保留</small>
             </div>
           )}
-          <Preview ref={previewRef} onSiteChange={syncFromSite} />
+          <Preview ref={previewRef} onSiteChange={syncFromSite} device={phoneView ? "mobile" : "desktop"} onDeviceChange={(d) => setPhoneView(d === "mobile")} />
         </div>
         {mode === "home" && (
           <HomePage
@@ -1736,6 +1780,8 @@ node ? (
         )}
         {mode === "preview" && candidate && (
           <CandidatePreview
+            mobile={phoneView}
+            onMobile={setPhoneView}
             candidate={candidate.result}
             previewOnly={candidate.previewOnly}
             aiFallback={candidate.aiFallback}
@@ -1793,6 +1839,15 @@ node ? (
                     }}
                   >
                     格式刷
+                  </button>
+                  <button
+                    type="button"
+                    className="see-phone"
+                    disabled={disabled || generating || !spec.nodes.length}
+                    onClick={() => { setPhoneView(true); openPreview(); }}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5" /><path d="M11 18.5h2" /></svg>
+                    看手機版
                   </button>
                   <button
                     onClick={() => setPanel(!panel)}
@@ -2146,6 +2201,10 @@ node ? (
                                 else if (e.key === "Enter" && !e.nativeEvent.isComposing && ((n.type === "heading" || n.type === "button") ? !e.shiftKey : e.ctrlKey || e.metaKey)) { e.preventDefault(); e.currentTarget.blur(); }
                               }}
                             />
+                          ) : n.type === "media" && n.media ? (
+                            <span className="media-sketch">
+                              <MediaView media={n.media} caption={n.content} still={n.media.kind !== "character"} resolve={(r) => imageUrls[r] || import.meta.env.BASE_URL + r.slice(1)} />
+                            </span>
                           ) : n.type === "form" ? (
                             <span className="form-sketch">
                               {n.content.split("\n").map((field, i) => (
@@ -2329,8 +2388,8 @@ node ? (
                       {(Object.keys(labels) as CanvasNode["type"][])
                         .filter(
                           (t) =>
-                            labels[t].includes(search) ||
-                            t.includes(search.toLowerCase()),
+                            t !== "media" && (labels[t].includes(search) ||
+                            t.includes(search.toLowerCase())),
                         )
                         .map((t) => (
                           <button
@@ -2373,6 +2432,7 @@ node ? (
                                     heading: "頁面的主要標題",
                                     image: "圖片與視覺素材",
                                     form: "收集訪客留言",
+                                    media: "",
                                   }[t]
                                 }
                               </small>
@@ -2380,6 +2440,25 @@ node ? (
                             <WorkbenchIcon name="grip" />
                           </button>
                         ))}
+                      {mediaKinds.some((k) => mediaKindLabels[k].includes(search)) && <p className="library-subhead media-subhead">媒體與互動</p>}
+                      {mediaKinds.filter((k) => mediaKindLabels[k].includes(search)).map((k) => (
+                        <button
+                          key={k}
+                          draggable={!disabled}
+                          disabled={disabled || spec.nodes.length >= 100}
+                          aria-label={"新增" + mediaKindLabels[k]}
+                          onDragEnd={() => { setDraftDragging(false); }}
+                          onDragStart={(e) => { setTimeout(() => setDraftDragging(true), 0); e.dataTransfer.setData(dragType, JSON.stringify({ type: "media", value: k })); }}
+                          onClick={() => addMedia(k)}
+                        >
+                          <span className="glyph" aria-hidden="true"><WorkbenchIcon name={k} /></span>
+                          <span>
+                            <strong>{mediaKindLabels[k]}</strong>
+                            <small>{{ video: "貼上 YouTube／Vimeo 網址", carousel: "多張照片左右滑動", flipbook: "照片當書頁，點一下翻頁", character: "會動的小角色", object3d: "可拖曳轉動的立體相簿" }[k]}</small>
+                          </span>
+                          <WorkbenchIcon name="grip" />
+                        </button>
+                      ))}
                     </div>
                   </>
                 ) : tab === "animations" ? (

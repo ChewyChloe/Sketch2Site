@@ -20,7 +20,7 @@ export default defineConfig(({ command }) => ({
     },
     headers: {
       "Content-Security-Policy":
-        "default-src 'self'; script-src 'self' 'nonce-sketch2site-dev-only' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; connect-src 'self' ws: https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+        "default-src 'self'; script-src 'self' 'nonce-sketch2site-dev-only' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; connect-src 'self' ws: https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/ https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
       "X-Content-Type-Options": "nosniff",
       // Google sign-in needs the page origin (not the path) to verify where its button runs.
       "Referrer-Policy": "strict-origin-when-cross-origin",

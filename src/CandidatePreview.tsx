@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { themeIds, themeLabels, type PageSpec, type ThemeId } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import type { CandidateResult } from "./demo";
+import { DeviceToggle } from "./DeviceToggle";
 export default function CandidatePreview({
   candidate,
   previewOnly=false,
@@ -10,6 +11,8 @@ export default function CandidatePreview({
   stale,
   onAccept,
   onBack,
+  mobile: mobileProp,
+  onMobile,
 }: {
   candidate: CandidateResult;
   previewOnly?:boolean;
@@ -19,10 +22,15 @@ export default function CandidatePreview({
   stale: boolean;
   onAccept: (page: PageSpec) => Promise<void>;
   onBack: () => void;
+  /** Desktop or phone width, shared with the site preview when given. */
+  mobile?: boolean;
+  onMobile?: (mobile: boolean) => void;
 }) {
-  const [mobile, setMobile] = useState(false),
+  const [mobileState, setMobileState] = useState(false),
     [saving, setSaving] = useState(false),
     [theme, setTheme] = useState<ThemeId>(candidate.page.theme ?? "classic");
+  const mobile = mobileProp ?? mobileState;
+  const setMobile = (v: boolean) => (onMobile ? onMobile(v) : setMobileState(v));
   // Theme is a reviewed token set; switching it never touches content.
   const page = useMemo(() => ({ ...candidate.page, theme }), [candidate.page, theme]);
   return (
@@ -38,12 +46,7 @@ export default function CandidatePreview({
           </small>
         </div>
         <div>
-          <button aria-pressed={!mobile} onClick={() => setMobile(false)}>
-            桌面
-          </button>
-          <button aria-pressed={mobile} onClick={() => setMobile(true)}>
-            手機
-          </button>
+          <DeviceToggle mobile={mobile} onChange={setMobile} />
           <button
             className="primary"
             disabled={stale || saving}
