@@ -10,6 +10,7 @@ const base = `<link rel="stylesheet" href="file://${D}/noto.css"><style>html,bod
     <div style="font-size:36px;margin-top:40px;color:#bdb9b0;line-height:1.6">${small}</div></div>`;
   await render('title', card('Sketch2Site<br>操作示範', '畫面是實際操作，生成跟修改有呼叫 AI', 'DEMO'), false);
   await render('end', card('Sketch2Site', '全隊　呂沛珍（資管三）', 'MICROSOFT × NCU AI INNOVATION DEMO DAY'), false);
-  for (const m of marks) if (m.text) await render('cap-' + m.id, `<div style="position:absolute;left:0;right:0;bottom:56px;display:flex;justify-content:center"><div style="max-width:1500px;padding:18px 34px;border-radius:14px;background:rgba(13,14,17,.86);color:#fff;font-size:44px;font-weight:700;line-height:1.35;text-align:center">${m.text}</div></div>`, true);
+  const place = { brief: ['flex-start', 1150], note: ['flex-end', 1300] };
+  for (const m of marks) if (m.text) await render('cap-' + m.id, `<div style="position:absolute;left:40px;right:40px;bottom:56px;display:flex;justify-content:${(place[m.id] || ['center'])[0]}"><div style="max-width:${(place[m.id] || [0, 1500])[1]}px;padding:18px 34px;border-radius:14px;background:rgba(13,14,17,.86);color:#fff;font-size:44px;font-weight:700;line-height:1.35;text-align:center">${m.text}</div></div>`, true);
   await render('badge', `<div style="position:absolute;right:40px;top:120px;padding:10px 18px;border-radius:999px;background:rgba(13,14,17,.8);color:#18c964;font-size:24px;font-weight:700">實際操作畫面</div>`, true);
   await b.close(); })();
