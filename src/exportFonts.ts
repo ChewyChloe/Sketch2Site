@@ -50,3 +50,19 @@ export async function exportFontFiles(pageText: string, load: (url: string) => P
   files.push({ path: "src/fonts.css", content: out }, { path: "src/fonts/OFL.txt", content: licence });
   return files;
 }
+
+import displayCss from "./displayFonts.css?raw";
+import displayLicence from "./assets/fonts/display/OFL.txt?raw";
+const displayUrls = import.meta.glob("./assets/fonts/display/*.woff2", { query: "?url", import: "default", eager: true }) as Record<string, string>;
+
+/** The Latin display fonts a design concept uses, with their licence (CSS is appended to fonts.css). */
+export async function exportDisplayFonts(load: (url: string) => Promise<Uint8Array> = async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer()), urls: Record<string, string> = displayUrls, css: string = displayCss): Promise<{ css: string; files: ProjectFile[] }> {
+  const files: ProjectFile[] = [];
+  for (const [path, url] of Object.entries(urls)) {
+    const bytes = await load(url);
+    if (bytes.length > 200_000 || bytes[0] !== 0x77 || bytes[1] !== 0x4f || bytes[2] !== 0x46 || bytes[3] !== 0x32) throw new Error("字型檔格式無效");
+    files.push({ path: "src/fonts/display/" + path.split("/").pop(), content: bytes });
+  }
+  files.push({ path: "src/fonts/display/OFL.txt", content: displayLicence });
+  return { css: css.replaceAll("./assets/fonts/display/", "./fonts/display/"), files };
+}

@@ -279,6 +279,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       data-pause-hover={breathing?.validatedControls.pauseOnHover===true}
       tabIndex={(lift||glow)&&node.type!=="button"?0:undefined}
       data-effects={node.effects.map((e) => e.presetId).join(" ")}
+      data-caption={node.type === "image" ? node.alt : undefined}
       className={[
         "page-node",
         entry.className,
@@ -541,6 +542,7 @@ export function PageRuntime({
           }
           data-theme={page.theme}
           data-art={page.art?.principles.join(" ") || undefined}
+          data-concept={page.concept}
           data-branded={page.brand?.primary ? "" : undefined}
           lang={page.metadata.language}
           aria-label={page.metadata.title}

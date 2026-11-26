@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { themeIds, themeLabels, type PageSpec, type ThemeId } from "./pageSpec";
+import { conceptIds, conceptText, themeIds, themeLabels, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import type { CandidateResult } from "./demo";
 import { DeviceToggle } from "./DeviceToggle";
@@ -36,7 +36,8 @@ export default function CandidatePreview({
   const mobile = mobileProp ?? mobileState;
   const setMobile = (v: boolean) => (onMobile ? onMobile(v) : setMobileState(v));
   // Theme is a reviewed token set; switching it never touches content.
-  const page = useMemo(() => ({ ...candidate.page, theme }), [candidate.page, theme]);
+  const [concept, setConcept] = useState<ConceptId | undefined>(candidate.page.concept);
+  const page = useMemo(() => ({ ...candidate.page, theme, concept }), [candidate.page, theme, concept]);
   return (
     <main className="preview-workspace" aria-label="生成候選預覽">
       <div className="preview-tools">
@@ -93,6 +94,15 @@ export default function CandidatePreview({
             返回草稿
           </button>
         </div>
+      </div>
+      <div className="theme-picker concept-picker" role="radiogroup" aria-label="設計概念">
+        <span>設計概念</span>
+        <button role="radio" aria-checked={!concept} className="concept-chip" onClick={() => setConcept(undefined)}>不用概念</button>
+        {conceptIds.map((id) => (
+          <button key={id} role="radio" aria-checked={concept === id} className="concept-chip" title={conceptText[id].idea} onClick={() => setConcept(id)}>
+            {conceptText[id].name}
+          </button>
+        ))}
       </div>
       <div className="theme-picker" role="radiogroup" aria-label="網站主題">
         <span>主題</span>

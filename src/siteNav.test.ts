@@ -38,3 +38,15 @@ describe("site navigation links", () => {
     expect(navLinks({ ...page(), sections: long } as PageSpec, long).map((l) => l.label)).toEqual(["新生快來找答案"]);
   });
 });
+
+describe("design concepts", () => {
+  it("are a fixed list the page schema accepts, and nothing else", async () => {
+    const { PageSchema, conceptIds } = await import("./pageSpec");
+    const { createSiteCandidate } = await import("./siteGeneration");
+    const { starterDrafts } = await import("./starters");
+    const page = createSiteCandidate(starterDrafts()[1]).page;
+    expect(conceptIds).toContain("exhibition");
+    expect(PageSchema.safeParse({ ...page, concept: "exhibition" }).success).toBe(true);
+    expect(PageSchema.safeParse({ ...page, concept: "copy-someone" }).success).toBe(false);
+  });
+});

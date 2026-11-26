@@ -89,6 +89,13 @@ export const frameLabels: Record<FrameId, string> = { rounded: "圓角", circle:
 export const frameRatios: Record<FrameId, number> = { rounded: 4 / 3, circle: 1, squircle: 1, pill: 4 / 5, blob: 1, heart: 1, star: 1, hexagon: 1.155, diamond: 1, flower: 1, polaroid: 0.84, phone: 9 / 19, laptop: 16 / 10.6, browser: 16 / 10.5 };
 export const imageFilters = ["none", "mono", "warm", "cool", "vintage", "vivid", "fade", "noir"] as const;
 export const filterLabels: Record<(typeof imageFilters)[number], string> = { none: "原圖", mono: "黑白", warm: "暖調", cool: "冷調", vintage: "復古", vivid: "鮮豔", fade: "褪色", noir: "高對比黑白" };
+// Design concepts (docs/REFERENCE_STUDY.md): one idea the whole site follows, deciding type,
+// numbering, lines, navigation and how pictures are shown. Stronger than a theme's colours.
+export const conceptIds = ["exhibition"] as const;
+export type ConceptId = (typeof conceptIds)[number];
+export const conceptText: Record<ConceptId, { name: string; idea: string }> = {
+  exhibition: { name: "展覽空間", idea: "像走進展場：一進來是一整面照片，之後一次只看一件作品，標籤小而寬" },
+};
 // Design techniques learned from a reference picture (參考圖片). Each one is a reason something
 // looks good, written by us, and each changes the site in a concrete way (pageRuntime.css,
 // [data-art~=...]). The AI may only pick from this list, so nothing from the picture is copied.
@@ -573,6 +580,7 @@ const PageObject = z
     theme: z.enum(themeIds).optional(),
     // Design techniques from a reference picture, applied on top of the theme.
     art: z.object({ principles: z.array(z.enum(principleIds)).max(5) }).strict().optional(),
+    concept: z.enum(conceptIds).optional(),
     brand: BrandSchema.optional(),
     chrome: z.object({ nav: z.boolean(), footer: z.boolean(), navStyle: z.enum(navStyles).optional(), navItems: z.array(NavItemSchema).max(40).optional() }).strict().optional(),
     responsive: z

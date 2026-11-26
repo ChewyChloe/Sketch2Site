@@ -1,0 +1,8 @@
+Hanken Grotesk — Copyright 2021 The Hanken Grotesk Project Authors (https://github.com/marcologous/hanken-grotesk)
+Instrument Serif — Copyright 2022 The Instrument Serif Project Authors (https://github.com/Instrument/instrument-serif)
+Space Mono — Copyright 2016 Google Inc. All Rights Reserved.
+
+These Font Software are licensed under the SIL Open Font License, Version 1.1.
+The full licence text: https://openfontlicense.org/open-font-license-official-text/
+Files are the Latin subsets distributed by Fontsource (@fontsource-variable/hanken-grotesk 5.1.0,
+@fontsource/instrument-serif 5.1.0, @fontsource/space-mono 5.1.0).
