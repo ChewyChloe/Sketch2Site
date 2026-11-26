@@ -795,3 +795,9 @@ body{background:var(--neo-cream)}
 .neo-workspace .sidebar button.is-coming .coming-badge { top: 8px; left: auto; right: 8px; translate: none; padding: 2px 8px; font-size: 11px; }
 .neo-workspace .sidebar button.is-coming:hover, .neo-workspace .sidebar button.is-coming:focus-visible { border-color: #34383a !important; background: inherit; transform: none; }
 .neo-workspace .sidebar button.is-coming .coming-badge { top: 6px; left: 50%; right: auto; translate: -50% 0; padding: 1px 8px; font-size: 10.5px; line-height: 1.4; }
+
+/* Status bar: one slim line so it does not eat into the canvas. */
+.footer { min-height: 0 !important; height: auto; padding: 4px 16px !important; align-items: center; line-height: 1.4; }
+.footer .status { font-size: 12px; }
+.footer .footer-shortcuts { min-height: 0 !important; height: 20px; padding: 0 10px !important; font-size: 11.5px !important; line-height: 18px; border-width: 1px !important; }
+@media (max-width: 760px) { .footer { padding: 4px 12px !important; } }
