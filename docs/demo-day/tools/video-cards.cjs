@@ -8,8 +8,8 @@ const base = `<link rel="stylesheet" href="file://${D}/noto.css"><style>html,bod
     <div style="font-size:30px;letter-spacing:.2em;color:#18c964;font-weight:700">${kicker}</div>
     <div style="font-size:104px;font-weight:900;line-height:1.15;margin-top:28px">${big}</div>
     <div style="font-size:36px;margin-top:40px;color:#bdb9b0;line-height:1.6">${small}</div></div>`;
-  await render('title', card('畫一張草稿，<br>做出你的網站', '實際操作過程｜生成時真的呼叫 AI', 'SKETCH2SITE　DEMO'), false);
-  await render('end', card('說得出想要什麼，<br>就做得出來', 'Sketch2Site｜全隊　呂沛珍（資管三）', 'MICROSOFT × NCU AI INNOVATION DEMO DAY'), false);
+  await render('title', card('Sketch2Site<br>操作示範', '畫面是實際操作，生成跟修改有呼叫 AI', 'DEMO'), false);
+  await render('end', card('Sketch2Site', '全隊　呂沛珍（資管三）', 'MICROSOFT × NCU AI INNOVATION DEMO DAY'), false);
   for (const m of marks) if (m.text) await render('cap-' + m.id, `<div style="position:absolute;left:0;right:0;bottom:56px;display:flex;justify-content:center"><div style="max-width:1500px;padding:18px 34px;border-radius:14px;background:rgba(13,14,17,.86);color:#fff;font-size:44px;font-weight:700;line-height:1.35;text-align:center">${m.text}</div></div>`, true);
   await render('badge', `<div style="position:absolute;right:40px;top:120px;padding:10px 18px;border-radius:999px;background:rgba(13,14,17,.8);color:#18c964;font-size:24px;font-weight:700">實際操作畫面</div>`, true);
   await b.close(); })();
