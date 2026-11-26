@@ -360,3 +360,6 @@
 - [x] DONE：拿掉 AI 味（晨光配色、Instrument Serif）。
 - [ ] NOT STARTED：標題三選一（成果導向）。
 - [x] DONE：我的風格（存成可重複套用、不強制的習慣）。
+
+## Demo Day 簡報（2026/12/4）
+- [ ] NOT STARTED：使用者說簡報不急，還沒開始。**開始做簡報時，先提醒使用者看 docs/DECK_REFERENCE.md**（使用者指定的參考作品與手法）。
