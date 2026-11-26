@@ -39,7 +39,7 @@ describe("annotations", () => {
     const node = indexNodes(after).get(h1.id)!;
     expect(node.style?.align).toBe("center");
     expect(after.theme).toBe("ocean");
-    expect(node.effects.map((e) => e.presetId)).toEqual(["hand-drawn-highlight"]);
+    expect(node.effects.map((e) => e.presetId)).toContain("hand-drawn-highlight");
   });
 
   it("only replaces text with the user's quoted words", () => {
@@ -71,14 +71,14 @@ describe("annotations", () => {
 describe("annotation targets", () => {
   it("applies card and section wording to the surrounding element", () => {
     const page = site();
-    // A pricing card: it starts with hover-lift, which conflicts with tilt and gets swapped.
-    const card = first(page, (n) => n.type === "card" && n.effects.some((e) => e.presetId === "hover-lift"));
+    // A pricing card with its quiet entrance; tilt is added alongside it.
+    const card = first(page, (n) => n.type === "card" && JSON.stringify(n).includes("NT$"));
     const text = card.children!.find((c) => c.type === "paragraph")!;
     const grid = nodes(page).find((n) => n.type === "grid" && n.children?.some((c) => c.id === card.id))!;
     const wide = run(page, text.id, "卡片放大");
     expect(indexNodes(wide.page).get(grid.id)!.columns).toBe(grid.columns! - 1);
     const tilt = run(page, text.id, "卡片加 3D 傾斜");
-    expect(indexNodes(tilt.page).get(card.id)!.effects.map((e) => e.presetId)).toEqual(["perspective-tilt"]);
+    expect(indexNodes(tilt.page).get(card.id)!.effects.map((e) => e.presetId)).toContain("perspective-tilt");
     const roomy = run(page, text.id, "這區留白多一點");
     const section = nodes(page).find((n) => n.type === "section" && JSON.stringify(n).includes(text.id))!;
     expect(indexNodes(roomy.page).get(section.id)!.style?.padding).toBe("large");
@@ -94,5 +94,27 @@ describe("signature motions by note", () => {
     const b = first(page, (n) => n.type === "button");
     const party = run(page, b.id, "按下去要撒花慶祝");
     expect(indexNodes(party.page).get(b.id)!.effects.map((e) => e.presetId)).toContain("confetti-burst");
+  });
+});
+
+describe("3D by note", () => {
+  it("turns a picture into a floating card or a turntable, and back", () => {
+    const page = site();
+    const img = first(page, (n) => n.type === "image");
+    const float = run(page, img.id, "做成 3D");
+    expect(float.r.ok && float.r.summary).toEqual(["做成 3D 浮動立體卡"]);
+    expect(indexNodes(float.page).get(img.id)!.look?.depth).toBe("float");
+    const turn = run(float.page, img.id, "改成會旋轉的展示台");
+    expect(indexNodes(turn.page).get(img.id)!.look?.depth).toBe("turntable");
+    const flat = run(turn.page, img.id, "不要 3D 了");
+    expect(indexNodes(flat.page).get(img.id)!.look?.depth).toBeUndefined();
+    // 左右翻轉 is a flip, not a turntable.
+    expect(indexNodes(run(page, img.id, "左右翻轉").page).get(img.id)!.look?.depth).toBeUndefined();
+  });
+  it("gives a heading extruded lettering", () => {
+    const page = site();
+    const h = first(page, (n) => n.type === "heading");
+    const r = run(page, h.id, "改成立體字");
+    expect(indexNodes(r.page).get(h.id)!.text?.depth).toBe(true);
   });
 });

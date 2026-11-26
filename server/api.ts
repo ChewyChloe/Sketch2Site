@@ -10,6 +10,7 @@ import { z } from "zod";
 import { CanvasSchema } from "../src/spec";
 import { CopyRequestSchema, cleanOptions, type CopyRequest } from "../src/copySuggest";
 import { NoteEditRequestSchema, cleanNoteEdits, type NoteEditRequest } from "../src/noteEdits";
+import { ReferenceRequestSchema, styleFromAnswer, type ReferenceRequest } from "../src/referenceStyle";
 import {
   prepareIntent,
   materialize,
@@ -124,7 +125,7 @@ export function createGenerationServer(options: Options = {}) {
         csrfToken: sessions.get(id)!.csrf,
       });
     }
-    if ((req.url !== "/api/generation" && req.url !== "/api/generation/check" && req.url !== "/api/generation/copy" && req.url !== "/api/generation/notes") || req.method !== "POST")
+    if ((req.url !== "/api/generation" && req.url !== "/api/generation/check" && req.url !== "/api/generation/copy" && req.url !== "/api/generation/notes" && req.url !== "/api/generation/reference") || req.method !== "POST")
       return json(res, 404, { code: "UNAVAILABLE" });
     const id = req.headers.cookie?.match(
       /(?:^|; )sketch_generation_session=([a-f0-9]{64})(?:;|$)/,
@@ -140,9 +141,11 @@ export function createGenerationServer(options: Options = {}) {
       !timingSafeEqual(Buffer.from(csrf), Buffer.from(session.csrf))
     )
       return failure(res, 403, "FORBIDDEN");
+    // A reference picture is a small JPEG; every other request is short text.
+    const maxBody = req.url === "/api/generation/reference" ? 320000 : 32768;
     if (
       req.headers["content-type"] !== "application/json" ||
-      Number(req.headers["content-length"] ?? 0) > 32768
+      Number(req.headers["content-length"] ?? 0) > maxBody
     )
       return failure(res, 413, "INVALID_INPUT");
     let body = "";
@@ -152,7 +155,7 @@ export function createGenerationServer(options: Options = {}) {
       for await (const chunk of req) {
         bytes += chunk.length;
         chunks.push(chunk);
-        if (bytes > 32768) {
+        if (bytes > maxBody) {
           failure(res, 413, "INVALID_INPUT");
           req.resume();
           return;
@@ -161,6 +164,67 @@ export function createGenerationServer(options: Options = {}) {
       body = Buffer.concat(chunks).toString("utf8");
     } catch {
       return failure(res, 400, "INVALID_INPUT");
+    }
+    // Reference picture: the AI answers only fixed style choices; the picture is not stored or logged.
+    if (req.url === "/api/generation/reference") {
+      let input: ReferenceRequest;
+      try {
+        input = ReferenceRequestSchema.parse(JSON.parse(body));
+        const bytes = Buffer.from(input.image.slice(input.image.indexOf(",") + 1), "base64");
+        if (bytes.length < 100 || bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("not a jpeg");
+      } catch {
+        return failure(res, 400, "INVALID_INPUT");
+      }
+      const provider = options.provider;
+      if (!provider?.describeReference) return failure(res, 503, "NOT_CONFIGURED");
+      if (used.has(input.requestId)) return failure(res, 409, "DUPLICATE");
+      if (active >= 1) return failure(res, 429, "BUSY");
+      const now = Date.now();
+      while (arrivals[0] && arrivals[0] < now - 60000) arrivals.shift();
+      // A low-detail picture plus the rules: reserve generously.
+      const reserve = (4000 * (options.inputRate ?? 2)) / 1e6 + (1024 * (options.outputRate ?? 8)) / 1e6;
+      if (arrivals.length >= (options.maxPerMinute ?? 3) || calls >= (options.maxCalls ?? 5) || reserved + reserve > (options.budgetUsd ?? 0.25))
+        return failure(res, 429, "LIMIT");
+      arrivals.push(now);
+      calls++;
+      reserved += reserve;
+      used.add(input.requestId);
+      active++;
+      const started = Date.now(), controller = new AbortController();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        const result = await Promise.race([
+          provider.describeReference(input, controller.signal),
+          new Promise<never>((_, reject) => {
+            timer = setTimeout(() => {
+              controller.abort();
+              reject(new GenerationError("TIMEOUT"));
+            }, options.timeoutMs ?? 30000);
+          }),
+        ]);
+        if (!validUsage(result) || result.outputTokens > 1024) throw new GenerationError("INVALID_OUTPUT");
+        const style = styleFromAnswer(result.answer);
+        if (!style) throw new GenerationError("INVALID_OUTPUT");
+        const cached = result.cachedInputTokens ?? 0;
+        const usage = {
+          inputTokens: result.inputTokens,
+          outputTokens: result.outputTokens,
+          cachedInputTokens: result.cachedInputTokens ?? null,
+          reasoningTokens: result.reasoningTokens ?? null,
+          estimatedCostUsd: ((result.inputTokens - cached) * (options.inputRate ?? 2) + cached * (options.cachedInputRate ?? options.inputRate ?? 2) + result.outputTokens * (options.outputRate ?? 8)) / 1e6,
+          latencyMs: Date.now() - started,
+        };
+        options.onUsage?.({ requestId: input.requestId, kind: "reference", outcome: "PASS", ...usage });
+        json(res, 200, { requestId: input.requestId, style, usage });
+      } catch (error) {
+        const code = error instanceof GenerationError ? error.code : "UNAVAILABLE";
+        options.onUsage?.({ requestId: input.requestId, kind: "reference", outcome: code, reservedUsd: reserve, latencyMs: Date.now() - started });
+        failure(res, code === "TIMEOUT" ? 504 : 502, code);
+      } finally {
+        active--;
+        if (timer) clearTimeout(timer);
+      }
+      return;
     }
     // Batch notes: one request for all the notes the local reader did not understand; same guards.
     if (req.url === "/api/generation/notes") {

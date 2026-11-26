@@ -19,10 +19,12 @@ describe("motion recipes", () => {
   it("gives every element a fitting preset by section role", () => {
     const spec = enlivenDraft(draft(["hero", "features", "faq", "cta"]));
     const of = (type: string, content?: RegExp) => spec.nodes.filter((n) => n.type === type && (!content || content.test(n.content)));
-    expect(of("heading")[0].effects[0].presetId).toBe("letter-assembly");
-    expect(of("image")[0].effects[0].presetId).toBe("circular-mask-expansion");
+    // Quiet by default (docs/SITE_AESTHETICS.md): one gentle entrance per element.
+    expect(of("heading")[0].effects[0].presetId).toBe("split-line-assembly");
+    expect(of("image")[0].effects[0].presetId).toBe("cinematic-image-pan");
     expect(of("card", /[？?]/).every((n) => n.effects[0]?.presetId === "disclosure-panel")).toBe(true);
-    expect(of("button").at(-1)!.effects[0].presetId).toBe("breathing-glow");
+    expect(of("button").at(-1)!.effects[0].presetId).toBe("press-feedback");
+    expect(ids(spec).join(" ")).not.toMatch(/letter-assembly|breathing-glow|confetti|hand-drawn-highlight|gradient-text-flow/);
     expect(spec.nodes.every((n) => n.effects.length > 0)).toBe(true);
   });
 
@@ -30,8 +32,9 @@ describe("motion recipes", () => {
     expect(motionStyleFor(draft(["hero"], "簡約"))).toBe("calm");
     const spec = enlivenDraft(draft(["hero", "features"], "專業"));
     expect(ids(spec)).not.toContain("letter-assembly");
-    expect(ids(spec)).toContain("split-line-assembly");
-    expect(ids(spec)).toContain("hover-lift");
+    expect(ids(spec)).toContain("slide-up");
+    expect(ids(spec)).toContain("fade-in");
+    expect(ids(spec)).not.toContain("split-line-assembly");
   });
 
   it("never replaces motion the user already picked and respects onlyIds", () => {

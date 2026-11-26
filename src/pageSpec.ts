@@ -89,6 +89,26 @@ export const frameLabels: Record<FrameId, string> = { rounded: "圓角", circle:
 export const frameRatios: Record<FrameId, number> = { rounded: 4 / 3, circle: 1, squircle: 1, pill: 4 / 5, blob: 1, heart: 1, star: 1, hexagon: 1.155, diamond: 1, flower: 1, polaroid: 0.84, phone: 9 / 19, laptop: 16 / 10.6, browser: 16 / 10.5 };
 export const imageFilters = ["none", "mono", "warm", "cool", "vintage", "vivid", "fade", "noir"] as const;
 export const filterLabels: Record<(typeof imageFilters)[number], string> = { none: "原圖", mono: "黑白", warm: "暖調", cool: "冷調", vintage: "復古", vivid: "鮮豔", fade: "褪色", noir: "高對比黑白" };
+// Design techniques learned from a reference picture (參考圖片). Each one is a reason something
+// looks good, written by us, and each changes the site in a concrete way (pageRuntime.css,
+// [data-art~=...]). The AI may only pick from this list, so nothing from the picture is copied.
+export const principleIds = ["color-field", "fine-lines", "diagonal-lines", "negative-space", "small-subject", "big-type", "restrained-brand", "soft-gradient", "paper-grain", "high-contrast", "serif-display", "numbered-rhythm", "full-bleed-photo"] as const;
+export type PrincipleId = (typeof principleIds)[number];
+export const principleText: Record<PrincipleId, { name: string; why: string; use: string }> = {
+  "color-field": { name: "整片單色撐起畫面", why: "一種顏色鋪滿，畫面立刻有記憶點，其他東西都變得清楚", use: "首屏鋪滿你的主色，字改成反白" },
+  "fine-lines": { name: "細線切出節奏", why: "細細的線把空間分段，讓空白有秩序而不空洞", use: "首屏與區塊之間加上細線節奏" },
+  "diagonal-lines": { name: "斜線帶出速度感", why: "斜向的線引導視線往前，靜止的畫面也有動感", use: "首屏的線改成斜向，像跑道一樣往前延伸" },
+  "negative-space": { name: "大量留白", why: "空出來的地方讓主角更突出，看起來從容、有質感", use: "區塊上下留白加大，文字行寬收窄" },
+  "small-subject": { name: "主角小、空間大", why: "主角刻意放小，反而讓人注意到整個場景的氣氛", use: "首屏照片縮小一點，讓顏色與留白當主角" },
+  "big-type": { name: "超大字當主角", why: "字本身就是圖像，一眼就知道重點", use: "首屏標題放到最大，副標退一步" },
+  "restrained-brand": { name: "品牌字小而克制", why: "標誌不搶畫面，反而顯得自信、高級", use: "導覽列的名稱縮小、字距拉開" },
+  "soft-gradient": { name: "柔霧漸層", why: "顏色像霧一樣暈開，溫柔又有空氣感", use: "首屏與結尾改成柔和的漸層底" },
+  "paper-grain": { name: "紙張顆粒質感", why: "細微的顆粒讓畫面有手感，不像冷冰冰的螢幕", use: "背景加上很淡的紙張顆粒" },
+  "high-contrast": { name: "黑白分明的強對比", why: "明暗清楚，視線不用找就知道先看哪裡", use: "文字與按鈕改成更深的顏色，對比拉高" },
+  "serif-display": { name: "優雅的襯線標題", why: "襯線字有書卷氣，讓內容顯得講究", use: "標題改用襯線字" },
+  "numbered-rhythm": { name: "重複與編號形成節奏", why: "反覆出現的編號或線條，讓人一路看下去", use: "區塊編號放大，變成畫面的一部分" },
+  "full-bleed-photo": { name: "照片滿版", why: "照片佔滿寬度，讓人像站在場景裡", use: "首屏照片拉到滿版，不留邊框" },
+};
 export const ImageLookSchema = z
   .object({
     frame: z.enum(frameIds).optional(),
@@ -103,8 +123,11 @@ export const ImageLookSchema = z
     flipX: z.boolean().optional(),
     flipY: z.boolean().optional(),
     filter: z.enum(imageFilters).optional(),
+    // 3D on request (a note like 做成 3D): a floating card that follows the pointer, or a slow turntable.
+    depth: z.enum(["float", "turntable"]).optional(),
   })
   .strict();
+export const depthLabels = { float: "浮動立體卡", turntable: "旋轉展示台" } as const;
 export type ImageLook = z.infer<typeof ImageLookSchema>;
 const filterCss: Record<(typeof imageFilters)[number], string> = { none: "", mono: "grayscale(1)", warm: "sepia(.25) saturate(1.15) hue-rotate(-8deg)", cool: "saturate(.9) hue-rotate(12deg) brightness(1.03)", vintage: "sepia(.45) contrast(.92) brightness(1.04)", vivid: "saturate(1.45) contrast(1.08)", fade: "contrast(.8) brightness(1.1) saturate(.75)", noir: "grayscale(1) contrast(1.45)" };
 /** CSS for a framed photo; every value comes from the validated look, never from text. */
@@ -127,7 +150,7 @@ export type FontId = (typeof fontIds)[number];
 export const fontLabels: Record<FontId, string> = { sans: "黑體", serif: "明體", rounded: "粉圓體", kai: "楷體", mono: "等寬" };
 export const fontStacks: Record<FontId, string> = {
   sans: 'system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif',
-  serif: '"Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", Georgia, serif',
+  serif: '"Noto Serif TC", "Noto Serif CJK TC", "Songti TC", "PMingLiU", "MingLiU", Georgia, serif',
   rounded: '"Huninn", "jf-openhuninn-2.0", ui-rounded, "Arial Rounded MT Bold", "Yuanti TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
   kai: '"Kaiti TC", "BiauKai", "DFKai-SB", "KaiTi", "STKaiti", serif',
   mono: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Noto Sans Mono CJK TC", monospace',
@@ -199,6 +222,8 @@ export const TextStyleSchema = z
     align: z.enum(["start", "center", "end", "justify"]).optional(),
     lineHeight: z.number().min(1).max(3).optional(),
     letterSpacing: z.number().min(-0.1).max(0.5).optional(),
+    // Extruded 3D lettering (立體字).
+    depth: z.boolean().optional(),
   })
   .strict();
 export type TextStyle = z.infer<typeof TextStyleSchema>;
@@ -546,6 +571,8 @@ const PageObject = z
     typography: z.enum(["sans", "serif"]),
     styles: z.enum(["neutral", "warm"]),
     theme: z.enum(themeIds).optional(),
+    // Design techniques from a reference picture, applied on top of the theme.
+    art: z.object({ principles: z.array(z.enum(principleIds)).max(5) }).strict().optional(),
     brand: BrandSchema.optional(),
     chrome: z.object({ nav: z.boolean(), footer: z.boolean(), navStyle: z.enum(navStyles).optional(), navItems: z.array(NavItemSchema).max(40).optional() }).strict().optional(),
     responsive: z

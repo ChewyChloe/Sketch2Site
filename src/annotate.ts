@@ -153,6 +153,12 @@ function clause(text: string, ctx: Ctx): Step {
     // Several clauses in one sentence build on each other ("愛心框，黑白，亮一點").
     const look: ImageLook = { ...(ctx.looks.get(node.id) ?? node.look ?? {}) };
     const done: string[] = [];
+    // 3D on request: a floating card, or a turntable when the note asks for turning.
+    if (/(不要|取消|拿掉|移除).{0,2}(3D|３Ｄ|立體)|變回平面|平面就好/i.test(t)) (delete look.depth, done.push("改回平面圖片"));
+    else if (/3D|３Ｄ|立體|展示台/i.test(t) || /(會|慢慢|一直)(旋)?轉|轉動/.test(t)) {
+      look.depth = /轉|展示台/.test(t) ? "turntable" : "float";
+      done.push(look.depth === "turntable" ? "做成 3D 旋轉展示台" : "做成 3D 浮動立體卡");
+    }
     const frameWord = /框|形狀|相框|裁成|變成.*(形|框)/.test(t);
     const frame = ([
       [/不要框|拿掉框|移除框|取消框|原本的形狀/, null],
@@ -212,6 +218,11 @@ function clause(text: string, ctx: Ctx): Step {
       else if (on.test(t)) (text[key] = true, done.push("改成" + label));
     }
     if (/螢光筆/.test(t) && !/動態|動畫/.test(t)) (text.highlight = "#fff3a3", done.push("加上螢光筆"));
+    // Extruded lettering; cards keep "3D" as their tilt motion.
+    if (node.type !== "card") {
+      if (/(不要|取消|拿掉).{0,2}(3D|３Ｄ|立體)/i.test(t)) (delete text.depth, done.push("改回平面文字"));
+      else if (/3D|３Ｄ|立體/i.test(t)) (text.depth = true, done.push("改成立體字"));
+    }
     // Paragraphs, buttons and cards have no heading level: "大一點" changes the type size.
     if (node.type !== "heading") {
       const sizes = [12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48];
@@ -379,11 +390,11 @@ export function suggestionsFor(page: PageSpec, id: string): string[] {
 export function annotationSuggestions(type: string): string[] {
   const common = ["加動態", "換個配色"];
   switch (type) {
-    case "heading": return ["標題大一點", "改成明體", "藍色字", "置中", "加螢光標記", ...common];
+    case "heading": return ["標題大一點", "改成明體", "藍色字", "置中", "立體字", "加螢光標記", ...common];
     case "paragraph": return ["字大一點", "粗體", "紅色字", "置中", "淡入", ...common];
     case "button": return ["按鈕更醒目", "加磁吸效果", "呼吸發光", ...common];
     case "card": return ["卡片放大", "卡片縮小", "加 3D 傾斜", ...common];
-    case "image": return ["換成圓形框", "愛心框", "黑白濾鏡", "亮一點", "左右翻轉", "百葉窗進場", ...common];
+    case "image": return ["做成 3D", "3D 旋轉展示台", "換成圓形框", "黑白濾鏡", "亮一點", "左右翻轉", ...common];
     default: return ["留白多一點", "底色淡一點", ...common];
   }
 }

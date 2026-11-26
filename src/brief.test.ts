@@ -21,6 +21,7 @@ describe("brief suggestions", () => {
     expect(briefSentence({ ...emptyBrief, audience: "學生", purpose: "社團招生", mood: "活潑", focus: "價格" })).toBe("給學生看的社團招生，感覺活潑，重點是價格");
     expect(hasBrief(emptyBrief)).toBe(false);
     expect(hasBrief({ ...emptyBrief, note: " x " })).toBe(true);
+    expect(hasBrief({ ...emptyBrief, style: { mood: "calm", colorMode: "mono", temperature: "cool", lightness: "light", contrast: "soft", typeFamily: "sans", typeScale: "large", space: "airy", imagery: "full-bleed", motion: "still", principles: ["color-field"], direction: "ocean" } })).toBe(true);
   });
 });
 

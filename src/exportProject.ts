@@ -1,5 +1,7 @@
 import cinematicMotionSource from "./CinematicMotion.tsx?raw";
 import mediaRuntimeSource from "./MediaRuntime.tsx?raw";
+import depthSource from "./Depth3D.tsx?raw";
+import depthSceneSource from "./depthScene.ts?raw";
 import cinematicTextSource from "./CinematicText.tsx?raw";
 import storyMotionSource from "./StoryMotion.tsx?raw";
 import advancedMotionSource from "./AdvancedMotion.tsx?raw";
@@ -94,6 +96,8 @@ export async function exportProjectFiles(
     { path: "src/StoryMotion.tsx", content: storyMotionSource },
     { path: "src/MotionRuntime.tsx", content: motionRuntimeSource },
     { path: "src/MediaRuntime.tsx", content: mediaRuntimeSource },
+    { path: "src/Depth3D.tsx", content: depthSource },
+    { path: "src/depthScene.ts", content: depthSceneSource },
     { path: "src/physics.ts", content: physicsSource },
     { path: "src/PhysicsTags.tsx", content: physicsTagsSource },
     { path: "src/FoldReveal.tsx", content: foldSource },

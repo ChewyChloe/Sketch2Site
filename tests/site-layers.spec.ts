@@ -50,18 +50,20 @@ test("layers list and floating toolbar on the site", async ({ page }) => {
   await expect(bar).toBeVisible();
   const box = await bar.boundingBox(), t = await target.boundingBox();
   expect(box!.y + box!.height).toBeLessThanOrEqual(t!.y + 1);
-  // Headings start bold; 粗體 shows that and turns it off.
+  // 粗體 shows whether the heading already looks bold and toggles it; undo restores it.
   const bold = bar.getByRole("button", { name: "粗體" });
-  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  const startWeight = await target.evaluate((e) => getComputedStyle(e).fontWeight);
+  const startsBold = Number(startWeight) >= 600;
+  await expect(bold).toHaveAttribute("aria-pressed", String(startsBold));
   await bold.click();
-  await expect(target).toHaveCSS("font-weight", "400");
-  await expect(bold).toHaveAttribute("aria-pressed", "false");
+  await expect(target).toHaveCSS("font-weight", startsBold ? "400" : "800");
+  await expect(bold).toHaveAttribute("aria-pressed", String(!startsBold));
   await bar.getByRole("button", { name: "斜體" }).click();
   await expect(target).toHaveCSS("font-style", "italic");
   await page.getByRole("button", { name: "撤銷修改", exact: true }).click();
   await expect(target).toHaveCSS("font-style", "normal");
   await page.getByRole("button", { name: "撤銷修改", exact: true }).click();
-  await expect(target).toHaveCSS("font-weight", "800");
+  await expect(target).toHaveCSS("font-weight", startWeight);
   // Pictures get frame and filter.
   const img = frame.locator(".rendered-page img").first();
   await img.click();
@@ -70,9 +72,34 @@ test("layers list and floating toolbar on the site", async ({ page }) => {
   await expect(frame.locator('[data-frame="circle"]')).toHaveCount(1);
   await expect(frame.locator('[data-frame="circle"] img')).toHaveJSProperty("complete", true);
   await page.screenshot({ path: "test-results/site-toolbar-image.png" });
+  // 3D on request: the picture becomes a WebGL card (the plain picture stays as the fallback).
+  await choose(bar.getByLabel("立體"), "float");
+  await expect(frame.locator(".page-depth.depth-float.is-live canvas")).toHaveCount(1);
+  await expect(frame.locator(".page-depth img")).toHaveAttribute("alt", /.+/);
   // 註解 opens the note box for anything else.
   await bar.getByRole("button", { name: /^註解：說說這個/ }).click();
   await expect(page.getByRole("dialog", { name: /註解：修改這個/ })).toBeVisible();
   await expect(bar).toBeHidden();
   expect(errors).toEqual([]);
+});
+
+test("3D falls back to a still picture when motion is reduced", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+  const page = await context.newPage();
+  await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
+  await page.goto("/");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
+  await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：巷口咖啡小店" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await buildSite(page);
+  await page.getByRole("button", { name: "使用此版本" }).click();
+  const frame = page.getByTestId("preview-frame");
+  await frame.locator(".rendered-page img").first().click();
+  await choose(page.getByRole("toolbar", { name: "直接修改這個元件" }).getByLabel("立體"), "turntable");
+  await expect(frame.locator(".page-depth.depth-turntable")).toHaveCount(1);
+  await page.waitForTimeout(800);
+  await expect(frame.locator(".page-depth canvas")).toHaveCount(0);
+  await expect(frame.locator(".page-depth img")).toBeVisible();
+  await context.close();
 });

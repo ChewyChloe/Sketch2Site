@@ -67,7 +67,7 @@ export function starterDrafts(): CanvasSpec[] {
       });
       spec = { ...spec, metadata: { ...spec.metadata, height: block.height }, nodes: [...spec.nodes, ...nodes] };
     });
-    // Starters show off the motion library: every element gets a fitting preset.
-    return enlivenDraft(CanvasSchema.parse(spec), "lively");
+    // Starters use quiet motion: a gentle entrance per element (docs/SITE_AESTHETICS.md).
+    return enlivenDraft(CanvasSchema.parse(spec), "calm");
   });
 }

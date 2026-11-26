@@ -2,7 +2,7 @@ import type { ThemeId, SectionRole } from "./pageSpec";
 
 // The generation brief: a fill-in sentence with quick choices plus a short note.
 // Choices steer the local layout directly; the free note is only read by AI.
-export type Brief = { audience: string; purpose: string; mood: string; focus: string; note: string; details?: string };
+export type Brief = { audience: string; purpose: string; mood: string; focus: string; note: string; details?: string; style?: import("./referenceStyle").ReferenceStyle };
 export const emptyBrief: Brief = { audience: "", purpose: "", mood: "", focus: "", note: "" };
 
 export const briefOptions = {
@@ -102,4 +102,5 @@ export function briefSentence(b: Brief): string {
   ].filter(Boolean);
   return parts.join("，");
 }
-export const hasBrief = (b?: Partial<Brief> | null) => !!b && Object.values(b).some((v) => typeof v === "string" && v.trim());
+// A reference picture's style counts as a description too.
+export const hasBrief = (b?: Partial<Brief> | null) => !!b && (Boolean(b.style) || Object.values(b).some((v) => typeof v === "string" && v.trim()));

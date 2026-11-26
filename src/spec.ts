@@ -2,6 +2,7 @@ import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
 import { imageSource } from "./assetRef";
 import { MotionSchema, bindMotionInput, compatibleMotion, combinationReason, withinMotionBudget } from "./motion";
+import { ReferenceStyleSchema } from "./referenceStyle";
 import { href, localAssets, ImageLookSchema, TextStyleSchema, BrandSchema, NavSettingsSchema, MediaSchema, defaultMedia, mediaKindLabels, type MediaKind } from "./pageSpec";
 import { SiteOverridesSchema } from "./siteOverrides";
 export const Effect = z.enum([
@@ -67,6 +68,8 @@ export const CanvasSchema = z
           focus: z.string().trim().max(20),
           note: z.string().trim().max(100),
           details: z.string().trim().max(600).optional(),
+          // What a reference picture taught (fixed choices only; the picture is never stored).
+          style: ReferenceStyleSchema.optional(),
         }).strict().optional(),
         // Pages of a multi-page site, in order; the first is the home page.
         pages: z.array(z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(30) }).strict()).min(1).max(10).optional(),

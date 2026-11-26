@@ -14,34 +14,26 @@ export type MotionStyle = "lively" | "calm";
 type Slot = { role: SectionRole; kind: "title" | "heading" | "text" | "button" | "card" | "image" | "form"; index: number; count: number };
 
 const calmMoods = new Set(["簡約", "專業"]);
-export const motionStyleFor = (spec: CanvasSpec): MotionStyle => (calmMoods.has(spec.metadata.brief?.mood ?? "") ? "calm" : "lively");
+export const motionStyleFor = (spec: CanvasSpec): MotionStyle =>
+  calmMoods.has(spec.metadata.brief?.mood ?? "") || (spec.metadata.brief?.style && spec.metadata.brief.style.motion !== "lively") ? "calm" : "lively";
 
+// Motion supports the content and stays quiet (docs/SITE_AESTHETICS.md): one gentle entrance per
+// element, small press feedback on buttons. "lively" adds a little more movement, never spectacle.
 function pick(slot: Slot, node: CanvasNode, style: MotionStyle): MotionId[] {
   const lively = style === "lively";
   const { role, kind } = slot;
-  if (kind === "title") return [lively ? "letter-assembly" : "split-line-assembly"];
-  if (kind === "heading") {
-    if (role === "cta") return [lively ? "gradient-text-flow" : "slide-up"];
-    return [lively ? "hand-drawn-highlight" : "slide-up"];
-  }
+  if (kind === "title") return [lively ? "split-line-assembly" : "slide-up"];
+  if (kind === "heading") return [lively && role !== "cta" ? "slide-up" : "fade-in"];
   if (kind === "text") {
     if (numericContent(node.content)) return ["count-up"];
-    return [lively ? (role === "hero" ? "slide-up" : "blur-in") : "fade-in"];
+    return ["fade-in"];
   }
-  if (kind === "button") {
-    if (role === "cta") return [lively ? "breathing-glow" : "press-feedback"];
-    if (role === "contact") return [lively ? "confetti-burst" : "press-feedback"];
-    return [lively ? (role === "hero" ? "shine-sweep" : "jelly-press") : "press-feedback"];
-  }
+  if (kind === "button") return ["press-feedback"];
   if (kind === "card") {
     if (role === "faq") return ["disclosure-panel"];
-    if (role === "pricing") return slot.index === 1 && slot.count === 3 && lively ? ["border-light-trace"] : ["hover-lift"];
-    return [lively ? "perspective-tilt" : "hover-lift"];
+    return [lively ? "stagger-reveal" : "fade-in"];
   }
-  if (kind === "image") {
-    if (role === "hero") return [lively ? "circular-mask-expansion" : "image-reveal"];
-    return [lively ? "venetian-reveal" : "image-reveal"];
-  }
+  if (kind === "image") return [lively && role === "hero" ? "cinematic-image-pan" : "image-reveal"];
   return ["fade-in"];
 }
 

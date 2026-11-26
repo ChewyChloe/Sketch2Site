@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { TextToolbar } from "./TextToolbar";
 import { Select } from "./Select";
-import { frameIds, frameLabels, filterLabels, imageFilters, type ImageLook, type PageNode, type TextStyle } from "./pageSpec";
+import { depthLabels, frameIds, frameLabels, filterLabels, imageFilters, type ImageLook, type PageNode, type TextStyle } from "./pageSpec";
 
 // A toolbar right above the element picked on the site: text style for words, frame and
 // filter for pictures, and 註解 to describe anything else. Every change is an ordinary
@@ -25,12 +25,15 @@ export function SiteToolbar({
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  // Whether the element already reads as bold on the page (headings usually do; serif themes do not).
+  const [shownBold, setShownBold] = useState(false);
   useLayoutEffect(() => {
     const host = stage.current;
     if (!host) return;
     const place = () => {
       const el = host.querySelector<HTMLElement>(`[data-page-id="${node.id}"]`);
       if (!el) return setPos(null);
+      setShownBold(Number.parseInt(getComputedStyle(el).fontWeight, 10) >= 600);
       const r = el.getBoundingClientRect(), s = host.getBoundingClientRect();
       const h = box.current?.offsetHeight ?? 52, w = box.current?.offsetWidth ?? 420;
       // Above the element when there is room, otherwise just below it; never past the sides.
@@ -47,8 +50,8 @@ export function SiteToolbar({
   }, [node, stage]);
   const textType = textTypes[node.type];
   const isImage = node.type === "image";
-  // Headings are already bold, so the 粗體 button shows that and turning it off means normal weight.
-  const heavy = node.type === "heading";
+  // A heading the theme already shows bold: the 粗體 button shows that, and turning it off means normal weight.
+  const heavy = node.type === "heading" && (node.text?.bold !== undefined || shownBold);
   const shown: TextStyle = heavy && node.text?.bold === undefined ? { ...node.text, bold: true } : node.text ?? {};
   const setText = (patch: Partial<TextStyle> | null) => {
     if (patch && heavy && "bold" in patch && patch.bold === undefined && shown.bold) patch = { ...patch, bold: false };
@@ -83,6 +86,7 @@ export function SiteToolbar({
       ) : isImage ? (
         <div className="site-tb-image">
           <Select label="相框" title="相框形狀" value={node.look?.frame ?? ""} onChange={(v) => setLook({ frame: (v || undefined) as ImageLook["frame"] })} options={[{ value: "", label: "原本形狀" }, ...frameIds.map((f) => ({ value: f, label: frameLabels[f] }))]} />
+          <Select label="立體" title="3D 效果" value={node.look?.depth ?? ""} onChange={(v) => setLook({ depth: (v || undefined) as ImageLook["depth"] })} options={[{ value: "", label: "平面" }, { value: "float", label: depthLabels.float }, { value: "turntable", label: depthLabels.turntable }]} />
           <Select label="濾鏡" title="濾鏡" value={node.look?.filter ?? "none"} onChange={(v) => setLook({ filter: v === "none" ? undefined : (v as ImageLook["filter"]) })} options={imageFilters.map((f) => ({ value: f, label: filterLabels[f] }))} />
         </div>
       ) : (

@@ -891,3 +891,23 @@ body{background:var(--neo-cream)}
 .site-toolbar > .text-toolbar { min-width: 0; flex-wrap: wrap; row-gap: 4px; }
 /* In the preview step the project name is shown but not edited; keep it readable. */
 .topbar .project-name:disabled { color: #0d0e11; -webkit-text-fill-color: #0d0e11; opacity: 1; cursor: default; }
+/* Reference picture in 描述你的網站 */
+.brief-reference{display:grid;gap:8px;padding:12px;border:2px dashed #cfcdc4;border-radius:16px;background:#fbfaf6}
+.brief-reference-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.brief-reference-head strong{font-size:14px}
+.brief-reference-head small,.brief-reference-privacy{font-size:12px;color:#62655f;line-height:1.5}
+.brief-reference-add{justify-self:start;min-height:40px;padding:0 16px;border:2px solid #0d0e11;border-radius:999px;background:#fff;color:#0d0e11;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.brief-reference-add:hover:not(:disabled){background:#e3fbe9}
+.brief-reference-card{display:grid;grid-template-columns:72px minmax(0,1fr) auto;align-items:center;gap:12px}
+.brief-reference-card img{width:72px;height:72px;object-fit:cover;border-radius:12px;border:1.5px solid #0d0e11}
+.brief-reference-card p{margin:6px 0 0;font-size:13px;font-weight:700}
+.brief-reference-card .brief-clear{min-height:34px;padding:0 12px;border:1.5px dashed #a3271f;border-radius:999px;background:#fff;color:#a3271f;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.brief-reference-tags{display:flex;flex-wrap:wrap;gap:4px;margin:0;padding:0;list-style:none}
+.brief-reference-tags li{padding:2px 8px;border-radius:999px;background:#e3fbe9;color:#17402a;font-size:12px;font-weight:700}
+.brief-reference-msg{margin:0;font-size:13px;color:#8a5a12}
+.brief-reference-card{align-items:start}
+.brief-reference-principles{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.brief-reference-principles li{display:grid;gap:2px;padding:8px 10px;border-radius:12px;background:#fff;border:1.5px solid #e4e2d8}
+.brief-reference-principles strong{font-size:14px}
+.brief-reference-principles span{font-size:12.5px;color:#4a4d47;line-height:1.5}
+.brief-reference-principles small{font-size:12px;color:#17402a;font-weight:700}

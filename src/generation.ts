@@ -394,8 +394,9 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
       ? { styles: layout.theme }
       : {
           styles: "neutral",
-          // An explicit mood choice in the brief always decides the theme, whoever planned the layout.
-          theme: moodThemes[canvas.metadata.brief?.mood ?? ""] ?? layout.theme,
+          // An explicit mood choice decides the theme; then a reference picture's direction; then the plan.
+          theme: moodThemes[canvas.metadata.brief?.mood ?? ""] ?? canvas.metadata.brief?.style?.direction ?? layout.theme,
+          ...(canvas.metadata.brief?.style?.principles?.length ? { art: { principles: [...canvas.metadata.brief.style.principles] } } : {}),
           // The brand kit comes from the draft only, never from the model.
           ...(canvas.metadata.brand ? { brand: canvas.metadata.brand } : {}),
           // Navigation settings come from the draft only, like the brand kit.
