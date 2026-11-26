@@ -344,3 +344,8 @@
 - [x] DONE：研究檔案、作品牆、單色海報、暗場、生成網格；AI 依內容選概念（真實 AI PASS）。
 - [x] DONE：側邊點點導覽、CSS 捲動視差、互動價目表、作品瀏覽切換、數字證明、合作夥伴標誌牆、照片自動壓縮。
 - [ ] PARTIAL：使用者主觀審美驗收（等使用者看）。
+
+## 2026-11-26 AI 看草稿縮圖
+- [x] DONE：生成時附上草稿小縮圖（low detail），只給宣告支援的後端；面板告知。
+- [x] DONE：真實 AI 對照驗證（4 次，docs/PAID_AI_DRAFT_SNAPSHOT_20261126.json）。
+- [ ] NOT STARTED：Cloudflare 後端（sitesWorker）收縮圖；等部署決定後再做。

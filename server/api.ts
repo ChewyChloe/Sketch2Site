@@ -10,6 +10,7 @@ import { z } from "zod";
 import { CanvasSchema } from "../src/spec";
 import { CopyRequestSchema, cleanOptions, type CopyRequest } from "../src/copySuggest";
 import { NoteEditRequestSchema, cleanNoteEdits, type NoteEditRequest } from "../src/noteEdits";
+import { snapshotLimits, SnapshotSchemaPattern } from "../src/draftSnapshotRules";
 import { ReferenceRequestSchema, styleFromAnswer, type ReferenceRequest } from "../src/referenceStyle";
 import {
   prepareIntent,
@@ -25,8 +26,13 @@ import {
   type LayoutProvider,
 } from "./provider";
 const requestSchema = z
-  .object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema })
+  // snapshot: a small JPEG drawn from the author's own draft (src/draftSnapshot.ts), optional.
+  .object({ requestId: z.string().uuid(), canvasSpec: CanvasSchema, snapshot: z.string().max(snapshotLimits.maxChars).regex(SnapshotSchemaPattern).optional() })
   .strict();
+function isJpeg(dataUrl: string) {
+  const bytes = Buffer.from(dataUrl.split(",")[1] ?? "", "base64");
+  return bytes.length >= 100 && bytes[0] === 0xff && bytes[1] === 0xd8;
+}
 type Options = {
   provider?: LayoutProvider;
   inputRate?: number;
@@ -123,6 +129,8 @@ export function createGenerationServer(options: Options = {}) {
         protocol:generationProtocol,
         configured: Boolean(options.provider),
         csrfToken: sessions.get(id)!.csrf,
+        // This server can look at a draft snapshot; other back ends leave it out.
+        snapshot: true,
       });
     }
     if ((req.url !== "/api/generation" && req.url !== "/api/generation/check" && req.url !== "/api/generation/copy" && req.url !== "/api/generation/notes" && req.url !== "/api/generation/reference") || req.method !== "POST")
@@ -142,7 +150,7 @@ export function createGenerationServer(options: Options = {}) {
     )
       return failure(res, 403, "FORBIDDEN");
     // A reference picture is a small JPEG; every other request is short text.
-    const maxBody = req.url === "/api/generation/reference" ? 320000 : 32768;
+    const maxBody = req.url === "/api/generation/reference" ? 320000 : req.url === "/api/generation" ? 32768 + snapshotLimits.maxChars + 1024 : 32768;
     if (
       req.headers["content-type"] !== "application/json" ||
       Number(req.headers["content-length"] ?? 0) > maxBody
@@ -345,6 +353,7 @@ export function createGenerationServer(options: Options = {}) {
     try {
       request = requestSchema.parse(JSON.parse(body));
       prepareIntent(request.canvasSpec);
+      if (request.snapshot && !isJpeg(request.snapshot)) throw new Error("not a jpeg");
     } catch {
       return failure(res, 400, "INVALID_INPUT");
     }
@@ -356,7 +365,7 @@ export function createGenerationServer(options: Options = {}) {
     while (arrivals[0] && arrivals[0] < now - 60000) arrivals.shift();
     // Reserve a conservative byte-based token bound plus schema/protocol overhead; failures consume reservations.
     const intent = prepareIntent(request.canvasSpec);
-    const inputBound = inputTokenBound(intent);
+    const inputBound = inputTokenBound(intent, Boolean(request.snapshot));
     const reserve =
       (inputBound * (options.inputRate ?? 2)) / 1e6 +
       (4096 * (options.outputRate ?? 8)) / 1e6;
@@ -391,7 +400,7 @@ export function createGenerationServer(options: Options = {}) {
     };
     try {
       const task = Promise.resolve().then(() =>
-        options.provider!.generate(intent, controller.signal),
+        options.provider!.generate(intent, controller.signal, request.snapshot),
       );
       void task.then(
         () => active--,

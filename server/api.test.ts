@@ -102,6 +102,10 @@ it("enforces origin, CSRF, content-type, size and schema on the backend", async 
   ).toBe(413);
   expect(
     (await api.post({ ...request(), padding: "x".repeat(33000) })).status,
+  ).toBe(400);
+  // The size limit leaves room for a small draft drawing, and no more.
+  expect(
+    (await api.post({ ...request(), padding: "x".repeat(160000) })).status,
   ).toBe(413);
   expect(
     (await api.post({ ...request(), canvasSpec: { script: "eval" } })).status,

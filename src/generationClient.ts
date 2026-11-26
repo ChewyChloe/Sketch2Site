@@ -8,6 +8,7 @@ import {
   verifyPreservation,
 } from "./generation";
 import type { CanvasSpec } from "./spec";
+import { draftSnapshot } from "./draftSnapshot";
 export async function requestGeneration(
   canvasSpec: CanvasSpec,
   signal: AbortSignal,
@@ -27,7 +28,7 @@ export async function requestGeneration(
   } catch {
     throw new GenerationError("UNAVAILABLE");
   }
-  let config: { configured?: boolean; csrfToken?: string; remainingCalls?:number; busy?:boolean };
+  let config: { configured?: boolean; csrfToken?: string; remainingCalls?:number; busy?:boolean; snapshot?: boolean };
   try {
     config = await status.json();
   } catch {
@@ -38,6 +39,8 @@ export async function requestGeneration(
   if (!/^[a-f0-9]{64}$/.test(config.csrfToken ?? ""))
     throw new GenerationError("CSRF_INVALID");
   const requestId = crypto.randomUUID();
+  // Only a back end that says it can look at the draft gets the small drawing of it.
+  const snapshot = config.snapshot === true ? await draftSnapshot(canvasSpec) : null;
   let response: Response;
   try {
     response = await fetch("/api/generation", {
@@ -48,7 +51,7 @@ export async function requestGeneration(
         "Content-Type": "application/json",
         "X-Sketch-CSRF": config.csrfToken!,
       },
-      body: JSON.stringify({ requestId, canvasSpec:CanvasSchema.parse(canvasSpec),...(draftApproval?{draftApproval}:{}) }),
+      body: JSON.stringify({ requestId, canvasSpec:CanvasSchema.parse(canvasSpec),...(snapshot?{snapshot}:{}),...(draftApproval?{draftApproval}:{}) }),
     });
   } catch {
     throw new GenerationError("UNAVAILABLE");

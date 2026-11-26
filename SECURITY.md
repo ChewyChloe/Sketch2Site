@@ -144,3 +144,6 @@ React匯出複製同一AdvancedMotion原始碼、Schema及CSS，不含Provider�
 - Session：HMAC 簽章 Cookie（HttpOnly、SameSite=Lax、HTTPS 時 Secure、7 天），只含 provider:id、Email、名字。登出清除 Cookie。
 - POST 一律檢查同源；登入每 IP 每分鐘 10 次。沒設定 SESSION_SECRET（≥32 字元）與任一組 Client ID 時整個登入關閉；按鈕只顯示「即將開放」，不會發出任何登入請求。
 - CSP 只多允許 https://accounts.google.com/gsi/（script、style、frame、connect）；Referrer-Policy 改 strict-origin-when-cross-origin，只送來源網域。
+
+## 參考圖片與草稿縮圖送給 AI（2026-11-26）
+參考圖片與草稿縮圖都在瀏覽器重新編碼成 JPEG（去掉 EXIF），以 low detail 送出、store:false，伺服器不保存、不記錄內容，只記用量。草稿縮圖由草稿資料繪製（非螢幕截圖），最多 120000 字元，伺服器檢查 data URL 格式與 JPEG 檔頭；/api/generation 的請求大小上限因此為 32768+121024 bytes，其他路由不變。AI 指示把圖片當資料、忽略圖中指令；AI 只能回固定選項，網站文字、圖片、連結仍由程式保留並經 verifyPreservation 檢查。只有 status 宣告 snapshot:true 的後端才會收到縮圖；Cloudflare sitesWorker 目前不宣告、不接收。

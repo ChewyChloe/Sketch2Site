@@ -224,7 +224,7 @@ export function BriefPanel({
       </section>
       <p className="brief-note">
         {aiReady
-          ? "AI 會照這些描述排版，你寫的字一個都不會改"
+          ? "AI 會照這些描述，並看一張縮小的草稿圖來排版；草稿圖不會保存，你寫的字一個都不會改"
           : "選的感覺會換成搭配的顏色，想被注意的區塊會放前面"}
       </p>
       <div className="brief-actions">

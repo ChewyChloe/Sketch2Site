@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-26",
+  "model": "gpt-6-luna",
+  "authorization": "使用者同意改成送草稿縮圖並做真實驗證；自訂上限 4 次、US$0.05（伺服器 MAX_CALLS=4、BUDGET=0.05）",
+  "providerCalls": 4,
+  "refusedBeforeProvider": 1,
+  "refusedReason": "第 4 個請求在 1 分鐘內送出，伺服器每分鐘 3 次的限制先擋下（429，沒有送到 OpenAI，不計費）；1 分鐘後重送",
+  "estimatedCostUsd": 0.001061,
+  "snapshot": "瀏覽器依草稿資料畫成 448px 寬的 JPEG（不是螢幕截圖），low detail；社團頁 24431 字元、課程頁 18791 字元；多約 200 個輸入 token（約 US$0.00002）",
+  "runs": [
+    { "draft": "社團招生頁", "snapshot": false, "concept": "exhibition", "theme": "classic", "inputTokens": 1149, "outputTokens": 310, "estimatedCostUsd": 0.0002699 },
+    { "draft": "社團招生頁", "snapshot": true, "concept": "exhibition", "theme": "midnight", "inputTokens": 1351, "outputTokens": 328, "estimatedCostUsd": 0.0002991 },
+    { "draft": "課程專題展示", "snapshot": false, "concept": "archive", "theme": "ocean", "inputTokens": 1124, "outputTokens": 245, "estimatedCostUsd": 0.0002349 },
+    { "draft": "課程專題展示", "snapshot": true, "concept": "archive", "theme": "forest", "inputTokens": 1326, "outputTokens": 249, "estimatedCostUsd": 0.0002571 }
+  ],
+  "findings": {
+    "works": "PASS：模型收下草稿縮圖並正常回答，排版結果通過原本的保留檢查",
+    "effect": "看了草稿後兩次都換了主題、方向合理（暗色暖光照片 → 午夜；資料圖表 → 書籍感森林）；概念沒變（展覽空間、研究檔案本來就選對）",
+    "visible": "社團頁因展覽空間概念蓋過主題顏色，畫面幾乎一樣；課程頁換成森林後標題移到左欄，畫面有差",
+    "limits": "只比較 2 份範本各 1 次，不是統計結論"
+  }
+}
