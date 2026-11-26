@@ -127,12 +127,12 @@ z.extractall(root)
   expect(await readdir(join(project, "node_modules"))).toContain("react");
   expect(await readFile(join(project,"public/assets/sequence/frame-03.svg"),"utf8")).toContain("FRAME 03");
   expect(await readFile(join(project,"public/assets/workspace.svg"),"utf8")).toContain("<svg");
-  // The body font ships with the site: only the needed pieces, plus the licence.
-  const fontFiles = (await readdir(join(project, "src/fonts"))).filter((f) => f.endsWith(".woff2"));
+  // The default Chinese font (思源黑體) ships with the site: only the needed pieces, plus the licence.
+  const fontFiles = (await readdir(join(project, "src/fonts/noto-sans-tc"))).filter((f) => f.endsWith(".woff2"));
   expect(fontFiles.length).toBeGreaterThan(0);
-  expect(fontFiles.length).toBeLessThan(111);
-  expect(await readFile(join(project, "src/fonts/OFL.txt"), "utf8")).toContain("SIL Open Font License");
-  expect(await readFile(join(project, "src/fonts.css"), "utf8")).toContain("url(./fonts/huninn-");
+  expect(fontFiles.length).toBeLessThan(108);
+  expect(await readFile(join(project, "src/fonts/noto-sans-tc/OFL.txt"), "utf8")).toContain("SIL Open Font License");
+  expect(await readFile(join(project, "src/fonts.css"), "utf8")).toContain("url(./fonts/noto-sans-tc/noto-sans-tc-");
   const previewPort=await new Promise<number>((resolve,reject)=>{const socket=createServer();socket.once('error',reject);socket.listen(0,'127.0.0.1',()=>{const address=socket.address();if(!address||typeof address==='string')return reject(new Error('missing preview port'));socket.close(()=>resolve(address.port));});});
   const service = spawn(
     "npm",

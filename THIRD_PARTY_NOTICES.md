@@ -2497,3 +2497,7 @@ If the Work includes a "NOTICE" text file as part of its distribution, then any 
 END OF TERMS AND CONDITIONS
 ```
 
+
+## Noto Sans TC（思源黑體）
+Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'. Noto is a trademark of Google Inc.
+SIL Open Font License 1.1。自 Google Fonts 下載可變字重（100–900）、依 unicode-range 分成 108 個 woff2 檔，存於 src/assets/fonts/noto-sans-tc/，授權全文 src/assets/fonts/noto-sans-tc/OFL.txt。匯出網站只帶頁面用到的分檔與授權檔。

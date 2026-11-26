@@ -163,7 +163,7 @@ export const fontIds = ["sans", "serif", "rounded", "kai", "mono"] as const;
 export type FontId = (typeof fontIds)[number];
 export const fontLabels: Record<FontId, string> = { sans: "黑體", serif: "明體", rounded: "粉圓體", kai: "楷體", mono: "等寬" };
 export const fontStacks: Record<FontId, string> = {
-  sans: 'system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif',
+  sans: '"Noto Sans TC", "Microsoft JhengHei", "微軟正黑體", "PingFang TC", system-ui, sans-serif',
   serif: '"Noto Serif TC", "Noto Serif CJK TC", "Songti TC", "PMingLiU", "MingLiU", Georgia, serif',
   rounded: '"Huninn", "jf-openhuninn-2.0", ui-rounded, "Arial Rounded MT Bold", "Yuanti TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
   kai: '"Kaiti TC", "BiauKai", "DFKai-SB", "KaiTi", "STKaiti", serif',

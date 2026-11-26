@@ -12,7 +12,7 @@ import { readAsset } from "./assets";
 import type { PageNode } from "./pageSpec";
 import { PageSchema, allSections, mediaAssetRefs } from "./pageSpec";
 import { zipProject, type ProjectFile } from "./archive";
-import { exportDisplayFonts, exportFontFiles } from "./exportFonts";
+import { exportDisplayFonts, exportFontFiles, huninn, notoSansTC } from "./exportFonts";
 import notices from "../THIRD_PARTY_NOTICES.md?raw";
 import foldGeometrySource from "./foldGeometry.ts?raw";
 import physicsSource from "./physics.ts?raw";
@@ -113,8 +113,10 @@ export async function exportProjectFiles(
     },
   ];
   files.push({ path: "src/assetRef.ts", content: assetSchema });
-  // Body font: only the pieces of 粉圓 that this page's text needs.
-  files.push(...(await exportFontFiles(JSON.stringify(page))));
+  // Chinese fonts: only the pieces this page's text needs. Noto Sans TC always; 粉圓 only when the page uses it.
+  const pageText = JSON.stringify(page);
+  const usesRounded = /"rounded"/.test(pageText) || (page as { concept?: string }).concept === "poster";
+  files.push(...(await exportFontFiles(pageText, undefined, usesRounded ? [notoSansTC, huninn] : [notoSansTC])));
   // A design concept uses the Latin display fonts; they ride along in the same fonts.css.
   if ((page as { concept?: string }).concept) {
     const display = await exportDisplayFonts();
