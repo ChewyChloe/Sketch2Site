@@ -1,3 +1,10 @@
+## Demo Day 第一版簡報與影片（2026-11-26）
+- PARTIAL：docs/demo-day/ 交付 10 頁 Sketch2Site-DemoDay-v1.pptx（每頁備註為逐字稿，講述約 740 字≈2 分 50 秒）、逐字稿-v1.md（含評審提問與數字來源）、85 秒操作影片 Sketch2Site-demo-v1.mp4（無聲字幕版＋SRT）
+- 依據：競賽辦法（PowerPoint 為主、問題→AI 應用→解決方案→成果或影響、決賽 3 分鐘）、docs/DECK_REFERENCE.md、使用者附件 presentation-master、vocus 教學動畫文章（先字幕版審片）、avoid-ai-writing
+- 影片是真實操作錄影，生成與註解修改真的呼叫 AI 2 次（約 US$0.00057）；數字全部來自實測紀錄
+- 驗證：pptx validate PASS、LibreOffice 轉圖逐頁檢查；微軟正黑體在 Windows PowerPoint 的實際排版 NOT TESTED
+- 待辦：使用者審稿、配音配樂、實機彩排計時
+
 ## 取代網站確認（2026-11-26）
 - DONE：使用者回報確認列不對：膠囊外框配方角按鈕、黃底粗黑框跟工具列不一致、「使用此版本」消失讓工具列跳動。改成「使用此版本」不動，下方彈出小卡片（白底細框陰影），按鈕跟工具列同風格：先不要／取代網站
 - 測試：replace-site、generation、directions、concept 共 20 個通過；單元 635 通過

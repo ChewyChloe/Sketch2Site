@@ -362,4 +362,4 @@
 - [x] DONE：我的風格（存成可重複套用、不強制的習慣）。
 
 ## Demo Day 簡報（2026/12/4）
-- [ ] NOT STARTED：使用者說簡報不急，還沒開始。**開始做簡報時，先提醒使用者看 docs/DECK_REFERENCE.md**（使用者指定的參考作品與手法）。
+- [ ] PARTIAL：第一版簡報（10 頁 .pptx＋逐字稿）與第一版 85 秒操作影片（字幕版）已完成，見 docs/demo-day/。待使用者審稿、配音、實際 PowerPoint 彩排。參考：docs/DECK_REFERENCE.md。

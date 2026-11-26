@@ -1,0 +1,105 @@
+// Records the real Sketch2Site flow for the demo video. AI calls are capped by the server (4) and here (3).
+const { chromium } = require('playwright');
+const OUT = process.argv[2]; const W = 1600, H = 900;
+const marks = []; let t0 = 0; let calls = 0;
+const mark = (id, text) => { marks.push({ id, text, t: (Date.now() - t0) / 1000 }); console.log('MARK', id, ((Date.now() - t0) / 1000).toFixed(1)); };
+(async () => {
+  const b = await chromium.launch();
+  const ctx = await b.newContext({ viewport: { width: W, height: H }, recordVideo: { dir: OUT + '/raw', size: { width: W, height: H } } });
+  await ctx.addInitScript(() => {
+    addEventListener('DOMContentLoaded', () => {
+      const c = document.createElement('div');
+      c.id = 'demo-cursor';
+      c.style.cssText = 'position:fixed;left:0;top:0;width:22px;height:22px;margin:-3px 0 0 -3px;z-index:2147483647;pointer-events:none;transition:transform .08s;background:url("data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><path d=%22M3 2l7 18 2.5-7.5L20 10z%22 fill=%22%23111%22 stroke=%22white%22 stroke-width=%221.5%22/></svg>") no-repeat';
+      document.body.appendChild(c);
+      addEventListener('mousemove', (e) => { c.style.left = e.clientX + 'px'; c.style.top = e.clientY + 'px'; }, true);
+      addEventListener('mousedown', (e) => { const r = document.createElement('div'); r.style.cssText = `position:fixed;left:${e.clientX - 18}px;top:${e.clientY - 18}px;width:36px;height:36px;border-radius:50%;border:3px solid #18c964;z-index:2147483646;pointer-events:none;transition:all .45s ease-out;opacity:1`; document.body.appendChild(r); requestAnimationFrame(() => { r.style.transform = 'scale(1.8)'; r.style.opacity = '0'; }); setTimeout(() => r.remove(), 600); }, true);
+    });
+  });
+  const p = await ctx.newPage(); t0 = Date.now();
+  await p.route(/\/api\/generation(\/copy|\/notes|\/reference)?$/, async (r) => {
+    if (r.request().method() !== 'POST') return r.continue();
+    calls++; if (calls > 3) { console.log('BLOCKED'); return r.abort(); }
+    console.log('AI CALL', calls, r.request().url()); return r.continue();
+  });
+  const pause = (ms) => p.waitForTimeout(ms);
+  const go = async (loc, opts = {}) => { await loc.scrollIntoViewIfNeeded(); const bx = await loc.boundingBox(); await p.mouse.move(bx.x + bx.width / 2, bx.y + bx.height / 2, { steps: 18 }); await pause(250); await loc.click(opts); await pause(500); };
+  const type = async (loc, text) => { await go(loc); await loc.pressSequentially(text, { delay: 90 }); await pause(400); };
+  const shot = (name) => p.screenshot({ path: OUT + '/../shots/' + name + '.png' });
+
+  await p.goto('http://127.0.0.1:5173/'); await p.getByRole('status').filter({ hasText: '草稿已就緒' }).waitFor();
+  await p.getByRole('button', { name: 'Sketch2Site 首頁' }).click(); await pause(1200);
+  mark('home', '從範本或空白草稿開始');
+  await shot('01-home');
+  const tpl = p.getByRole('article', { name: '範本：社團招生頁' });
+  await tpl.scrollIntoViewIfNeeded(); await pause(800);
+  await Promise.all([p.waitForEvent('load'), go(tpl.getByRole('button', { name: /用這個範本開始/ }))]);
+  await p.getByRole('status').filter({ hasText: '草稿已就緒' }).waitFor(); await pause(800);
+  mark('draft', '1　畫草稿：標題、照片、按鈕拖到想要的位置');
+  // Move the hero heading a little to show the free canvas.
+  const h = p.locator('[data-node-id]').filter({ hasText: '攝影社' }).first();
+  const hb = await h.boundingBox();
+  await p.mouse.move(hb.x + 40, hb.y + 20, { steps: 15 }); await pause(300); await p.mouse.down(); await p.mouse.move(hb.x + 40, hb.y + 60, { steps: 20 }); await p.mouse.move(hb.x + 40, hb.y + 20, { steps: 20 }); await p.mouse.up(); await pause(700);
+  await shot('02-draft');
+  mark('brief', '2　先問清楚：喜歡的風格、首屏怎麼講、一定不要的 AI 味');
+  await go(p.getByRole('button', { name: '描述網站' }));
+  const panel = p.getByRole('dialog', { name: '描述你的網站' });
+  await go(panel.getByRole('button', { name: '新生', exact: true }));
+  await go(panel.getByRole('button', { name: '社團招生', exact: true }));
+  await go(panel.getByRole('button', { name: '簡約', exact: true }));
+  await go(panel.getByRole('button', { name: '照片', exact: true }));
+  const ask = panel.getByRole('region', { name: '先問清楚' });
+  await type(ask.getByLabel('喜歡哪些網站或品牌'), 'Magnum Photos、無印良品');
+  await go(ask.getByRole('group', { name: '想要的感覺' }).getByRole('button', { name: '深色' }));
+  await go(ask.getByRole('group', { name: '想要的感覺' }).getByRole('button', { name: '雜誌感' }));
+  await go(ask.getByRole('radiogroup', { name: '首屏怎麼講' }).getByRole('radio', { name: '大字配照片' }));
+  await ask.getByRole('group', { name: '一定不要' }).scrollIntoViewIfNeeded(); await pause(1500);
+  await shot('03-brief');
+  mark('generate', '3　AI 看草稿縮圖和你的回答，一次給三個方向');
+  await go(panel.getByRole('button', { name: '用這個描述生成網站' }));
+  await p.getByRole('radiogroup', { name: '三個方向' }).waitFor({ timeout: 90000 }); await pause(2500);
+  await shot('04-directions');
+  mark('choose', '4　三個方向並排比較，挑一個，再挑一種變化');
+  const cards = p.getByRole('radiogroup', { name: '三個方向' }).getByRole('radio');
+  await go(cards.nth(1)); await pause(1500);
+  await go(cards.nth(2)); await pause(1500);
+  await go(cards.nth(0)); await pause(1200);
+  await go(p.getByRole('radiogroup', { name: '同一方向的變化' }).getByRole('radio').nth(1)); await pause(1500);
+  await shot('05-variant');
+  mark('habit', '5　喜歡就存成「我的風格」，下次一鍵套用，不強制');
+  await go(p.getByRole('button', { name: '存成我的風格' }));
+  const nameBox = p.getByLabel('風格名稱'); await nameBox.fill(''); await nameBox.pressSequentially('攝影社暗房', { delay: 90 });
+  await go(p.getByRole('button', { name: '儲存', exact: true })); await pause(1500);
+  mark('accept', '6　確定就用這個版本');
+  await go(p.getByRole('button', { name: '使用此版本' })); await pause(2500);
+  await shot('06-site');
+  mark('note', '7　點哪裡改哪裡：點一下，用一句話說要怎麼改');
+  const frame = p.getByTestId('preview-frame');
+  const target = frame.locator('.rendered-page h2').first();
+  await target.scrollIntoViewIfNeeded(); await pause(600);
+  await go(target);
+  await go(p.getByRole('toolbar', { name: '直接修改這個元件' }).getByRole('button', { name: /^註解：說說這個/ }));
+  const bubble = p.getByRole('dialog', { name: /註解：修改這個/ });
+  await type(bubble.getByLabel('想怎麼改這個元件'), '寫得更讓新生想加入，置中');
+  await go(bubble.getByRole('button', { name: '暫存' })); await p.keyboard.press('Escape');
+  const tray = p.getByRole('region', { name: '待送出的修改' });
+  await go(tray.getByRole('button', { name: '送出修改' }));
+  await tray.getByRole('button', { name: /^套用/ }).waitFor({ timeout: 60000 }); await pause(2200);
+  await shot('07-note');
+  await go(tray.getByRole('button', { name: /^套用/ })); await pause(2200);
+  await shot('08-applied');
+  mark('phone', '8　手機版自動排好');
+  await go(p.getByRole('button', { name: '手機', exact: true }).first()); await pause(2500);
+  await shot('09-phone');
+  await go(p.getByRole('button', { name: '桌面', exact: true }).first()); await pause(1000);
+  mark('export', '9　匯出成可以自己架設的網站專案');
+  await go(p.locator('.workbench-menu > summary').filter({ hasText: '頁面' }));
+  const exp = p.getByRole('button', { name: '匯出 React 專案', exact: true });
+  if (await exp.count()) { const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 30000 }).catch(() => null), go(exp)]); console.log('download', dl ? await dl.suggestedFilename() : 'none'); }
+  else console.log('no export button visible');
+  await pause(2500);
+  mark('end', '');
+  const video = p.video(); await ctx.close(); const path = await video.path();
+  require('fs').writeFileSync(OUT + '/marks.json', JSON.stringify({ marks, video: path, calls }, null, 2));
+  console.log('VIDEO', path, 'CALLS', calls); await b.close();
+})().catch(e => { console.log('SCRIPT ERROR', e.message.split('\n').slice(0, 3).join(' | ')); process.exit(1); });
