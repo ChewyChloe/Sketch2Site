@@ -43,7 +43,7 @@ pres.addSection({ title: "開場" });
   s.addText("全隊｜呂沛珍｜資訊管理學系三年級", { x: 0.7, y: 6.3, w: 6.5, h: 0.4, fontSize: 16, color: C.accent4, isTextBox: true, margin: 0 });
   frame(s, "c-draft.png", 7.75, 1.0, 4.95, 4.0, "草稿畫布截圖");
   s.addText("真實畫面：在畫布上擺出標題、照片和按鈕", { x: 7.75, y: 5.15, w: 4.95, h: 0.35, fontSize: 11, color: C.accent4, isTextBox: true, margin: 0 });
-  s.addNotes("【0:00–0:08】\n大家好，我是全隊的呂沛珍。我們做的是 Sketch2Site：畫一張草稿，就能做出網站。\n（講完直接換頁。）");
+  s.addNotes("【0:00–0:08】\n大家好，我是全隊的呂沛珍。我做的是 Sketch2Site：畫一張草稿，就能做出網站。\n（講完直接換頁。）");
 }
 
 // 2. The boring opening: three sites that look alike (wireframe illustration, no gradients or emoji)
@@ -63,7 +63,7 @@ pres.addSection({ title: "開場" });
     s.addText(label, { x, y: 5.95, w: 3.8, h: 0.35, fontSize: 14, color: C.accent4, align: "center", isTextBox: true, margin: 0 });
   });
   s.addText("示意：沒說清楚要什麼時，AI 給的網站常常長得差不多", { x: 0.7, y: 6.55, w: 12, h: 0.4, fontSize: 16, color: C.accent4, isTextBox: true, margin: 0 });
-  s.addNotes("【0:08–0:25】\n先看三個網站。（停兩秒。）分得出哪個是誰的嗎？\n一樣的大標題、一樣的按鈕、一樣的三張卡片。這是我們畫的示意，但你一定看過很多這樣的網站。\n沒說清楚要什麼，AI 就會給它的預設樣子，所以大家的網站都很像。\n（換頁。）");
+  s.addNotes("【0:08–0:25】\n先看三個網站。（停兩秒。）分得出哪個是誰的嗎？\n一樣的大標題、一樣的按鈕、一樣的三張卡片。這是我畫的示意，但你一定看過很多這樣的網站。\n沒說清楚要什麼，AI 就會給它的預設樣子，所以大家的網站都很像。\n（換頁。）");
 }
 
 // 3. Problem
@@ -90,7 +90,7 @@ pres.addSection({ title: "問題與需求" });
     { text: "要展示成果的課程專題" },
   ], { x: 8.05, y: 2.5, w: 4.3, h: 1.9, fontSize: 22, bold: true, color: C.background1, paraSpaceAfter: 10, isTextBox: true, margin: 0, valign: "top" });
   s.addText("他們有內容、有照片，缺的是把想法說清楚的方法。", { x: 8.05, y: 4.5, w: 4.3, h: 0.95, fontSize: 15, color: C.accent4, isTextBox: true, margin: 0, valign: "top" });
-  s.addText("來源：團隊成員實際使用 AI 工具做網站的經驗", { x: 0.6, y: 6.9, w: 8, h: 0.3, fontSize: 10, color: C.accent3, isTextBox: true, margin: 0 });
+  s.addText("來源：我自己實際使用 AI 工具做網站的經驗", { x: 0.6, y: 6.9, w: 8, h: 0.3, fontSize: 10, color: C.accent3, isTextBox: true, margin: 0 });
   s.addNotes("【0:25–0:45】\n我自己用 AI 做網站，卡在兩件事。想要一個動畫，要來回講很多次；想改一個小地方，常常整頁都變了。\n（指右邊）社團、小店、課程專題也一樣：內容和照片都有，缺的是把想法說清楚的方法。\n（換頁。）");
 }
 
@@ -121,7 +121,7 @@ pres.addSection({ title: "AI 應用" });
     box(s, x, 5.55, 3.9, 0.9, "FFFFFF", "規則" + (i + 1), { color: "D9DDD6", width: 1 });
     s.addText(t, { x: x + 0.2, y: 5.55, w: 3.5, h: 0.9, fontSize: 15, color: C.text1, isTextBox: true, margin: 0, valign: "middle" });
   });
-  s.addNotes("【0:45–1:12】\n所以我們換個方式用 AI。不用寫長長的指令，先畫草稿，再回答幾個問題：給誰看、喜歡哪個網站、一定不要什麼。\n（指中間）AI 看草稿縮圖和你的回答，一次給三個方向，並說明理由。\n（指下面）它只能從準備好的設計選項裡挑，不改你的字和照片，圖片看完也不保存。\n（換頁。）");
+  s.addNotes("【0:45–1:12】\n所以我換個方式用 AI。不用寫長長的指令，先畫草稿，再回答幾個問題：給誰看、喜歡哪個網站、一定不要什麼。\n（指中間）AI 看草稿縮圖和你的回答，一次給三個方向，並說明理由。\n（指下面）它只能從準備好的設計選項裡挑，不改你的字和照片，圖片看完也不保存。\n（換頁。）");
 }
 
 // 5. Solution: the flow
@@ -178,7 +178,7 @@ pres.addSection({ title: "成果與影響" });
   frame(s, "c-phone.png", 9.0, 1.65, 2.6, 4.55, "手機版截圖");
   s.addText("同一個網站，手機版自動排好；可匯出完整網站專案自己架上線", { x: 8.6, y: 6.3, w: 4.2, h: 0.6, fontSize: 12, color: C.accent3, isTextBox: true, margin: 0 });
   s.addText("資料：2026/11/26 真實 AI 呼叫紀錄（模型 gpt-6-luna），共 9 次生成；另有 908 個自動測試把關", { x: 0.6, y: 6.6, w: 7.6, h: 0.35, fontSize: 10, color: C.accent3, isTextBox: true, margin: 0 });
-  s.addNotes("【2:02–2:25】\n我們實測了九次：每次生成兩到六秒，AI 費用最多約 0.0005 美元，換算新台幣不到 2 分錢。三個方向是同一次呼叫給的，不多花錢。\n（指右邊）網站會自動排好手機版，也能匯出成完整的網站專案，自己架上線。\n（數字來源在投影片下方，評審問再展開。）\n（換頁。）");
+  s.addNotes("【2:02–2:25】\n我實測了九次：每次生成兩到六秒，AI 費用最多約 0.0005 美元，換算新台幣不到 2 分錢。三個方向是同一次呼叫給的，不多花錢。\n（指右邊）網站會自動排好手機版，也能匯出成完整的網站專案，自己架上線。\n（數字來源在投影片下方，評審問再展開。）\n（換頁。）");
 }
 
 // 8. Impact and next steps
@@ -200,7 +200,7 @@ pres.addSection({ title: "成果與影響" });
     s.addText([{ text: w + "　", options: { bold: true, color: C.accent2, fontSize: 15 } }, { text: t, options: { color: C.text1, fontSize: 16 } }], { x: 7.25, y, w: 5.3, h: 1.1, isTextBox: true, margin: 0, valign: "middle" });
   });
   s.addText("目前還沒有使用者數據，試用後補上", { x: 7.0, y: 6.15, w: 5.7, h: 0.35, fontSize: 12, color: C.accent3, isTextBox: true, margin: 0 });
-  s.addNotes("【2:25–2:45】\n我們希望社團、小店和課程專題不用找人代做，也能做出有自己樣子的網站。\n目前還沒有使用者數據，下一步是開放試用，請同學實際用，量從草稿到上線要多久。\n（換頁。）");
+  s.addNotes("【2:25–2:45】\n我希望社團、小店和課程專題不用找人代做，也能做出有自己樣子的網站。\n目前還沒有使用者數據，下一步是開放試用，請同學實際用，量從草稿到上線要多久。\n（換頁。）");
 }
 
 // 9. The dull "questions" slide (looks like the end)
@@ -216,10 +216,10 @@ pres.addSection({ title: "結尾" });
   const s = pres.addSlide({ masterName: "PLAIN", sectionTitle: "結尾" });
   s.addText([
     { text: "AI 會越來越會做事。", options: { breakLine: true } },
-    { text: "剩下的，是我們說不說得出自己想要什麼。" },
+    { text: "剩下的，是你說不說得出自己想要什麼。" },
   ], { x: 0.9, y: 2.2, w: 11.5, h: 2.2, fontSize: 36, bold: true, color: "000000", align: "center", valign: "middle", rotate: 1, isTextBox: true, margin: 0 });
   s.addText("Sketch2Site 想讓更多人說得出來。", { x: 0.9, y: 4.7, w: 11.5, h: 0.6, fontSize: 20, color: "0F8A3E", align: "center", rotate: 1, isTextBox: true, margin: 0 });
-  s.addNotes("【2:48–3:00】\n（慢慢說。）AI 會越來越會做事。剩下的，是我們說不說得出自己想要什麼。\nSketch2Site 想讓更多人說得出來。謝謝。\n（這頁的字故意歪了一度，不用解釋。有人問再說：一開始差一點點，做出來就會差很多，所以要先說清楚。）");
+  s.addNotes("【2:48–3:00】\n（慢慢說。）AI 會越來越會做事。剩下的，是你說不說得出自己想要什麼。\nSketch2Site 想讓更多人說得出來。謝謝。\n（這頁的字故意歪了一度，不用解釋。有人問再說：一開始差一點點，做出來就會差很多，所以要先說清楚。）");
 }
 
 (async () => {
