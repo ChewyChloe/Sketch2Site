@@ -554,7 +554,9 @@ body{background:var(--neo-cream)}
 .insp-section .effect-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid #2a2e33; border-radius: 10px; }
 .insp-section .note { margin: 0; font-size: 13px; line-height: 1.6; }
 /* Side panels: drag the inner edge to resize (desktop layout only). */
-@media (min-width: 1251px) { .neo-workspace:has(>.sidebar):not(.neo-motion-full) { grid-template-columns: var(--neo-library-width, 260px) minmax(0, 1fr) var(--neo-inspector-width, 300px) !important; } .neo-workspace:not(:has(>.sidebar)) { grid-template-columns: minmax(0, 1fr) var(--neo-inspector-width, 300px); } }
+@media (min-width: 1251px) { .neo-workspace:has(>.sidebar):not(.neo-motion-full) { grid-template-columns: var(--neo-library-width, 260px) minmax(0, 1fr) var(--neo-inspector-width, 300px) !important; } .neo-workspace:not(:has(>.sidebar)):has(>.neo-inspector) { grid-template-columns: minmax(0, 1fr) var(--neo-inspector-width, 300px); } }
+/* Both side panels collapsed: the canvas takes the whole width (no empty column left for the inspector). */
+.neo-workspace:not(:has(>.sidebar)):not(:has(>.neo-inspector)) { grid-template-columns: minmax(0, 1fr) !important; }
 .neo-workspace > .sidebar, .neo-inspector { position: relative; }
 .panel-resizer { position: absolute; top: 0; bottom: 0; width: 10px; z-index: 20; cursor: col-resize; touch-action: none; }
 .panel-resizer.is-left { right: -5px; }
