@@ -31,6 +31,7 @@ import { PageRenderer } from "./PageRenderer";
 import { validatePage } from "./pageSpec";
 import { applyPatchBatch, indexNodes, travelPage, type Change } from "./patch";
 import { AnnotationBubble } from "./AnnotationBubble";
+import { NoteMarkers, NoteTray, type StagedNote } from "./NoteBatch";
 import { themeIds, themeLabels, allSections } from "./pageSpec";
 function changeLabel(c: Change) {
   return c.property === "style.align"
@@ -67,9 +68,11 @@ function valueLabel(value: unknown): string {
 }
 export type PreviewHandle = {
   target(): { sessionId: string; revision: number } | null;
+  /** replacing: a site built earlier is being replaced, so offer 換回上一版 afterwards. */
   accept(
     page: import("./pageSpec").PageSpec,
     target: { sessionId: string; revision: number },
+    replacing?: boolean,
   ): Promise<{ ok: boolean; error?: string }>;
 };
 import { DeviceToggle } from "./DeviceToggle";
@@ -90,16 +93,20 @@ export default function Preview({ ref, onSiteChange, device: deviceProp, onDevic
   const persistence = usePagePersistence();
   const { session, current, update: store, ready, loadError, status } = persistence;
   // Every edit, undo and redo on the site is reported so the draft can follow (siteSync.ts).
+  // 換回上一版 swaps the site only; it must not write the old site back into the draft.
+  const keepDraft = useRef(false);
   const update = (next: Parameters<typeof store>[0]) => {
     const before = current.current.history.present;
     store(next);
     const after = next.history.present;
-    if (after !== before) onSiteChange?.(before, after);
+    const quiet = keepDraft.current;
+    keepDraft.current = false;
+    if (after !== before && !quiet) onSiteChange?.(before, after);
   };
   useImperativeHandle(ref, () => ({
     target: () =>
       pendingEdits.current ? null : persistence.generationTarget(),
-    accept: async (page, target) => {
+    accept: async (page, target, replacing) => {
       if (pendingEdits.current)
         return { ok: false, error: "請先套用或捨棄屬性修改" };
       const result = await persistence.acceptGeneration(page, target);
@@ -107,6 +114,8 @@ export default function Preview({ ref, onSiteChange, device: deviceProp, onDevic
         setSource("");
         setSelected(null);
         setNotice("");
+        // The previous site is the step before this one in the site's history.
+        setReplacedWith(replacing ? current.current.history.present : null);
       }
       return result;
     },
@@ -177,6 +186,10 @@ export default function Preview({ ref, onSiteChange, device: deviceProp, onDevic
   const [text, setText] = useState(""),
     [editRevision, setEditRevision] = useState(0);
   const [exporting, setExporting] = useState(false);
+  // The page that just replaced an earlier site; 換回上一版 shows only while it is unchanged.
+  const [replacedWith, setReplacedWith] = useState<import("./pageSpec").PageSpec | null>(null);
+  // Notes left on several elements, sent together (NoteBatch.tsx).
+  const [notes, setNotes] = useState<StagedNote[]>([]);
   const [notice, setNotice] = useState(""),
     [patchError, setPatchError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -785,6 +798,13 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
             以範例重新開始
           </button>
         )}
+      {replacedWith && replacedWith === session.history.present && (
+        <div className="replace-banner" role="status">
+          <span>網站已換成新版本，你的草稿沒有改動</span>
+          <button type="button" onClick={() => { keepDraft.current = true; travel("undo"); keepDraft.current = false; setReplacedWith(null); setNotice("已換回上一版網站，草稿保持不變"); }}>換回上一版</button>
+          <button type="button" className="replace-banner-close" aria-label="關閉提示" onClick={() => setReplacedWith(null)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+        </div>
+      )}
       {notice && (
         <p
           className={
@@ -899,10 +919,25 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                 node={node}
                 stage={stageRef}
                 onApply={(patches, scope) => Boolean(patch(patches, scope))}
+                onStage={(text) => { setNotes((list) => [...list, { key: crypto.randomUUID(), nodeId: node.id, text }]); return notes.length + 1; }}
               />
             )}
+            {notes.length > 0 && <NoteMarkers notes={notes} stage={stageRef} page={page} />}
           </div>
         </div>
+        {ready && !loadError && (
+          <NoteTray
+            page={page}
+            notes={notes}
+            onRemove={(key) => setNotes((list) => list.filter((n) => n.key !== key))}
+            onClear={() => setNotes([])}
+            onApply={(patches, scope) => {
+              const ok = Boolean(patch(patches, scope));
+              if (ok) setNotice("已套用註解的修改，按一次「撤銷修改」就能全部復原");
+              return ok;
+            }}
+          />
+        )}
         <aside
           id="preview-inspector"
           data-panel={panelTab}

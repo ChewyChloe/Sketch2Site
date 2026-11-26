@@ -14,7 +14,7 @@ export const RefineSchema = z
   .object({
     theme: z.enum(themeIds),
     nav: z.boolean(),
-    // New order of the outline's section numbers (a permutation; hero stays first).
+    // Kept for compatibility; trusted code keeps the author's section order and ignores it.
     order: z.array(z.number().int().min(0).max(19)).max(20),
     sections: z
       .array(
@@ -54,6 +54,8 @@ export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canva
         i,
         role: s.role,
         heading: heading ? preview(heading.content) : "",
+        // First line of up to three cards, so the model knows what the section is about.
+        ...(all.some((n) => n.type === "card") ? { cards: all.filter((n) => n.type === "card").slice(0, 3).map((n) => preview(n.content.split("\n")[0], 12)) } : {}),
         counts,
         ...(prices ? { cardsWithNumbers: prices } : {}),
         ...(questions ? { questionCards: questions } : {}),
@@ -83,14 +85,9 @@ export function applyRefine(plan: LayoutV2, refine: Refine): LayoutV2 {
       s.columns = 1;
     }
   }
-  let ordered = sections;
-  const n = sections.length;
-  const valid = refine.order.length === n && new Set(refine.order).size === n && refine.order.every((i) => i >= 0 && i < n);
-  if (valid) {
-    ordered = refine.order.map((i) => sections[i]);
-    const hero = ordered.findIndex((s) => s.role === "hero");
-    if (hero > 0) ordered = [ordered[hero], ...ordered.filter((_, i) => i !== hero)];
-  }
+  // Section order is the author's: the draft's reading order (plus the brief's focus, which the
+  // local planner already applied). The model's order is not used (paid test finding).
+  const ordered = sections;
   const next = { ...plan, theme: refine.theme, nav: refine.nav, sections: ordered };
   const parsed = LayoutV2Schema.safeParse(next);
   return parsed.success ? (parsed.data as LayoutV2) : plan;

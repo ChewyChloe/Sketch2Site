@@ -360,6 +360,7 @@ export default function App() {
       const result = await previewRef.current!.accept(
         page,
         candidate.target,
+        Boolean(state.current.present.metadata.siteBuiltFrom),
       );
       if (result.ok) {
         // Remember which draft the site was built from (no undo step for this bookkeeping).
@@ -1780,6 +1781,7 @@ node ? (
         )}
         {mode === "preview" && candidate && (
           <CandidatePreview
+            replacing={Boolean(spec.metadata.siteBuiltFrom)}
             mobile={phoneView}
             onMobile={setPhoneView}
             candidate={candidate.result}

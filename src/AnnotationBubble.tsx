@@ -13,11 +13,14 @@ export function AnnotationBubble({
   node,
   stage,
   onApply,
+  onStage,
 }: {
   page: PageSpec;
   node: PageNode;
   stage: RefObject<HTMLElement | null>;
   onApply: (patches: unknown[], scope: string[]) => boolean;
+  /** Keeps the note in the list to send later (returns its number). */
+  onStage?: (text: string) => number;
 }) {
   const [text, setText] = useState("");
   const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
@@ -123,6 +126,21 @@ export function AnnotationBubble({
           placeholder="想怎麼改？例如：大一點、換成藍色"
           onChange={(e) => setText(e.target.value)}
         />
+        {onStage && (
+          <button
+            type="button"
+            className="note-stage"
+            disabled={!text.trim()}
+            title="先記下來，寫完幾則再一起送出"
+            onClick={() => {
+              const n = onStage(text.trim());
+              setStatus({ ok: true, message: `已暫存第 ${n} 則，寫完按「送出修改」一起改` });
+              setText("");
+            }}
+          >
+            暫存
+          </button>
+        )}
         <button type="submit" className="primary" disabled={!text.trim()}>改</button>
         <button type="button" className="note-close" aria-label="關閉註解" onClick={() => setOpen(false)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
       </form>
@@ -132,7 +150,7 @@ export function AnnotationBubble({
         ))}
       </div>
       <p className={"note-status" + (status && !status.ok ? " bad" : "")} role="status" aria-live="polite">
-        {status ? status.message + (status.ok ? " 可按「撤銷修改」復原" : "") : "要改文字請用引號：改成「新的標題」"}
+        {status ? status.message + (status.ok && !status.message.startsWith("已暫存") ? " 可按「撤銷修改」復原" : "") : onStage ? "「改」馬上改；「暫存」先記下，看不懂的會交給 AI" : "要改文字請用引號：改成「新的標題」"}
       </p>
     </div>
   );

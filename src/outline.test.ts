@@ -37,7 +37,8 @@ describe("outline-based AI", () => {
     const next = applyRefine(plan, refine);
     expect(next.theme).toBe("midnight");
     expect(next.sections[0].role).toBe("hero");
-    expect(next.sections[1].role).toBe(plan.sections[n - 1].role);
+    // The author's section order is kept whatever order the model returns.
+    expect(next.sections.map((s) => s.role)).toEqual(plan.sections.map((s) => s.role));
     const page = materialize(d, next);
     expect(page.sections).toHaveLength(n);
   });

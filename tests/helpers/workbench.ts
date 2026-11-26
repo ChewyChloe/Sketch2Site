@@ -70,3 +70,15 @@ export async function useTemplate(page: Page, name: string) {
 export async function buildSite(page: Page) {
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
 }
+/** Uses the built site; when a site already exists, confirms replacing it. */
+export async function useThisVersion(page: Page) {
+  const candidate = page.getByRole("main", { name: "生成候選預覽" });
+  await candidate.getByRole("button", { name: "使用此版本", exact: true }).click();
+  const replace = candidate.getByRole("button", { name: "取代網站" });
+  // Either the site is used right away, or the replace confirmation appears.
+  for (let i = 0; i < 50 && (await candidate.count()); i++) {
+    if (await replace.isVisible().catch(() => false)) { await replace.click(); break; }
+    await page.waitForTimeout(100);
+  }
+  await expect(candidate).toHaveCount(0);
+}

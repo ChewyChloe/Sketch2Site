@@ -1,3 +1,4 @@
+import { useThisVersion } from "./helpers/workbench";
 import { test, expect } from "@playwright/test";
 // Edits on the generated site flow back to the draft, and updating the site keeps them.
 test("site edits survive going back to the draft and updating the site", async ({ page }) => {
@@ -10,7 +11,7 @@ test("site edits survive going back to the draft and updating the site", async (
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
   await page.getByRole("article", { name: "範本：巷口咖啡小店" }).getByRole("button", { name: /用這個範本開始/ }).click();
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
-  await page.getByRole("button", { name: "使用此版本" }).click();
+  await useThisVersion(page);
   const frame = page.getByTestId("preview-frame");
   // Tweak the site: bigger heading, ocean colours, and new wording.
   await frame.getByRole("heading", { name: "我們的堅持" }).click();
@@ -32,7 +33,7 @@ test("site edits survive going back to the draft and updating the site", async (
   await expect(page.getByText("草稿有新的變更，網站還沒更新")).toBeVisible();
   await page.getByRole("button", { name: "更新網站" }).click();
   await expect(page.getByText(/已保留你在網站上的 \d+ 項版面修改/)).toBeVisible();
-  await page.getByRole("button", { name: "使用此版本" }).click();
+  await useThisVersion(page);
   // The draft change arrived and the earlier site tweaks are still there.
   await expect(frame.getByRole("heading", { name: "今天見" })).toBeVisible();
   await expect(frame.getByRole("heading", { level: 1, name: "我們在乎的事" })).toBeVisible();

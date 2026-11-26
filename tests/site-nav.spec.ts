@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { useTemplate, buildSite } from "./helpers/workbench";
+import { useTemplate, buildSite, useThisVersion } from "./helpers/workbench";
 // 導覽列: style choice, item order / names / hiding, side list collapse and the phone menu.
 const offline = (page: Page) => page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
 async function openNav(page: Page) {
@@ -8,8 +8,7 @@ async function openNav(page: Page) {
 }
 async function build(page: Page) {
   await buildSite(page);
-  await page.getByRole("button", { name: "使用此版本", exact: true }).click();
-  await expect(page.getByRole("main", { name: "生成候選預覽" })).toHaveCount(0);
+  await useThisVersion(page);
 }
 test.setTimeout(90_000);
 

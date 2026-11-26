@@ -801,3 +801,45 @@ body{background:var(--neo-cream)}
 .footer .status { font-size: 12px; }
 .footer .footer-shortcuts { min-height: 0 !important; height: 20px; padding: 0 10px !important; font-size: 11.5px !important; line-height: 18px; border-width: 1px !important; }
 @media (max-width: 760px) { .footer { padding: 4px 12px !important; } }
+
+/* Replacing an existing site: a short confirm in place of the button, and 換回上一版 afterwards. */
+.replace-confirm { display: inline-flex; align-items: center; gap: 8px; padding: 4px 4px 4px 12px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff8e0; font-size: 13px; font-weight: 600; color: #0d0e11; }
+.replace-confirm > span { white-space: nowrap; }
+.replace-banner { display: flex; align-items: center; gap: 12px; margin: 8px 16px 0; padding: 8px 8px 8px 16px; border: 1.5px solid #0d0e11; border-radius: 14px; background: #eafff1; color: #0d0e11; font-size: 13.5px; font-weight: 600; }
+.replace-banner > span { flex: 1; }
+.replace-banner button { min-height: 32px; padding: 0 14px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.replace-banner .replace-banner-close { width: 32px; padding: 0; display: grid; place-items: center; border-color: transparent; background: transparent; }
+@media (max-width: 760px) { .replace-confirm { flex-wrap: wrap; border-radius: 14px; } .replace-confirm > span { white-space: normal; width: 100%; } .replace-banner { flex-wrap: wrap; margin: 8px 10px 0; } }
+
+/* ---- Batch notes: numbered markers on the page, and the list to send ---- */
+.preview-body { position: relative; }
+.note-marker { position: absolute; z-index: 25; display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px; background: #0d0e11; color: #10e560; border: 2px solid #10e560; font-size: 12px; font-weight: 800; pointer-events: none; box-shadow: 0 2px 8px rgb(0 0 0 / .25); }
+.note-tray { position: absolute; left: 16px; bottom: 16px; z-index: 40; width: min(360px, calc(100% - 32px)); max-height: min(60%, 460px); display: flex; flex-direction: column; border: 2px solid #0d0e11; border-radius: 18px; background: #fff; color: #0d0e11; box-shadow: 5px 5px 0 #0d0e11; overflow: hidden; }
+.note-tray header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 12px 14px 8px; }
+.note-tray header strong { font-size: 15px; }
+.note-tray header small { font-size: 12px; color: #62655f; }
+.note-tray ol { list-style: none; margin: 0; padding: 0 10px; overflow-y: auto; display: grid; gap: 6px; }
+.note-tray li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 10px; padding: 8px 10px; border: 1.5px solid #e2e1d9; border-radius: 12px; background: #fbfaf6; }
+.note-tray li.is-local, .note-tray li.is-ai { border-color: #9fe5b9; background: #f0fff5; }
+.note-tray li.is-none { border-color: #f0c9c3; background: #fff6f4; }
+.note-no { display: grid; place-items: center; min-width: 22px; height: 22px; border-radius: 999px; background: #0d0e11; color: #10e560; font-size: 12px; font-weight: 800; }
+.note-body { display: grid; gap: 3px; min-width: 0; }
+.note-body small { font-size: 13px; color: #0d0e11; overflow-wrap: anywhere; }
+.note-result { font-size: 12.5px; color: #2b6b43; }
+.note-tray li.is-none .note-result { color: #a3372a; }
+.note-remove { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #62655f; cursor: pointer; }
+.note-remove:hover { background: #ecebe4; color: #0d0e11; }
+.note-remove svg { width: 14px; height: 14px; }
+.note-tray-msg { margin: 8px 14px 0; font-size: 12.5px; color: #62655f; }
+.note-tray-msg.bad { color: #a3372a; }
+.note-tray footer { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 12px 12px; border-top: 1px solid #ecebe4; margin-top: 10px; }
+.note-tray footer button { min-height: 36px; padding: 0 14px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.note-tray footer button.primary { background: #10e560; }
+.note-tray footer button:disabled { opacity: .45; cursor: default; }
+.note-bubble .note-stage { min-height: 34px; padding: 0 12px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.note-bubble .note-stage:disabled { opacity: .45; cursor: default; }
+@media (max-width: 760px) { .note-tray { left: 8px; right: 8px; bottom: 8px; width: auto; } }
+/* While a note is being written, the list folds to its title so it never covers the note box. */
+.preview-body:has(.note-bubble) .note-tray { width: auto; }
+.preview-body:has(.note-bubble) .note-tray :is(ol, footer, .note-tray-msg) { display: none; }
+.preview-body:has(.note-bubble) .note-tray header { padding: 8px 14px; }
