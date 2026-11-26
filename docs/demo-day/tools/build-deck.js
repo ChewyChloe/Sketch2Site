@@ -46,13 +46,24 @@ pres.addSection({ title: "開場" });
   s.addNotes("【0:00–0:08】\n大家好，我是全隊的呂沛珍。我們做的是 Sketch2Site：畫一張草稿，就能做出網站。\n（講完直接換頁。）");
 }
 
-// 2. The boring opening: what AI gives when you do not say what you want
+// 2. The boring opening: three sites that look alike (wireframe illustration, no gradients or emoji)
 {
   const s = pres.addSlide({ masterName: "DARK", sectionTitle: "開場" });
-  s.addImage({ path: D + "slop.png", x: 0, y: 0, w: 13.333, h: 7.5, objectName: "AI 預設風格示意圖", altText: "紫色漸層、發光按鈕、通用英文標語的網站示意圖" });
-  box(s, 0.6, 6.25, 6.9, 0.7, "0D0E11", "說明底");
-  s.addText("示意圖：沒說清楚要什麼時，AI 常給的預設樣子", { x: 0.8, y: 6.3, w: 6.6, h: 0.6, fontSize: 16, color: C.background1, isTextBox: true, margin: 0, valign: "middle" });
-  s.addNotes("【0:08–0:25】\n先看一個網站。（停兩秒，讓大家看。）\n紫色漸層、發光的按鈕、一句看不出在做什麼的英文標語。這是我們做的示意圖，但你一定看過很多這樣的網站。\n沒說清楚要什麼，AI 就會給它的預設樣子，所以大家的網站都很像。\n（換頁。）");
+  s.addText("分得出哪個是誰的嗎？", { x: 0.7, y: 0.6, w: 12, h: 0.8, fontSize: 32, bold: true, color: C.background1, isTextBox: true, margin: 0 });
+  ["網站 A", "網站 B", "網站 C"].forEach((label, i) => {
+    const x = 0.7 + i * 4.1;
+    box(s, x, 1.75, 3.8, 4.1, "1D2420", "示意網站" + (i + 1), { color: "5A625C", width: 1 });
+    s.addShape(pres.shapes.RECTANGLE, { x: x + 0.3, y: 2.05, w: 1.0, h: 0.12, fill: { color: "5A625C" }, line: { color: "5A625C" }, objectName: "導覽" + (i + 1) });
+    s.addShape(pres.shapes.RECTANGLE, { x: x + 0.3, y: 2.6, w: 3.0, h: 0.35, fill: { color: "D9DDD6" }, line: { color: "D9DDD6" }, objectName: "大標題" + (i + 1) });
+    s.addShape(pres.shapes.RECTANGLE, { x: x + 0.3, y: 3.05, w: 2.2, h: 0.35, fill: { color: "D9DDD6" }, line: { color: "D9DDD6" }, objectName: "大標題第二行" + (i + 1) });
+    s.addShape(pres.shapes.RECTANGLE, { x: x + 0.3, y: 3.6, w: 2.8, h: 0.1, fill: { color: "5A625C" }, line: { color: "5A625C" }, objectName: "內文" + (i + 1) });
+    s.addShape(pres.shapes.RECTANGLE, { x: x + 0.3, y: 3.8, w: 2.4, h: 0.1, fill: { color: "5A625C" }, line: { color: "5A625C" }, objectName: "內文二" + (i + 1) });
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 0.3, y: 4.2, w: 1.3, h: 0.4, rectRadius: 0.2, fill: { color: "D9DDD6" }, line: { color: "D9DDD6" }, objectName: "按鈕" + (i + 1) });
+    [0, 1, 2].forEach((k) => s.addShape(pres.shapes.RECTANGLE, { x: x + 0.3 + k * 1.05, y: 4.9, w: 0.9, h: 0.65, fill: { color: "2B302C" }, line: { color: "5A625C", width: 0.75 }, objectName: `卡片${i + 1}-${k + 1}` }));
+    s.addText(label, { x, y: 5.95, w: 3.8, h: 0.35, fontSize: 14, color: C.accent4, align: "center", isTextBox: true, margin: 0 });
+  });
+  s.addText("示意：沒說清楚要什麼時，AI 給的網站常常長得差不多", { x: 0.7, y: 6.55, w: 12, h: 0.4, fontSize: 16, color: C.accent4, isTextBox: true, margin: 0 });
+  s.addNotes("【0:08–0:25】\n先看三個網站。（停兩秒。）分得出哪個是誰的嗎？\n一樣的大標題、一樣的按鈕、一樣的三張卡片。這是我們畫的示意，但你一定看過很多這樣的網站。\n沒說清楚要什麼，AI 就會給它的預設樣子，所以大家的網站都很像。\n（換頁。）");
 }
 
 // 3. Problem
