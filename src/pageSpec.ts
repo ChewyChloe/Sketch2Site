@@ -588,6 +588,8 @@ const PageObject = z
     // Design techniques from a reference picture, applied on top of the theme.
     art: z.object({ principles: z.array(z.enum(principleIds)).max(5) }).strict().optional(),
     concept: z.enum(conceptIds).optional(),
+    // Editorial composition: each section gets its own arrangement instead of the tidy stack.
+    composition: z.enum(["editorial"]).optional(),
     // Interactive extras the author switched on: a pricing builder and a gallery view switch.
     extras: z.object({ pricingBuilder: z.boolean().optional(), galleryViews: z.boolean().optional() }).strict().optional(),
     brand: BrandSchema.optional(),

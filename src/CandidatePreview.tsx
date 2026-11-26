@@ -38,7 +38,8 @@ export default function CandidatePreview({
   // Theme is a reviewed token set; switching it never touches content.
   const [concept, setConcept] = useState<ConceptId | undefined>(candidate.page.concept);
   const [extras, setExtras] = useState(candidate.page.extras ?? {});
-  const page = useMemo(() => ({ ...candidate.page, theme, concept, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) }), [candidate.page, theme, concept, extras]);
+  const [composition, setComposition] = useState(candidate.page.composition);
+  const page = useMemo(() => ({ ...candidate.page, theme, concept, composition, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) }), [candidate.page, theme, concept, composition, extras]);
   const roles = new Set(allSections(candidate.page).map((s) => s.role));
   return (
     <main className="preview-workspace" aria-label="生成候選預覽">
@@ -96,6 +97,11 @@ export default function CandidatePreview({
             返回草稿
           </button>
         </div>
+      </div>
+      <div className="theme-picker concept-picker" role="radiogroup" aria-label="構圖">
+        <span>構圖</span>
+        <button role="radio" aria-checked={!composition} className="concept-chip" title="每一段整齊排好" onClick={() => setComposition(undefined)}>整齊</button>
+        <button role="radio" aria-checked={composition === "editorial"} className="concept-chip" title="字壓在照片上、照片錯落、每一段排法不同" onClick={() => setComposition("editorial")}>編排</button>
       </div>
       <div className="theme-picker concept-picker" role="radiogroup" aria-label="設計概念">
         <span>設計概念</span>

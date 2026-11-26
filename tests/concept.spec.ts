@@ -105,3 +105,18 @@ test("interactive pricing totals, gallery views switch, logo wall and numbers st
   await page.getByRole("button", { name: "使用此版本" }).click();
   await expect(page.getByTestId("preview-frame").getByRole("group", { name: "自己組合" })).toBeVisible();
 });
+
+test("editorial composition: each section gets its own arrangement, phone stays inside the screen", async ({ page }) => {
+  await clubCandidate(page, 390);
+  await buildSite(page);
+  const candidate = page.locator("main[aria-label='生成候選預覽'] .rendered-page").first();
+  const compose = page.getByRole("radiogroup", { name: "構圖" });
+  await expect(compose.getByRole("radio", { name: "整齊" })).toHaveAttribute("aria-checked", "true");
+  await compose.getByRole("radio", { name: "編排" }).click();
+  await expect(candidate).toHaveAttribute("data-compose", "editorial");
+  await expect(candidate.locator(".role-hero h1")).toHaveCSS("mix-blend-mode", "difference");
+  await expect(candidate.locator(".role-gallery h2.page-heading")).toHaveCSS("color", "rgba(0, 0, 0, 0)");
+  expect(await candidate.evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+  await page.getByRole("button", { name: "使用此版本" }).click();
+  await expect(page.getByTestId("preview-frame").locator(".rendered-page").first()).toHaveAttribute("data-compose", "editorial");
+});

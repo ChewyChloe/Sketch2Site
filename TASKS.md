@@ -349,3 +349,7 @@
 - [x] DONE：生成時附上草稿小縮圖（low detail），只給宣告支援的後端；面板告知。
 - [x] DONE：真實 AI 對照驗證（4 次，docs/PAID_AI_DRAFT_SNAPSHOT_20261126.json）。
 - [ ] NOT STARTED：Cloudflare 後端（sitesWorker）收縮圖；等部署決定後再做。
+
+## 2026-11-26 構圖（打破制式骨架）
+- [ ] PARTIAL：構圖樣品「編排」（預覽可切換，預設整齊）；等使用者看截圖決定是否全面改。
+- [ ] NOT STARTED：每段多種構圖由 AI 挑、保留草稿構圖、與概念並用。

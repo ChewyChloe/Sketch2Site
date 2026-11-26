@@ -636,6 +636,7 @@ export function PageRuntime({
           data-theme={page.theme}
           data-art={page.art?.principles.join(" ") || undefined}
           data-concept={page.concept}
+          data-compose={page.composition}
           data-parallax={page.concept && parallaxConcepts.includes(page.concept) ? "" : undefined}
           data-branded={page.brand?.primary ? "" : undefined}
           lang={page.metadata.language}
