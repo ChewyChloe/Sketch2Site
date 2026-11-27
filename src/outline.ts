@@ -80,7 +80,7 @@ export function applyRefine(plan: LayoutV2, refine: Refine): LayoutV2 {
     if (!s) continue;
     // Hero stays the opening section; other roles may be renamed (affects styling only).
     // The footer is decided by the author's © line, never by the model.
-    if (r.role !== "hero" && s.role !== "hero" && s.role !== "footer" && r.role !== "footer") s.role = r.role;
+    if (r.role !== "hero" && s.role !== "hero" && !["footer", "menu"].includes(s.role) && !["footer", "menu"].includes(r.role)) s.role = r.role;
     s.tone = s.role === "hero" ? s.tone : r.tone;
     // A grid needs repeated items; FAQs and contact forms always read as a list (paid test finding).
     if (r.layout === "grid" && s.items.length >= 2 && s.role !== "faq" && s.role !== "contact") {

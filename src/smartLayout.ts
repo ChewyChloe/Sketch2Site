@@ -147,6 +147,31 @@ function planSegment(segment: CanvasNode[], index: number, isLast: boolean, titl
     void more;
     return [s];
   }
+  // Menu: one photo per priced card. Photos and cards are interleaved one row at a time so each
+  // photo sits right above its card.
+  const pricedCards = cards.filter((n) => pricePattern.test(n.content)).length;
+  if (cards.length >= 2 && images.length === cards.length && pricedCards * 2 > cards.length && !forms.length) {
+    const s = base("menu");
+    s.layout = "grid";
+    s.columns = columnsFor(cards.length);
+    // Rows first (items nudged a little by a growing heading still count as one row), then left to right.
+    const rows = (list: CanvasNode[]) => {
+      const sorted = [...list].sort((a, b) => a.y - b.y);
+      const out: CanvasNode[][] = [];
+      for (const n of sorted) {
+        const row = out.at(-1);
+        if (row && n.y - row[0].y < row[0].height / 2) row.push(n);
+        else out.push([n]);
+      }
+      return out.flatMap((r) => r.sort((a, b) => a.x - b.x));
+    };
+    const pics = rows(images), menu = rows(cards);
+    for (let i = 0; i < menu.length; i += s.columns) {
+      s.items.push(...pics.slice(i, i + s.columns).map((n) => item(n)), ...menu.slice(i, i + s.columns).map((n) => item(n)));
+    }
+    for (const n of segment) if (n.type !== "image" && n.type !== "card") (n.type === "button" ? s.outro : s.intro).push(intro(n, "start"));
+    return [s];
+  }
   // Cards whose lines carry prices read as plans; cards opening with a question read as FAQ.
   const priced = cards.filter((n) => pricePattern.test(n.content)).length;
   const questions = cards.filter((n) => /[?？]\s*$/.test(n.content.split("\n")[0])).length;

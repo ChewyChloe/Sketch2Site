@@ -35,6 +35,7 @@ import {
   brandCss,
   shortNavLabel,
   parallaxConcepts,
+  cardLineKind,
 } from "./pageSpec";
 import "./pageRuntime.css";
 type Effect = PageNode["effects"][number];
@@ -364,6 +365,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       data-effects={node.effects.map((e) => e.presetId).join(" ")}
       data-caption={node.type === "image" ? node.alt : undefined}
       data-stat={node.type === "card" && /^[\d,.]+[+%萬千]?\+?$/.test(firstLine(node)) ? "" : undefined}
+      data-line={node.type === "paragraph" ? cardLineKind(node.content) : undefined}
       className={[
         "page-node",
         entry.className,
@@ -393,7 +395,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
     >
       {node.type==="form"?<SiteForm node={node}/>:node.type==="media"&&node.media?<MediaView media={node.media} caption={node.content??""} resolve={(r)=>motionUrls[r]||import.meta.env.BASE_URL+r.slice(1)}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
         node.look?.depth ? <Depth3D mode={node.look.depth}><FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox></Depth3D> : <FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox>
-      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.content}
+      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.type === "paragraph" && cardLineKind(node.content) === "tags" ? node.content!.trim().split(/\s+/).map((t, i) => <span key={i} className="line-tag">{t.replace(/^#/, "")}</span>) : node.content}
     </Tag>
   );
 });

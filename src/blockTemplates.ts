@@ -3,7 +3,7 @@ import type { FrameId } from "./pageSpec";
 
 // Starter sections for the draft canvas. They are ordinary, editable canvas
 // nodes (placeholder copy the user replaces), grouped so they move together.
-export type BlockTemplateId = "hero" | "features" | "gallery" | "collage" | "pricing" | "faq" | "contact" | "cta" | "stats" | "logos" | "footer";
+export type BlockTemplateId = "hero" | "features" | "gallery" | "collage" | "pricing" | "faq" | "contact" | "cta" | "stats" | "logos" | "footer" | "menu";
 
 // Optional 7th value: the frame shape for image parts (empty frames to drop photos into).
 type Part = [CanvasNode["type"], string, number, number, number, number, FrameId?];
@@ -116,6 +116,22 @@ const templates: Record<BlockTemplateId, { label: string; hint: string; height: 
       ["heading", "最後，請訪客做一件事", 80, 0, 560, 80],
       ["text", "例如報名、預約或寄信。按鈕上直接寫要做的動作。", 80, 88, 560, 64],
       ["button", "立即報名", 80, 156, 200, 64],
+    ],
+  },
+  // Menu items: a photo above each card. Card lines: name, English name, price, description,
+  // #tags and a ※ note; the layout and style read them by shape (cardLineKind).
+  menu: {
+    label: "菜單品項",
+    hint: "照片、名稱、英文名、價格、說明與標籤",
+    height: 500,
+    parts: [
+      ["heading", "招牌飲品", 80, 0, 400, 72],
+      ["image", "品項照片一", 80, 88, 400, 200, "rounded"],
+      ["image", "品項照片二", 520, 88, 400, 200, "rounded"],
+      ["image", "品項照片三", 960, 88, 400, 200, "rounded"],
+      ["card", "品項名稱\nItem Name\nNT$ 120\n一句話寫出味道或做法。\n#招牌 #熱飲\n※ 可換燕麥奶", 80, 296, 400, 204],
+      ["card", "品項名稱\nItem Name\nNT$ 150\n一句話寫出味道或做法。\n#季節限定", 520, 296, 400, 204],
+      ["card", "品項名稱\nItem Name\nNT$ 160\n一句話寫出味道或做法。\n#冰飲", 960, 296, 400, 204],
     ],
   },
   // Footer information: name and a line about it, a column of links, address and hours, copyright.

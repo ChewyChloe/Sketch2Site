@@ -5,7 +5,7 @@ import { smartLayout, suggestTheme } from "./smartLayout";
 import { materialize, verifyPreservation, LayoutSchema, layoutJSONSchema } from "./generation";
 import { generationFixtures } from "./demoFixtures";
 import { createDemoCandidate } from "./demo";
-import { PageSchema, type PageNode } from "./pageSpec";
+import { cardLineKind, PageSchema, type PageNode } from "./pageSpec";
 import { applyPatchBatch, createPageSession } from "./patch";
 
 function templatedDraft(name = "咖啡小店", ids: readonly BlockTemplateId[] = ["hero", "features", "gallery", "cta"]): CanvasSpec {
@@ -22,8 +22,8 @@ const roles = (sections: PageNode[]) => sections.map((s) => s.role);
 describe("block templates", () => {
   it("adds valid grouped nodes below existing content and grows the canvas", () => {
     const spec = templatedDraft("咖啡小店", blockTemplateIds);
-    expect(spec.nodes).toHaveLength(44);
-    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(11);
+    expect(spec.nodes).toHaveLength(51);
+    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(12);
     expect(spec.metadata.height).toBeGreaterThan(1200);
     expect(spec.metadata.height % 600).toBe(0);
     expect(spec.nodes.every((n) => n.type !== "button" || n.href?.startsWith("#"))).toBe(true);
@@ -193,5 +193,25 @@ describe("footer information", () => {
   it("a © line elsewhere does not turn a middle section into a footer", () => {
     const spec = templatedDraft("咖啡小店", ["hero", "footer", "features"]);
     expect(smartLayout(spec).sections.map((s) => s.role)).not.toContain("footer");
+  });
+});
+
+describe("menu items", () => {
+  it("one photo per priced card: a menu section with each photo right above its card", () => {
+    const spec = templatedDraft("咖啡小店", ["hero", "menu"]);
+    // A growing heading nudges the first photo down a little; it still belongs to the first row.
+    spec.nodes = spec.nodes.map((n) => (n.type === "image" && n.content === "品項照片一" ? { ...n, y: n.y + 12 } : n));
+    const menu = smartLayout(spec).sections.find((s) => s.role === "menu")!;
+    const label = (id: string) => spec.nodes.find((n) => n.id === id)!.content.split("\n")[0] + (spec.nodes.find((n) => n.id === id)!.content.split("\n")[2] ?? "");
+    expect(menu.columns).toBe(3);
+    expect(menu.items.map((i) => label(i.sourceId))).toEqual(["品項照片一", "品項照片二", "品項照片三", "品項名稱NT$ 120", "品項名稱NT$ 150", "品項名稱NT$ 160"]);
+  });
+  it("reads card lines by shape", () => {
+    expect(cardLineKind("Dune Espresso")).toBe("en");
+    expect(cardLineKind("NT$ 140")).toBe("price");
+    expect(cardLineKind("120 元")).toBe("price");
+    expect(cardLineKind("#招牌 #冷萃")).toBe("tags");
+    expect(cardLineKind("※ 可換燕麥奶")).toBe("note");
+    expect(cardLineKind("雙份濃縮配深焙豆")).toBeUndefined();
   });
 });

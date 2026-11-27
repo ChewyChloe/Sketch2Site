@@ -401,7 +401,7 @@ export function brandCss(b: Brand | undefined) {
     ...(b.type?.bodyWeight ? { "--brand-body-w": String(b.type.bodyWeight) } : {}),
   };
 }
-export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta", "footer"] as const;
+export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta", "footer", "menu"] as const;
 export type SectionRole = (typeof sectionRoles)[number];
 export type PageNode = {
   id: string;
@@ -735,4 +735,15 @@ export function componentIdFromElement(element: Element): string | null {
 /** Sections of every page (first page, then subpages), for walkers that must see the whole site. */
 export function allSections(page: Pick<PageSpec, "sections" | "subpages">): PageNode[] {
   return [...page.sections, ...(page.subpages ?? []).flatMap((p) => p.sections)];
+}
+
+/** What a line inside a card is, so menu cards can style it: an English name, a price, tags or a note. */
+export function cardLineKind(text: string | undefined): "en" | "price" | "tags" | "note" | undefined {
+  const t = (text ?? "").trim();
+  if (!t) return undefined;
+  if (/^#\S/.test(t)) return "tags";
+  if (/^※/.test(t)) return "note";
+  if (t.length <= 18 && /^(NT\$|US\$|\$|＄|¥|€)\s*[\d,]+|^[\d,]+\s*(元|圓)$/.test(t)) return "price";
+  if (t.length <= 48 && /^[A-Za-z][A-Za-z0-9 '&.,\-–]*$/.test(t)) return "en";
+  return undefined;
 }
