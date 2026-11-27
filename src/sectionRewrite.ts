@@ -110,7 +110,8 @@ export type RewriteRequest = z.infer<typeof RewriteRequestSchema>;
 export const RewriteOutputSchema = z
   .object({
     sections: z.array(z.object({ ref: z.string().regex(/^e\d{1,4}$/), node: CompactNodeSchema }).strict()).max(6),
-    notes: z.array(z.object({ n: z.number().int().min(1).max(20), summary: text(60) }).strict()).max(12),
+    // A note too unclear to act on gets a question with 2-4 short choices instead of a change.
+    notes: z.array(z.object({ n: z.number().int().min(1).max(20), summary: text(60), question: text(60).optional(), options: z.array(text(20)).min(2).max(4).optional() }).strict()).max(12),
   })
   .strict();
 export type RewriteOutput = z.infer<typeof RewriteOutputSchema>;
@@ -120,7 +121,7 @@ export const RewriteResponseSchema = z
   .object({
     requestId: z.string().uuid(),
     sections: z.array(PageNodeSchema).max(6),
-    notes: z.array(z.object({ n: z.number().int(), summary: z.string().max(60) }).strict()).max(12),
+    notes: z.array(z.object({ n: z.number().int(), summary: z.string().max(60), question: z.string().max(60).optional(), options: z.array(z.string().max(20)).min(2).max(4).optional() }).strict()).max(12),
   })
   .strict();
 

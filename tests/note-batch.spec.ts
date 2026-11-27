@@ -121,3 +121,43 @@ test("the comparison offers 不要這個修改, which takes the batch back", asy
   await page.getByRole("button", { name: "版本紀錄", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "網站版本" })).toContainText("修改「今天就來坐坐」區塊");
 });
+
+test("an unclear note is asked about first: pick a choice, then it goes through", async ({ page }) => {
+  test.setTimeout(90000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/\/api\/generation\/ready$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
+  await page.route(/\/api\/generation\/status$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: true, csrfToken: "a".repeat(64) }) }));
+  let rewrites = 0;
+  await page.route(/\/api\/generation\/rewrite$/, (r) => { rewrites++; return r.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ code: "NOT_CONFIGURED" }) }); });
+  await page.goto("/?draft");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
+  await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：巷口咖啡小店" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await buildSite(page);
+  await page.getByRole("button", { name: "使用此版本" }).click();
+  const frame = page.getByTestId("preview-frame");
+  await frame.getByRole("heading", { name: "我們的堅持" }).click();
+  await page.getByRole("button", { name: /說說這個標題/ }).click();
+  const bubble = page.getByRole("dialog", { name: /註解：修改這個/ });
+  await bubble.getByLabel("想怎麼改這個元件").fill("改好看一點");
+  await bubble.getByRole("button", { name: "暫存" }).click();
+  await expect(bubble.getByRole("status")).toContainText("已暫存");
+  await page.keyboard.press("Escape");
+  if (await bubble.isVisible()) await page.keyboard.press("Escape");
+  await expect(bubble).toBeHidden();
+  await page.locator(".note-tray footer button.primary", { hasText: "送出修改" }).dispatchEvent("click");
+  const tray = page.locator(".note-tray");
+  await expect(tray).toContainText("1 則要先確認");
+  const question = tray.getByRole("group", { name: /第 1 則：想改哪個部分/ });
+  await expect(question.getByRole("button", { name: "置中" })).toBeVisible();
+  await tray.screenshot({ path: "test-results/note-ask.png" });
+  // Nothing was sent to the AI to guess.
+  expect(rewrites).toBe(0);
+  await question.getByRole("button", { name: "置中" }).dispatchEvent("click");
+  // Back in the list with the clearer words; sending now works locally.
+  await expect(tray).toContainText("標題：置中");
+  await page.locator(".note-tray footer button.primary", { hasText: "送出修改" }).dispatchEvent("click");
+  await expect(tray).toContainText("可以改 1 / 1 則");
+  expect(rewrites).toBe(0);
+});

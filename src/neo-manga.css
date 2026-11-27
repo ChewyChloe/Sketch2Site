@@ -1051,3 +1051,13 @@ body{background:var(--neo-cream)}
 /* The tray keeps its header and buttons; only the list scrolls when space is short. */
 .note-tray header, .note-tray footer { flex: none; }
 .note-tray ol { flex: 1 1 auto; min-height: 0; }
+/* A note that does not say what to change: a question with concrete choices. */
+.note-tray li.is-ask { border-color: #f2c66d; background: #fff8e6; }
+.note-ask { display: grid; gap: 6px; margin-top: 4px; }
+.note-ask .note-result { color: #8a5a00; font-weight: 800; }
+.note-ask-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.note-ask-options button, .note-ask-own button { min-height: 28px; padding: 0 10px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.note-ask-options button:hover { background: #10e560; }
+.note-ask-own { display: flex; gap: 6px; }
+.note-ask-own input { flex: 1; min-width: 0; min-height: 28px; padding: 0 10px; border: 1.5px solid #c9c7bd; border-radius: 999px; font: inherit; font-size: 12px; }
+.note-ask-own button:disabled { opacity: .45; cursor: default; }

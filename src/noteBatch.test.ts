@@ -65,3 +65,29 @@ describe("batch notes", () => {
     expect(outcomes[0].summary).toContain("AI 沒有改這則");
   });
 });
+
+import { clarifyNote } from "./clarify";
+describe("asking back on unclear notes", () => {
+  it("catches notes that do not say what to change, and leaves clear ones alone", () => {
+    for (const vague of ["改好看一點", "怪怪的", "不喜歡", "幫我改一下", "再好一點", "優化", "醜"]) expect(clarifyNote(vague, "heading"), vague).not.toBeNull();
+    for (const clear of ["字放大一點", "標題改成「歡迎光臨」", "顏色換藍色", "寫得更口語一點", "把照片做成輪播", "置中"]) expect(clarifyNote(clear, "heading"), clear).toBeNull();
+    expect(clarifyNote("改好看一點", "image")!.options).toContain("換一張照片");
+    expect(clarifyNote("改好看一點", "unknown")!.options.length).toBeGreaterThanOrEqual(2);
+  });
+  it("asks first instead of sending a vague note to the AI", async () => {
+    const { page, heading, text } = site();
+    const ask = vi.fn(async (p: PageSpec): Promise<RewriteAnswer> => ({ sections: [reworded(p, text.id, "改過")], notes: [{ n: 2, summary: "改了" }] }));
+    const { outcomes } = await processNotes(page, [{ key: "a", nodeId: heading.id, text: "改好看一點" }], ask, new AbortController().signal);
+    expect(ask).not.toHaveBeenCalled();
+    expect(outcomes[0].by).toBe("ask");
+    expect(outcomes[0].patches).toEqual([]);
+    expect(outcomes[0].ask!.options.length).toBeGreaterThanOrEqual(2);
+  });
+  it("shows the AI's own question and changes nothing for that note", async () => {
+    const { page, text } = site();
+    const ask = vi.fn(async (): Promise<RewriteAnswer> => ({ sections: [], notes: [{ n: 1, summary: "需要確認", question: "要改語氣還是改內容？", options: ["語氣更活潑", "只留時間地點"] }] }));
+    const { outcomes } = await processNotes(page, [{ key: "a", nodeId: text.id, text: "加一句吸引新生的話" }], ask, new AbortController().signal);
+    expect(ask).toHaveBeenCalledTimes(1);
+    expect(outcomes[0]).toMatchObject({ by: "ask", patches: [], ask: { question: "要改語氣還是改內容？", options: ["語氣更活潑", "只留時間地點"] } });
+  });
+});

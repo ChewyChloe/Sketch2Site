@@ -1016,6 +1016,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
             brief={brief}
             notes={notes}
             onRemove={(key) => setNotes((list) => list.filter((n) => n.key !== key))}
+            onEdit={(key, text) => setNotes((list) => list.map((n) => (n.key === key ? { ...n, text } : n)))}
             onClear={() => setNotes([])}
             onApply={(patches, scope) => {
               const before = current.current.history.present;
