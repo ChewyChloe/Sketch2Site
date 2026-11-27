@@ -1542,21 +1542,21 @@
 }
 
 /* Additional design concepts share the current section structure and motion runtime. */
-.rendered-page:where([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) {
+.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) {
   --concept-copy: 62ch;
   --concept-ratio: 4 / 3;
   --concept-radius: 0;
   --concept-row: clamp(2rem, 6cqi, 6rem);
   --concept-heading: system-ui, sans-serif;
 }
-.rendered-page:where([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-main > .page-section { padding-block: var(--concept-row); }
-.rendered-page:where([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-heading { font-family: var(--concept-heading); }
-.rendered-page:where([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-paragraph { max-inline-size: var(--concept-copy, none); }
-.rendered-page:where([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-image img { aspect-ratio: var(--concept-ratio, auto); border-radius: var(--concept-radius); }
+.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-main > .page-section:not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { padding-block: var(--concept-row); }
+.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-heading { font-family: var(--concept-heading); }
+.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-paragraph { max-inline-size: var(--concept-copy, none); }
+.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-image:not([data-locked~="assets"]):not([data-locked~="layout"]) img { aspect-ratio: var(--concept-ratio, auto); border-radius: var(--concept-radius); }
 .rendered-page[data-concept="swiss"] { --concept-copy: 48ch; --concept-ratio: 1; }
 .rendered-page[data-concept="swiss"] .page-section { border-block-end: 1px solid currentColor; }
 .rendered-page[data-concept="japanese-minimal"] { --concept-row: clamp(4rem,10cqi,10rem); --concept-copy: 38ch; --concept-heading: Georgia, serif; --concept-ratio: 3 / 2; }
-.rendered-page[data-concept="japanese-minimal"] .page-image { max-inline-size: 68%; margin-inline: auto; }
+.rendered-page[data-concept="japanese-minimal"] .page-image:not([data-locked~="layout"]) { max-inline-size: 68%; margin-inline: auto; }
 .rendered-page[data-concept="nordic"] { --concept-radius: 1rem; --concept-row: clamp(3rem,8cqi,8rem); }
 .rendered-page[data-concept="nordic"] .page-card { box-shadow: 0 .5rem 2rem #39312016; }
 .rendered-page[data-concept="editorial-magazine"] { --concept-heading: Georgia, serif; --concept-copy: 44ch; --concept-ratio: 3 / 4; }
@@ -1574,7 +1574,23 @@
 .rendered-page[data-concept="architectural"] { --concept-ratio: 21 / 9; --concept-copy: 37ch; --concept-row: clamp(2rem, 5cqi, 5rem); }
 .rendered-page[data-concept="architectural"] .page-section { border-block-start: 1px solid currentColor; }
 @container (min-width: 720px) {
-  .rendered-page[data-concept="swiss"] .role-hero .page-grid { grid-template-columns: 3fr 2fr; }
-  .rendered-page[data-concept="editorial-magazine"] .role-hero .page-grid { grid-template-columns: 2fr 3fr; }
-  .rendered-page[data-concept="architectural"] .role-hero .page-grid { grid-template-columns: minmax(0, 1fr); }
+  .rendered-page[data-concept="swiss"] .role-hero .page-grid:not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0,3fr) minmax(0,2fr); }
+  .rendered-page[data-concept="editorial-magazine"] .role-hero .page-grid:not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0,2fr) minmax(0,3fr); }
+  .rendered-page[data-concept="architectural"] .role-hero .page-grid:not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Leave authored effects alone. These are small affordances on otherwise static buttons. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .rendered-page:is([data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="organic"],[data-concept="storybook"]) .page-button[data-effects=""] {
+    transition: translate 260ms ease-out;
+  }
+  .rendered-page:is([data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="organic"],[data-concept="storybook"]) .page-button[data-effects=""]:hover {
+    translate: 0 -3px;
+  }
+  .rendered-page:is([data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"]) .page-button[data-effects=""] {
+    transition: scale 150ms cubic-bezier(.2,.8,.4,1.2);
+  }
+  .rendered-page:is([data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"]) .page-button[data-effects=""]:hover {
+    scale: 1.04;
+  }
 }
