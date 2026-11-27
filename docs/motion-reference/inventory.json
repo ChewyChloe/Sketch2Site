@@ -252,9 +252,9 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
-   "priority": "P4",
-   "note": "文字落雨背景",
+   "sketch2site": "drift-letterfall",
+   "priority": "P3",
+   "note": "八條以內的分軌落字",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -265,6 +265,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 3,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -689,9 +690,9 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
-   "priority": "P4",
-   "note": "棋盤翻轉背景",
+   "sketch2site": "turning-letter-mosaic",
+   "priority": "P3",
+   "note": "對角字磚依序翻轉",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -702,6 +703,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 3,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -988,9 +990,9 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "imprint-beats",
    "priority": "P3",
-   "note": "蓋章進場",
+   "note": "原文後方依序落下印記",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -1001,6 +1003,7 @@
      "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
     }
    ],
+   "verifiedBatch": 3,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

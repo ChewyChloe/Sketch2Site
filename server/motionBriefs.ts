@@ -81,6 +81,9 @@ const briefs: Record<MotionId, [
     "chart-build": ["圖表捲到時依序長出，適合數據區。生成只規劃來源布局。", "映射受控chart-build Runtime；只適用圖表元件。"],
     "crosswind-ribbons": ["在短標題後保留雙向斜帶的節奏。", "映射受控字帶；既有標題保持原樣，不輸出新文字或樣式。"],
     "vanishing-lattice": ["在卡片或區塊底下保留主題色的透視地平線。", "映射受控格線平移；裝飾不影響區塊結構、操作及閱讀。"],
+    "imprint-beats": ["保留原文後的短暫印記節奏。", "映射固定數量的依序印記；原文保持可讀。"],
+    "drift-letterfall": ["保留原文後面的分道落字。", "映射有限字元在主題色背景中循環；不得改字。"],
+    "turning-letter-mosaic": ["保留原文後的對角字磚動態。", "映射固定欄數的字磚翻轉；不得改欄位布局或原文。"],
 };
 export const serverMotionRegistry = Object.fromEntries(motionIds.map(id => [id, { ...motionCatalog[id], designIntent: briefs[id][0], implementationBrief: briefs[id][1] }])) as Record<MotionId, typeof motionCatalog[MotionId] & {
     designIntent: string;

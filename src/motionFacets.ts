@@ -24,6 +24,7 @@ const expression: Record<MotionId, FacetValue<"expression">> = {
   "text-morph-transition": "type", "elastic-word-bounce": "spring", "text-spotlight-reveal": "light", "typographic-stretch": "type", "cursor-trail-particles": "graphic", "cursor-image-follower": "move", "gooey-blob-merge": "graphic", "directional-hover-wipe": "mask", "spring-drag-snap": "spring", "pixel-dissolve": "mask",
   "shutter-lens-transition": "mask", "glitch-slice-reveal": "mask", "liquid-distortion-reveal": "mask", "card-stack-shuffle": "move", "horizontal-scroll-gallery": "move", "sticky-section-morph": "scale", "scroll-image-sequence": "move", "pinned-story-panels": "fade", "particle-constellation": "graphic", "elastic-svg-morph": "spring",
   typewriter: "type", "marquee-text": "move", "gradient-text-flow": "light", "blur-in": "fade", "float-idle": "move", "confetti-burst": "graphic", "jelly-press": "spring", "shine-sweep": "light",
+  "imprint-beats": "type", "drift-letterfall": "move", "turning-letter-mosaic": "depth",
   "crosswind-ribbons": "type", "vanishing-lattice": "depth",
   "dolly-frame": "scale", "color-wake": "light", "scroll-ink-words": "type", "hollow-fill-sweep": "light", "letter-windows": "light", "bold-relay": "type", "chart-build": "data",
 };
@@ -75,6 +76,9 @@ export function searchMotions(ids: readonly MotionId[], query: string) {
 
 const recommendationRules: { pattern: RegExp; label: string; match: (id: MotionId, f: MotionFacets) => boolean }[] = [
   { pattern: /吹散|重聚|聚集|風吹|scatter|reassembl|gather/i, label: "分散後重新組合文字", match: id => ["letter-assembly", "split-line-assembly", "text-morph-transition"].includes(id) },
+  { pattern: /蓋章|印記|stamp/i, label: "原文後方依序出現印記", match: id => id === "imprint-beats" },
+  { pattern: /字雨|落字|letter.*rain/i, label: "裝飾文字分軌落下", match: id => id === "drift-letterfall" },
+  { pattern: /翻.*格|棋盤|checkerboard/i, label: "字磚沿對角線翻轉", match: id => id === "turning-letter-mosaic" },
   { pattern: /斜.*字帶|交叉.*文字|diagonal.*text/i, label: "雙向斜字帶保留中央原文", match: id => id === "crosswind-ribbons" },
   { pattern: /地平線|透視網格|horizon|perspective grid/i, label: "透視格線往前推進", match: id => id === "vanishing-lattice" },
   { pattern: /立體|景深|視差|3d|depth|parallax/i, label: "提供立體或景深感", match: (_, f) => f.expression.includes("depth") },

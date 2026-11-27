@@ -254,6 +254,67 @@ export function useReferenceMotion(node: PageNode, ref: RefObject<HTMLElement | 
                 duration: n(lattice, "cycleMs", 2800), iterations: Infinity, easing: "linear",
             });
         }
+
+        const imprint = find("imprint-beats");
+        if (imprint && node.content && !reduced) {
+            const words = segmentsOf(node.content, "word").filter(word => /[\p{L}\p{N}]/u.test(word)).slice(0, 12);
+            r.entrance(() => {
+                if (!words.length) return;
+                const layer = deco("ref-imprints");
+                addClass("ref-ambient-host");
+                words.forEach((word, index) => {
+                    const mark = document.createElement("span");
+                    mark.textContent = word;
+                    layer.append(mark);
+                    const animation = r.animate(mark, [
+                        { opacity: 0, transform: "translateY(-35%) scale(1.35) rotate(-12deg)" },
+                        { opacity: .32, transform: "translateY(2%) scale(.92) rotate(3deg)", offset: .3 },
+                        { opacity: 0, transform: "translateY(0) scale(1) rotate(0)" },
+                    ], { duration: n(imprint, "imprintMs", 620), delay: index * n(imprint, "stepMs", 75), easing: "ease-out", fill: "backwards" });
+                    if (index === words.length - 1) animation?.addEventListener("finish", () => r.remove(layer), { once: true });
+                });
+            });
+        }
+
+        const letters = node.content ? segmentsOf(node.content, "grapheme").filter(letter => /[\p{L}\p{N}]/u.test(letter)).slice(0, 15) : [];
+        const rain = find("drift-letterfall");
+        if (rain && letters.length) {
+            addClass("ref-ambient-host");
+            const layer = deco("ref-letterfall");
+            const lanes = n(rain, "lanes", 6), duration = n(rain, "cycleMs", 6400);
+            for (let lane = 0; lane < lanes; lane++) {
+                const glyph = document.createElement("span");
+                glyph.textContent = letters[lane % letters.length];
+                glyph.style.insetInlineStart = `${(lane + .3) / lanes * 100}%`;
+                glyph.style.top = `${(lane * 37) % 70}%`;
+                layer.append(glyph);
+                r.animate(glyph, [
+                    { top: "-18%", opacity: 0 }, { opacity: .38, offset: .25 },
+                    { opacity: .38, offset: .72 }, { top: "110%", opacity: 0 },
+                ], { duration, delay: -duration * lane / lanes, iterations: Infinity, easing: "linear" });
+            }
+        }
+
+        const mosaic = find("turning-letter-mosaic");
+        if (mosaic && letters.length) {
+            addClass("ref-ambient-host");
+            const layer = deco("ref-mosaic");
+            const columns = n(mosaic, "columns", 4), duration = n(mosaic, "cycleMs", 5200);
+            layer.style.setProperty("--mosaic-columns", String(columns));
+            for (let index = 0; index < columns * 3; index++) {
+                const tile = document.createElement("span");
+                tile.textContent = letters[index % letters.length];
+                layer.append(tile);
+                const diagonal = Math.floor(index / columns) + index % columns;
+                r.animate(tile, [
+                    { transform: "perspective(90px) rotateY(0deg)", opacity: .26 },
+                    { transform: "perspective(90px) rotateY(90deg)", opacity: .08, offset: .2 },
+                    { transform: "perspective(90px) rotateY(180deg)", opacity: .36, offset: .4 },
+                    { transform: "perspective(90px) rotateY(360deg)", opacity: .26, offset: .58 },
+                    { transform: "perspective(90px) rotateY(360deg)", opacity: .26 },
+                ], { duration, delay: -duration + diagonal * duration * .06, iterations: Infinity });
+            }
+        }
         return () => { r.dispose(); cleanups.reverse().forEach(f => f()); };
     }, [node, ref, reduced, assetKey, preview]); // eslint-disable-line react-hooks/exhaustive-deps
 }

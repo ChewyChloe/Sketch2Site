@@ -17,11 +17,14 @@
 
 優先序用於排程。P1 與明列已驗證批次的資料有正式 Runtime；其他預計新增項目仍待實作。
 
-## 已完成的來源對應（9 個新動畫，對應 13 筆來源）
+## 已完成的來源對應（12 個新動畫，對應 16 筆來源）
 
 | Sketch2Site ID | 對應來源編號 |
 |---|---|
+| `drift-letterfall` | 11 |
 | `bold-relay` | 23, 291 |
+| `turning-letter-mosaic` | 30 |
+| `imprint-beats` | 43 |
 | `crosswind-ribbons` | 50 |
 | `hollow-fill-sweep` | 69, 163 |
 | `scroll-ink-words` | 152 |
@@ -218,7 +221,7 @@
 | 3 | text | ['loop'] | CSS | — | P4 | 硬幣式翻轉循環 |
 | 7 | text | ['loop'] | CSS | — | P4 | 萬花筒旋轉 |
 | 10 | text | ['loop'] | CSS | — | P4 | 定格晃動 |
-| 11 | bg | ['loop'] | CSS | — | P4 | 文字落雨背景 |
+| 11 | bg | ['loop'] | CSS | drift-letterfall | P3 | 八條以內的分軌落字 |
 | 12 | text | ['loop'] | CSS | — | P4 | 文字放大鏡 |
 | 17 | text | ['loop'] | CSS | — | P4 | 水面倒影 |
 | 20 | text | ['loop'] | CSS | — | P4 | 反重力彈跳 |
@@ -227,13 +230,13 @@
 | 24 | text | ['enter'] | CSS | — | P4 | 扇形展開 |
 | 25 | text | ['loop'] | CSS | — | P3 | 逐字點亮與跳點 |
 | 26 | text | ['loop'] | CSS | — | P4 | 鐘擺搖晃 |
-| 30 | bg | ['loop'] | CSS | — | P4 | 棋盤翻轉背景 |
+| 30 | bg | ['loop'] | CSS | turning-letter-mosaic | P3 | 對角字磚依序翻轉 |
 | 31 | text | ['loop'] | CSS | — | P4 | ∞ 軌道 |
 | 33 | text | ['loop'] | CSS | — | P4 | 漩渦 |
 | 34 | text | ['loop'] | CSS | — | P4 | 顫抖後穩定 |
 | 36 | text | ['enter'] | CSS | — | P3 | 墨水暈開 |
 | 38 | text | ['loop'] | CSS | — | P4 | 多字型輪替（需字型授權確認） |
-| 43 | text | ['enter'] | CSS | — | P3 | 蓋章進場 |
+| 43 | text | ['enter'] | CSS | imprint-beats | P3 | 原文後方依序落下印記 |
 | 44 | text | ['enter'] | CSS | — | P4 | 縱深飛出 |
 | 45 | text | ['enter'] | CSS | — | P3 | 詞語堆疊 |
 | 50 | bg | ['loop'] | CSS | crosswind-ribbons | P2 | 雙向裝飾字帶，保留中央原文 |

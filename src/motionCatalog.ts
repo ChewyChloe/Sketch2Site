@@ -139,6 +139,19 @@ export const motionCatalog: Record<MotionId, MotionDefinition> = {
       orb: boolean("顯示圓光", true),
     }, ["只使用主題色", "同頁最多四個背景動態", "離屏暫停"], "顯示靜態透視網格", "適用區塊或卡片"),
 
+    "imprint-beats": define("imprint-beats", ref("imprint-beats").nameZh, ref("imprint-beats").nameEn, "進場", ref("imprint-beats").intro, "封面短句與活動標題", ["text", "heading", "paragraph"], "medium", ["scroll-enter"], {
+      imprintMs: number("印記時長（毫秒）", 620, 300, 1000),
+      stepMs: number("印記間隔（毫秒）", 75, 35, 120),
+    }, ["最多十二枚", "只播放一次"], "直接顯示原文", "適用文字元件"),
+    "drift-letterfall": define("drift-letterfall", ref("drift-letterfall").nameZh, ref("drift-letterfall").nameEn, "內容", ref("drift-letterfall").intro, "活動標題與介紹短句", ["text", "heading", "paragraph"], "medium", ["idle-loop"], {
+      cycleMs: number("字雨週期（毫秒）", 6400, 3500, 12000),
+      lanes: number("軌道數", 6, 3, 8),
+    }, ["最多八條軌道", "離屏暫停"], "背景字靜止", "適用文字元件"),
+    "turning-letter-mosaic": define("turning-letter-mosaic", ref("turning-letter-mosaic").nameZh, ref("turning-letter-mosaic").nameEn, "內容", ref("turning-letter-mosaic").intro, "展覽文案與專案開場", ["text", "heading", "paragraph"], "medium", ["idle-loop"], {
+      cycleMs: number("翻轉週期（毫秒）", 5200, 3200, 9000),
+      columns: number("格陣欄數", 4, 3, 5),
+    }, ["最多十五格", "離屏暫停"], "背景字感靜止", "適用文字元件"),
+
 };
 export function controlsSchema(id: MotionId) {
     const fields: Record<string, z.ZodType> = {};

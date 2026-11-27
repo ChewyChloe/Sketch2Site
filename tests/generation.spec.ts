@@ -303,7 +303,7 @@ test('six animations survive generation, PageSpec validation, preview and persis
  await page.screenshot({path:'test-results/portfolio-six-animations-mock.png',fullPage:true});
 });
 
-test("Mock generation retains both authored background motions with their controls", async ({ page }) => {
+test("Mock generation retains authored background motions with their controls", async ({ page }) => {
   const { createMotion } = await import("../src/motion");
   const canvas = structuredClone(fixtures[0]);
   canvas.metadata.layoutMode = "reflow";
@@ -311,6 +311,13 @@ test("Mock generation retains both authored background motions with their contro
   const card = canvas.nodes.find(node => node.type === "card")!;
   heading.effects = [createMotion("crosswind-ribbons", heading.id, { angleDeg: 18 })];
   card.effects = [createMotion("vanishing-lattice", card.id, { spacingPx: 36 })];
+  const { createNode } = await import("../src/spec");
+  for (const [index, preset] of ["drift-letterfall", "turning-letter-mosaic", "imprint-beats"].entries()) {
+    const node = createNode("text", 80, 520 + index * 96);
+    node.content = "機制驗證：風格由網站主題決定";
+    node.effects = [createMotion(preset as "drift-letterfall" | "turning-letter-mosaic" | "imprint-beats", node.id)];
+    canvas.nodes.push(node);
+  }
   await seed(page, canvas);
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
   const candidate = page.getByRole("main", { name: "生成候選預覽" });
@@ -318,4 +325,6 @@ test("Mock generation retains both authored background motions with their contro
   const preview = candidate.locator(".preview-frame");
   await expect(preview.locator(`[data-page-id="${heading.id}"] .ref-ribbons`)).toHaveCSS("--ribbon-angle", "18deg");
   await expect(preview.locator(`[data-page-id="${card.id}"] .ref-lattice-floor`)).toHaveCSS("--lattice-gap", "36px");
+  for (const node of canvas.nodes.slice(-3))
+    await expect(preview.locator(`[data-page-id="${node.id}"]`)).toHaveAttribute("data-effects", node.effects[0].presetId);
 });

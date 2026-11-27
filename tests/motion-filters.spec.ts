@@ -1,3 +1,4 @@
+import { motionCatalog } from "../src/motionCatalog";
 import { test, expect } from "@playwright/test";
 import { openPanel, openWebsiteWorkspace, useTemplate } from "./helpers/workbench";
 import { motionFixture } from "./fixtures/motions";
@@ -103,3 +104,26 @@ test("draft trial renders the selected content without attaching an effect", asy
   await expect(trial).toHaveCount(0);
   await expect(heading.locator(".effect-tags")).toHaveText(before ?? "");
 });
+
+for (const [id, text] of [
+  ["crosswind-ribbons", "巷口咖啡小店"], ["vanishing-lattice", "自家烘豆"],
+  ["imprint-beats", "巷口咖啡小店"], ["drift-letterfall", "巷口咖啡小店"],
+  ["turning-letter-mosaic", "巷口咖啡小店"],
+] as const) {
+  test(`${id}: draft trial replays without editing the source`, async ({ page }) => {
+    await page.goto("/?draft");
+    await useTemplate(page, "巷口咖啡小店");
+    const target = page.getByTestId("canvas-node").filter({ hasText: text }).first();
+    await target.click();
+    const before = await target.locator(".effect-tags").textContent();
+    await page.getByRole("button", { name: "動畫素材庫", exact: true }).click();
+    const card = page.getByRole("region", { name: "草稿動畫素材" }).locator(`[data-effect-id="${id}"]`);
+    await card.getByRole("button", { name: "在元件上試看" + motionCatalog[id].nameZh }).click();
+    const trial = page.getByRole("region", { name: "草稿元件動畫試看" });
+    await expect(trial.locator(`[data-effects~="${id}"]`)).toBeVisible();
+    await trial.getByRole("button", { name: "重播試看" }).click();
+    await expect(trial.locator(`[data-effects~="${id}"]`)).toBeVisible();
+    await trial.getByRole("button", { name: "取消試看" }).click();
+    await expect(target.locator(".effect-tags")).toHaveText(before ?? "");
+  });
+}

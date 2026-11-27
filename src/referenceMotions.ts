@@ -419,10 +419,37 @@ const list: ReferenceMotion[] = [
     reducedMotion: "格線及圓光靜止",
     inspiration: [ref(223)], batch: 2, status: "DONE",
   },
+  {
+    id: "imprint-beats", nameZh: "印記拍點", nameEn: "Imprint Beats",
+    intro: "原文字後方依序落下小印記，像為一段話敲下節拍。",
+    behaviour: ["最多十二個詞依閱讀順序印下", "裝飾只短暫出現在原文後方"],
+    targets: ["text", "heading", "paragraph"], triggers: ["進場"],
+    timing: "進入視區後依序播放一次", params: ["每枚印記時長", "印記間隔"],
+    performance: ["最多十二個裝飾", "遇到離屏時暫停"],
+    reducedMotion: "只顯示原文", inspiration: [ref(43)], batch: 3, status: "DONE",
+  },
+  {
+    id: "drift-letterfall", nameZh: "字雨垂幕", nameEn: "Drift Letterfall",
+    intro: "選自原文的字沿分流落下，形成一層淡色的流動幕。",
+    behaviour: ["字元沿八條直向軌道落下", "各軌道錯開播放且不覆蓋原文"],
+    targets: ["text", "heading", "paragraph"], triggers: ["可見時循環"],
+    timing: "只有視區內循環", params: ["落下週期", "軌道數"],
+    performance: ["最多八個字元運動", "離屏或分頁隱藏暫停"],
+    reducedMotion: "背景字保持靜止", inspiration: [ref(11)], batch: 3, status: "DONE",
+  },
+  {
+    id: "turning-letter-mosaic", nameZh: "翻頁字磚", nameEn: "Turning Letter Mosaic",
+    intro: "原文字元化成淡色字磚，從角落沿格陣翻轉。",
+    behaviour: ["格陣上的字磚按對角線順序翻轉", "文字本身始終保留完整閱讀順序"],
+    targets: ["text", "heading", "paragraph"], triggers: ["可見時循環"],
+    timing: "從左上至右下波浪式循環", params: ["翻轉週期", "格陣欄數"],
+    performance: ["最多十五格", "離屏或分頁隱藏暫停"],
+    reducedMotion: "背景字磚保持靜止", inspiration: [ref(30)], batch: 3, status: "DONE",
+  },
 ];
 
 export const referenceMotions: readonly ReferenceMotion[] = z.array(ReferenceMotionSchema).parse(list);
 export const referenceMotion = (id: string) => referenceMotions.find((m) => m.id === id);
 /** Only motions that are built end to end. */
-export const referenceMotionIds = ["dolly-frame", "color-wake", "scroll-ink-words", "hollow-fill-sweep", "letter-windows", "bold-relay", "chart-build", "crosswind-ribbons", "vanishing-lattice"] as const;
+export const referenceMotionIds = ["dolly-frame", "color-wake", "scroll-ink-words", "hollow-fill-sweep", "letter-windows", "bold-relay", "chart-build", "crosswind-ribbons", "vanishing-lattice", "imprint-beats", "drift-letterfall", "turning-letter-mosaic"] as const;
 export type ReferenceMotionId = (typeof referenceMotionIds)[number];

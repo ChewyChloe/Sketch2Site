@@ -8,7 +8,7 @@
 - 編輯器：AnimationLibrary.tsx（素材庫）、MotionControls.tsx（參數）
 - 匯出：exportProject.ts 把 runtime 原始碼一起放進 React 專案
 
-共 77 種。
+共 80 種。
 
 | ID | 名稱 | 用在 | 什麼時候動 | 樣子 | 想達成 | 程度 | 參數 | 鍵盤 | Runtime |
 |---|---|---|---|---|---|---|---|---|---|
@@ -89,3 +89,6 @@
 | `chart-build` | 圖表長出來 / Chart Build-Up | 圖表與媒體 | 出現時 | 數字資料 | 呈現資料 | 適中 | durationMs, stepMs | — | ReferenceMotion.tsx |
 | `crosswind-ribbons` | 交風字帶 / Crosswind Ribbons | 文字 | 一直動 | 文字逐字 | 營造氣氛 | 適中 | cycleMs, angleDeg, wash | — | ReferenceMotion.tsx |
 | `vanishing-lattice` | 遠方經緯 / Vanishing Lattice | 卡片與區塊 | 一直動 | 立體 | 營造氣氛 | 適中 | cycleMs, spacingPx, orb | — | ReferenceMotion.tsx |
+| `imprint-beats` | 印記拍點 / Imprint Beats | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | imprintMs, stepMs | — | ReferenceMotion.tsx |
+| `drift-letterfall` | 字雨垂幕 / Drift Letterfall | 文字 | 一直動 | 位移滑動 | 營造氣氛 | 適中 | cycleMs, lanes | — | ReferenceMotion.tsx |
+| `turning-letter-mosaic` | 翻頁字磚 / Turning Letter Mosaic | 文字 | 一直動 | 立體 | 營造氣氛 | 適中 | cycleMs, columns | — | ReferenceMotion.tsx |

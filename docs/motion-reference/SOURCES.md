@@ -35,3 +35,4 @@
 3. `python3 -I docs/motion-reference/build_inventory_md.py docs/motion-reference/inventory.json docs/motion-reference/INVENTORY.md`
 
 批次 2 新增 #50、#223 的原創實作。沿用上表來源歸屬，只使用機制靈感。文字帶使用使用者原文，兩項效果皆使用網站主題色。
+批次 3 新增 #11、#30、#43。程式獨立實作，沿用網站原文字元與主題色。新增實作驗證見 [VERIFICATION.md](VERIFICATION.md)。

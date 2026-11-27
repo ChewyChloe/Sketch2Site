@@ -161,7 +161,7 @@ for (const width of [1440, 768, 375])
         await page.goto('/?draft');
         await expect(page.getByRole('status')).toContainText('草稿已就緒');
         await page.getByRole('button', { name: '動畫素材庫', exact: true }).click();
-        await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(77);
+        await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(80);
         for (const id of advancedMotionIds) {
             const asset = page.locator(`.sidebar [data-effect-id="${id}"]`);
             await asset.scrollIntoViewIfNeeded();

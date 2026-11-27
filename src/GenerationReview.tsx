@@ -82,6 +82,11 @@ function SectionPlan({ view, draft, savedSite, automatic, onDraftChange, section
   const locked = savedSite ? allSections(savedSite).filter(section => section.lock?.layout)
     .map(section => new Set(sectionSourceIds(section, sourceIds))) : [];
   const protectedMotion = new Set(locked.flatMap(ids => [...ids]));
+  if (savedSite) {
+    for (const section of allSections(savedSite)) {
+      if (section.lock?.motion) for (const id of sectionSourceIds(section, sourceIds)) protectedMotion.add(id);
+    }
+  }
   const retainMotion = (node: PageNode) => {
     if (node.effects.length) protectedMotion.add(node.id);
     node.children?.forEach(retainMotion);

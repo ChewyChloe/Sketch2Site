@@ -26,7 +26,7 @@ test('library previews are live: hover, scroll and replay show the real effect',
     await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await page.getByRole('button', { name: '動畫素材庫', exact: true }).click();
-    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(77);
+    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(80);
     const card = (id: string) => page.locator(`.sidebar [data-effect-id="${id}"]`);
     for (const id of referenceMotionIds) {
         await card(id).scrollIntoViewIfNeeded();
@@ -109,6 +109,10 @@ for (const id of referenceMotionIds)
         await target(page, id).click({ position: { x: 4, y: 4 } });
         await editSelection(page);
         await expect(page.getByLabel(label, { exact: true })).toHaveValue(value);
+        if (referenceMotionIds.indexOf(id) >= 7) {
+            await page.getByRole("button", { name: "移除" + motionCatalog[id].nameZh }).click();
+            await expect(target(page, id)).toHaveAttribute("data-effects", "");
+        }
         check();
     });
 
@@ -257,6 +261,8 @@ test('bold relay keeps Latin text on the same lines as the real heading', async 
 for (const [id, layer, tracks] of [
     ["crosswind-ribbons", ".ref-ribbons", ".ref-ribbon-track"],
     ["vanishing-lattice", ".ref-lattice", ".ref-lattice-floor"],
+    ["drift-letterfall", ".ref-letterfall", ":scope > span"],
+    ["turning-letter-mosaic", ".ref-mosaic", ":scope > span"],
 ] as const) {
     test(`${id}: live theme decoration, mobile bounds, replay and reduced motion`, async ({ page }) => {
         await page.setViewportSize({ width: 375, height: 900 });
@@ -280,3 +286,13 @@ for (const [id, layer, tracks] of [
         check();
     });
 }
+
+test("imprint beats performs a bounded entrance and leaves only the original words", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await load(page, true);
+    const node = target(page, "imprint-beats");
+    await node.scrollIntoViewIfNeeded();
+    await expect(node.locator(".ref-imprints")).toHaveAttribute("aria-hidden", "true");
+    await expect(node.locator(".ref-imprints")).toHaveCount(0);
+    await expect(node).toHaveText("自家烘豆");
+});
