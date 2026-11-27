@@ -1207,8 +1207,8 @@ input[type="range"] {
 .asset-sample .page-paragraph { font-size:20px;font-weight:550;letter-spacing:-.035em;line-height:1.6; }
 .asset-sample .page-button { align-self:center;color:#f4f7ef;background:#263e32;min-height:44px;border-radius:100px;padding:12px 24px; }
 .asset-sample .motion-toggle { min-height:44px;font-size:14px; }
-.asset-actions { display:flex;align-items:center;gap:8px;margin-top:10px; }
-.asset-choose { display:flex;border:0;background:transparent;text-align:start;cursor:grab;min-width:0;min-height:48px;flex:1;gap:8px;padding:4px 0;justify-content:flex-start; }
+.asset-actions { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px; }
+.asset-choose { display:flex;border:0;background:transparent;text-align:start;cursor:grab;min-width:min(100%, 8rem);min-height:48px;flex:1;gap:8px;padding:4px 0;justify-content:flex-start; }
 .asset-name { display:flex;flex-direction:column;flex:1;min-width:0; }
 .asset-name strong { font-size:15px;font-weight:600;line-height:1.6; }
 .asset-name > span { font-size:11px;line-height:1.6;font-weight:400;color:var(--ui-muted); }
