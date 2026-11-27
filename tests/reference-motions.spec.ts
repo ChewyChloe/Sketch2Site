@@ -166,3 +166,90 @@ test('React export ships the runtime, the metadata and the photo in the motion',
     expect(result.hooked).toBe(true);
     for (const id of referenceMotionIds) expect(result.json).toContain(`"presetId": "${id}"`);
 });
+
+test('replay in the library plays hover and scroll effects by themselves', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/?draft');
+    await expect(page.getByRole('status')).toContainText('草稿已就緒');
+    await page.getByRole('button', { name: '動畫素材庫', exact: true }).click();
+    const card = (id: string) => page.locator(`.sidebar [data-effect-id="${id}"]`);
+    for (const id of ['dolly-frame', 'color-wake', 'hollow-fill-sweep'] as const) {
+        await card(id).scrollIntoViewIfNeeded();
+        await card(id).locator('.motion-replay').click();
+        await page.mouse.move(2, 2);
+        // Turns on with nobody hovering, then settles back.
+        await expect(card(id).locator(`[data-effects~=${id}]`)).toHaveAttribute('data-ref-on', '', { timeout: 3000 });
+        await expect(card(id).locator(`[data-effects~=${id}]`)).not.toHaveAttribute('data-ref-on', '', { timeout: 5000 });
+    }
+    // The reading sweep: the last word starts dim and ends at full strength.
+    await card('scroll-ink-words').scrollIntoViewIfNeeded();
+    await card('scroll-ink-words').locator('.motion-replay').click();
+    await page.mouse.move(2, 2);
+    const last = card('scroll-ink-words').locator('.ref-ink > span').last();
+    await expect.poll(() => last.evaluate(e => Number(getComputedStyle(e).opacity)), { timeout: 1500 }).toBeLessThan(0.5);
+    await expect.poll(() => last.evaluate(e => Number(getComputedStyle(e).opacity)), { timeout: 5000 }).toBeGreaterThan(0.95);
+});
+
+test('remove a reference motion on the site, then Undo brings it back', async ({ page }) => {
+    const check = await load(page, true);
+    const el = target(page, 'dolly-frame');
+    await expect(el).toHaveClass(/ref-dolly/);
+    await page.getByRole('button', { name: '選取', exact: true }).click();
+    await el.click({ position: { x: 4, y: 4 } });
+    await editSelection(page);
+    await page.getByRole('button', { name: '移除' + motionCatalog['dolly-frame'].nameZh }).click();
+    await expect(el).not.toHaveAttribute('data-effects', /dolly-frame/);
+    await expect(el).not.toHaveClass(/ref-dolly/);
+    await expect(el.locator('.ref-caption')).toHaveCount(0);
+    await page.getByRole('button', { name: '撤銷修改', exact: true }).click();
+    await expect(el).toHaveAttribute('data-effects', 'dolly-frame');
+    await expect(el).toHaveClass(/ref-dolly/);
+    check();
+});
+
+test('on the draft canvas: apply to a heading and a chart, both reach the generated site', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.route(/\/api\/generation\/(status|ready)$/, r => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ configured: false }) }));
+    await page.goto('/?draft');
+    await expect(page.getByRole('status')).toContainText('草稿已就緒');
+    const card = (id: string) => page.locator(`.sidebar [data-effect-id="${id}"]`);
+    // A chart from the element panel.
+    await page.getByRole('tab', { name: '元件' }).click();
+    await page.getByRole('button', { name: '新增圖表' }).click();
+    const chart = page.locator('[data-testid="canvas-node"].media').last();
+    await chart.click();
+    await page.getByRole('tab', { name: '動畫' }).click();
+    await card('chart-build').locator('.asset-choose').click();
+    await expect(chart.locator('.effect-tags')).toContainText(motionCatalog['chart-build'].nameZh);
+    // A new heading.
+    await page.getByRole('tab', { name: '元件' }).click();
+    await page.getByRole('button', { name: '新增標題', exact: true }).click();
+    const heading = page.locator('[data-testid="canvas-node"].heading').last();
+    await heading.click();
+    await page.getByRole('tab', { name: '動畫' }).click();
+    await card('hollow-fill-sweep').locator('.asset-choose').click();
+    await expect(heading.locator('.effect-tags')).toContainText(motionCatalog['hollow-fill-sweep'].nameZh);
+    // Incompatible: the chart motion is not offered for the heading.
+    await expect(card('chart-build')).toHaveAttribute('data-compatibility', 'unavailable');
+    await page.getByRole('button', { name: '生成網站', exact: true }).click();
+    const site = page.locator(".candidate-preview .rendered-page, main[aria-label='生成候選預覽'] .rendered-page").first();
+    await expect(site.locator('[data-effects~=chart-build]')).toHaveCount(1);
+    await expect(site.locator('[data-effects~=hollow-fill-sweep]')).toHaveCount(1);
+    expect(errors).toEqual([]);
+});
+
+test('bold relay keeps Latin text on the same lines as the real heading', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.setViewportSize({ width: 375, height: 800 });
+    const check = await load(page, true);
+    await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'latin.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify((() => { const f = fixture(true); const n = f.sections[referenceMotionIds.indexOf('bold-relay')].children[0] as { content: string }; n.content = 'FRESH COFFEE EVERY MORNING'; return f; })())) });
+    await expect(page.getByTestId('page-save-status')).toHaveText('已儲存');
+    const relay = target(page, 'bold-relay');
+    await relay.scrollIntoViewIfNeeded();
+    await expect(relay.locator('.ref-relay')).toBeAttached();
+    await page.waitForTimeout(1200);
+    const [host, copy] = await relay.evaluate(e => [e.clientHeight, (e.querySelector('.ref-relay') as HTMLElement).scrollHeight]);
+    expect(copy).toBeLessThanOrEqual(host + 2);
+    check();
+});

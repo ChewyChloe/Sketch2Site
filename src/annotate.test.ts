@@ -97,6 +97,19 @@ describe("signature motions by note", () => {
   });
 });
 
+describe("reference motions by note", () => {
+  it("maps plain words to the new motions", () => {
+    const page = site();
+    const h = first(page, (n) => n.type === "heading");
+    const img = first(page, (n) => n.type === "image");
+    const ids = (pid: string, text: string) => indexNodes(run(page, pid, text).page).get(pid)!.effects.map((e) => e.presetId);
+    expect(ids(h.id, "標題改成空心字，滑過再填滿")).toContain("hollow-fill-sweep");
+    expect(ids(h.id, "讓字的粗細輪流變化")).toContain("bold-relay");
+    expect(ids(img.id, "讓照片滑過時才回彩")).toContain("color-wake");
+    expect(ids(img.id, "滑過時讓照片在框裡推近")).toContain("dolly-frame");
+  });
+});
+
 describe("3D by note", () => {
   it("turns a picture into a floating card or a turntable, and back", () => {
     const page = site();

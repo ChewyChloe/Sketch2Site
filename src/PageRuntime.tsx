@@ -318,7 +318,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   useSignatureMotion(node,ref);
   const motionUrls=useContext(AssetUrls),motionPreview=useContext(MotionPreview);
   useCinematicMotion(node,ref,motionUrls);
-  useReferenceMotion(node,ref,motionUrls);
+  useReferenceMotion(node,ref,motionUrls,motionPreview);
   const entry = componentRegistry[node.type],
     Tag =
       node.type === "heading"

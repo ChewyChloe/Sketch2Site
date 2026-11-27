@@ -29,6 +29,14 @@ const colorThemes: [RegExp, ThemeId][] = [
 
 // Words people use for motion, mapped to library presets (checked in order).
 const motionWords: [RegExp, MotionId[]][] = [
+  // Reference batch 1 (listed first: more specific than the older words below).
+  [/圖表.*(長|畫出|動)|長條.*長/, ["chart-build"]],
+  [/空心|描邊.*填|填滿/, ["hollow-fill-sweep"]],
+  [/字裡.*(照片|圖)|照片.*(字裡|文字裡)|文字.*填.*(照片|圖)/, ["letter-windows"]],
+  [/粗細.*(輪|變化|波)|字重.*(輪|變化|波)/, ["bold-relay"]],
+  [/逐字.*(亮|深|上墨)|讀到.*(亮|深)|捲.*字.*(亮|深)/, ["scroll-ink-words"]],
+  [/褪色|回彩|黑白.*彩色|恢復.*顏色/, ["color-wake"]],
+  [/推近|框.*放大|放大.*框/, ["dolly-frame"]],
   [/逐字|聚合|一個字一個字/, ["letter-assembly"]],
   [/打字|解碼|亂碼/, ["character-decode"]],
   [/螢光|畫重點|標記|劃線/, ["hand-drawn-highlight"]],
