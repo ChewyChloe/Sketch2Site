@@ -13,7 +13,7 @@ export default defineConfig({
   webServer: [
     {
       command: "npx tsx tests/generation-server.ts",
-      url: "http://127.0.0.1:8788/api/generation/status",
+      url: "http://127.0.0.1:8788/api/generation/ready",
       reuseExistingServer: false,
     },
     {
