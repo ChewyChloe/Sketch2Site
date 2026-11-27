@@ -9,9 +9,9 @@
  "categories": {
   "需要新增動畫": 93,
   "不適合目前架構或需要額外授權": 74,
-  "既有功能可擴充": 112,
+  "既有功能可擴充": 113,
   "已有同等功能": 58,
-  "需要新增複合互動元件": 10
+  "需要新增複合互動元件": 9
  },
  "rows": [
   {
@@ -4326,16 +4326,17 @@
     "hover"
    ],
    "technique": "CSS",
-   "category": "需要新增複合互動元件",
-   "sketch2site": null,
+   "category": "既有功能可擴充",
+   "sketch2site": "Bento 格局",
    "priority": "P3",
-   "note": "便當格展開",
+   "note": "可選的格子放大與同層補位",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedComponentBatch": 11,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

@@ -84,7 +84,9 @@ test("downloaded React project installs and builds independently; runtime stays 
       if (n.children) replaceImage(n.children);
     });
   replaceImage(input.sections);
-  input.sections.push(galleryCategorySection(), ...tabsFixture().sections);
+  const interactiveBento = galleryCategorySection();
+  interactiveBento.sectionLayout = { arrangement: { mode: "bento", columns: 3, gap: "medium", interactive: true }, fullBleed: false };
+  input.sections.push(interactiveBento, ...tabsFixture().sections);
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
   await page.getByLabel("載入頁面檔案").setInputFiles({
@@ -229,6 +231,14 @@ z.extractall(root)
     await disclosure.getByRole('button',{name:'收合內容'}).click();await expect(disclosure.getByText('展開後閱讀完整補充說明')).toBeHidden();
     for(const node of advancedFixture().sections[0].children!){const target=standalone.locator(`[data-page-id="${node.id}"]`);await expect(target).toHaveAttribute('data-effects',node.effects[0].presetId);}
     await standalone.emulateMedia({reducedMotion:'no-preference'});
+    await gallery.getByRole("button", { name: "全部作品" }).click();
+    const bento = gallery.locator("[data-section-arrangement=bento]");
+    const secondTile = bento.locator("> .page-node").nth(1);
+    await expect(secondTile).toBeVisible();
+    await secondTile.evaluate(el => { (el as HTMLElement).tabIndex = 0; });
+    await secondTile.focus();
+    await expect(secondTile).toHaveAttribute("data-bento-active", "");
+
     await exportedMotion(10).scrollIntoViewIfNeeded();
     const exportedCanvas=exportedMotion(10).locator('canvas');await expect(exportedCanvas).toBeVisible();
     await expect.poll(()=>exportedCanvas.evaluate((el:HTMLCanvasElement)=>el.getContext('2d')!.getImageData(0,0,el.width,el.height).data.some((v,i)=>i%4===3&&v>0))).toBe(true);

@@ -1979,3 +1979,17 @@
 @media (prefers-reduced-motion: reduce) {
   .extended-tabs-marker { transition: none; }
 }
+
+@layer section-layout {
+  @container (min-width: 701px) {
+    [data-section-arrangement="bento"][data-bento-reflow] > .page-node {
+      grid-area: auto !important;
+    }
+    [data-section-arrangement="bento"][data-bento-reflow] > [data-bento-active] {
+      grid-column: span var(--bento-span) !important;
+      grid-row: span 2 !important;
+      order: -1 !important;
+      align-self: stretch !important;
+    }
+  }
+}

@@ -9,9 +9,9 @@
 | 分類 | 筆數 |
 |---|---|
 | 已有同等功能 | 58 |
-| 既有功能可擴充 | 112 |
+| 既有功能可擴充 | 113 |
 | 需要新增動畫 | 93 |
-| 需要新增複合互動元件 | 10 |
+| 需要新增複合互動元件 | 9 |
 | 不適合目前架構或需要額外授權 | 74 |
 | 合計 | 347 |
 
@@ -40,6 +40,7 @@
 |---|---|---|
 | disclosure-panel | 207 | 10 |
 | 相簿版型切換 | 208 | 9 |
+| Bento 格局 | 209 | 11 |
 | 導覽列樣式 | 339 | 4 |
 | 導覽列樣式 | 340 | 6 |
 | 導覽列樣式 | 341 | 4 |
@@ -189,6 +190,7 @@
 | 203 | layout | ['hover', 'switch'] | CSS | 導覽列樣式 | P3 | 選單展開 |
 | 207 | layout | ['switch'] | GSAP | disclosure-panel | P3 | 底線指示與方向轉場的分頁模式 |
 | 208 | layout | ['switch'] | GSAP | 相簿版型切換 | P3 | 作者分類、縮小退場與平滑補位 |
+| 209 | layout | ['hover'] | CSS | Bento 格局 | P3 | 可選的格子放大與同層補位 |
 | 210 | layout | ['scroll'] | GSAP | pinned-story-panels | P4 | 可切換為固定影像，旁側文案自然捲動 |
 | 211 | layout | ['scroll', 'hover'] | GSAP | scroll-progress | P3 | 回到頂部按鈕 |
 | 212 | card | ['switch', 'loop'] | CSS | 輪播元件 | P2 | 中央放大樣式 |
@@ -338,7 +340,6 @@
 | 154 | card | ['scroll'] | GSAP | stacked-chapters | P2 | 規劃於批次二 |
 | 168 | media | ['hover'] | CSS | accordion-gallery | P3 | 規劃於批次三 |
 | 180 | card | ['drag'] | Canvas | — | P3 | 刮開揭露（Canvas） |
-| 209 | layout | ['hover'] | CSS | — | P3 | 便當格展開 |
 | 216 | card | ['switch'] | GSAP | — | P3 | 卡片展開詳情 |
 | 265 | media | ['switch'] | GSAP | photo-spotlight | P2 | 規劃於批次二 |
 | 296 | text | ['enter', 'loop'] | GSAP | — | P4 | 對話訊息 |

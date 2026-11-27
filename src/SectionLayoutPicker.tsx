@@ -67,6 +67,11 @@ export default function SectionLayoutPicker({ section, onChange, positionMode }:
             <option value="2">兩欄</option><option value="3">三欄</option>
           </select>
         </label>}
+        {arrangement?.mode === "bento" && <label>
+          <input type="checkbox" checked={arrangement.interactive ?? false}
+            onChange={event => apply({ ...value, arrangement: { ...arrangement, interactive: event.target.checked } })} />
+          滑過或選取時放大格子
+        </label>}
         {arrangement?.mode === "split" && <label className="field">分屏比例
           <select value={arrangement.ratio} onChange={event => apply({ ...value, arrangement: { ...arrangement, ratio: event.target.value as typeof arrangement.ratio } })}>
             <option value="equal">等寬</option><option value="left">左寬右窄</option><option value="right">右寬左窄</option>

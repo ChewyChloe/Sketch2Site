@@ -366,12 +366,85 @@ export const componentRegistry: Record<PageNode["type"], RegistryEntry> = {
   form: { tag: "div", className: "page-form" },
   media: { tag: "div", className: "page-media" },
 };
+function useInteractiveBento(ref: React.RefObject<HTMLElement | null>, enabled: boolean, children: PageNode[] | undefined) {
+  useEffect(() => {
+    const host = ref.current;
+    if (!enabled || !host) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const tiles = Array.from(host.children).filter((child): child is HTMLElement =>
+      child instanceof HTMLElement && child.classList.contains("page-node")
+    );
+    const frame = host.closest(".rendered-page");
+    let active: HTMLElement | undefined, animations: Animation[] = [];
+    let lastPointer: [number, number] | undefined;
+    const directTile = (target: EventTarget | null) => tiles.find(tile => target instanceof Node && tile.contains(target));
+    const choose = (tile?: HTMLElement) => {
+      if (active === tile) return;
+      animations.forEach(animation => animation.cancel());
+      animations = [];
+      const onDesktop = !reduced.matches && (frame?.clientWidth ?? window.innerWidth) > 700;
+      const before = tile || onDesktop ? tiles.map(item => item.getBoundingClientRect()) : [];
+      active?.removeAttribute("data-bento-active");
+      active = onDesktop ? tile : undefined;
+      host.toggleAttribute("data-bento-reflow", !!active);
+      active?.setAttribute("data-bento-active", "");
+      if (!onDesktop || !host.animate) return;
+      const after = tiles.map(item => item.getBoundingClientRect());
+      animations = tiles.flatMap((item, i) => {
+        const from = before[i], to = after[i];
+        if (!from?.width || !to.width || !to.height || !from.height) return [];
+        if (from.left === to.left && from.top === to.top && from.width === to.width && from.height === to.height) return [];
+        return [item.animate([
+          { translate: `${from.left - to.left}px ${from.top - to.top}px`, scale: `${from.width / to.width} ${from.height / to.height}`, transformOrigin: "top left" },
+          { translate: "0 0", scale: "1", transformOrigin: "top left" },
+        ], { duration: 240, easing: "ease-out" })];
+      });
+    };
+    const pointer = (event: PointerEvent) => {
+      if (reduced.matches || event.pointerType === "touch" || (lastPointer?.[0] === event.clientX && lastPointer[1] === event.clientY)) return;
+      lastPointer = [event.clientX, event.clientY];
+      const tile = directTile(event.target);
+      if (tile) choose(tile);
+    };
+    const leave = () => { lastPointer = undefined; choose(directTile(document.activeElement)); };
+    const focus = (event: FocusEvent) => { if (!reduced.matches) choose(directTile(event.target)); };
+    const blur = (event: FocusEvent) => { if (!host.contains(event.relatedTarget as Node | null)) choose(); };
+    const resize = typeof ResizeObserver === "undefined" || !frame ? null : new ResizeObserver(() => {
+      if (frame.clientWidth <= 700) choose();
+    });
+    if (frame) resize?.observe(frame);
+    const preferenceChanged = () => {
+      if (!reduced.matches) return;
+      choose();
+      animations.forEach(animation => animation.cancel());
+      animations = [];
+    };
+    reduced.addEventListener("change", preferenceChanged);
+    host.addEventListener("pointermove", pointer);
+    host.addEventListener("pointerleave", leave);
+    host.addEventListener("focusin", focus);
+    host.addEventListener("focusout", blur);
+    return () => {
+      resize?.disconnect();
+      reduced.removeEventListener("change", preferenceChanged);
+      animations.forEach(animation => animation.cancel());
+      active?.removeAttribute("data-bento-active");
+      host.removeAttribute("data-bento-reflow");
+      host.removeEventListener("pointermove", pointer);
+      host.removeEventListener("pointerleave", leave);
+      host.removeEventListener("focusin", focus);
+      host.removeEventListener("focusout", blur);
+    };
+  }, [ref, enabled, children]);
+}
+
 type LayoutTarget = { id: string; arrangement: SectionArrangement };
 export const RenderNode = memo(function NodeView({ node, layout }: { node: PageNode; layout?: LayoutTarget }) {
   const sectionArrangement = node.sectionLayout?.arrangement;
   const target = sectionArrangement ? { id: layoutHost(node).id, arrangement: sectionArrangement } : layout;
   const arrangement = target?.id === node.id ? target.arrangement : undefined;
   const ref = useRef<HTMLElement>(null);
+  useInteractiveBento(ref, arrangement?.mode === "bento" && arrangement.interactive === true, node.children);
   useAnimations(node, ref);
   useExtendedMotion(node,ref);
   useAdvancedMotion(node,ref);

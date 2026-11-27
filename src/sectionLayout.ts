@@ -7,7 +7,7 @@ const mobile = z.enum(["stack", "two"]);
 export const SectionLayoutSchema = z.object({
   arrangement: z.discriminatedUnion("mode", [
     z.object({ mode: z.literal("cards"), columns, gap, mobile }).strict(),
-    z.object({ mode: z.literal("bento"), columns, gap }).strict(),
+    z.object({ mode: z.literal("bento"), columns, gap, interactive: z.boolean().optional() }).strict(),
     z.object({ mode: z.literal("split"), ratio: z.enum(["equal", "left", "right"]), gap }).strict(),
     z.object({ mode: z.literal("grid"), columns, gap, mobile }).strict(),
     z.object({ mode: z.literal("stack"), gap }).strict(),

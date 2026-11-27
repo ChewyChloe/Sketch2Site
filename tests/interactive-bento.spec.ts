@@ -1,0 +1,35 @@
+import { expect, test } from "@playwright/test";
+import { demoPage } from "../src/pageFixtures";
+import { galleryCategorySection } from "./fixtures/galleryCategories";
+import { openWebsiteWorkspace } from "./helpers/workbench";
+
+test("interactive Bento expands a focused or hovered tile and reflows its neighbors", async ({ page }) => {
+  const section = galleryCategorySection();
+  section.sectionLayout = { arrangement: { mode: "bento", columns: 3, gap: "medium", interactive: true }, fullBleed: false };
+  const input = { ...demoPage, sections: [...demoPage.sections, section] };
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/?draft");
+  await openWebsiteWorkspace(page);
+  await page.getByLabel("載入頁面檔案").setInputFiles({ name: "bento.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(input)) });
+  const host = page.locator(".preview-frame [data-section-arrangement=bento]");
+  const tiles = host.locator("> .page-node");
+  await expect(tiles).toHaveCount(3);
+  const width = async (i: number) => (await tiles.nth(i).boundingBox())!.width;
+  const narrow = await width(1);
+  const firstWide = await width(0);
+  expect(firstWide).toBeGreaterThan(narrow);
+  await tiles.nth(1).hover();
+  await expect(tiles.nth(1)).toHaveAttribute("data-bento-active", "");
+  await expect.poll(() => width(1)).toBeGreaterThan(narrow + 20);
+  await expect.poll(() => width(0)).toBeLessThan(firstWide - 20);
+  await page.mouse.move(1, 1);
+  await expect(host).not.toHaveAttribute("data-bento-reflow", "");
+  await tiles.nth(2).evaluate(tile => (tile as HTMLElement).tabIndex = 0);
+  await tiles.nth(2).focus();
+  await expect(tiles.nth(2)).toHaveAttribute("data-bento-active", "");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(host).not.toHaveAttribute("data-bento-reflow", "");
+  await page.setViewportSize({ width: 375, height: 900 });
+  await expect.poll(() => width(1)).toBeCloseTo(await width(0), 0);
+  expect(await host.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+});
