@@ -14,7 +14,7 @@ test('draft hover lift attaches through its canonical drag ID and survives Undo 
  await expect(button.locator('.effect-tags')).toContainText('懸停浮起');
  await page.getByRole('button',{name:'還原',exact:true}).click();await expect(button.locator('.effect-tags')).toBeEmpty();
  await page.getByRole('button',{name:'重做',exact:true}).click();await expect(button.locator('.effect-tags')).toContainText('懸停浮起');
- await page.getByRole('button',{name:'儲存草稿',exact:true}).click();await expect(page.getByRole('status')).toHaveText('已儲存');
+ await page.getByRole('button',{name:'儲存草稿',exact:true}).click();await expect(page.getByRole('contentinfo').getByRole('status')).toHaveText('已儲存');
  await page.reload();await expect(button.locator('.effect-tags')).toContainText('懸停浮起');
 });
 test('draft drag explains incompatible button and highlights compatible card without adding a component',async({page})=>{
