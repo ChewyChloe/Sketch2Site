@@ -83,3 +83,41 @@ test("holding Alt shows distances from the selection to its neighbours", async (
   await page.keyboard.up("Alt");
   await expect(page.locator(".spacing-line")).toHaveCount(0);
 });
+
+test("Alt measures canvas units inside a card after zoom and pan", async ({ page }) => {
+  const { blank, createNode } = await import("../src/spec");
+  const { choose } = await import("./helpers/select");
+  await page.goto("/?draft");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  const container = { ...createNode("card", 240, 770), width: 500, height: 340, content: "外層容器" };
+  const child = { ...createNode("text", 280, 830), width: 140, height: 90, content: "內部量距元件" };
+  await page.evaluate(async spec => new Promise<void>((resolve, reject) => {
+    const request = indexedDB.open("sketch2site", 3);
+    request.onsuccess = () => {
+      const db = request.result;
+      const tx = db.transaction("drafts", "readwrite");
+      tx.objectStore("drafts").put(spec, "current");
+      tx.oncomplete = () => { db.close(); resolve(); };
+      tx.onerror = () => reject(tx.error);
+    };
+    request.onerror = () => reject(request.error);
+  }), { ...blank(), nodes: [container, child] });
+  await page.reload();
+  await choose(page.getByRole("combobox", { name: "畫布縮放" }), "0.75");
+  const panel = page.locator(".canvas-scroll");
+  await panel.evaluate(element => { element.scrollTop = 420; });
+  await expect.poll(() => panel.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  await page.getByTestId("canvas-node").filter({ hasText: child.content }).click();
+  await page.keyboard.down("Alt");
+  await page.getByTestId("canvas-node").filter({ hasText: container.content }).hover({ position: { x: 100, y: 150 } });
+  await expect(page.locator(".spacing-line.h .spacing-label")).toHaveText(["40 px", "320 px"]);
+  const boxes = await page.getByTestId("canvas-node").evaluateAll(nodes => nodes.map(node => {
+    const style = (node as HTMLElement).style;
+    return { y: parseFloat(style.top), height: parseFloat(style.height) };
+  }));
+  expect(boxes[1].y - boxes[0].y).toBe(60);
+  const bottom = boxes[0].y + boxes[0].height - boxes[1].y - boxes[1].height;
+  await expect(page.locator(".spacing-line.v .spacing-label")).toHaveText(["60 px", `${bottom} px`]);
+  await page.keyboard.up("Alt");
+  await expect(page.locator(".spacing-line")).toHaveCount(0);
+});
