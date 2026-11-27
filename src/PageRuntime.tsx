@@ -18,6 +18,7 @@ import {
   Component,
   memo,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -481,6 +482,20 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
   const isPages = !!(page.subpages?.length && page.home);
   const currentPage = view ?? page.home?.id ?? null;
   const [open, setOpen] = useState(false);
+  const menuId = useId();
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const menuMotion = page.chrome?.menuMotion;
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || !menuRef.current?.closest(".page-nav")?.contains(document.activeElement)) return;
+      event.stopPropagation();
+      setOpen(false);
+      menuRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [open]);
   const [collapsed, setCollapsed] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [active, setActive] = useState<string | null>(null);
@@ -508,15 +523,17 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
   if (style === "none") return null;
   const brand = <a className="page-brand" href={"#page-" + (page.home?.id ?? sections[0]?.id ?? placed?.[0]?.id)}>{page.brand?.logo && <BrandLogo src={page.brand.logo} />}<span>{page.metadata.title}</span></a>;
   const list = links.length > 0 && (
-    <nav aria-label={isPages ? "網站頁面" : "頁面導覽"} id="page-nav-links">
+    <nav aria-label={isPages ? "網站頁面" : "頁面導覽"} id={menuId} data-menu-motion={menuMotion} data-menu-open={open ? "" : undefined}>
       {links.map((l) => (
         <a key={l.key} href={"#page-" + l.target} aria-current={isPages ? (l.target === currentPage ? "page" : undefined) : l.target === active ? "location" : undefined} onClick={() => setOpen(false)}>{l.label}</a>
       ))}
     </nav>
   );
   const menu = links.length > 0 && (
-    <button type="button" className="page-nav-menu" aria-expanded={open} aria-controls="page-nav-links" onClick={() => setOpen((v) => !v)}>
-      <svg viewBox="0 0 24 24" aria-hidden="true">{open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</svg>
+    <button ref={menuRef} type="button" className="page-nav-menu" data-menu-motion={menuMotion} aria-expanded={open} aria-controls={menuId} onClick={() => setOpen((v) => !v)}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">{menuMotion && menuMotion !== "capsule" ? <>
+        <path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h16" />
+      </> : open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</svg>
       <span>{open ? "關閉選單" : "選單"}</span>
     </button>
   );
@@ -562,16 +579,16 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
       <div className="page-nav-float" data-nav-style={style}>
         <header ref={ref} className={"page-nav nav-floating" + (open ? " is-open" : "")}>
           {brand}
-          {list}
           {menu}
+          {list}
         </header>
       </div>
     );
   return (
     <header ref={ref} className={"page-nav nav-" + style + (hidden && !open ? " is-hidden" : "") + (open ? " is-open" : "")} data-nav-style={style}>
       {brand}
-      {list}
       {menu}
+      {list}
     </header>
   );
 }

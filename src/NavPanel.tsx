@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useEscapeToClose } from "./useEscape";
-import { shortNavLabel, type NavSettings, type NavStyle } from "./pageSpec";
+import { shortNavLabel, menuMotions, type MenuMotion, type NavSettings, type NavStyle } from "./pageSpec";
 import type { CanvasSpec } from "./spec";
 
 // 導覽列 settings: where the site's menu sits and which headings (or pages) it lists.
 // Changes apply to the generated site, like the brand kit.
+const motionNames: Record<MenuMotion, string> = {
+  cross: "線條交會", return: "折線返回", glide: "滑移換形", line: "細線合攏", capsule: "浮窗展開",
+};
+
 const styles: { id: NavStyle; name: string; hint: string }[] = [
   { id: "top-sticky", name: "頂部固定", hint: "捲動時一直在最上面" },
   { id: "top-static", name: "頂部不固定", hint: "跟著頁面一起捲走" },
@@ -72,10 +76,11 @@ export function NavPanel({ spec, onChange, onClose }: { spec: CanvasSpec; onChan
   const first = useRef<HTMLButtonElement>(null);
   useEffect(() => { first.current?.focus(); }, []);
   useEscapeToClose(onClose);
-  const save = (next: { style?: NavStyle; rows?: typeof rows }) => {
+  const save = (next: { style?: NavStyle; rows?: typeof rows; menuMotion?: MenuMotion | null }) => {
     const r = next.rows ?? rows;
     onChange({
       style: next.style ?? style,
+      menuMotion: next.menuMotion === null ? undefined : next.menuMotion ?? nav?.menuMotion,
       items: r.map((row) => ({ id: row.id, ...(row.label.trim() && row.label.trim() !== row.original ? { label: row.label.trim().slice(0, 24) } : {}), ...(row.hidden ? { hidden: true } : {}) })),
     });
   };
@@ -101,6 +106,12 @@ export function NavPanel({ spec, onChange, onClose }: { spec: CanvasSpec; onChan
             ))}
           </div>
           <p className="nav-note">手機上每種樣式都會收成一個「選單」按鈕</p>
+          {style !== "none" && <label className="field">手機選單動畫
+            <select value={nav?.menuMotion ?? ""} onChange={event => save({ menuMotion: (event.target.value as MenuMotion) || null })}>
+              <option value="">原有切換</option>
+              {menuMotions.map(id => <option key={id} value={id}>{motionNames[id]}</option>)}
+            </select>
+          </label>}
         </section>
         {style !== "none" && (
           <section>

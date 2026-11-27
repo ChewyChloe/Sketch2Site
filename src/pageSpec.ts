@@ -7,8 +7,10 @@ import { motionIds, MotionSchema, bindMotionInput, compatibleMotion, combination
 // order, a custom label and hiding are all optional. Without settings the site picks its own.
 export const navStyles = ["top-sticky", "top-static", "top-autohide", "side-left", "side-right", "floating", "dots", "none"] as const;
 export type NavStyle = (typeof navStyles)[number];
+export const menuMotions = ["cross", "return", "glide", "line", "capsule"] as const;
+export type MenuMotion = (typeof menuMotions)[number];
 export const NavItemSchema = z.object({ id: z.string().uuid(), label: z.string().trim().min(1).max(24).optional(), hidden: z.boolean().optional() }).strict();
-export const NavSettingsSchema = z.object({ style: z.enum(navStyles), items: z.array(NavItemSchema).max(40).optional() }).strict();
+export const NavSettingsSchema = z.object({ style: z.enum(navStyles), menuMotion: z.enum(menuMotions).optional(), items: z.array(NavItemSchema).max(40).optional() }).strict();
 export type NavSettings = z.infer<typeof NavSettingsSchema>;
 /** Page chrome for a site built from a draft with (or without) navigation settings. */
 /**
@@ -24,8 +26,8 @@ export function shortNavLabel(text: string) {
   const cut = cjk ? head.slice(0, max) : head.slice(0, max + 1).replace(/\s+\S*$/, "") || head.slice(0, max);
   return cut.trimEnd() + "…";
 }
-export function navChrome(nav: NavSettings | undefined, fallback: boolean): { nav: boolean; navStyle?: NavStyle; navItems?: NavSettings["items"] } {
-  return nav ? { nav: nav.style !== "none", navStyle: nav.style, ...(nav.items?.length ? { navItems: nav.items } : {}) } : { nav: fallback };
+export function navChrome(nav: NavSettings | undefined, fallback: boolean): { nav: boolean; navStyle?: NavStyle; menuMotion?: MenuMotion; navItems?: NavSettings["items"] } {
+  return nav ? { nav: nav.style !== "none", navStyle: nav.style, ...(nav.menuMotion ? { menuMotion: nav.menuMotion } : {}), ...(nav.items?.length ? { navItems: nav.items } : {}) } : { nav: fallback };
 }
 export const effectIds = motionIds;
 export const EffectSchema = MotionSchema;
@@ -626,7 +628,7 @@ const PageObject = z
     // Interactive extras the author switched on: a pricing builder and a gallery view switch.
     extras: z.object({ pricingBuilder: z.boolean().optional(), galleryViews: z.boolean().optional() }).strict().optional(),
     brand: BrandSchema.optional(),
-    chrome: z.object({ nav: z.boolean(), footer: z.boolean(), navStyle: z.enum(navStyles).optional(), navItems: z.array(NavItemSchema).max(40).optional() }).strict().optional(),
+    chrome: z.object({ nav: z.boolean(), footer: z.boolean(), navStyle: z.enum(navStyles).optional(), menuMotion: z.enum(menuMotions).optional(), navItems: z.array(NavItemSchema).max(40).optional() }).strict().optional(),
     responsive: z
       .object({
         mobileColumns: z.literal(1),

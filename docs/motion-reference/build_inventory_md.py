@@ -16,6 +16,11 @@ for r in rows:
 L.append(f"## 已完成的來源對應（{len(done)} 個新動畫，對應 {sum(map(len, done.values()))} 筆來源）\n\n| Sketch2Site ID | 對應來源編號 |\n|---|---|")
 for k, v in done.items(): L.append(f"| `{k}` | {', '.join(v)} |")
 L.append("")
+L.append("## 已驗證的複合元件擴充\n\n| 元件 | 來源編號 | 批次 |\n|---|---|---|")
+for r in rows:
+    if r.get("verifiedComponentBatch"):
+        L.append(f"| {r['sketch2site']} | {r['sourceId']} | {r['verifiedComponentBatch']} |")
+L.append("")
 for k in order:
     L.append(f"## {k}\n\n| # | 元件 | 觸發 | 技術 | Sketch2Site | 優先 | 說明 |\n|---|---|---|---|---|---|---|")
     for r in rows:

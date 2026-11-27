@@ -62,6 +62,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   );
   await openWebsiteWorkspace(page);
   const input = structuredClone(demoPage);
+  input.chrome = { nav: true, footer: false, navStyle: "top-sticky", menuMotion: "capsule" };
   const layoutSection = input.sections[0];
   layoutSection.sectionLayout = { arrangement: { mode: "masonry", columns: 2, gap: "medium", mobile: "stack" }, fullBleed: true };
   const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...thirdFixture().sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
@@ -236,6 +237,14 @@ z.extractall(root)
     });
     await standalone.setViewportSize({ width: 375, height: 1000 });
     await expect(exportedLayout).toHaveCSS("column-count", "1");
+    const menu = standalone.locator(".page-nav-menu");
+    const navLinks = standalone.locator(".page-nav nav");
+    await expect(menu).toHaveAttribute("data-menu-motion", "capsule");
+    await menu.click();
+    await expect(navLinks).toBeVisible();
+    await expect(navLinks).toHaveCSS("animation-name", "none");
+    await menu.press("Escape");
+    await expect(navLinks).toBeHidden();
     for (const columns of await standalone
       .locator(".page-grid")
       .evaluateAll((els) =>

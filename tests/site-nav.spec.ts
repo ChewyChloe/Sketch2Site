@@ -90,3 +90,41 @@ test("nav styles: floating pill, hidden menu, and the phone menu button", async 
   await expect(page.locator(".preview-frame .rendered-page")).toBeVisible();
   await expect(page.locator(".preview-frame .page-nav")).toHaveCount(0);
 });
+
+for (const mode of ["cross", "return", "glide", "line", "capsule"] as const) {
+  test("mobile menu motion " + mode, async ({ page }) => {
+    await offline(page);
+    await page.goto("/?draft");
+    await useTemplate(page, "巷口咖啡小店");
+    const dialog = await openNav(page);
+    await dialog.getByLabel("手機選單動畫").selectOption(mode);
+    await dialog.getByRole("button", { name: "完成" }).click();
+    await build(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    const frame = page.locator(".preview-frame");
+    const menu = frame.locator(".page-nav-menu");
+    const links = frame.locator(".page-nav nav");
+    await expect(menu).toHaveAttribute("data-menu-motion", mode);
+    await expect(links).toHaveAttribute("id", (await menu.getAttribute("aria-controls"))!);
+    await expect(links).toBeHidden();
+    await menu.click();
+    await expect(links).toBeVisible();
+    if (mode === "capsule") {
+      await expect(links).toHaveCSS("animation-name", "menu-capsule-open");
+      await expect(frame.locator(".page-main")).toHaveCSS("filter", "brightness(0.72)");
+    } else {
+      await expect(menu.locator("svg path").first()).toHaveCSS("transition-duration", "0.22s, 0.16s");
+      await expect(menu.locator("svg path").first()).not.toHaveCSS("transform", "none");
+    }
+    await page.keyboard.press("Tab");
+    await expect(links.getByRole("link").first()).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(links).toBeHidden();
+    await expect(menu).toBeFocused();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await menu.click();
+    await expect(links).toBeVisible();
+    await expect(mode === "capsule" ? links : menu.locator("svg path").first())
+      .toHaveCSS(mode === "capsule" ? "animation-name" : "transition-duration", mode === "capsule" ? "none" : "0s");
+  });
+}

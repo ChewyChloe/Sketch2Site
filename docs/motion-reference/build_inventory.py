@@ -83,6 +83,7 @@ assert sorted(M) == list(range(1, 348)), "every source item needs one row"
 names = {"S": "已有同等功能", "X": "既有功能可擴充", "N": "需要新增動畫", "C": "需要新增複合互動元件", "U": "不適合目前架構或需要額外授權"}
 HANNAH = {"name": "Hannah’s Motion Library", "url": "https://kittenjam-motion-library.vercel.app/"}
 shipped = {50: 2, 223: 2, 11: 3, 30: 3, 43: 3}
+components = {339: 4, 341: 4}
 rows = []
 for it in items:
     i = it["id"]; code, target, prio, note = M[i]
@@ -95,6 +96,7 @@ for it in items:
         "category": names[code], "sketch2site": target or None, "priority": prio or None,
         "note": note.strip() or None, "credit": credit,
         **({"verifiedBatch": shipped[i]} if i in shipped else {}),
+        **({"verifiedComponentBatch": components[i]} if i in components else {}),
         "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製" + ("；第三方付費元件" if it.get("src") else ""),
     })
 from collections import Counter
