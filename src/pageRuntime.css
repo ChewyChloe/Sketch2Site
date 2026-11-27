@@ -1962,3 +1962,7 @@
 .story-media-pin :is(figure, img) { width: 100%; max-height: var(--story-media-height); object-fit: contain; }
 .story-media-copy { min-width: 0; }
 .story-media-copy > div { display: grid; align-content: center; min-height: var(--story-media-height); }
+
+.gallery-categories { flex-wrap: wrap; justify-content: flex-start; }
+.gallery-categories button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--pg-page, #fff); }
+.gallery-views [data-gallery-filtered] { display: none !important; }

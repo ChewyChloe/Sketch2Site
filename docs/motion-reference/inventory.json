@@ -4308,13 +4308,14 @@
    "category": "既有功能可擴充",
    "sketch2site": "相簿版型切換",
    "priority": "P3",
-   "note": "分類篩選",
+   "note": "作者分類、縮小退場與平滑補位",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedComponentBatch": 9,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

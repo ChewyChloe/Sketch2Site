@@ -1407,6 +1407,17 @@ options={[{ value: "/assets/workspace.svg", label: "示意圖" }, ...localImages
                     </p>
                   </div>
                 )}
+                {(node.type === "image" || node.type === "card") && (
+                  <label className="field">
+                    作品分類
+                    <input aria-label="作品分類" key={node.id + (node.galleryCategory ?? "")} maxLength={32}
+                      defaultValue={node.galleryCategory ?? ""} onBlur={event => {
+                        const value = event.currentTarget.value.trim() || null;
+                        if (value !== (node.galleryCategory ?? null))
+                          patch([{ operation: "set-property", targetId: node.id, payload: { property: "galleryCategory", value } }], node.id);
+                      }} />
+                  </label>
+                )}
                 <div className="effect-editor">
                   <h2>已附加動畫</h2>
                   {!node.effects.length && (

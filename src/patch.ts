@@ -15,6 +15,7 @@ import {
   localAssets,
   reconcilePage,
   type PageSpec,
+  GalleryCategorySchema,
   type PageNode,
 } from "./pageSpec";
 import { SectionLayoutSchema, sectionLayoutIssue } from "./sectionLayout";
@@ -77,6 +78,7 @@ export const PatchSchema = z.discriminatedUnion("operation", [
           .object({ property: z.literal("src"), value: imageSource })
           .strict(),
         z.object({ property: z.literal("alt"), value: plainText }).strict(),
+        z.object({ property: z.literal("galleryCategory"), value: GalleryCategorySchema.nullable() }).strict(),
         z.object({ property: z.literal("look"), value: ImageLookSchema }).strict(),
         z.object({ property: z.literal("text"), value: TextStyleSchema }).strict(),
         z
@@ -248,6 +250,7 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
       "href",
       "src",
       "alt",
+      "galleryCategory",
       "look",
       "text",
       "columns",
@@ -531,6 +534,7 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
         href: ["button", "form"],
         src: ["image"],
         alt: ["image"],
+        galleryCategory: ["image", "card"],
         look: ["image"],
         text: ["heading", "paragraph", "button", "card"],
         columns: ["grid"],
@@ -545,6 +549,10 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
           return { ...node, href: value };
         case "src":
           return { ...node, src: value };
+        case "galleryCategory": {
+          const { galleryCategory: _previousCategory, ...rest } = node;
+          return value === null ? rest : { ...node, galleryCategory: value };
+        }
         case "alt":
           return { ...node, alt: value };
         case "columns":

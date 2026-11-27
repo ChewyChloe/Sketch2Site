@@ -438,6 +438,7 @@ export type PageNode = {
   href?: string;
   src?: string;
   alt?: string;
+  galleryCategory?: string;
   look?: ImageLook;
   media?: Media;
   text?: TextStyle;
@@ -471,6 +472,7 @@ const common = {
       "動畫重複",
     ),
 };
+export const GalleryCategorySchema = z.string().trim().min(1).max(32);
 export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
   z.preprocess(bindMotionInput,z.discriminatedUnion("type", [
     z
@@ -494,6 +496,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
       .object({
         ...common,
         type: z.literal("card"),
+        galleryCategory: GalleryCategorySchema.optional(),
         children: z.array(PageNodeSchema).max(100),
         text: TextStyleSchema.optional(),
       })
@@ -563,6 +566,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         type: z.literal("image"),
         src: imageSource,
         alt: z.string().min(1).max(200),
+        galleryCategory: GalleryCategorySchema.optional(),
         look: ImageLookSchema.optional(),
       })
       .strict(),

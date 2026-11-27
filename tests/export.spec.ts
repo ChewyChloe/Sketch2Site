@@ -1,3 +1,4 @@
+import { galleryCategorySection } from "./fixtures/galleryCategories";
 import {thirdFixture} from "./fixtures/cinematicMotions";
 import {advancedFixture} from "./fixtures/advancedMotions";
 import {openWebsiteWorkspace} from "./helpers/workbench";
@@ -83,6 +84,7 @@ test("downloaded React project installs and builds independently; runtime stays 
       if (n.children) replaceImage(n.children);
     });
   replaceImage(input.sections);
+  input.sections.push(galleryCategorySection());
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
   await page.getByLabel("載入頁面檔案").setInputFiles({
@@ -193,6 +195,11 @@ z.extractall(root)
     const gooeySurface = standalone.locator(`[data-page-id="${gooey.id}"] .cin-gooey-drift`);
     await expect(gooeySurface.locator("circle")).toHaveCount(3);
     await expect(gooeySurface.locator("g[filter]")).toHaveCount(0);
+    const gallery = standalone.getByRole("group", { name: "作品分類" }).locator("..");
+    await expect(gallery.getByRole("img")).toHaveCount(3);
+    await gallery.getByRole("button", { name: "靜物" }).click();
+    await expect(gallery.getByRole("img")).toHaveCount(1);
+    await expect(gallery.getByRole("img")).toHaveAttribute("alt", "第二張");
     const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
     await expect(exportedLayout).toHaveCSS("column-count", "2");
     await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");

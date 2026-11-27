@@ -1,3 +1,4 @@
+import { flushSync } from "react-dom";
 import { layoutHost, type SectionArrangement } from "./sectionLayout";
 import { Depth3D } from "./Depth3D";
 import {useCinematicMotion,cinematicTextIds} from "./CinematicMotion";
@@ -9,7 +10,7 @@ import {useReferenceMotion} from "./ReferenceMotion";
 import {useExtendedMotion,LetterAssembly,AccentStroke,DisclosurePanel} from "./ExtendedMotion";
 import {FoldReveal} from "./FoldReveal";
 import {PhysicsTags} from "./PhysicsTags";
-import {CountUp,CurvedText,FlipCard} from "./MotionRuntime";
+import {CountUp,CurvedText,FlipCard,useReducedMotion} from "./MotionRuntime";
 import {MediaView} from "./MediaRuntime";
 import { motionCatalog, motionIds, motionNumber, motionDuration, splitStoryImage } from "./motion";
 import {
@@ -198,16 +199,69 @@ function PricingBuilder({ section }: { section: PageNode }) {
 }
 // 作品瀏覽切換: visitors choose how to look at a gallery (one at a time, a grid or a list).
 const galleryViewNames = { big: "大圖", grid: "網格", list: "清單" } as const;
-function GalleryViews({ children }: { children: ReactNode }) {
+const GalleryFilter = createContext<{ selected: string; items: Map<string, string> } | null>(null);
+function GalleryViews({ section, children, enableViews }: { section: PageNode; children: ReactNode; enableViews?: boolean }) {
   const [view, setView] = useState<keyof typeof galleryViewNames>("grid");
+  const [selected, setSelected] = useState("");
+  const root = useRef<HTMLDivElement>(null);
+  const motion = useRef<Animation[]>([]);
+  const revision = useRef(0);
+  const reduced = useReducedMotion();
+  const items = useMemo(() => {
+    const tagged = new Map<string, string>();
+    const hasCategory = (node: PageNode): boolean => !!node.galleryCategory || !!node.children?.some(hasCategory);
+    const visit = (node: PageNode) => {
+      if (node.galleryCategory || node.type === "image" || (node.type === "card" && !node.children?.some(hasCategory))) {
+        tagged.set(node.id, node.galleryCategory ?? "");
+      } else node.children?.forEach(visit);
+    };
+    section.children?.forEach(visit);
+    return tagged;
+  }, [section]);
+  const categories = [...new Set(items.values())].filter(Boolean);
+  const current = categories.includes(selected) ? selected : "";
+  useEffect(() => () => {
+    revision.current++;
+    motion.current.forEach(animation => animation.cancel());
+  }, [section, reduced]);
+
+  async function choose(category: string) {
+    const token = ++revision.current;
+    motion.current.forEach(animation => animation.cancel());
+    motion.current = [];
+    if (reduced || !root.current?.animate) {
+      setSelected(category);
+      return;
+    }
+    const visible = () => Array.from(root.current?.querySelectorAll<HTMLElement>("[data-gallery-item]:not([data-gallery-filtered])") ?? []);
+    const before = new Map(visible().map(item => [item, item.getBoundingClientRect()]));
+    const departing = [...before.keys()].filter(item => category && item.dataset.galleryItem !== category);
+    const exits = departing.map(item => item.animate([{ scale: "1", opacity: 1 }, { scale: ".85", opacity: 0 }], { duration: 130, fill: "forwards", easing: "ease-in" }));
+    motion.current = exits;
+    await Promise.allSettled(exits.map(animation => animation.finished));
+    if (token !== revision.current) return;
+    flushSync(() => setSelected(category));
+    exits.forEach(animation => animation.cancel());
+    motion.current = visible().map(item => {
+      const previous = before.get(item);
+      if (!previous) return item.animate([{ scale: ".9", opacity: 0 }, { scale: "1", opacity: 1 }], { duration: 200, easing: "ease-out" });
+      const next = item.getBoundingClientRect();
+      return item.animate([{ translate: `${previous.x - next.x}px ${previous.y - next.y}px` }, { translate: "0 0" }], { duration: 220, easing: "ease-out" });
+    });
+  }
+  if (!enableViews && categories.length === 0) return children;
   return (
-    <div className="gallery-views" data-view={view}>
-      <div className="gallery-views-switch" role="radiogroup" aria-label="瀏覽方式">
-        {(Object.keys(galleryViewNames) as (keyof typeof galleryViewNames)[]).map((v) => (
+    <div className="gallery-views" data-view={enableViews ? view : undefined} ref={root}>
+      {enableViews && <div className="gallery-views-switch" role="radiogroup" aria-label="瀏覽方式">
+        {(Object.keys(galleryViewNames) as (keyof typeof galleryViewNames)[]).map(v => (
           <button key={v} type="button" role="radio" aria-checked={view === v} onClick={() => setView(v)}>{galleryViewNames[v]}</button>
         ))}
-      </div>
-      {children}
+      </div>}
+      {categories.length > 0 && <div className="gallery-views-switch gallery-categories" role="group" aria-label="作品分類">
+        <button type="button" aria-pressed={current === ""} onClick={() => void choose("")}>全部作品</button>
+        {categories.map(category => <button key={category} type="button" aria-pressed={current === category} onClick={() => void choose(category)}>{category}</button>)}
+      </div>}
+      <GalleryFilter.Provider value={{ selected: current, items }}>{children}</GalleryFilter.Provider>
     </div>
   );
 }
@@ -346,6 +400,7 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
   const advancedText=node.effects.find(e=>advancedTextIds.includes(e.presetId));
   const cinematicText=node.effects.find(e=>cinematicTextIds.includes(e.presetId)),story=node.effects.find(e=>storyGroupIds.includes(e.presetId)),shuffle=node.effects.find(e=>e.presetId==="card-stack-shuffle"),sequence=node.effects.find(e=>e.presetId==="scroll-image-sequence");
   const extras=useContext(PageExtras), thumbnail=useContext(ThumbnailRender);
+  const gallery = useContext(GalleryFilter), category = gallery?.items.get(node.id);
   const kids=node.children?.map(child=><RenderNode key={child.id} node={child} layout={target}/>);
   const storyMedia = story?.validatedControls.presentation === "media" ? node.children?.map(card => {
     const imageIndex = splitStoryImage(card);
@@ -356,7 +411,7 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
       copy: <RenderNode node={{...card, children: card.children.filter((_, index) => index !== imageIndex)}} layout={target} />,
     };
   }).filter(panel => panel !== null) : undefined;
-  const children=node.type==="section"&&node.role==="pricing"&&extras.pricingBuilder?<>{kids}<PricingBuilder section={node}/></>:node.type==="section"&&node.role==="gallery"&&extras.galleryViews&&!isLogoWall(node)?<GalleryViews>{kids}</GalleryViews>:kids;
+  const children=node.type==="section"&&node.role==="pricing"&&extras.pricingBuilder?<>{kids}<PricingBuilder section={node}/></>:node.type==="section"&&node.role==="gallery"&&!isLogoWall(node)?<GalleryViews section={node} enableViews={extras.galleryViews}>{kids}</GalleryViews>:kids;
   const style = {
     "--breathing-cycle":(breathing?motionNumber(breathing,"cycleMs"):3200)+"ms",
     "--breathing-spread":(breathing?motionNumber(breathing,"spreadPx"):12)+"px",
@@ -382,6 +437,8 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
       ref={ref as never}
       id={thumbnail ? undefined : "page-" + node.id}
       data-page-id={thumbnail ? undefined : node.id}
+      data-gallery-item={category}
+      data-gallery-filtered={category !== undefined && gallery?.selected && category !== gallery.selected ? "" : undefined}
       data-locked={!thumbnail && node.lock ? (["text", "assets", "layout", "motion"] as const).filter((k) => node.lock![k]).join(" ") || undefined : undefined}
       data-page-type={node.type}
       data-section-arrangement={arrangement?.mode}

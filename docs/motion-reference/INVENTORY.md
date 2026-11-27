@@ -38,6 +38,7 @@
 
 | 元件 | 來源編號 | 批次 |
 |---|---|---|
+| 相簿版型切換 | 208 | 9 |
 | 導覽列樣式 | 339 | 4 |
 | 導覽列樣式 | 340 | 6 |
 | 導覽列樣式 | 341 | 4 |
@@ -185,7 +186,7 @@
 | 194 | shape | ['loop'] | CSS | border-light-trace | P3 | 漸層描邊 |
 | 201 | shape | ['loop'] | CSS | liquid-distortion-reveal | P4 | 持續波動 |
 | 203 | layout | ['hover', 'switch'] | CSS | 導覽列樣式 | P3 | 選單展開 |
-| 208 | layout | ['switch'] | GSAP | 相簿版型切換 | P3 | 分類篩選 |
+| 208 | layout | ['switch'] | GSAP | 相簿版型切換 | P3 | 作者分類、縮小退場與平滑補位 |
 | 210 | layout | ['scroll'] | GSAP | pinned-story-panels | P4 | 可切換為固定影像，旁側文案自然捲動 |
 | 211 | layout | ['scroll', 'hover'] | GSAP | scroll-progress | P3 | 回到頂部按鈕 |
 | 212 | card | ['switch', 'loop'] | CSS | 輪播元件 | P2 | 中央放大樣式 |

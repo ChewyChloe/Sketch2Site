@@ -1,0 +1,50 @@
+import { expect, test } from "@playwright/test";
+import { demoPage } from "../src/pageFixtures";
+import { galleryCategorySection } from "./fixtures/galleryCategories";
+import { editSelection, openWebsiteWorkspace } from "./helpers/workbench";
+
+test("gallery filters shrink leaving work, reflow the grid, and respect reduced motion", async ({ page }) => {
+  const input = { ...demoPage, extras: { galleryViews: true }, sections: [...demoPage.sections, galleryCategorySection()] };
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/?draft");
+  await openWebsiteWorkspace(page);
+  await page.getByLabel("載入頁面檔案").setInputFiles({ name: "gallery.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(input)) });
+  const gallery = page.locator(".preview-frame .gallery-views");
+  const images = gallery.getByRole("img");
+  await expect(images).toHaveCount(3);
+  const secondX = (await images.nth(1).boundingBox())!.x;
+  await gallery.getByRole("button", { name: "靜物" }).click();
+  await expect.poll(() => gallery.evaluate(element => element.getAnimations({ subtree: true }).some(animation => animation.effect?.getComputedTiming().duration === 130))).toBe(true);
+  await expect(images).toHaveCount(1);
+  await expect(images.first()).toHaveAttribute("alt", "第二張");
+  await expect.poll(async () => (await images.first().boundingBox())!.x).toBeLessThan(secondX - 20);
+  await gallery.getByRole("radio", { name: "清單" }).click();
+  await expect(gallery).toHaveAttribute("data-view", "list");
+  await expect(images).toHaveCount(1);
+  await page.setViewportSize({ width: 375, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await gallery.getByRole("button", { name: "全部作品" }).click();
+  await expect(images).toHaveCount(3);
+  expect(await gallery.evaluate(element => element.getAnimations({ subtree: true }).length)).toBe(0);
+  expect(await gallery.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await expect(gallery.getByRole("heading", { name: "精選攝影" })).toBeVisible();
+});
+
+test("gallery category edits persist in the website editor", async ({ page }) => {
+  const input = { ...demoPage, extras: { galleryViews: true }, sections: [...demoPage.sections, galleryCategorySection()] };
+  await page.goto("/?draft");
+  await openWebsiteWorkspace(page);
+  await page.getByLabel("載入頁面檔案").setInputFiles({ name: "gallery.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(input)) });
+  await page.getByRole("button", { name: "選取", exact: true }).click();
+  const gallery = page.locator(".preview-frame .gallery-views");
+  await gallery.getByRole("img", { name: "第三張" }).click();
+  await editSelection(page);
+  const inputControl = page.getByRole("textbox", { name: "作品分類" });
+  await inputControl.fill("美食");
+  await inputControl.press("Tab");
+  await expect(gallery.getByRole("button", { name: "美食" })).toBeVisible();
+  await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
+  await page.reload();
+  await openWebsiteWorkspace(page);
+  await expect(gallery.getByRole("button", { name: "美食" })).toBeVisible();
+});
