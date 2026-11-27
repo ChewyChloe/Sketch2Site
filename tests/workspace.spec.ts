@@ -115,7 +115,7 @@ test("空白處動畫需選對象、縮放座標與窄視窗", async ({ page }) 
     page.getByTestId("canvas-node"),
     { x: 20, y: 20 },
   );
-  await expect(page.getByRole("status")).toContainText("依序顯示只能用在卡片上");
+  await expect(page.getByRole("contentinfo").getByRole("status")).toContainText("依序顯示只能用在卡片上");
   await expect(page.getByTestId("canvas-node")).not.toContainText(
     "Stagger Reveal",
   );
