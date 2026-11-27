@@ -1071,3 +1071,31 @@ body{background:var(--neo-cream)}
 .site-tb-brush button[aria-pressed="true"] { background: #10e560; }
 .site-drop-line { position: absolute; z-index: 60; height: 4px; margin-top: -2px; border-radius: 2px; background: #10e560; box-shadow: 0 0 0 2px #0d0e11; pointer-events: none; }
 .preview-frame .is-moving { opacity: .4; outline: 2px dashed #0d0e11; }
+/* Motion library filters (A4, A5, A9): common filters shown, the rest folded. */
+.lib-chips-label { flex-basis: 100%; font-size: 12px; font-weight: 900; color: #4b4e49; }
+.lib-chips button { display: inline-flex; align-items: center; gap: 6px; min-height: 34px !important; font-size: 13px !important; }
+.lib-chips button:disabled { opacity: .4; cursor: default; transform: none !important; box-shadow: none !important; }
+.lib-count-chip { min-width: 20px; padding: 0 6px; border-radius: 999px; background: #f1efe6; color: #0d0e11; font-size: 11px; font-weight: 900; line-height: 18px; text-align: center; }
+.lib-chips button[aria-pressed=true] .lib-count-chip { background: #10e560; }
+.lib-only { display: flex; flex-wrap: wrap; gap: 6px; }
+.lib-only button { min-height: 32px; padding: 0 12px; border: 1.5px dashed #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.lib-only button[aria-pressed=true] { border-style: solid; background: #fff3b0; }
+.lib-more { border: 1.5px solid #e2e1d9; border-radius: 14px; padding: 6px 12px; background: #fbfaf6; }
+.lib-more summary { cursor: pointer; font-size: 13px; font-weight: 900; padding: 4px 0; }
+.lib-more[open] { display: grid; gap: 10px; padding-bottom: 12px; }
+.lib-result-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; }
+.lib-result-bar [role=status] { margin-right: auto; }
+.lib-sort { display: inline-flex; align-items: center; gap: 6px; }
+.lib-sort select { min-height: 32px; border: 1.5px solid #0d0e11; border-radius: 999px; padding: 0 10px; background: #fff; font: inherit; font-size: 13px; }
+.lib-clear, .lib-empty button { min-height: 32px; padding: 0 12px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.lib-empty { display: grid; justify-items: start; gap: 8px; padding: 16px; border: 2px dashed #c9c7bd; border-radius: 16px; }
+.lib-empty p { margin: 0; font-weight: 800; }
+.motion-favorite { min-width: 44px; min-height: 44px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font-size: 16px; line-height: 1; cursor: pointer; }
+.motion-favorite[aria-pressed=true] { background: #fff3b0; }
+.lib-preview-settings label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; }
+.lib-preview-settings input[type=text], .lib-preview-settings select { flex: 1; min-width: 0; min-height: 34px; padding: 0 12px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 13px; }
+.lib-check input { width: 18px; height: 18px; accent-color: #10e560; }
+.motion-tune { min-height: 44px; padding: 0 12px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.motion-tune[aria-expanded=true] { background: #0d0e11; color: #10e560; }
+.motion-tune-fields { display: grid; gap: 8px; margin: 8px 0; padding: 10px 12px; border: 1.5px dashed #0d0e11; border-radius: 14px; background: #fbfaf6; }
+.motion-tune-fields small { color: #55534d; }

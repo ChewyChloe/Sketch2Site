@@ -43,13 +43,17 @@ test('library exposes sixty effects and filters by name, identifier and category
     await page.getByLabel('搜尋動畫').fill('no-such-effect');await expect(assets).toHaveCount(0);await expect(library.getByRole('status')).toContainText('找不到符合');
     await page.getByLabel('搜尋動畫').fill('Letter Assembly');await expect(assets).toHaveCount(1);
     await page.getByLabel('搜尋動畫').fill('');
-    const chips: Record<string, string> = { 進場: '出場動畫', 互動: '滑過與點擊', 內容: '閱讀與卡片', 資訊: '捲動' };
-    for (const category of ['進場', '互動', '內容', '資訊']) {
-        await page.getByRole('group', { name: '動畫使用情境' }).getByRole('button', { name: chips[category], exact: true }).click();
-        expect(await assets.count()).toBeGreaterThan(0);
-        for (const asset of await assets.all()) await expect(asset).toHaveAttribute('data-category', category);
-    }
-    await page.getByRole('group', { name: '動畫使用情境' }).getByRole('button', { name: '全部', exact: true }).click();
+    // Filters: same dimension is OR, different dimensions AND; the count follows.
+    const triggers = library.getByRole('group', { name: '什麼時候動' });
+    await triggers.getByRole('button', { name: /^滑過時/ }).click();
+    const hover = await assets.count();
+    expect(hover).toBeGreaterThan(0);
+    await expect(library.getByRole('status').first()).toContainText(`符合 ${hover} 種`);
+    await triggers.getByRole('button', { name: /^點擊時/ }).click();
+    expect(await assets.count()).toBeGreaterThanOrEqual(hover);
+    await library.getByRole('group', { name: '用在' }).getByRole('button', { name: /^圖片/ }).click();
+    expect(await assets.count()).toBeLessThan(hover + 1);
+    await library.getByRole('button', { name: '清除條件' }).click();
     await expect(assets).toHaveCount(75);
     check();
 });

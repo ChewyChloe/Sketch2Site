@@ -536,6 +536,18 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
 
   const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean } | null>(null);
   const [timeline, setTimeline] = useState(false);
+  // Trying a motion on the real element before applying it (A7): shown, never saved.
+  const [trial, setTrial] = useState<{ nodeId: string; effectId: string; key: number } | null>(null);
+  const trialPage = (() => {
+    if (!trial) return null;
+    const base = session.history.present;
+    try {
+      const motion = createMotion(trial.effectId as (typeof effectIds)[number], trial.nodeId);
+      const add = (n: import("./pageSpec").PageNode): import("./pageSpec").PageNode => n.id === trial.nodeId ? { ...n, effects: [...n.effects.filter((e) => e.presetId !== motion.presetId), motion] } : n.children ? { ...n, children: n.children.map(add) } : n;
+      return { ...base, sections: base.sections.map(add), ...(base.subpages ? { subpages: base.subpages.map((x) => ({ ...x, sections: x.sections.map(add) })) } : {}) };
+    } catch { return null; }
+  })();
+  useEffect(() => { if (!trial) return; const t = window.setTimeout(() => setTrial(null), 4000); return () => window.clearTimeout(t); }, [trial]);
   // Format painter on the site: the copied look waits for the next element picked.
   const [brush, setBrushState] = useState<CopiedStyle | null>(null);
   // Read through a ref: the page's click handler can be an earlier render's function.
@@ -1038,7 +1050,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                 >
                   <PageRenderer
                     key={replay}
-                    input={page}
+                    input={trialPage ?? page}
                     selectedId={selected}
                     onSelect={mode === "browse" ? select : undefined}
                   />
@@ -1148,6 +1160,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
             )}
             {panelTab === "animations" && (
               <AnimationLibrary
+                onTry={selected ? (id) => { setTrial({ nodeId: selected, effectId: id, key: Date.now() }); setReplay((n) => n + 1); setNotice("正在元件上試看，4 秒後回到原樣；喜歡再按套用"); frameRef.current?.querySelector(`[data-page-id="${selected}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }); } : undefined}
                 selectedLabel={
                   node
                     ? node.content?.slice(0, 18) || nodeLabels[node.type]

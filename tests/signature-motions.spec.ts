@@ -34,10 +34,10 @@ test("signature motions play in the library and carry into the site", async ({ p
   await card("float-idle").scrollIntoViewIfNeeded();
   await expect.poll(() => card("float-idle").locator("[data-effects~='float-idle']").evaluate((el) => el.getAnimations().length)).toBeGreaterThan(0);
   // Category chips filter the library.
-  await page.getByRole("group", { name: "動畫使用情境" }).getByRole("button", { name: "出場動畫", exact: true }).click();
+  await page.getByRole("group", { name: "什麼時候動" }).getByRole("button", { name: /^出現時/ }).click();
   await expect(card("typewriter")).toBeVisible();
   await expect(card("confetti-burst")).toHaveCount(0);
-  await page.getByRole("group", { name: "動畫使用情境" }).getByRole("button", { name: "全部", exact: true }).click();
+  await page.getByRole("button", { name: "清除條件" }).click();
   // Applied in the draft, the effect reaches the generated site.
   await page.getByRole("button", { name: "草稿", exact: true }).click();
   await page.getByRole("tab", { name: "元件" }).click();

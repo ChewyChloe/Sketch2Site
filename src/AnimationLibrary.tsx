@@ -6,7 +6,13 @@ import { useEffect, useRef, useMemo, useState } from "react";
 import { PageRenderer, animationRegistry } from "./PageRenderer";
 import { PageSchema, type effectIds } from "./pageSpec";
 import { effectLabels } from "./visualEditing";
+import { MotionControlsFields } from "./MotionControls";
+import { facetDimensions, matchesFilter, motionFacets, searchMotions, type Dimension, type FacetFilter } from "./motionFacets";
+import type { MotionId } from "./motionCatalog";
 type EffectId = (typeof effectIds)[number];
+// Per-browser lists; storage may be unavailable (private mode), then nothing is remembered.
+const readList=(key:string):string[]=>{try{const v=JSON.parse(localStorage.getItem(key)??"[]");return Array.isArray(v)?v.filter((x):x is string=>typeof x==="string"&&x in motionCatalog):[];}catch{return [];}};
+const writeList=(key:string,list:string[])=>{try{localStorage.setItem(key,JSON.stringify(list));}catch{/* not remembered */}};
 const descriptions=Object.fromEntries(Object.entries(motionCatalog).map(([id,d])=>[id,d.summary])) as Record<EffectId,string>;
 const signatureFamily:Record<string,number>={'dolly-frame':2,'color-wake':2,'scroll-ink-words':0,'hollow-fill-sweep':0,'letter-windows':0,'bold-relay':0,'chart-build':3,typewriter:0,'marquee-text':0,'gradient-text-flow':0,'blur-in':2,'float-idle':2,'confetti-burst':1,'jelly-press':1,'shine-sweep':1};
 const motionFamily=(id:EffectId)=>{if(id in signatureFamily)return signatureFamily[id];const cinematic=cinematicMotionIds.indexOf(id as typeof cinematicMotionIds[number]);if(cinematic>=0)return cinematic<4?0:cinematic<9?1:cinematic<14?2:cinematic<18?3:4;const index=advancedMotionIds.indexOf(id as typeof advancedMotionIds[number]);if(index>=0)return Math.floor(index/5);const d=motionCatalog[id];return d.targetType.every(t=>['text','heading','paragraph'].includes(t))?0:d.targetType.includes('button')&&!d.targetType.includes('container')?1:d.targetType.includes('image')||['flip-card','fold-reveal'].includes(id)?2:3;};
@@ -30,7 +36,12 @@ function CinematicSample({id,replay}:{id:typeof cinematicMotionIds[number];repla
  useEffect(()=>{const element=ref.current;if(!replay||!element)return;if(typeof IntersectionObserver==='undefined'){replayCinematic(element,id);return;}const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer.disconnect();replayCinematic(element,id);}});observer.observe(element);return()=>observer.disconnect();},[id,replay]);
  return <div ref={ref}><PageRenderer input={page} motionPreview/></div>;
 }
-function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
+/** The sample's motion with the tuned values; a value still being typed falls back to the sample's own. */
+function sampleMotion(id: EffectId, target: string, tuned: Record<string, unknown> | undefined, base: Record<string, unknown>) {
+  if (tuned) try { return createMotion(id, target, { ...base, ...tuned }); } catch { /* keep the sample's values */ }
+  return createMotion(id, target, base);
+}
+function EffectSample({ id, active, text, controls: tuned }: { id: EffectId; active: boolean; text?: string; controls?: Record<string, unknown> }) {
   const [ids] = useState(() =>
     Array.from({ length: 5 }, () => crypto.randomUUID()),
   );
@@ -39,10 +50,10 @@ function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
     // Reference batch 1: each preview uses the kind of element the motion is made for.
     if((referenceMotionIds as readonly string[]).includes(id)){
       const on=active||id!=="chart-build";
-      const effect=on?[createMotion(id as typeof referenceMotionIds[number],ids[1])]:[];
+      const effect=on?[sampleMotion(id,ids[1],tuned,{})]:[];
       const child=id==="dolly-frame"||id==="color-wake"?{id:ids[1],type:"image",src:id==="dolly-frame"?"/assets/samples/coffee-pourover.jpg":"/assets/samples/coffee-tonic.jpg",alt:"手沖咖啡，慢慢萃取",style:{padding:"none",gap:"none"},effects:effect}
         :id==="chart-build"?{id:ids[1],type:"media",content:"本月來客",media:{kind:"chart",chart:"bar",points:[{label:"一",value:32},{label:"二",value:48},{label:"三",value:41},{label:"四",value:66}],unit:""},style:{padding:"none",gap:"none"},effects:effect}
-        :{id:ids[1],type:"heading",level:2,content:id==="scroll-ink-words"?"每一杯咖啡，都從一顆豆子的旅程開始。慢慢讀，字會跟著亮起來。":id==="letter-windows"?"COFFEE 咖啡":id==="hollow-fill-sweep"?"滑過填滿":"粗體接力中",style:{padding:"none",gap:"none"},effects:effect};
+        :{id:ids[1],type:"heading",level:2,content:text?text:id==="scroll-ink-words"?"每一杯咖啡，都從一顆豆子的旅程開始。慢慢讀，字會跟著亮起來。":id==="letter-windows"?"COFFEE 咖啡":id==="hollow-fill-sweep"?"滑過填滿":"粗體接力中",style:{padding:"none",gap:"none"},effects:effect};
       return PageSchema.parse({schemaVersion:2,metadata:{title:"動畫素材示意",language:"zh-Hant"},typography:"sans",styles:"neutral",responsive:{mobileColumns:1,desktopColumns:1},sections:[{id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:[child]}]});
     }
     const persistent=advancedMotionIds.includes(id as typeof advancedMotionIds[number])||id in signatureFamily||["breathing-glow","curved-path-text","count-up","flip-card","fold-reveal","physics-tag-field","magnetic-control","press-feedback","focus-transfer","scroll-progress","disclosure-panel"].includes(id);
@@ -54,11 +65,11 @@ function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
       id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:[{
         id:ids[1],type:["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?"image":button?"button":leaf?"paragraph":id==="physics-tag-field"?"container":"card",
         style:{padding:button?"small":leaf||id==="physics-tag-field"?"none":"small",gap:"small",tone:button?"accent":"plain"},
-        effects:active||persistent?[createMotion(id,ids[1],controls)]:[],
-        ...(["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?{src:["blur-in","float-idle","cinematic-image-pan"].includes(id)?"/assets/samples/cafe.jpg":"/assets/samples/camera.jpg",alt:"圖片動畫示意"}:button?{content:id==="confetti-burst"?"報名成功！":id==="jelly-press"?"點我試試":id==="shine-sweep"?"立即購買":"看看作品",href:"#"+ids[1]}:leaf?{content:id==="numeric-gauge-sweep"?"75%":id==="character-decode"?"Decode 想像 2026":id==="split-line-assembly"?"每一行靈感\n組成完整作品":id==="rolling-characters"?"2026 創作":id==="kinetic-text-wave"?"讓文字起舞":id==="hand-drawn-highlight"?"標記真正重要的事":id==="count-up"?"128":id==="letter-assembly"?"把靈感，拼成作品":id==="accent-stroke"?"讓重點被記住":id==="typewriter"?"你好，歡迎光臨！":id==="marquee-text"?"本週新品上市 · 第二杯半價 · 歡迎預約":id==="gradient-text-flow"?"把想法變成網站":"讓想法流動"}:{children:id==="physics-tag-field"?[]:["stagger-reveal","focus-transfer","disclosure-panel","scroll-progress","card-deck-fan","layered-parallax","grid-diagonal-turn","svg-path-drawing","scroll-milestones"].includes(id)?[paragraph(2,"構思"),paragraph(3,"設計"),paragraph(4,"實作")]:[paragraph(2,content[id]??"內容示意")]}),
+        effects:active||persistent?[sampleMotion(id,ids[1],tuned,controls)]:[],
+        ...(["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?{src:["blur-in","float-idle","cinematic-image-pan"].includes(id)?"/assets/samples/cafe.jpg":"/assets/samples/camera.jpg",alt:"圖片動畫示意"}:button?{content:id==="confetti-burst"?"報名成功！":id==="jelly-press"?"點我試試":id==="shine-sweep"?"立即購買":"看看作品",href:"#"+ids[1]}:leaf?{content:text&&!["numeric-gauge-sweep","count-up","rolling-characters"].includes(id)?text:id==="numeric-gauge-sweep"?"75%":id==="character-decode"?"Decode 想像 2026":id==="split-line-assembly"?"每一行靈感\n組成完整作品":id==="rolling-characters"?"2026 創作":id==="kinetic-text-wave"?"讓文字起舞":id==="hand-drawn-highlight"?"標記真正重要的事":id==="count-up"?"128":id==="letter-assembly"?"把靈感，拼成作品":id==="accent-stroke"?"讓重點被記住":id==="typewriter"?"你好，歡迎光臨！":id==="marquee-text"?"本週新品上市 · 第二杯半價 · 歡迎預約":id==="gradient-text-flow"?"把想法變成網站":"讓想法流動"}:{children:id==="physics-tag-field"?[]:["stagger-reveal","focus-transfer","disclosure-panel","scroll-progress","card-deck-fan","layered-parallax","grid-diagonal-turn","svg-path-drawing","scroll-milestones"].includes(id)?[paragraph(2,"構思"),paragraph(3,"設計"),paragraph(4,"實作")]:[paragraph(2,content[id]??"內容示意")]}),
       }],
     }]});
-  },[id,active,ids]);
+  },[id,active,ids,text,tuned]);
   return <PageRenderer input={page} motionPreview={(referenceMotionIds as readonly string[]).includes(id)} />;
 }
 export function AnimationLibrary({
@@ -70,6 +81,8 @@ export function AnimationLibrary({
   disabled = false,
   filter = "",
   draft = false,
+  onTry,
+  recommendFor,
 }: {
   selectedLabel?: string;
   compatibility(id: EffectId): string | null;
@@ -79,14 +92,40 @@ export function AnimationLibrary({
   disabled?: boolean;
   filter?: string;
   draft?: boolean;
+  /** Plays a motion on the selected element of the real site for a moment, without saving. */
+  onTry?(id: EffectId): void;
+  /** The selected element, for 描述想要的效果 (A8). */
+  recommendFor?: { type: string; content?: string; media?: { kind?: string }; children?: unknown[] };
 }) {
   const [query,setQuery]=useState("");
-  const [category,setCategory]=useState("");
+  // Filters (A4): same dimension = any of (OR), different dimensions = all of (AND).
+  const [facets,setFacets]=useState<FacetFilter>({});
+  const [moreOpen,setMoreOpen]=useState(false);
+  // Preview settings (A6): own words in text samples, speed, auto replay, and per-motion parameters.
+  const [previewText,setPreviewText]=useState("");
+  const [speed,setSpeed]=useState(1);
+  const [autoReplay,setAutoReplay]=useState(true);
+  const [tuning,setTuning]=useState<string|null>(null);
+  const [tuned,setTuned]=useState<Record<string,Record<string,unknown>>>({});
+  const [sort,setSort]=useState<"default"|"name"|"gentle"|"recent">("default");
+  const [only,setOnly]=useState<""|"fit"|"favorites"|"recent">("");
+  // Favorites and recently used: this browser only (A5). Never counts or popularity.
+  const [favorites,setFavorites]=useState<string[]>(()=>readList("sketch2site.motionFavorites"));
+  const [recent,setRecent]=useState<string[]>(()=>readList("sketch2site.motionRecent"));
+  const remember=(id:string)=>setRecent(r=>{const next=[id,...r.filter(x=>x!==id)].slice(0,12);writeList("sketch2site.motionRecent",next);return next;});
+  const toggleFavorite=(id:string)=>setFavorites(f=>{const next=f.includes(id)?f.filter(x=>x!==id):[id,...f].slice(0,40);writeList("sketch2site.motionFavorites",next);return next;});
+  const toggleFacet=(dim:Dimension,value:string)=>setFacets(f=>{const cur=f[dim]??[];const next=cur.includes(value)?cur.filter(v=>v!==value):[...cur,value];const out={...f,[dim]:next};if(!next.length)delete out[dim];return out;});
+  const activeCount=Object.values(facets).reduce((n,v)=>n+(v?.length??0),0)+(only&&only!=="fit"?1:0);
+  const clearAll=()=>{setFacets({});setOnly("");setQuery("");};
   const [replay,setReplay]=useState<Record<string,number>>({});
   const [active, setActive] = useState<EffectId | null>(null);
   // Entrance samples replay by themselves while they are on screen, so the library feels
   // alive without clicking 重播 (off when the viewer prefers reduced motion).
   const root=useRef<HTMLElement>(null);
+  const turn=useRef(0),autoRef=useRef(true);
+  useEffect(()=>{autoRef.current=autoReplay;},[autoReplay]);
+  // Playback speed for every running sample animation (CSS and Web Animations alike).
+  useEffect(()=>{const el=root.current;if(!el)return;const t=window.setInterval(()=>{for(const a of el.querySelectorAll(".animation-asset"))for(const an of (a as HTMLElement).getAnimations?.({subtree:true})??[])if(an.playbackRate!==speed)an.playbackRate=speed;},200);return()=>window.clearInterval(t);},[speed]);
   useEffect(()=>{
     const el=root.current;
     if(!el||typeof IntersectionObserver==="undefined"||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
@@ -98,12 +137,28 @@ export function AnimationLibrary({
     const timer=window.setInterval(()=>{
       if(document.hidden||!onScreen.size)return;
       const hovered=el.querySelector('.animation-asset:hover,.animation-asset:focus-within')?.getAttribute("data-effect-id");
-      setReplay(v=>{const next={...v};for(const id of onScreen)if(id!==hovered)next[id]=(next[id]??0)+1;return next;});
-    },3800);
+      // One sample at a time, in turn: the cards never all move at once.
+      const queue=[...onScreen].filter(id=>id!==hovered);if(!queue.length||!autoRef.current)return;
+      const id=queue[turn.current++%queue.length];
+      setReplay(v=>({...v,[id]:(v[id]??0)+1}));
+    },1300);
     return()=>{io.disconnect();mo.disconnect();window.clearInterval(timer);};
   },[]);
-  const visibleIds=(Object.keys(animationRegistry) as EffectId[]).filter(id=>
-    (effectLabels[id]+id+motionCatalog[id].nameEn+descriptions[id]+motionCatalog[id].bestFor).toLowerCase().includes((filter||query).trim().toLowerCase()) && (!category||motionCatalog[id].category===category));
+  const all=Object.keys(animationRegistry) as EffectId[];
+  const searched=searchMotions(all as MotionId[],filter||query) as EffectId[];
+  const base=searched.filter(id=>only==="fit"?!compatibility(id):only==="favorites"?favorites.includes(id):only==="recent"?recent.includes(id):true);
+  const visibleIds=base.filter(id=>matchesFilter(id as MotionId,facets));
+  // Live counts: results if this value were chosen, keeping the other dimensions as they are.
+  const countFor=(dim:Dimension,value:string)=>base.filter(id=>matchesFilter(id as MotionId,{...facets,[dim]:[value]})).length;
+  const sorted=sort==="name"?[...visibleIds].sort((a,b)=>effectLabels[a].localeCompare(effectLabels[b],"zh-Hant")):sort==="gentle"?[...visibleIds].sort((a,b)=>["low","medium","high"].indexOf(motionFacets[a as MotionId].intensity[0])-["low","medium","high"].indexOf(motionFacets[b as MotionId].intensity[0])):sort==="recent"?[...visibleIds].sort((a,b)=>(recent.indexOf(a)<0?99:recent.indexOf(a))-(recent.indexOf(b)<0?99:recent.indexOf(b))):visibleIds;
+  const chips=(dim:Dimension)=>(
+    <div className="lib-chips" role="group" aria-label={facetDimensions[dim].label}>
+      <span className="lib-chips-label">{facetDimensions[dim].label}</span>
+      {Object.entries(facetDimensions[dim].values).map(([value,label])=>{const on=facets[dim]?.includes(value)??false,count=countFor(dim,value);return(
+        <button key={value} type="button" aria-pressed={on} disabled={!on&&!count} onClick={()=>toggleFacet(dim,value)}>{label}<span className="lib-count-chip" aria-label={`${count} 種`}>{count}</span></button>
+      );})}
+    </div>
+  );
   return (
     <section
       ref={root}
@@ -119,17 +174,36 @@ export function AnimationLibrary({
         </p>
       </div>
       <div className="motion-library-filters">
-        {!draft && <input type="search" aria-label="搜尋動畫" placeholder="搜尋：打字、彈跳、圖片…" value={query} onChange={e=>setQuery(e.target.value)}/>}
-        <div className="lib-chips" role="group" aria-label="動畫使用情境">
-          {([["","全部"],["進場","出場動畫"],["互動","滑過與點擊"],["內容","閱讀與卡片"],["資訊","捲動"]] as const).map(([value,label])=>(
-            <button key={value||"all"} type="button" aria-pressed={category===value} onClick={()=>setCategory(value)}>{label}</button>
-          ))}
+        {!draft && <input type="search" aria-label="搜尋動畫" placeholder="搜尋：打字、彈跳、圖片、hover…" value={query} onChange={e=>setQuery(e.target.value)}/>}
+        <div className="lib-only" role="group" aria-label="顯示範圍">
+          {selectedLabel && <button type="button" aria-pressed={only==="fit"} onClick={()=>setOnly(only==="fit"?"":"fit")}>只看適合目前元件（{searched.filter(id=>!compatibility(id)).length}）</button>}
+          <button type="button" aria-pressed={only==="favorites"} onClick={()=>setOnly(only==="favorites"?"":"favorites")}>★ 收藏（{favorites.length}）</button>
+          <button type="button" aria-pressed={only==="recent"} onClick={()=>setOnly(only==="recent"?"":"recent")}>最近用過（{recent.length}）</button>
         </div>
+        {chips("target")}
+        {chips("trigger")}
+        <details className="lib-more" open={moreOpen} onToggle={e=>setMoreOpen((e.currentTarget as HTMLDetailsElement).open)}>
+          <summary>更多條件{(["expression","purpose","intensity"] as Dimension[]).some(d=>facets[d]?.length)?`（已選 ${(["expression","purpose","intensity"] as Dimension[]).reduce((n,d)=>n+(facets[d]?.length??0),0)}）`:""}</summary>
+          {chips("expression")}
+          {chips("purpose")}
+          {chips("intensity")}
+        </details>
+        <div className="lib-result-bar">
+          <span role="status" aria-live="polite">{visibleIds.length?`符合 ${visibleIds.length} 種`:"找不到符合的動畫"}</span>
+          <label className="lib-sort">排序<select aria-label="排序" value={sort} onChange={e=>setSort(e.target.value as typeof sort)}><option value="default">依類別</option><option value="name">名稱</option><option value="gentle">由輕柔到強烈</option><option value="recent">最近用過優先</option></select></label>
+          {(activeCount>0||query)&&<button type="button" className="lib-clear" onClick={clearAll}>清除條件</button>}
+        </div>
+        <details className="lib-more lib-preview-settings">
+          <summary>預覽設定</summary>
+          <label>預覽文字<input type="text" aria-label="預覽文字" maxLength={30} placeholder="輸入自己的字，例如店名" value={previewText} onChange={e=>setPreviewText(e.target.value)}/></label>
+          <label>速度<select aria-label="預覽速度" value={speed} onChange={e=>setSpeed(Number(e.target.value))}><option value={0.5}>0.5 倍</option><option value={1}>1 倍</option><option value={2}>2 倍</option></select></label>
+          <label className="lib-check"><input type="checkbox" checked={autoReplay} onChange={e=>setAutoReplay(e.target.checked)}/>畫面上的範例輪流自動重播</label>
+        </details>
       </div>
-      {!visibleIds.length && <p role="status">找不到符合的動畫，請調整搜尋或情境</p>}
+      {!visibleIds.length && <div className="lib-empty"><p>找不到符合的動畫，請調整搜尋或條件</p><button type="button" onClick={clearAll}>全部重設</button></div>}
       <div className="animation-groups">
-        {families.map((family,index)=>visibleIds.some(id=>motionFamily(id)===index)&&<section className="animation-family" key={family} aria-label={family}><h3>{family}</h3><div className="animation-assets" role="list">
-        {visibleIds.filter(id=>motionFamily(id)===index).map((id) => {
+        {(sort==="default"?families:["結果"]).map((family,index)=>(sort!=="default"||visibleIds.some(id=>motionFamily(id)===index))&&sorted.length>0&&<section className="animation-family" key={family} aria-label={family}><h3>{family}</h3><div className="animation-assets" role="list">
+        {(sort==="default"?sorted.filter(id=>motionFamily(id)===index):sorted).map((id) => {
             const reason = compatibility(id);
             return (
               <div
@@ -148,6 +222,7 @@ export function AnimationLibrary({
                     return;
                   }
                   e.currentTarget.classList.add("is-dragging");
+                  remember(id);
                   onDragStart(id, e.dataTransfer);
                 }}
                 onDragEnd={(e) => {
@@ -162,7 +237,7 @@ export function AnimationLibrary({
                 <div className="asset-preview" role="group" aria-label={effectLabels[id]+"效果示意"} onClickCapture={e=>{if((e.target as Element).closest("a"))e.preventDefault();}}>
                   <span className="asset-category">{motionCatalog[id].category}</span>{([...signatureMotionIds,...referenceMotionIds] as readonly string[]).includes(id)&&<span className="asset-new">NEW</span>}
                   <div className="asset-sample">
-                    {cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?<CinematicSample key={replay[id]??0} id={id as typeof cinematicMotionIds[number]} replay={replay[id]??0}/>:<EffectSample key={replay[id]??0} id={id} active={active === id} />}
+                    {cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?<CinematicSample key={replay[id]??0} id={id as typeof cinematicMotionIds[number]} replay={replay[id]??0}/>:<EffectSample key={replay[id]??0} id={id} active={active === id} text={previewText.trim()||undefined} controls={tuned[id]} />}
                   </div>
                 </div>
                 <div className="asset-actions">
@@ -177,7 +252,7 @@ export function AnimationLibrary({
                       : "")
                   }
                   disabled={disabled || Boolean(reason)}
-                  onClick={() => onChoose(id)}
+                  onClick={() => { remember(id); onChoose(id); }}
                   title={reason ?? descriptions[id]}
                 >
                   <span className="asset-name"><strong>{effectLabels[id]}</strong><span>{motionCatalog[id].nameEn}</span></span>
@@ -190,7 +265,11 @@ export function AnimationLibrary({
                     if(asset?.isConnected)asset.querySelector<HTMLElement>(".effect-lift,.effect-glow")?.focus({preventScroll:true});
                   });
                 }}>{["hover-lift","hover-glow"].includes(id)?"試玩":"重播"}</button>
+                {onTry&&!reason&&<button type="button" className="motion-tune" aria-label={"在元件上試看"+effectLabels[id]} onClick={()=>onTry(id)}>試看</button>}
+                <button type="button" className="motion-favorite" aria-pressed={favorites.includes(id)} aria-label={(favorites.includes(id)?"取消收藏":"收藏")+effectLabels[id]} onClick={()=>toggleFavorite(id)}>{favorites.includes(id)?"★":"☆"}</button>
+                {Object.values(motionCatalog[id].controls).some(c=>c.kind==="number"||c.kind==="select")&&!cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])&&<button type="button" className="motion-tune" aria-expanded={tuning===id} aria-label={"調整"+effectLabels[id]+"參數"} onClick={()=>setTuning(tuning===id?null:id)}>調整</button>}
                 </div>
+                {tuning===id&&<div className="motion-tune-fields" role="group" aria-label={effectLabels[id]+"預覽參數"}><MotionControlsFields id={id} values={{...Object.fromEntries(Object.entries(motionCatalog[id].controls).filter(([,c])=>c.default!==undefined).map(([k,c])=>[k,c.default])),...tuned[id]} as never} onChange={(values:Record<string,unknown>)=>{setTuned(t=>({...t,[id]:Object.fromEntries(Object.entries(values).filter(([k])=>["number","select","boolean"].includes(motionCatalog[id].controls[k]?.kind??"")))}));setReplay(v=>({...v,[id]:(v[id]??0)+1}));}}/><small>只影響這裡的範例；套用後可在元件上再調整</small></div>}
                 <small>{reason ?? descriptions[id]}</small>
                 <span className="asset-use-case">{motionCatalog[id].bestFor}</span><span className="asset-trigger">{[...new Set(motionCatalog[id].interactionType.map(t=>triggerLabels[t]??t))].join(" · ")}</span>
               </div>

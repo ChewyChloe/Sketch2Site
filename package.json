@@ -13,6 +13,7 @@
     "generation:preflight": "tsx scripts/generation-preflight.ts",
     "dev:api": "NODE_USE_ENV_PROXY=1 tsx --env-file-if-exists=.env server/index.ts",
     "motion:docs": "tsx scripts/generate-motion-docs.ts",
+    "motion:inventory": "tsx scripts/generate-motion-inventory.ts",
     "check:motion-boundary": "tsx scripts/check-motion-boundary.ts",
     "db:generate": "drizzle-kit generate",
     "build:sites": "npm run build && node scripts/build-sites-worker.mjs"
