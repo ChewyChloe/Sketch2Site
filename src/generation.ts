@@ -1,4 +1,4 @@
-import { requestedSectionLayout, sectionSourceIds, sectionLayoutIssue } from "./sectionLayout";
+import { requestedSectionLayout, sectionSourceIds, sectionLayoutIssue, withSectionOrder } from "./sectionLayout";
 import { DirectionSchema } from "./directions";
 import {structuredGroupMotions} from "./motion";
 import { moodThemes, withFocusFirst } from "./brief";
@@ -404,7 +404,9 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
     schemaVersion: 2,
     metadata: { title: canvas.metadata.name, language: "zh-Hant" },
     ...(canvas.metadata.layoutMode!=='reflow'?{draftLayout:{width:1440,height:canvas.metadata.height,items:canvas.nodes.map(({id,x,y,width,height,zIndex})=>({id,x,y,width,height,zIndex}))}}:{}),
-    sections: finalSections,
+    sections: canvas.metadata.layoutMode === "reflow"
+      ? withSectionOrder(finalSections, canvas.metadata.sectionOrder, section => sectionSourceIds(section, seen))
+      : finalSections,
     typography: layout.typography,
     ...(layout.version === 1
       ? { styles: layout.theme }

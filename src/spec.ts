@@ -61,6 +61,7 @@ export const CanvasSchema = z
       .object({
         name: z.string().min(1).max(80),
         layoutMode:z.enum(["preserve","reflow"]).optional(),
+        sectionOrder: z.array(z.string().uuid()).max(100).refine(ids => new Set(ids).size === ids.length).optional(),
         // The user's short description for generation (fill-in blanks + an optional note).
         brief: z.object({
           audience: z.string().trim().max(20),

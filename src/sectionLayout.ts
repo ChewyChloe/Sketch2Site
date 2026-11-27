@@ -64,3 +64,10 @@ export function hasImplicitLayoutLock(page: Pick<PageSpec, "sections" | "subpage
   return [...page.sections, ...(page.subpages ?? []).flatMap(view => view.sections)]
     .some(section => section.lock?.layout && !section.sectionLayout?.arrangement);
 }
+
+export function withSectionOrder<T>(sections: T[], order: readonly string[] | undefined, sources: (section: T) => Iterable<string>): T[] {
+  if (!order?.length) return sections;
+  const ranks = new Map(order.map((id, index) => [id, index]));
+  const rank = (section: T) => Math.min(order.length, ...Array.from(sources(section), id => ranks.get(id) ?? order.length));
+  return [...sections].sort((a, b) => rank(a) - rank(b));
+}

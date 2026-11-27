@@ -145,9 +145,9 @@ export function applySiteOverrides(page: PageSpec, draft: CanvasSpec): PageSpec 
 /** Fingerprint of what generation reads from the draft (not the site bookkeeping). */
 export function draftFingerprint(draft: CanvasSpec): string {
   const { siteOverrides: _o, siteBuiltFrom: _b, ...meta } = draft.metadata;
-  void _o;
   void _b;
-  const text = JSON.stringify([meta, draft.nodes, draft.constraints]);
+  const layouts = Object.entries(_o?.items ?? {}).filter(([key, item]) => key.startsWith("layout:") && item.sectionLayout);
+  const text = JSON.stringify([meta, draft.nodes, draft.constraints, ...(layouts.length ? [layouts] : [])]);
   // FNV-1a, 32 bit: short enough to keep in the draft, only used to notice changes.
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;

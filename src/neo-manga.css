@@ -1103,3 +1103,7 @@ body{background:var(--neo-cream)}
 .brief-panel [aria-label="生成前需求摘要"] dl { display: grid; grid-template-columns: minmax(5em, auto) minmax(0, 1fr); gap: 8px 12px; }
 .brief-panel [aria-label="生成前需求摘要"] dt { font-weight: 700; }
 .brief-panel [aria-label="生成前需求摘要"] dd { margin: 0; overflow-wrap: anywhere; }
+.generation-section-plan > ol { display: grid; gap: 12px; padding-inline-start: 22px; }
+.generation-section-plan > ol > li { padding: 10px; border: 1px solid var(--line, #aaa); border-radius: 8px; }
+.generation-section-plan li p { margin: 4px 0; }
+.generation-section-plan .section-layout-thumbnail { display: block; width: 64px; fill: currentColor; opacity: .65; }

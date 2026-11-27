@@ -152,3 +152,16 @@ it("materializes an explicit section arrangement without changing source content
   expect(page.sections[0].sectionLayout).toEqual(sectionLayout);
   expect(() => verifyPreservation(source, page)).not.toThrow();
 });
+
+it("puts confirmed section anchors in order even if the supplied layout arrives in another order", () => {
+  const source = structuredClone(fixtures[0]);
+  source.metadata.layoutMode = "reflow";
+  const plan = mockLayout(prepareIntent(source));
+  expect(plan.sections.length).toBeGreaterThan(1);
+  const first = plan.sections[0].items[0].sourceId;
+  const last = plan.sections.at(-1)!.items[0].sourceId;
+  source.metadata.sectionOrder = [last, first];
+  const page = materialize(source, plan);
+  expect([...indexNodes({ ...page, sections: [page.sections[0]] }).keys()]).toContain(last);
+  expect(() => verifyPreservation(source, page)).not.toThrow();
+});

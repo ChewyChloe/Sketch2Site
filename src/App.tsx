@@ -1763,6 +1763,8 @@ node ? (
       {briefOpen && mode === "draft" && (
         <BriefPanel
           draft={spec}
+          savedSite={previewRef.current?.site()}
+          onDraftChange={(next) => change({ ...next, metadata: { ...next.metadata, brief: spec.metadata.brief } })}
           initial={spec.metadata.brief}
           aiReady={aiReady}
           onClose={(brief) => { saveBrief(brief); setBriefOpen(false); }}

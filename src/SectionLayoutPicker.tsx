@@ -11,6 +11,13 @@ const presets = [
   { mode: "masonry", name: "瀑布流", hint: "按欄排列不同高度的內容", boxes: [[2, 2, 13, 14], [2, 18, 13, 5], [17, 2, 13, 7], [17, 11, 13, 12], [32, 2, 13, 21]] },
 ] as const;
 
+export function SectionLayoutThumbnail({ mode }: { mode: SectionArrangement["mode"] }) {
+  const preset = presets.find(item => item.mode === mode)!;
+  return <svg className="section-layout-thumbnail" aria-hidden="true" viewBox="0 0 47 25">
+    {preset.boxes.map(([x, y, width, height]) => <rect key={x + ":" + y} {...{ x, y, width, height }} rx={mode === "cards" ? 3 : 0} />)}
+  </svg>;
+}
+
 function arrangementFor(mode: SectionArrangement["mode"]): SectionArrangement {
   const gap = "medium";
   if (mode === "stack") return { mode, gap };
@@ -39,12 +46,10 @@ export default function SectionLayoutPicker({ section, onChange, positionMode }:
         ? "這一頁正使用保留草稿位置。先用智慧排版生成網站，再調整區塊布局。"
         : "這一區的版面已鎖定，解除版面鎖定後可改排列。"}</p> : <>
         <div className="section-layout-options" role="group" aria-label="排列方式">
-          {presets.map(({ mode, name, hint, boxes }) => (
+          {presets.map(({ mode, name, hint }) => (
             <button key={mode} type="button" aria-pressed={arrangement?.mode === mode}
               onClick={() => apply({ ...value, arrangement: arrangement?.mode === mode ? arrangement : arrangementFor(mode) })}>
-              <svg aria-hidden="true" viewBox="0 0 47 25">
-                {boxes.map(([x, y, width, height]) => <rect key={x + ":" + y} {...{ x, y, width, height }} rx={mode === "cards" ? 3 : 0} />)}
-              </svg>
+              <SectionLayoutThumbnail mode={mode} />
               <strong>{name}</strong>
               <small>{hint}</small>
             </button>

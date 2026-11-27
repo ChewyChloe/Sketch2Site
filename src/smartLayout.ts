@@ -1,3 +1,4 @@
+import { withSectionOrder } from "./sectionLayout";
 import type { CanvasNode, CanvasSpec } from "./spec";
 import type { LayoutItem, LayoutV2 } from "./generation";
 import type { ThemeId } from "./pageSpec";
@@ -8,6 +9,10 @@ import { moodThemes, withFocusFirst } from "./brief";
 // the same trusted materialize() path the AI uses. It never adds text.
 
 type Section = LayoutV2["sections"][number];
+
+export const plannedSourceIds = (section: Section) =>
+  [...section.intro, ...section.items, ...section.aside, ...section.outro].map(item => item.sourceId);
+
 
 const themeHints: [RegExp, ThemeId][] = [
   [/咖啡|餐|料理|甜點|麵包|烘焙|美食|食堂|飲/, "forest"],
@@ -235,6 +240,8 @@ export function smartLayout(canvas: CanvasSpec): LayoutV2 {
   // The brief's focus moves the matching section right after the opening one.
   const brief = canvas.metadata.brief;
   sections = withFocusFirst(sections, brief?.focus);
+  if (canvas.metadata.layoutMode === "reflow")
+    sections = withSectionOrder(sections, canvas.metadata.sectionOrder, plannedSourceIds);
   const forceStack = canvas.constraints.includes("layout:stack");
   const forceGrid = canvas.constraints.includes("layout:grid");
   // Start with a soft band so the first section separates from the hero.
