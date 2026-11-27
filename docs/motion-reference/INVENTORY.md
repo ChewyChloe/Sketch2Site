@@ -41,6 +41,12 @@
 | 導覽列樣式 | 339 | 4 |
 | 導覽列樣式 | 341 | 4 |
 
+## 已驗證的既有動畫擴充
+
+| Registry ID | 來源編號 | 批次 |
+|---|---|---|
+| `count-up` | 8 | 5 |
+
 ## 已有同等功能
 
 | # | 元件 | 觸發 | 技術 | Sketch2Site | 優先 | 說明 |
@@ -111,7 +117,7 @@
 | # | 元件 | 觸發 | 技術 | Sketch2Site | 優先 | 說明 |
 |---|---|---|---|---|---|---|
 | 6 | text | ['loop'] | CSS | breathing-glow | P4 | 加上文字縮放與波紋 |
-| 8 | text | ['enter'] | CSS | count-up | P4 | 倒數模式 |
+| 8 | text | ['enter'] | CSS | count-up | P4 | 原創落點倒數模式 |
 | 16 | text | ['loop'] | CSS | curved-path-text | P3 | 整圈旋轉 |
 | 19 | text | ['loop'] | CSS | kinetic-text-wave | P4 | 旗面起伏 |
 | 21 | text | ['enter'] | CSS | letter-assembly | P4 | 磁吸聚合 |

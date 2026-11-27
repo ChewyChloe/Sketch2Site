@@ -185,7 +185,7 @@
    "category": "既有功能可擴充",
    "sketch2site": "count-up",
    "priority": "P4",
-   "note": "倒數模式",
+   "note": "原創落點倒數模式",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -196,6 +196,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedExpansionBatch": 5,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

@@ -235,6 +235,7 @@
 /* Original controlled motion components; shared unchanged by editor and ZIP export. */
 .motion-sr { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap; }
 .motion-number { font-variant-numeric:tabular-nums; }
+.motion-number-value[data-impact] { display: inline-block; transform-origin: bottom center; }
 .motion-curve { display:block;width:100%; }
 .motion-curve svg { display:block;width:100%;height:auto;overflow:visible; }
 .motion-curve text { fill:currentColor;font-size:28px; }

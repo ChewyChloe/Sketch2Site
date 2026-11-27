@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { motionCatalog, referenceMotionIds } from '../src/motionCatalog';
+import { createMotion } from '../src/motion';
+import { motionFixture } from './fixtures/motions';
 import { referenceFixture as fixture, uid, type Id } from './fixtures/referenceMotions';
 import { openWebsiteWorkspace, openPanel, editSelection } from './helpers/workbench';
 
@@ -295,4 +297,43 @@ test("imprint beats performs a bounded entrance and leaves only the original wor
     await expect(node.locator(".ref-imprints")).toHaveAttribute("aria-hidden", "true");
     await expect(node.locator(".ref-imprints")).toHaveCount(0);
     await expect(node).toHaveText("自家烘豆");
+});
+
+test("impact countdown lands on successive numbers and respects Reduced Motion", async ({ page }) => {
+    const input = motionFixture();
+    const paragraph = input.sections[0].children!.find(node => node.type === 'paragraph')!;
+    paragraph.content = '7';
+    paragraph.effects = [createMotion('count-up', paragraph.id, { startValue: 10, endValue: 7, cadence: 'impact', durationMs: 1200 })];
+    await page.addInitScript(() => {
+        const values: string[] = [];
+        const counts = window as Window & { countdownTest?: { values: string[]; played: boolean } };
+        counts.countdownTest = { values, played: false };
+        new MutationObserver(() => {
+            const digit = document.querySelector('.preview-frame .motion-number-value[data-impact]');
+            if (!digit) return;
+            const value = digit.textContent ?? '';
+            if (value !== values.at(-1)) values.push(value);
+            if (digit.getAnimations().some(a => a.playState === 'running')) counts.countdownTest!.played = true;
+        }).observe(document, { subtree: true, childList: true, characterData: true });
+    });
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/?draft');
+    await openWebsiteWorkspace(page);
+    await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'countdown.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(input)) });
+    const result = page.locator(`.preview-frame [data-page-id="${paragraph.id}"]`);
+    const visual = result.locator('.motion-number-value');
+    await expect(visual).toHaveAttribute('data-impact', '');
+    await expect.poll(() => page.evaluate(() =>
+        (window as Window & { countdownTest?: { values: string[]; played: boolean } }).countdownTest?.values.join(',')
+    ), { timeout: 5000 }).toMatch(/(?:^|,)10,9,8,7(?:,|$)/);
+    expect(await page.evaluate(() =>
+        (window as Window & { countdownTest?: { played: boolean } }).countdownTest?.played
+    )).toBe(true);
+    await expect(visual).toHaveText('7');
+    await expect(result.locator('.motion-sr')).toHaveText('7');
+    await page.setViewportSize({ width: 375, height: 840 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload();
+    await expect(visual).toHaveText('7');
+    await expect.poll(() => visual.evaluate(el => el.getAnimations().length)).toBe(0);
 });

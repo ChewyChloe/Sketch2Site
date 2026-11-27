@@ -1,5 +1,5 @@
 import { allSections, filterLabels, fontLabels, frameLabels, themeIds, themeLabels, type FontId, type FrameId, type ImageLook, type PageNode, type PageSpec, type TextStyle, type ThemeId } from "./pageSpec";
-import { combinationReason, createMotion, targetReason, type MotionInstance } from "./motion";
+import { combinationReason, createMotion, numericContent, targetReason, type MotionInstance } from "./motion";
 import { defaultControls, motionCatalog, motionIds, type MotionId } from "./motionCatalog";
 
 // Annotations: "click something, say how to change it". The instruction is read
@@ -44,7 +44,7 @@ const motionWords: [RegExp, MotionId[]][] = [
   [/彈跳|跳動|彈/, ["elastic-word-bounce"]],
   [/波浪/, ["kinetic-text-wave"]],
   [/滾輪|滾動數字/, ["rolling-characters"]],
-  [/數字|遞增|跑數字/, ["count-up"]],
+  [/數字|遞增|跑數字|倒數/, ["count-up"]],
   [/分行/, ["split-line-assembly"]],
   [/呼吸|閃|發光|光暈/, ["breathing-glow", "hover-glow"]],
   [/磁吸|吸/, ["magnetic-control"]],
@@ -108,7 +108,7 @@ function chainOf(page: PageSpec, id: string): PageNode[] | null {
 const nearest = (ctx: Ctx, type: string) => [...ctx.chain].reverse().find((n) => n.type === type);
 const firstSection = (page: PageSpec) => page.sections[0];
 
-function motionPatches(node: PageNode, wanted: MotionId[], replace: boolean): Step {
+function motionPatches(node: PageNode, wanted: MotionId[], replace: boolean, countdown: boolean): Step {
   for (const id of wanted) {
     if (node.effects.some((e) => e.presetId === id)) return { patches: [], summary: `已經有「${motionCatalog[id].nameZh}」了` };
     const reason = targetReason(node, id);
@@ -116,7 +116,12 @@ function motionPatches(node: PageNode, wanted: MotionId[], replace: boolean): St
     if (Object.values(motionCatalog[id].controls).some((c) => c.required && c.default === undefined) && id !== "count-up") continue;
     let motion: MotionInstance;
     try {
-      motion = createMotion(id, node.id, defaultControls(id));
+      const values = id === "count-up" ? numericContent(node.content ?? "") : null;
+      const falling = countdown && values?.decimals === 0 && values.endValue < 1e9 - 3;
+      motion = createMotion(id, node.id, {
+        ...defaultControls(id), ...values,
+        ...(falling && values ? { cadence: "impact", startValue: values.endValue + 3 } : {}),
+      });
     } catch {
       continue;
     }
@@ -251,12 +256,12 @@ function clause(text: string, ctx: Ctx): Step {
   }
 
   // 4. Add or change motion (named or default).
-  if (/動態|動畫|特效|效果|動起來|會動/.test(t) || /^(漂浮|飄浮|浮動)$/.test(t) || motionWords.some(([re]) => re.test(t) && /加|換|改|用|要|讓|做/.test(t))) {
+  if (/動態|動畫|特效|效果|動起來|會動/.test(t) || /^(漂浮|飄浮|浮動|倒數)$/.test(t) || motionWords.some(([re]) => re.test(t) && /加|換|改|用|要|讓|做/.test(t))) {
     const replace = /換|改/.test(t);
     const named = motionIds.find((id) => t.includes(motionCatalog[id].nameZh));
     // Every matching word is a candidate; the first one that suits this element wins.
     const words = motionWords.filter(([re]) => re.test(t)).flatMap(([, ids]) => ids);
-    return motionPatches(node, named ? [named] : words.length ? words : defaultMotion[node.type] ?? ["fade-in"], replace);
+    return motionPatches(node, named ? [named] : words.length ? words : defaultMotion[node.type] ?? ["fade-in"], replace, /倒數/.test(t));
   }
 
   // 5. Colors / theme (page-wide, anchored on the first section like the theme menu).

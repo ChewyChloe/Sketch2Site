@@ -330,6 +330,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| cadence | 數字節奏 | select | "smooth" | smooth / impact |
 | startValue | 起始數字 | number | 0 | -1000000000–1000000000; step 0.01 |
 | endValue | 最終數字 | number | 使用者必填 | -1000000000–1000000000; step 0.01 |
 | durationMs | 時長（毫秒） | number | 1200 | 300–3000; step 1 |
@@ -344,7 +345,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **compatibilityRules**：原文需為合法數字（含受控前後綴）
 
-**constraints**：終值必須來自原始文字；不編造統計；不循環；使用tabular numerals
+**constraints**：終值必須來自原始文字；不編造統計；不循環；落點模式限相差一至六的整數倒數，時長至少 600ms；其他數值沿用平滑計數；使用tabular numerals
 
 **reducedMotionFallback**：直接顯示精確終值
 

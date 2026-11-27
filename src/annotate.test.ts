@@ -140,3 +140,14 @@ it("recognizes a bare floating request and explains unsupported targets", () => 
   const heading = first(page, node => node.type === "heading");
   expect(interpretAnnotation(page, heading.id, "漂浮")).toMatchObject({ ok: false, message: expect.stringContaining("不適合") });
 });
+
+it("uses the original numeric text as the end of a requested impact countdown", () => {
+  const page = site();
+  const p = first(page, node => node.type === "paragraph");
+  p.content = "7 天";
+  const after = run(page, p.id, "倒數").page;
+  const node = indexNodes(after).get(p.id)!;
+  expect(node.content).toBe("7 天");
+  expect(node.effects.find(effect => effect.presetId === "count-up")?.validatedControls)
+    .toMatchObject({ cadence: "impact", startValue: 10, endValue: 7, suffix: " 天" });
+});

@@ -20,7 +20,7 @@
 | `stagger-reveal` | 依序顯示 / Stagger Reveal | 卡片與區塊 | 出現時 | 淡入顯現 | 引導閱讀、吸引注意 | 適中 | intervalMs, childDurationMs, direction, revealStyle | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `breathing-glow` | 呼吸光按鈕 / Breathing Glow Button | 按鈕 | 一直動、滑過時 | 光影色彩 | 吸引注意 | 適中 | cycleMs, intensity, spreadPx, pauseOnHover | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `curved-path-text` | 曲線文字 / Curved Path Text | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | curvature, direction, revealDurationMs, textAlign | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
-| `count-up` | 數字遞增 / Count Up | 文字 | 出現時 | 數字資料 | 呈現資料、吸引注意、引導閱讀 | 適中 | startValue, endValue, durationMs, decimals, locale, prefix, suffix | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
+| `count-up` | 數字遞增 / Count Up | 文字 | 出現時 | 數字資料 | 呈現資料、吸引注意、引導閱讀 | 適中 | cadence, startValue, endValue, durationMs, decimals, locale, prefix, suffix | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `flip-card` | 雙面卡片 / Flip Card | 卡片與區塊 | 點擊時、滑過時 | 立體 | 互動回饋 | 適中 | axis, durationMs, perspectivePx, trigger, backText | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `physics-tag-field` | 物理標籤場 / Physics Tag Field | 卡片與區塊 | 一直動、拖曳 | 彈性 | 互動回饋、營造氣氛 | 強烈 | labels, gravity, friction, restitution, spawnIntervalMs, maxTags, draggable, collisionEnabled | — | PhysicsTags.tsx |
 | `fold-reveal` | 折頁揭露 / Fold Reveal | 卡片與區塊 | 拖曳、點擊時 | 立體 | 互動回饋 | 強烈 | foldCorner, revealThreshold, springResponse, foldShadow, clickToToggle, underText | 可 | FoldReveal.tsx |

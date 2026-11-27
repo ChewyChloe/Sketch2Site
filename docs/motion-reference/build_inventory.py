@@ -9,7 +9,7 @@ CUR = "取代系統游標，影響可用性與無障礙"
 # code: S 已有同等功能 / X 既有功能可擴充 / N 需要新增動畫 / C 需要新增複合互動元件 / U 不適合目前架構或需要額外授權
 M = {
 1:("N","","P4","文字重落進場"),2:("U","","—",EXIT),3:("N","","P4","硬幣式翻轉循環"),4:("U","","—",EXIT),5:("U","","—",EXIT),
-6:("X","breathing-glow","P4","加上文字縮放與波紋"),7:("N","","P4","萬花筒旋轉"),8:("X","count-up","P4","倒數模式"),9:("S","kinetic-text-wave",""," "),10:("N","","P4","定格晃動"),
+6:("X","breathing-glow","P4","加上文字縮放與波紋"),7:("N","","P4","萬花筒旋轉"),8:("X","count-up","P4","原創落點倒數模式"),9:("S","kinetic-text-wave",""," "),10:("N","","P4","定格晃動"),
 11:("N","drift-letterfall","P3","八條以內的分軌落字"),12:("N","","P4","文字放大鏡"),13:("S","character-decode","",""),14:("U","","—",EXIT),15:("S","gradient-text-flow","",""),
 16:("X","curved-path-text","P3","整圈旋轉"),17:("N","","P4","水面倒影"),18:("S","kinetic-text-wave","",""),19:("X","kinetic-text-wave","P4","旗面起伏"),20:("N","","P4","反重力彈跳"),
 21:("X","letter-assembly","P4","磁吸聚合"),22:("N","","P4","格狀文字背景"),23:("N","bold-relay","P1","批次一完成"),24:("N","","P4","扇形展開"),25:("N","","P3","逐字點亮與跳點"),
@@ -84,6 +84,7 @@ names = {"S": "已有同等功能", "X": "既有功能可擴充", "N": "需要�
 HANNAH = {"name": "Hannah’s Motion Library", "url": "https://kittenjam-motion-library.vercel.app/"}
 shipped = {50: 2, 223: 2, 11: 3, 30: 3, 43: 3}
 components = {339: 4, 341: 4}
+expansions = {8: 5}
 rows = []
 for it in items:
     i = it["id"]; code, target, prio, note = M[i]
@@ -97,6 +98,7 @@ for it in items:
         "note": note.strip() or None, "credit": credit,
         **({"verifiedBatch": shipped[i]} if i in shipped else {}),
         **({"verifiedComponentBatch": components[i]} if i in components else {}),
+        **({"verifiedExpansionBatch": expansions[i]} if i in expansions else {}),
         "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製" + ("；第三方付費元件" if it.get("src") else ""),
     })
 from collections import Counter

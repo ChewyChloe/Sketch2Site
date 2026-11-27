@@ -8,6 +8,7 @@ import {referenceFixture} from "./fixtures/referenceMotions";
 import {createServer} from "node:net";
 import { test, expect } from "@playwright/test";
 import {motionFixture,motionId} from "./fixtures/motions";
+import { createMotion } from "../src/motion";
 import { demoPage } from "../src/pageFixtures";
 import { pageAction } from "./helpers/workbench";
 import { mkdtemp, readFile, readdir, copyFile } from "node:fs/promises";
@@ -66,6 +67,11 @@ test("downloaded React project installs and builds independently; runtime stays 
   const layoutSection = input.sections[0];
   layoutSection.sectionLayout = { arrangement: { mode: "masonry", columns: 2, gap: "medium", mobile: "stack" }, fullBleed: true };
   const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...thirdFixture().sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
+  const countdown = {
+    id: motionId(25), type: "paragraph" as const, content: "7",
+    effects: [createMotion("count-up", motionId(25), { cadence: "impact", startValue: 10, endValue: 7, durationMs: 1200 })],
+  };
+  motions.sections[0].children!.push(countdown);
   const replaceImage = (nodes: typeof input.sections) =>
     nodes.forEach((n) => {
       if (n.type === "image") n.src = localRef;
@@ -173,6 +179,10 @@ z.extractall(root)
       "把想法，排成一個頁面。",
     );
     expect(await standalone.title()).toBe(input.metadata.title);
+    const digit = standalone.locator(`[data-page-id="${countdown.id}"] .motion-number-value`);
+    await expect(digit).toHaveAttribute("data-impact", "");
+    await expect(digit).toHaveText("7");
+    expect(await digit.evaluate(el => el.getAnimations().length)).toBe(0);
     const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
     await expect(exportedLayout).toHaveCSS("column-count", "2");
     await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");

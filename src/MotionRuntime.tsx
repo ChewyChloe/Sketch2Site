@@ -10,18 +10,41 @@ export function CountUp({ effect, original }: {
     original: string;
 }) {
     const c = effect.validatedControls, reduced = useReducedMotion(), ref = useRef<HTMLSpanElement>(null);
+    const visual = useRef<HTMLSpanElement>(null);
     const [value, setValue] = useState(Number(c.endValue));
+    const end = Number(c.endValue), start = Number(c.startValue), duration = motionDuration(effect);
+    const difference = start - end;
+    const impact = c.cadence === 'impact' && Number.isInteger(start) && Number.isInteger(end) && difference >= 1 && difference <= 6 && duration >= 600;
     useEffect(() => {
         let frame = 0, observer: IntersectionObserver | undefined, started = false;
-        const end = Number(c.endValue), start = Number(c.startValue), duration = motionDuration(effect);
+        let strike: Animation | undefined;
         setValue(end);
         const begin = () => {
             if (started || reduced)
                 return;
             started = true;
             let first: number | undefined;
-            const step = (now: number) => { first ??= now; const p = Math.min(1, (now - first) / duration); setValue(p === 1 ? end : start + (end - start) * (1 - Math.pow(1 - p, 3))); if (p < 1)
-                frame = requestAnimationFrame(step); };
+            let lastBeat = -1;
+            const step = (now: number) => {
+                first ??= now;
+                const progress = Math.min(1, (now - first) / duration);
+                if (impact) {
+                    const beat = Math.floor(progress * difference);
+                    if (beat !== lastBeat) {
+                        lastBeat = beat;
+                        setValue(start - beat);
+                        strike?.cancel();
+                        strike = visual.current?.animate([
+                            { transform: 'translateY(-.65em) scaleY(1.16)' },
+                            { transform: 'translateY(0) scaleY(.83)', offset: .65 },
+                            { transform: 'none' },
+                        ], { duration: Math.min(210, duration / difference), easing: 'ease-out' });
+                    }
+                } else {
+                    setValue(progress === 1 ? end : start + (end - start) * (1 - Math.pow(1 - progress, 3)));
+                }
+                if (progress < 1) frame = requestAnimationFrame(step);
+            };
             frame = requestAnimationFrame(step);
         };
         if (!reduced && ref.current) {
@@ -31,10 +54,10 @@ export function CountUp({ effect, original }: {
             } });
             observer.observe(ref.current);
         }
-        return () => { cancelAnimationFrame(frame); observer?.disconnect(); };
-    }, [effect, c, reduced]);
+        return () => { cancelAnimationFrame(frame); strike?.cancel(); observer?.disconnect(); };
+    }, [effect, duration, start, end, difference, impact, reduced]);
     const formatted = new Intl.NumberFormat(String(c.locale), { minimumFractionDigits: Number(c.decimals), maximumFractionDigits: Number(c.decimals) }).format(value);
-    return <span ref={ref} className="motion-number"><span className="motion-sr">{original}</span><span aria-hidden="true">{String(c.prefix)}{formatted}{String(c.suffix)}</span></span>;
+    return <span ref={ref} className="motion-number"><span className="motion-sr">{original}</span><span ref={visual} className="motion-number-value" data-impact={impact ? "" : undefined} aria-hidden="true">{String(c.prefix)}{formatted}{String(c.suffix)}</span></span>;
 }
 export function curveRows(text:string, available:number, measure:(value:string)=>number):string[]{
     const segments=typeof Intl.Segmenter==='function'?Array.from(new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(text),v=>v.segment):Array.from(text);

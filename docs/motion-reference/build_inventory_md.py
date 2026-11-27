@@ -21,6 +21,11 @@ for r in rows:
     if r.get("verifiedComponentBatch"):
         L.append(f"| {r['sketch2site']} | {r['sourceId']} | {r['verifiedComponentBatch']} |")
 L.append("")
+L.append("## 已驗證的既有動畫擴充\n\n| Registry ID | 來源編號 | 批次 |\n|---|---|---|")
+for r in rows:
+    if r.get("verifiedExpansionBatch"):
+        L.append(f"| `{r['sketch2site']}` | {r['sourceId']} | {r['verifiedExpansionBatch']} |")
+L.append("")
 for k in order:
     L.append(f"## {k}\n\n| # | 元件 | 觸發 | 技術 | Sketch2Site | 優先 | 說明 |\n|---|---|---|---|---|---|---|")
     for r in rows:
