@@ -58,8 +58,11 @@
 | `count-up` | 8 | 5 |
 | `kinetic-text-wave` | 19 | 13 |
 | `letter-assembly` | 21 | 13 |
+| `text-morph-transition` | 28 | 15 |
 | `blur-in` | 29 | 13 |
 | `kinetic-text-wave` | 35 | 13 |
+| `text-morph-transition` | 46 | 15 |
+| `text-morph-transition` | 47 | 15 |
 | `marquee-text` | 48 | 14 |
 | `marquee-text` | 49 | 14 |
 | `marquee-text` | 52 | 14 |

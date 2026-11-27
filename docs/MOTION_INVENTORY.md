@@ -52,7 +52,7 @@
 | `svg-path-drawing` | 路徑描繪 / SVG Path Drawing | 卡片與區塊 | 出現時 | 線條圖形 | 吸引注意 | 適中 | durationMs, thicknessPx, color, shape | — | AdvancedMotion.tsx |
 | `numeric-gauge-sweep` | 數值儀表掃描 / Numeric Gauge Sweep | 文字 | 出現時 | 數字資料 | 呈現資料、引導閱讀 | 適中 | durationMs | — | AdvancedMotion.tsx |
 | `scroll-milestones` | 區塊閱讀里程碑 / Scroll Milestones | 卡片與區塊 | 捲動時 | 數字資料 | 呈現資料 | 適中 | steps, orientation | — | AdvancedMotion.tsx |
-| `text-morph-transition` | 文字形態轉換 / Text Morph Transition | 文字 | 點擊時、出現時 | 文字逐字 | 互動回饋、引導閱讀 | 強烈 | toText, durationMs, trigger | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
+| `text-morph-transition` | 文字形態轉換 / Text Morph Transition | 文字 | 點擊時、出現時 | 文字逐字 | 互動回饋、引導閱讀 | 強烈 | style, toText, durationMs, trigger | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `elastic-word-bounce` | 彈性片語跳動 / Elastic Word Bounce | 文字 | 出現時 | 彈性 | 引導閱讀 | 強烈 | amplitudePx, elasticity, staggerMs, durationMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `text-spotlight-reveal` | 聚光文字顯影 / Text Spotlight Reveal | 文字 | 滑過時、出現時 | 光影色彩 | 互動回饋、引導閱讀 | 強烈 | radiusPx, durationMs, trigger | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `typographic-stretch` | 字體延展回彈 / Typographic Stretch | 文字 | 滑過時 | 文字逐字 | 互動回饋 | 強烈 | maxScale, durationMs | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |

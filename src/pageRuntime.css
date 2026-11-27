@@ -2041,3 +2041,6 @@
 .sig-multiband[data-layout="layered-rush"] > .sig-band:nth-child(3) { bottom: 0; font: italic 1.2em/1.2 var(--pg-body-font, serif); rotate: 5deg; opacity: .84; }
 .sig-multiband[data-layout="ribbon-cross"] > .sig-band { inset-inline: -10%; top: calc(50% - .7em); padding-block: .12em; background: color-mix(in srgb, var(--accent, currentColor) 17%, transparent); rotate: 13deg; }
 .sig-multiband[data-layout="ribbon-cross"] > .sig-band:last-child { rotate: -13deg; background: color-mix(in srgb, var(--ink, currentColor) 13%, transparent); }
+
+.cin-word-stage { white-space: pre-wrap; overflow-wrap: anywhere; transform-origin: center; }
+.cin-word-ring { position: absolute; width: 3.4em; height: 2.1em; translate: -50% -50%; border-radius: 50%; border-block: 1px solid var(--accent, currentColor); pointer-events: none; }

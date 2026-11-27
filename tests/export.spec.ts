@@ -71,6 +71,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   const layoutSection = input.sections[0];
   layoutSection.sectionLayout = { arrangement: { mode: "masonry", columns: 2, gap: "medium", mobile: "stack" }, fullBleed: true };
   const cinematic = thirdFixture();
+  cinematic.sections[0].children![0].effects[0].validatedControls.style = "portal";
   const story = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "pinned-story-panels")!;
   story.effects[0].validatedControls.presentation = "media";
   const gooey = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "gooey-blob-merge")!;
@@ -273,6 +274,7 @@ z.extractall(root)
     await expect(exportedStory.locator(".story-media-pin [data-active=true] img")).toHaveAttribute("alt", "設計的影像");
     const thirdNodes=thirdFixture().sections.map(s=>s.children![0]);
     const morph=standalone.locator(`[data-page-id="${thirdNodes[0].id}"]`);await morph.getByRole('button',{name:'切換文字'}).click();await expect(morph.locator('.cin-text-source')).toHaveText('設計成真');
+    await expect(morph.locator('.cin-word-stage')).toHaveCount(2);
     const sequence=standalone.locator(`[data-page-id="${thirdNodes[16].id}"]`);await sequence.scrollIntoViewIfNeeded();await sequence.getByLabel('序列影格進度').fill('100');await sequence.getByLabel('序列影格進度').dispatchEvent('input');await expect(sequence.locator('img')).toHaveAttribute('src',/frame-03.svg$/);await expect.poll(()=>sequence.locator('img').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
     const follower=standalone.locator(`[data-page-id="${thirdNodes[5].id}"]`);await follower.focus();await expect(follower.locator('.cin-follower')).toHaveAttribute('data-visible','true');await expect.poll(()=>follower.locator('.cin-follower').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
     const shape=standalone.locator(`[data-page-id="${thirdNodes[19].id}"]`),path=shape.locator('.cin-shape path'),beforeShape=await path.getAttribute('d');await shape.getByRole('button',{name:'變換圖形'}).click();await expect.poll(()=>path.getAttribute('d')).not.toBe(beforeShape);

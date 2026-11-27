@@ -48,6 +48,43 @@ export function CinematicText({ text, effect }: {
             }
             if (morph && from === target)
                 return;
+            const mode = effect.validatedControls.style;
+            if (morph && (mode === 'portal' || mode === 'squash' || mode === 'orbit')) {
+                const sizeOf = () => {
+                    const box = source.getBoundingClientRect(), origin = host.getBoundingClientRect();
+                    return { x: box.left - origin.left, y: box.top - origin.top, w: box.width, h: box.height };
+                };
+                const nextBox = sizeOf();
+                source.textContent = from;
+                const prevBox = sizeOf();
+                source.textContent = target;
+                makeLayer();
+                const next = glyph(target, nextBox), old = glyph(from, prevBox);
+                next.classList.add('cin-word-stage'); old.classList.add('cin-word-stage');
+                const moves = mode === 'portal' ? {
+                    out: [{ scale: '1', opacity: 1 }, { scale: '2.2', opacity: 0, filter: 'blur(4px)' }],
+                    in: [{ scale: '.58', opacity: 0, filter: 'blur(4px)' }, { scale: '1', opacity: 1, filter: 'blur(0)' }],
+                } : mode === 'squash' ? {
+                    out: [{ scale: '1 1', opacity: 1 }, { scale: '1.24 .12', opacity: .27 }, { scale: '1.38 0', opacity: 0 }],
+                    in: [{ scale: '1.38 0', opacity: 0 }, { scale: '.94 1.1', opacity: 1, offset: .78 }, { scale: '1 1', opacity: 1 }],
+                } : {
+                    out: [{ opacity: 1, rotate: '0deg', translate: '0px 0px' }, { opacity: 0, rotate: '-24deg', translate: '-24px -13px' }],
+                    in: [{ opacity: 0, rotate: '24deg', translate: '24px 13px' }, { opacity: 1, rotate: '0deg', translate: '0px 0px' }],
+                };
+                if (mode === 'orbit') {
+                    const ring = document.createElement('span');
+                    ring.className = 'cin-word-ring';
+                    ring.style.left = (nextBox.x + nextBox.w / 2) + 'px';
+                    ring.style.top = (nextBox.y + nextBox.h / 2) + 'px';
+                    host.querySelector('.cin-text-overlay')?.append(ring);
+                    r.animate(ring, [{ rotate: '-45deg', opacity: 0 }, { opacity: .72, offset: .26 }, { rotate: '220deg', opacity: 0 }], { duration });
+                }
+                const exit = r.animate(old, moves.out, { duration: duration * .55, easing: 'ease-in' });
+                exit?.addEventListener('finish', () => old.remove(), { once: true });
+                const enter = r.animate(next, moves.in, { duration: duration * .62, delay: duration * .38, fill: 'backwards', easing: 'ease-out' });
+                enter?.addEventListener('finish', stop, { once: true });
+                return;
+            }
             const end = measure(target, effect.presetId === 'elastic-word-bounce');
             let old: ReturnType<typeof measure> = [];
             if (morph) {
