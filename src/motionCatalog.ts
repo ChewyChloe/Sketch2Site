@@ -128,6 +128,17 @@ export const motionCatalog: Record<MotionId, MotionDefinition> = {
     "letter-windows": define("letter-windows", ref("letter-windows").nameZh, ref("letter-windows").nameEn, "內容", ref("letter-windows").intro, "封面大標與品牌名稱", ["text", "heading", "paragraph"], "medium", ["autoplay"], { image: { label: "字裡的照片", kind: "asset", default: "/assets/samples/coffee-pourover.jpg" }, cycleSeconds: number("一輪秒數", 16, 8, 30), outline: boolean("細描邊", true) }, ["照片載入失敗時顯示原文字色", "只適合粗的大字"], "照片靜止填色", "適用大標題；細字看不出照片"),
     "bold-relay": define("bold-relay", ref("bold-relay").nameZh, ref("bold-relay").nameEn, "內容", ref("bold-relay").intro, "短標題與標語", ["text", "heading", "paragraph"], "medium", ["autoplay"], { peakWeight: number("最粗字重", 800, 500, 900, 100), cycleMs: number("一輪時長（毫秒）", 2400, 1200, 6000), stepMs: number("字間隔（毫秒）", 90, 40, 200) }, ["最多80個字", "原文可選取與朗讀"], "保持原本字重", "適用短句；思源黑體效果最好"),
     "chart-build": define("chart-build", ref("chart-build").nameZh, ref("chart-build").nameEn, "進場", ref("chart-build").intro, "長條圖、折線圖與圓餅圖", ["media"], "medium", ["scroll-enter"], { durationMs: number("時長（毫秒）", 900, 300, 2000), stepMs: number("每項間隔（毫秒）", 90, 40, 200) }, ["只適用圖表元件", "捲到時播放一次"], "直接顯示完整圖表", "僅圖表元件；不可與其他動畫合用"),
+    "crosswind-ribbons": define("crosswind-ribbons", ref("crosswind-ribbons").nameZh, ref("crosswind-ribbons").nameEn, "內容", ref("crosswind-ribbons").intro, "活動標題與品牌短句", ["text", "heading", "paragraph"], "medium", ["idle-loop"], {
+      cycleMs: number("字帶週期（毫秒）", 14000, 8000, 24000),
+      angleDeg: number("字帶斜角（度）", 12, 6, 20),
+      wash: number("裝飾濃度", .24, .1, .38, .01),
+    }, ["固定兩列", "保留原文", "離開視區暫停"], "保留靜態字帶", "適用文字元件"),
+    "vanishing-lattice": define("vanishing-lattice", ref("vanishing-lattice").nameZh, ref("vanishing-lattice").nameEn, "內容", ref("vanishing-lattice").intro, "科技活動、首屏與重點卡片", ["card", "container", "section"], "medium", ["idle-loop"], {
+      cycleMs: number("每格移動時間（毫秒）", 2800, 1600, 6500),
+      spacingPx: number("格距（像素）", 28, 18, 48),
+      orb: boolean("顯示圓光", true),
+    }, ["只使用主題色", "同頁最多四個背景動態", "離屏暫停"], "顯示靜態透視網格", "適用區塊或卡片"),
+
 };
 export function controlsSchema(id: MotionId) {
     const fields: Record<string, z.ZodType> = {};

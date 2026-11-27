@@ -208,6 +208,52 @@ export function useReferenceMotion(node: PageNode, ref: RefObject<HTMLElement | 
             });
         }
 
+
+        const ribbons = find("crosswind-ribbons");
+        if (ribbons && node.content?.trim()) {
+            addClass("ref-ambient-host");
+            const layer = deco("ref-ribbons");
+            layer.style.setProperty("--ribbon-angle", `${n(ribbons, "angleDeg", 12)}deg`);
+            layer.style.setProperty("--ribbon-wash", String(n(ribbons, "wash", .24)));
+            const label = segmentsOf(node.content.trim(), "grapheme").slice(0, 24).join("");
+            for (let row = 0; row < 2; row++) {
+                const band = document.createElement("span");
+                band.className = "ref-ribbon-band";
+                const track = document.createElement("span");
+                track.className = "ref-ribbon-track";
+                for (let copy = 0; copy < 2; copy++) {
+                    const group = document.createElement("span");
+                    group.className = "ref-ribbon-group";
+                    for (let word = 0; word < 5; word++) {
+                        const fragment = document.createElement("span");
+                        fragment.textContent = label;
+                        group.append(fragment);
+                    }
+                    track.append(group);
+                }
+                band.append(track);
+                layer.append(band);
+                r.animate(track, [{ transform: "translateX(0)" }, { transform: "translateX(-50%)" }], {
+                    duration: n(ribbons, "cycleMs", 14000), iterations: Infinity,
+                    direction: row === 0 ? "normal" : "reverse", easing: "linear",
+                });
+            }
+        }
+
+        const lattice = find("vanishing-lattice");
+        if (lattice) {
+            addClass("ref-ambient-host");
+            const layer = deco("ref-lattice");
+            const spacing = n(lattice, "spacingPx", 28);
+            if (lattice.validatedControls.orb !== false) layer.setAttribute("data-orb", "");
+            const floor = document.createElement("span");
+            floor.className = "ref-lattice-floor";
+            floor.style.setProperty("--lattice-gap", `${spacing}px`);
+            layer.append(floor);
+            r.animate(floor, [{ backgroundPosition: "0 0" }, { backgroundPosition: `0 ${spacing}px` }], {
+                duration: n(lattice, "cycleMs", 2800), iterations: Infinity, easing: "linear",
+            });
+        }
         return () => { r.dispose(); cleanups.reverse().forEach(f => f()); };
     }, [node, ref, reduced, assetKey, preview]); // eslint-disable-line react-hooks/exhaustive-deps
 }

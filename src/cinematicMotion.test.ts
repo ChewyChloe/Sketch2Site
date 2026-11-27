@@ -8,7 +8,7 @@ import { mockLayout } from '../tests/fixtures/generation';
 import { indexNodes, applyPatchBatch, createPageSession } from './patch';
 import { PageSchema } from './pageSpec';
 import { motionAssetRefs, imageSource } from './assetRef';
-it('retains forty existing IDs and adds exactly twenty new distinct presets', () => { expect(motionIds).toHaveLength(75); expect(cinematicMotionIds).toHaveLength(20); expect(new Set(motionIds).size).toBe(75); expect(motionIds.slice(20, 40)).toEqual([...advancedMotionIds]); expect(motionIds.slice(40, 60)).toEqual([...cinematicMotionIds]); expect(motionIds.slice(60, 68)).toEqual([...signatureMotionIds]); expect(motionIds.slice(68)).toEqual([...referenceMotionIds]); });
+it('retains forty existing IDs and adds exactly twenty new distinct presets', () => { expect(motionIds).toHaveLength(77); expect(cinematicMotionIds).toHaveLength(20); expect(new Set(motionIds).size).toBe(motionIds.length); expect(motionIds.slice(20, 40)).toEqual([...advancedMotionIds]); expect(motionIds.slice(40, 60)).toEqual([...cinematicMotionIds]); expect(motionIds.slice(60, 68)).toEqual([...signatureMotionIds]); expect(motionIds.slice(68)).toEqual([...referenceMotionIds]); });
 it.each(cinematicMotionIds)('%s validates safe controls and rejects arbitrary code and out-of-range parameters', id => { const controls = { ...defaultControls(id), ...cinematicSampleControls(id) }; expect(motionControlSchemas[id].safeParse(controls).success).toBe(true); expect(motionControlSchemas[id].safeParse({ ...controls, onclick: 'run()' }).success).toBe(false); for (const [key, c] of Object.entries(motionCatalog[id].controls)) {
     if (c.kind === 'number')
         for (const value of [NaN, Infinity, c.min! - 1, c.max! + 1])

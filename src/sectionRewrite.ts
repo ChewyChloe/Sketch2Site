@@ -48,7 +48,7 @@ export type CompactNode = {
   style?: Partial<z.infer<typeof styleSchema>>;
   motions?: string[];
   /** Read only: what the author locked in this section (text, assets, layout). */
-  locked?: ("text" | "assets" | "layout")[];
+  locked?: ("text" | "assets" | "layout" | "motion")[];
   children?: CompactNode[];
 };
 const CompactNodeSchema: z.ZodType<CompactNode> = z.lazy(() =>
@@ -85,7 +85,7 @@ const CompactNodeSchema: z.ZodType<CompactNode> = z.lazy(() =>
       columns: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
       style: styleSchema.partial().optional(),
       motions: z.array(z.string().max(40)).max(4).optional(),
-      locked: z.array(z.enum(["text", "assets", "layout"])).max(3).optional(),
+      locked: z.array(z.enum(["text", "assets", "layout", "motion"])).max(4).optional(),
       children: z.array(CompactNodeSchema).max(40).optional(),
     })
     .strict(),
@@ -168,7 +168,7 @@ export function compactSite(page: PageSpec) {
     if (n.columns) c.columns = n.columns;
     c.style = n.style;
     if (n.effects.length) c.motions = n.effects.map((e) => e.presetId);
-    if (n.lock) c.locked = (["text", "assets", "layout"] as const).filter((k) => n.lock![k]);
+    if (n.lock) c.locked = (["text", "assets", "layout", "motion"] as const).filter((k) => n.lock![k]);
     if (n.children) c.children = n.children.map(toCompact);
     return c;
   };
@@ -225,7 +225,8 @@ export function fromCompact(page: PageSpec, sectionId: string, input: CompactNod
     const same = old && old.type === c.type ? old : undefined;
     const node: Record<string, unknown> = { id, type: c.type, style: { ...(same?.style ?? {}), ...(c.style ?? {}) }, effects: [] };
     // Motion: kept as the author set it unless the model lists motions; new ones are entrances only.
-    if (c.motions) {
+    if (section.lock?.motion) node.effects = same?.effects ?? [];
+    else if (c.motions) {
       for (const m of c.motions) {
         const kept = same?.effects.find((e) => e.presetId === m);
         if (kept) (node.effects as unknown[]).push(kept);

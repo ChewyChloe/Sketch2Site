@@ -9,22 +9,24 @@
 | 分類 | 筆數 |
 |---|---|
 | 已有同等功能 | 60 |
-| 既有功能可擴充 | 110 |
-| 需要新增動畫 | 92 |
+| 既有功能可擴充 | 109 |
+| 需要新增動畫 | 93 |
 | 需要新增複合互動元件 | 11 |
 | 不適合目前架構或需要額外授權 | 74 |
 | 合計 | 347 |
 
-優先序：P1 = 批次一（已完成）、P2 = 批次二、P3 = 批次三、P4 = 之後再評估。只有 P1 的 7 個動畫已實作；其他都還只是計畫，**不算完成**。
+優先序用於排程。P1 與明列已驗證批次的資料有正式 Runtime；其他預計新增項目仍待實作。
 
-## 第一批完成（7 個新動畫，對應 11 筆來源）
+## 已完成的來源對應（9 個新動畫，對應 13 筆來源）
 
 | Sketch2Site ID | 對應來源編號 |
 |---|---|
 | `bold-relay` | 23, 291 |
+| `crosswind-ribbons` | 50 |
 | `hollow-fill-sweep` | 69, 163 |
 | `scroll-ink-words` | 152 |
 | `chart-build` | 197, 198, 199 |
+| `vanishing-lattice` | 223 |
 | `dolly-frame` | 260 |
 | `color-wake` | 262 |
 | `letter-windows` | 293 |
@@ -113,7 +115,6 @@
 | 47 | text | ['switch'] | CSS | text-morph-transition | P3 | 擠壓換詞 |
 | 48 | bg | ['loop'] | CSS | marquee-text | P3 | 雙速巨字 |
 | 49 | bg | ['loop'] | CSS | marquee-text | P4 | 直排 |
-| 50 | bg | ['loop'] | CSS | marquee-text | P3 | 斜向帶狀 |
 | 51 | bg | ['loop'] | CSS | curved-path-text | P3 | 沿波浪線流動 |
 | 52 | bg | ['loop'] | CSS | marquee-text | P3 | 多層帶狀 |
 | 53 | bg | ['loop'] | CSS | marquee-text | P4 | 直排多欄 |
@@ -235,6 +236,7 @@
 | 43 | text | ['enter'] | CSS | — | P3 | 蓋章進場 |
 | 44 | text | ['enter'] | CSS | — | P4 | 縱深飛出 |
 | 45 | text | ['enter'] | CSS | — | P3 | 詞語堆疊 |
+| 50 | bg | ['loop'] | CSS | crosswind-ribbons | P2 | 雙向裝飾字帶，保留中央原文 |
 | 57 | text | ['loop'] | CSS | — | P4 | CSS 3D 圓柱 |
 | 59 | text | ['loop'] | CSS | — | P4 | 帶景深環繞 |
 | 60 | text | ['switch'] | CSS | — | P3 | 四面方塊換字 |
@@ -273,7 +275,7 @@
 | 198 | shape | ['enter', 'scroll'] | GSAP | chart-build | P1 | 批次一完成（長條） |
 | 199 | shape | ['enter', 'scroll'] | GSAP | chart-build | P1 | 批次一完成（圓餅） |
 | 222 | bg | ['loop'] | CSS | — | P3 | 顆粒漸層背景 |
-| 223 | bg | ['loop'] | CSS | — | P4 | 復古網格地平線 |
+| 223 | bg | ['loop'] | CSS | vanishing-lattice | P2 | 主題色透視格線推進 |
 | 224 | bg | ['loop'] | CSS | — | P4 | 柔焦光點 |
 | 225 | bg | ['loop'] | CSS | — | P3 | 脈衝圓環 |
 | 226 | bg | ['loop'] | CSS | — | P4 | 放射光芒 |

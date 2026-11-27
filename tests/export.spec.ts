@@ -179,6 +179,9 @@ z.extractall(root)
       await standalone.evaluate(() => Boolean((window as any).exportPwned)),
     ).toBe(false);
     await expect(standalone.getByRole("img").first()).toBeVisible();
+    for (const [id, layer] of [["crosswind-ribbons", ".ref-ribbons"], ["vanishing-lattice", ".ref-lattice"]] as const) {
+      await expect(standalone.locator(`[data-effects~="${id}"] ${layer}`)).toHaveAttribute("aria-hidden", "true");
+    }
     const exportedMotion=(id:number)=>standalone.locator(`[data-page-id="${motionId(id)}"]`);
     await expect(exportedMotion(3)).toContainText("1,234.50");
     await expect(exportedMotion(4).locator('textPath')).toHaveCount(1);

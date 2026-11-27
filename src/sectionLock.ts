@@ -9,11 +9,11 @@ import type { PageNode, PageSpec } from "./pageSpec";
 // The author's own edits on the site are not blocked.
 
 export const SectionLockSchema = z
-  .object({ text: z.boolean().optional(), assets: z.boolean().optional(), layout: z.boolean().optional() })
+  .object({ text: z.boolean().optional(), assets: z.boolean().optional(), layout: z.boolean().optional(), motion: z.boolean().optional() })
   .strict();
 export type SectionLock = z.infer<typeof SectionLockSchema>;
-export const lockLabels = { text: "文字", assets: "圖片與媒體", layout: "版面" } as const;
-export const isLocked = (lock?: SectionLock) => !!lock && (lock.text || lock.assets || lock.layout) === true;
+export const lockLabels = { text: "文字", assets: "圖片與媒體", layout: "版面", motion: "動畫" } as const;
+export const isLocked = (lock?: SectionLock) => !!lock && (lock.text || lock.assets || lock.layout || lock.motion) === true;
 
 const walk = (n: PageNode, out: PageNode[] = []) => (out.push(n), n.children?.forEach((c) => walk(c, out)), out);
 const textOf = (n: PageNode) => {
@@ -49,6 +49,14 @@ export function lockViolation(before: PageNode, after: PageNode): string | null 
     const known = new Set(kept.map((n) => n.id));
     if (next.some((n) => assetsOf(n) && !known.has(n.id))) return "這一區的圖片已鎖定";
   }
+  if (lock?.motion) {
+    const animated = new Map(old.filter(n => n.effects.length).map(n => [n.id, n.effects]));
+    for (const n of next) {
+      if (JSON.stringify(n.effects) !== JSON.stringify(animated.get(n.id) ?? [])) return "這一區的動畫已鎖定";
+      animated.delete(n.id);
+    }
+    if (animated.size) return "這一區的動畫已鎖定";
+  }
   if (lock!.layout && JSON.stringify(shapeOf(before)) !== JSON.stringify(shapeOf(after))) return "這一區的版面已鎖定";
   return null;
 }
@@ -79,7 +87,7 @@ export function carryLocks(current: PageSpec | undefined, next: PageSpec): PageS
               style: { ...n.style, tone: fresh.style.tone },
               ...(fresh.text ? { text: fresh.text } : {}),
             } : {}),
-            effects: (fresh?.type === n.type && fresh.effects.length ? fresh.effects : n.effects)
+            effects: (!old.lock?.motion && fresh?.type === n.type && fresh.effects.length ? fresh.effects : n.effects)
               .map(effect => ({ ...effect, targetId: nextId })),
             ...(n.children ? { children: n.children.map(carryLayout) } : {}),
           };
@@ -87,9 +95,11 @@ export function carryLocks(current: PageSpec | undefined, next: PageSpec): PageS
         return carryLayout(old);
       }
       const oldNodes = new Map(walk(old).map((n) => [n.id, n]));
+      oldNodes.set(s.id, old);
       const copy = (n: PageNode): PageNode => {
         const o = oldNodes.get(n.id);
-        let m: PageNode = n;
+        let m: PageNode = old.lock?.motion
+          ? { ...n, effects: (o?.effects ?? []).map(effect => ({ ...effect, targetId: n.id })) } : n;
         if (o && o.type === n.type) {
           if (old.lock!.text && o.content !== undefined) m = { ...m, content: o.content };
           if (old.lock!.text && (o.media?.kind === "chart" || o.media?.kind === "table") && n.media?.kind === o.media.kind) m = { ...m, media: o.media };
@@ -98,7 +108,13 @@ export function carryLocks(current: PageSpec | undefined, next: PageSpec): PageS
         }
         return m.children ? { ...m, children: m.children.map(copy) } : m;
       };
-      return { ...copy(s), lock: old.lock };
+      const copied = { ...copy(s), lock: old.lock };
+      if (old.lock?.motion) {
+        const newIds = new Set(walk(copied).map(n => n.id));
+        if (walk(old).some(n => n.id !== old.id && n.effects.length && !newIds.has(n.id)))
+          throw new Error("重新生成無法保留鎖定的動畫，已保留原版本");
+      }
+      return copied;
     });
   return {
     ...next,

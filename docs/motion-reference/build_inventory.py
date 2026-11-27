@@ -17,7 +17,7 @@ M = {
 31:("N","","P4","∞ 軌道"),32:("X","rolling-characters","P4","換位排序"),33:("N","","P4","漩渦"),34:("N","","P4","顫抖後穩定"),35:("X","typographic-stretch","P3","縱向波浪"),
 36:("N","","P3","墨水暈開"),37:("S","letter-assembly","",""),38:("N","","P4","多字型輪替（需字型授權確認）"),39:("U","","—",EXIT),40:("S","float-idle","",""),
 41:("S","elastic-word-bounce","",""),42:("X","elastic-word-bounce","P3","重落節奏"),43:("N","","P3","蓋章進場"),44:("N","","P4","縱深飛出"),45:("N","","P3","詞語堆疊"),
-46:("X","text-morph-transition","P3","穿越換詞"),47:("X","text-morph-transition","P3","擠壓換詞"),48:("X","marquee-text","P3","雙速巨字"),49:("X","marquee-text","P4","直排"),50:("X","marquee-text","P3","斜向帶狀"),
+46:("X","text-morph-transition","P3","穿越換詞"),47:("X","text-morph-transition","P3","擠壓換詞"),48:("X","marquee-text","P3","雙速巨字"),49:("X","marquee-text","P4","直排"),50:("N","crosswind-ribbons","P2","雙向裝飾字帶，保留中央原文"),
 51:("X","curved-path-text","P3","沿波浪線流動"),52:("X","marquee-text","P3","多層帶狀"),53:("X","marquee-text","P4","直排多欄"),54:("X","marquee-text","P3","交叉膠帶"),55:("U","","—","需要 3D 場景，效能與可讀性不符網站文字"),
 56:("U","","—","需要 3D 場景，效能與可讀性不符網站文字"),57:("N","","P4","CSS 3D 圓柱"),58:("U","","—","需要 3D 場景，效能與可讀性不符網站文字"),59:("N","","P4","帶景深環繞"),60:("N","","P3","四面方塊換字"),
 61:("X","Depth3D","P4","既有 3D 效果加文字厚度"),62:("N","flap-board","P4","規劃於批次四"),63:("X","flip-card","P3","翻卡換字"),64:("X","typewriter","P2","多句輪替"),65:("X","rolling-characters","P3","滾輪停定"),
@@ -52,7 +52,7 @@ M = {
 206:("S","disclosure-panel","",""),207:("C","","P3","分頁內容切換"),208:("X","相簿版型切換","P3","分類篩選"),209:("C","","P3","便當格展開"),210:("S","pinned-story-panels","",""),
 211:("X","scroll-progress","P3","回到頂部按鈕"),212:("X","輪播元件","P2","中央放大樣式"),213:("X","card-stack-shuffle","P3","拖曳甩出"),214:("S","card-deck-fan","",""),215:("S","互動價目表（既有）","",""),
 216:("C","","P3","卡片展開詳情"),217:("X","標誌牆（既有）","P3","卡片雙向輪播"),218:("X","輪播元件","P3","推薦語輪播"),219:("X","stagger-reveal","P3","瀑布流落下"),220:("S","focus-transfer","",""),
-221:("U","","—","需要購物車與電商後端"),222:("N","","P3","顆粒漸層背景"),223:("N","","P4","復古網格地平線"),224:("N","","P4","柔焦光點"),225:("N","","P3","脈衝圓環"),
+221:("U","","—","需要購物車與電商後端"),222:("N","","P3","顆粒漸層背景"),223:("N","vanishing-lattice","P2","主題色透視格線推進"),224:("N","","P4","柔焦光點"),225:("N","","P3","脈衝圓環"),
 226:("N","","P4","放射光芒"),227:("N","","P4","星空"),228:("X","layered-parallax","P3","游標視差"),229:("N","","P4","細線起伏"),230:("N","","P3","幾何漂浮背景"),
 231:("X","press-feedback","P2","立體按壓"),232:("S","jelly-press","",""),233:("S","radial-ink-ripple","",""),234:("U","","—",APP),235:("U","","—",APP),
 236:("N","","P2","箭頭替換按鈕"),237:("X","breathing-glow","P3","霓虹樣式"),238:("U","","—",APP),239:("N","","P3","圖示展開成文字"),240:("X","表單元件","P4","送出飛走"),
@@ -82,6 +82,7 @@ M = {
 assert sorted(M) == list(range(1, 348)), "every source item needs one row"
 names = {"S": "已有同等功能", "X": "既有功能可擴充", "N": "需要新增動畫", "C": "需要新增複合互動元件", "U": "不適合目前架構或需要額外授權"}
 HANNAH = {"name": "Hannah’s Motion Library", "url": "https://kittenjam-motion-library.vercel.app/"}
+shipped = {50: 2, 223: 2}
 rows = []
 for it in items:
     i = it["id"]; code, target, prio, note = M[i]
@@ -93,6 +94,7 @@ for it in items:
         "sourceId": i, "component": it["comp"], "trigger": it["when"], "technique": it["tech"],
         "category": names[code], "sketch2site": target or None, "priority": prio or None,
         "note": note.strip() or None, "credit": credit,
+        **({"verifiedBatch": shipped[i]} if i in shipped else {}),
         "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製" + ("；第三方付費元件" if it.get("src") else ""),
     })
 from collections import Counter

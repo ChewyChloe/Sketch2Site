@@ -302,3 +302,20 @@ test('six animations survive generation, PageSpec validation, preview and persis
  expect(JSON.stringify(saved)).toContain('hover-glow');expect(JSON.stringify(saved)).toContain('stagger-reveal');
  await page.screenshot({path:'test-results/portfolio-six-animations-mock.png',fullPage:true});
 });
+
+test("Mock generation retains both authored background motions with their controls", async ({ page }) => {
+  const { createMotion } = await import("../src/motion");
+  const canvas = structuredClone(fixtures[0]);
+  canvas.metadata.layoutMode = "reflow";
+  const heading = canvas.nodes.find(node => node.type === "heading")!;
+  const card = canvas.nodes.find(node => node.type === "card")!;
+  heading.effects = [createMotion("crosswind-ribbons", heading.id, { angleDeg: 18 })];
+  card.effects = [createMotion("vanishing-lattice", card.id, { spacingPx: 36 })];
+  await seed(page, canvas);
+  await page.getByRole("button", { name: "生成網站", exact: true }).click();
+  const candidate = page.getByRole("main", { name: "生成候選預覽" });
+  await expect(candidate.locator('[data-candidate-mode="mock"]')).toBeVisible();
+  const preview = candidate.locator(".preview-frame");
+  await expect(preview.locator(`[data-page-id="${heading.id}"] .ref-ribbons`)).toHaveCSS("--ribbon-angle", "18deg");
+  await expect(preview.locator(`[data-page-id="${card.id}"] .ref-lattice-floor`)).toHaveCSS("--lattice-gap", "36px");
+});

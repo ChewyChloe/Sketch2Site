@@ -1810,3 +1810,15 @@
 .pg-gen-grid [data-grid-tone="1"] { background: color-mix(in srgb, var(--accent, #20704a) 24%, transparent); }
 .pg-gen-grid [data-grid-tone="2"] { background: color-mix(in srgb, var(--ink, #16231d) 14%, transparent); }
 .pg-gen-grid [data-grid-tone="3"] { border: 1px solid color-mix(in srgb, var(--accent, #20704a) 38%, transparent); }
+
+/* Theme-aware atmosphere sits behind its host's real content. */
+.ref-ambient-host { isolation: isolate; }
+.ref-ribbons, .ref-lattice { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; user-select: none; z-index: -1; }
+.ref-ribbons { opacity: var(--ribbon-wash); }
+.ref-ribbon-band { display: block; position: absolute; inset-inline: -12%; top: 12%; transform: rotate(calc(-1 * var(--ribbon-angle))); overflow: hidden; color: var(--accent, currentColor); background: color-mix(in srgb, var(--accent, currentColor) 16%, transparent); font-size: clamp(10px, 3cqi, 25px); line-height: 1.5; }
+.ref-ribbon-band + .ref-ribbon-band { top: auto; bottom: 10%; transform: rotate(var(--ribbon-angle)); }
+.ref-ribbon-track { display: flex; width: 200%; }
+.ref-ribbon-group { display: flex; flex: 0 0 50%; min-width: 0; justify-content: space-around; white-space: nowrap; gap: .6em; overflow: hidden; }
+.ref-lattice { perspective: 160px; color: var(--accent, currentColor); }
+.ref-lattice[data-orb]::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 46%, color-mix(in srgb, currentColor 25%, transparent), transparent 33%); }
+.ref-lattice-floor { position: absolute; inset: 50% -50% -80%; transform: rotateX(62deg); transform-origin: center top; background-image: linear-gradient(to right, color-mix(in srgb, currentColor 27%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, currentColor 34%, transparent) 1px, transparent 1px); background-size: var(--lattice-gap) var(--lattice-gap); mask-image: linear-gradient(transparent, #000 22%, #000 70%, transparent); }

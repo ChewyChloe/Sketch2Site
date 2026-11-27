@@ -33,3 +33,5 @@
 1. 用 Python 把 `data.js` 解析成 `items.json`，不要執行它。
 2. `python3 -I docs/motion-reference/build_inventory.py items.json docs/motion-reference/inventory.json`
 3. `python3 -I docs/motion-reference/build_inventory_md.py docs/motion-reference/inventory.json docs/motion-reference/INVENTORY.md`
+
+批次 2 新增 #50、#223 的原創實作。沿用上表來源歸屬，只使用機制靈感。文字帶使用使用者原文，兩項效果皆使用網站主題色。

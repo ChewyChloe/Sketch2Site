@@ -28,7 +28,7 @@ for (const width of [1440, 375])
     await expect(page.locator(".preview-frame .rendered-page")).toBeVisible();
     await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
     await home.getByRole("button", { name: "動畫素材庫（75）" }).click();
-    await expect(page.locator(".sidebar [data-effect-id]")).toHaveCount(75);
+    await expect(page.locator(".sidebar [data-effect-id]")).toHaveCount(77);
     expect(errors).toEqual([]);
   });
 

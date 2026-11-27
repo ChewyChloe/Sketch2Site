@@ -7,9 +7,9 @@
   "items": 347
  },
  "categories": {
-  "需要新增動畫": 92,
+  "需要新增動畫": 93,
   "不適合目前架構或需要額外授權": 74,
-  "既有功能可擴充": 110,
+  "既有功能可擴充": 109,
   "已有同等功能": 60,
   "需要新增複合互動元件": 11
  },
@@ -1148,10 +1148,10 @@
     "loop"
    ],
    "technique": "CSS",
-   "category": "既有功能可擴充",
-   "sketch2site": "marquee-text",
-   "priority": "P3",
-   "note": "斜向帶狀",
+   "category": "需要新增動畫",
+   "sketch2site": "crosswind-ribbons",
+   "priority": "P2",
+   "note": "雙向裝飾字帶，保留中央原文",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -1162,6 +1162,7 @@
      "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
     }
    ],
+   "verifiedBatch": 2,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -4590,15 +4591,16 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
-   "priority": "P4",
-   "note": "復古網格地平線",
+   "sketch2site": "vanishing-lattice",
+   "priority": "P2",
+   "note": "主題色透視格線推進",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 2,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

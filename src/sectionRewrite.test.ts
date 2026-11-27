@@ -199,3 +199,16 @@ describe("section locks (data layer, not only the prompt)", () => {
     expect(lockViolation(page.sections[1], { ...page.sections[1], children: [] })).toBeNull();
   });
 });
+
+it("preserves locked motion during a rewrite while allowing a text edit", () => {
+  const { page, ids } = site();
+  const section = page.sections[1];
+  section.lock = { motion: true };
+  const input = compactSite(page).sections[1];
+  input.children![0].content = "調整展示名稱";
+  input.children![1].children![0].motions = [];
+  const result = fromCompact(page, ids.s2, input);
+  expect(result.children![0].content).toBe("調整展示名稱");
+  expect(result.children![1].children![0].effects).toEqual(section.children![1].children![0].effects);
+  expect(lockViolation(section, result)).toBeNull();
+});

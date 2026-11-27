@@ -397,10 +397,32 @@ const list: ReferenceMotion[] = [
     batch: 4,
     status: "PLANNED",
   },
+  {
+    id: "crosswind-ribbons", nameZh: "交風字帶", nameEn: "Crosswind Ribbons",
+    intro: "兩道斜向字帶沿相反方向移動，中央原文保持靜止。",
+    behaviour: ["重複使用既有標題作為純裝飾字帶", "兩條斜帶不同向移動，原文留在前景"],
+    targets: ["text", "heading", "paragraph"], triggers: ["可見時循環"],
+    timing: "只有進入視區才循環",
+    params: ["週期毫秒", "字帶斜角", "裝飾濃度"],
+    performance: ["固定兩列字帶", "離屏或分頁隱藏時暫停"],
+    reducedMotion: "保留靜態淡字帶與完整原文",
+    inspiration: [ref(50)], batch: 2, status: "DONE",
+  },
+  {
+    id: "vanishing-lattice", nameZh: "遠方經緯", nameEn: "Vanishing Lattice",
+    intro: "地平線後方是淡色圓光，透視格線往前景連續推進。",
+    behaviour: ["格線以透視面構成近大遠小的地面", "裝飾位於內容底下且不攔截操作"],
+    targets: ["card", "container", "section"], triggers: ["可見時循環"],
+    timing: "格線每跨過一格完成一輪",
+    params: ["每格移動秒數", "格距", "圓光開關"],
+    performance: ["固定的 CSS 漸層與兩個裝飾節點", "離屏或隱藏分頁暫停"],
+    reducedMotion: "格線及圓光靜止",
+    inspiration: [ref(223)], batch: 2, status: "DONE",
+  },
 ];
 
 export const referenceMotions: readonly ReferenceMotion[] = z.array(ReferenceMotionSchema).parse(list);
 export const referenceMotion = (id: string) => referenceMotions.find((m) => m.id === id);
 /** Only motions that are built end to end. */
-export const referenceMotionIds = ["dolly-frame", "color-wake", "scroll-ink-words", "hollow-fill-sweep", "letter-windows", "bold-relay", "chart-build"] as const;
+export const referenceMotionIds = ["dolly-frame", "color-wake", "scroll-ink-words", "hollow-fill-sweep", "letter-windows", "bold-relay", "chart-build", "crosswind-ribbons", "vanishing-lattice"] as const;
 export type ReferenceMotionId = (typeof referenceMotionIds)[number];

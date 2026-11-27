@@ -371,7 +371,7 @@ export default function App() {
     } catch (e) {
       if (run === generationRun.current)
         setGenerationError(
-          e instanceof GenerationError ? e.message : "生成失敗，原版本已保留",
+          e instanceof GenerationError || (e instanceof Error && e.message.startsWith("重新生成無法保留鎖定的動畫")) ? e.message : "生成失敗，原版本已保留",
         );
     } finally {
       if (run === generationRun.current) {

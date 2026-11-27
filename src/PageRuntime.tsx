@@ -372,7 +372,7 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
       ref={ref as never}
       id={thumbnail ? undefined : "page-" + node.id}
       data-page-id={thumbnail ? undefined : node.id}
-      data-locked={!thumbnail && node.lock ? (["text", "assets", "layout"] as const).filter((k) => node.lock![k]).join(" ") || undefined : undefined}
+      data-locked={!thumbnail && node.lock ? (["text", "assets", "layout", "motion"] as const).filter((k) => node.lock![k]).join(" ") || undefined : undefined}
       data-page-type={node.type}
       data-section-arrangement={arrangement?.mode}
       data-section-mobile={arrangement && "mobile" in arrangement ? arrangement.mobile : undefined}

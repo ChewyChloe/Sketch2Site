@@ -24,6 +24,7 @@ const expression: Record<MotionId, FacetValue<"expression">> = {
   "text-morph-transition": "type", "elastic-word-bounce": "spring", "text-spotlight-reveal": "light", "typographic-stretch": "type", "cursor-trail-particles": "graphic", "cursor-image-follower": "move", "gooey-blob-merge": "graphic", "directional-hover-wipe": "mask", "spring-drag-snap": "spring", "pixel-dissolve": "mask",
   "shutter-lens-transition": "mask", "glitch-slice-reveal": "mask", "liquid-distortion-reveal": "mask", "card-stack-shuffle": "move", "horizontal-scroll-gallery": "move", "sticky-section-morph": "scale", "scroll-image-sequence": "move", "pinned-story-panels": "fade", "particle-constellation": "graphic", "elastic-svg-morph": "spring",
   typewriter: "type", "marquee-text": "move", "gradient-text-flow": "light", "blur-in": "fade", "float-idle": "move", "confetti-burst": "graphic", "jelly-press": "spring", "shine-sweep": "light",
+  "crosswind-ribbons": "type", "vanishing-lattice": "depth",
   "dolly-frame": "scale", "color-wake": "light", "scroll-ink-words": "type", "hollow-fill-sweep": "light", "letter-windows": "light", "bold-relay": "type", "chart-build": "data",
 };
 // Motions that exist to pull the eye, whatever their trigger.
@@ -74,6 +75,8 @@ export function searchMotions(ids: readonly MotionId[], query: string) {
 
 const recommendationRules: { pattern: RegExp; label: string; match: (id: MotionId, f: MotionFacets) => boolean }[] = [
   { pattern: /吹散|重聚|聚集|風吹|scatter|reassembl|gather/i, label: "分散後重新組合文字", match: id => ["letter-assembly", "split-line-assembly", "text-morph-transition"].includes(id) },
+  { pattern: /斜.*字帶|交叉.*文字|diagonal.*text/i, label: "雙向斜字帶保留中央原文", match: id => id === "crosswind-ribbons" },
+  { pattern: /地平線|透視網格|horizon|perspective grid/i, label: "透視格線往前推進", match: id => id === "vanishing-lattice" },
   { pattern: /立體|景深|視差|3d|depth|parallax/i, label: "提供立體或景深感", match: (_, f) => f.expression.includes("depth") },
   { pattern: /柔和|輕柔|溫柔|gentle|soft|subtle|calm/i, label: "動態輕柔", match: (_, f) => f.intensity.includes("low") },
   { pattern: /進場|出現|淡入|entrance|appear|fade.in/i, label: "在元件出現時播放", match: (_, f) => f.trigger.includes("enter") },

@@ -9,11 +9,11 @@ L.append("這份盤點只記錄來源編號、元件類型、觸發方式與技�
 L.append("## 統計\n\n| 分類 | 筆數 |\n|---|---|")
 for k in order: L.append(f"| {k} | {d['categories'].get(k,0)} |")
 L.append(f"| 合計 | {len(rows)} |\n")
-L.append("優先序：P1 = 批次一（已完成）、P2 = 批次二、P3 = 批次三、P4 = 之後再評估。只有 P1 的 7 個動畫已實作；其他都還只是計畫，**不算完成**。\n")
+L.append("優先序用於排程。P1 與明列已驗證批次的資料有正式 Runtime；其他預計新增項目仍待實作。\n")
 done = {}
 for r in rows:
-    if r["priority"] == "P1": done.setdefault(r["sketch2site"], []).append(str(r["sourceId"]))
-L.append(f"## 第一批完成（{len(done)} 個新動畫，對應 {sum(map(len, done.values()))} 筆來源）\n\n| Sketch2Site ID | 對應來源編號 |\n|---|---|")
+    if r["priority"] == "P1" or r.get("verifiedBatch"): done.setdefault(r["sketch2site"], []).append(str(r["sourceId"]))
+L.append(f"## 已完成的來源對應（{len(done)} 個新動畫，對應 {sum(map(len, done.values()))} 筆來源）\n\n| Sketch2Site ID | 對應來源編號 |\n|---|---|")
 for k, v in done.items(): L.append(f"| `{k}` | {', '.join(v)} |")
 L.append("")
 for k in order:

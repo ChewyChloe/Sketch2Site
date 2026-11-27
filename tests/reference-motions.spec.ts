@@ -26,7 +26,7 @@ test('library previews are live: hover, scroll and replay show the real effect',
     await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await page.getByRole('button', { name: '動畫素材庫', exact: true }).click();
-    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(75);
+    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(77);
     const card = (id: string) => page.locator(`.sidebar [data-effect-id="${id}"]`);
     for (const id of referenceMotionIds) {
         await card(id).scrollIntoViewIfNeeded();
@@ -253,3 +253,30 @@ test('bold relay keeps Latin text on the same lines as the real heading', async 
     expect(copy).toBeLessThanOrEqual(host + 2);
     check();
 });
+
+for (const [id, layer, tracks] of [
+    ["crosswind-ribbons", ".ref-ribbons", ".ref-ribbon-track"],
+    ["vanishing-lattice", ".ref-lattice", ".ref-lattice-floor"],
+] as const) {
+    test(`${id}: live theme decoration, mobile bounds, replay and reduced motion`, async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 900 });
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+        const check = await load(page, true);
+        const node = target(page, id);
+        await node.scrollIntoViewIfNeeded();
+        const decoration = node.locator(layer);
+        await expect(decoration).toHaveAttribute("aria-hidden", "true");
+        await expect(decoration).toHaveCSS("pointer-events", "none");
+        const animating = decoration.locator(tracks).first();
+        await expect.poll(() => animating.evaluate(el => el.getAnimations()[0]?.playState)).toBe("running");
+        const previous = await animating.evaluate(el => Number(el.getAnimations()[0].currentTime));
+        await expect.poll(() => animating.evaluate(el => Number(el.getAnimations()[0].currentTime))).toBeGreaterThan(previous);
+        const layers = await decoration.boundingBox(), host = await node.boundingBox();
+        expect(layers!.width).toBeLessThanOrEqual(host!.width + 1);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await expect.poll(() => decoration.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0);
+        await expect(node).toHaveAttribute("data-effects", id);
+        check();
+    });
+}

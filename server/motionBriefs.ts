@@ -79,6 +79,8 @@ const briefs: Record<MotionId, [
     "letter-windows": ["照片填進粗大標題中緩慢移動，適合封面品牌名。生成只規劃來源布局。", "映射受控letter-windows Runtime；照片只用內建或已匯入素材。"],
     "bold-relay": ["字重逐字接力加粗，適合短標語。生成只規劃來源布局。", "映射受控bold-relay Runtime；最多80字。"],
     "chart-build": ["圖表捲到時依序長出，適合數據區。生成只規劃來源布局。", "映射受控chart-build Runtime；只適用圖表元件。"],
+    "crosswind-ribbons": ["在短標題後保留雙向斜帶的節奏。", "映射受控字帶；既有標題保持原樣，不輸出新文字或樣式。"],
+    "vanishing-lattice": ["在卡片或區塊底下保留主題色的透視地平線。", "映射受控格線平移；裝飾不影響區塊結構、操作及閱讀。"],
 };
 export const serverMotionRegistry = Object.fromEntries(motionIds.map(id => [id, { ...motionCatalog[id], designIntent: briefs[id][0], implementationBrief: briefs[id][1] }])) as Record<MotionId, typeof motionCatalog[MotionId] & {
     designIntent: string;

@@ -57,8 +57,9 @@ function EffectSample({ id, active, text, controls: tuned }: { id: EffectId; act
       const on=active||id!=="chart-build";
       const effect=on?[sampleMotion(id,ids[1],tuned,{})]:[];
       const child=id==="dolly-frame"||id==="color-wake"?{id:ids[1],type:"image",src:id==="dolly-frame"?"/assets/samples/coffee-pourover.jpg":"/assets/samples/coffee-tonic.jpg",alt:"手沖咖啡，慢慢萃取",style:{padding:"none",gap:"none"},effects:effect}
+        :id==="vanishing-lattice"?{id:ids[1],type:"card",style:{padding:"medium",gap:"small"},children:[paragraph(2,"在遠方找到方向")],effects:effect}
         :id==="chart-build"?{id:ids[1],type:"media",content:"本月來客",media:{kind:"chart",chart:"bar",points:[{label:"一",value:32},{label:"二",value:48},{label:"三",value:41},{label:"四",value:66}],unit:""},style:{padding:"none",gap:"none"},effects:effect}
-        :{id:ids[1],type:"heading",level:2,content:text?text:id==="scroll-ink-words"?"每一杯咖啡，都從一顆豆子的旅程開始。慢慢讀，字會跟著亮起來。":id==="letter-windows"?"COFFEE 咖啡":id==="hollow-fill-sweep"?"滑過填滿":"粗體接力中",style:{padding:"none",gap:"none"},effects:effect};
+        :{id:ids[1],type:"heading",level:2,content:text?text:id==="scroll-ink-words"?"每一杯咖啡，都從一顆豆子的旅程開始。慢慢讀，字會跟著亮起來。":id==="letter-windows"?"COFFEE 咖啡":id==="hollow-fill-sweep"?"滑過填滿":id==="crosswind-ribbons"?"穿過微風":"粗體接力中",style:{padding:"none",gap:"none"},effects:effect};
       return PageSchema.parse({schemaVersion:2,metadata:{title:"動畫素材示意",language:"zh-Hant"},typography:"sans",styles:"neutral",responsive:{mobileColumns:1,desktopColumns:1},sections:[{id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:[child]}]});
     }
     const persistent=advancedMotionIds.includes(id as typeof advancedMotionIds[number])||id in signatureFamily||["breathing-glow","curved-path-text","count-up","flip-card","fold-reveal","physics-tag-field","magnetic-control","press-feedback","focus-transfer","scroll-progress","disclosure-panel"].includes(id);
