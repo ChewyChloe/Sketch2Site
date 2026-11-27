@@ -312,7 +312,7 @@ test("Mock generation retains authored background motions with their controls", 
   heading.effects = [createMotion("crosswind-ribbons", heading.id, { angleDeg: 18 })];
   card.effects = [createMotion("vanishing-lattice", card.id, { spacingPx: 36 })];
   const { createNode } = await import("../src/spec");
-  const presets = ["drift-letterfall", "turning-letter-mosaic", "imprint-beats", "cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring"] as const;
+  const presets = ["drift-letterfall", "turning-letter-mosaic", "imprint-beats", "cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring", "waterline-echo", "letter-fanout", "type-casts", "word-shelf", "reading-hop"] as const;
   for (const [index, preset] of presets.entries()) {
     const node = createNode("text", 80, 520 + index * 96);
     node.content = "機制驗證：風格由網站主題決定";

@@ -15,21 +15,28 @@
 | 不適合目前架構或需要額外授權 | 74 |
 | 合計 | 347 |
 
+交付狀態：58 筆已有同等、74 筆排除、48 筆已驗證對應、167 筆待實作。
+
 優先序用於排程。P1 與明列已驗證批次的資料有正式 Runtime；其他預計新增項目仍待實作。
 
-## 已完成的來源對應（17 個新動畫，對應 21 筆來源）
+## 已完成的來源對應（22 個新動畫，對應 26 筆來源）
 
 | Sketch2Site ID | 對應來源編號 |
 |---|---|
 | `storm-landing` | 1 |
 | `cutout-ticks` | 10 |
 | `drift-letterfall` | 11 |
+| `waterline-echo` | 17 |
 | `inverse-spring` | 20 |
 | `bold-relay` | 23, 291 |
+| `letter-fanout` | 24 |
+| `reading-hop` | 25 |
 | `sign-pivot` | 26 |
 | `turning-letter-mosaic` | 30 |
 | `quiet-landing` | 34 |
+| `type-casts` | 38 |
 | `imprint-beats` | 43 |
+| `word-shelf` | 45 |
 | `crosswind-ribbons` | 50 |
 | `hollow-fill-sweep` | 69, 163 |
 | `scroll-ink-words` | 152 |
@@ -262,22 +269,22 @@
 | 10 | text | ['loop'] | CSS | cutout-ticks | P4 | 定格晃動 |
 | 11 | bg | ['loop'] | CSS | drift-letterfall | P3 | 八條以內的分軌落字 |
 | 12 | text | ['loop'] | CSS | — | P4 | 文字放大鏡 |
-| 17 | text | ['loop'] | CSS | — | P4 | 水面倒影 |
+| 17 | text | ['loop'] | CSS | waterline-echo | P4 | 水面倒影 |
 | 20 | text | ['loop'] | CSS | inverse-spring | P4 | 反重力彈跳 |
 | 22 | bg | ['loop'] | CSS | — | P4 | 格狀文字背景 |
 | 23 | text | ['loop'] | CSS | bold-relay | P1 | 批次一完成 |
-| 24 | text | ['enter'] | CSS | — | P4 | 扇形展開 |
-| 25 | text | ['loop'] | CSS | — | P3 | 逐字點亮與跳點 |
+| 24 | text | ['enter'] | CSS | letter-fanout | P4 | 扇形展開 |
+| 25 | text | ['loop'] | CSS | reading-hop | P3 | 逐字點亮與跳點 |
 | 26 | text | ['loop'] | CSS | sign-pivot | P4 | 鐘擺搖晃 |
 | 30 | bg | ['loop'] | CSS | turning-letter-mosaic | P3 | 對角字磚依序翻轉 |
 | 31 | text | ['loop'] | CSS | — | P4 | ∞ 軌道 |
 | 33 | text | ['loop'] | CSS | — | P4 | 漩渦 |
 | 34 | text | ['loop'] | CSS | quiet-landing | P4 | 顫抖後穩定 |
 | 36 | text | ['enter'] | CSS | — | P3 | 墨水暈開 |
-| 38 | text | ['loop'] | CSS | — | P4 | 多字型輪替（需字型授權確認） |
+| 38 | text | ['loop'] | CSS | type-casts | P4 | 多字型輪替（需字型授權確認） |
 | 43 | text | ['enter'] | CSS | imprint-beats | P3 | 原文後方依序落下印記 |
 | 44 | text | ['enter'] | CSS | — | P4 | 縱深飛出 |
-| 45 | text | ['enter'] | CSS | — | P3 | 詞語堆疊 |
+| 45 | text | ['enter'] | CSS | word-shelf | P3 | 詞語堆疊 |
 | 50 | bg | ['loop'] | CSS | crosswind-ribbons | P2 | 雙向裝飾字帶，保留中央原文 |
 | 57 | text | ['loop'] | CSS | — | P4 | CSS 3D 圓柱 |
 | 59 | text | ['loop'] | CSS | — | P4 | 帶景深環繞 |

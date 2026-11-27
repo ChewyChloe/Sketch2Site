@@ -2044,3 +2044,17 @@
 
 .cin-word-stage { white-space: pre-wrap; overflow-wrap: anywhere; transform-origin: center; }
 .cin-word-ring { position: absolute; width: 3.4em; height: 2.1em; translate: -50% -50%; border-radius: 50%; border-block: 1px solid var(--accent, currentColor); pointer-events: none; }
+
+.ref-typography-host { isolation: isolate; }
+.ref-waterline, .ref-letter-fan, .ref-type-casts, .ref-word-shelf, .ref-reading-hop { position: absolute; pointer-events: none; user-select: none; }
+.ref-waterline { inset-inline: 0; top: 68%; height: 70%; overflow: hidden; z-index: -1; color: color-mix(in srgb, var(--accent, currentColor) 34%, transparent); mask-image: linear-gradient(#000, transparent); }
+.ref-waterline > span { position: absolute; inset: 0; white-space: nowrap; }
+.ref-letter-fan { inset-inline-start: .6em; bottom: -.18em; width: 1.8em; height: 1.65em; z-index: -1; color: color-mix(in srgb, var(--accent, currentColor) 43%, transparent); }
+.ref-letter-fan > span { position: absolute; inset: 0; transform-origin: center bottom; }
+.ref-type-casts { inset: 0; z-index: -1; overflow: hidden; color: color-mix(in srgb, var(--accent, currentColor) 40%, transparent); }
+.ref-type-casts > span { position: absolute; inset-inline-start: .15em; top: .28em; white-space: nowrap; }
+.ref-word-shelf { inset: 0; z-index: -1; overflow: hidden; display: flex; justify-content: flex-end; align-items: flex-start; flex-direction: column; color: var(--accent, currentColor); line-height: 1; font-size: .62em; }
+.ref-reading-hop { inset: 0; color: var(--accent, currentColor); }
+.ref-reading-dot, .ref-reading-mark { position: absolute; inset: 0 auto auto 0; background: currentColor; opacity: 0; }
+.ref-reading-dot { width: 5px; height: 5px; border-radius: 50%; margin: -3px 0 0 -2px; }
+.ref-reading-mark { height: 2px; border-radius: 1px; }

@@ -169,6 +169,26 @@ export const motionCatalog: Record<MotionId, MotionDefinition> = {
       travelPx: number("最高反彈（像素）", 15, 6, 26), durationMs: number("雙拍時長（毫秒）", 760, 520, 1400),
     }, ["兩次不等高的上彈", "可見時播放一次"], "保持原位", "適用短文字"),
 
+    "waterline-echo": define("waterline-echo", ref("waterline-echo").nameZh, ref("waterline-echo").nameEn, "內容", ref("waterline-echo").intro, "短標語與品牌文字", ["text", "heading", "paragraph"], "medium", ["idle-loop"], {
+      durationMs: number("漣漪週期", 3600, 1600, 6500), slices: number("水紋分層", 4, 2, 6),
+    }, ["保留作者原文", "離屏暫停且有資源上限"], "靜態原文", "適用短文字"),
+
+    "letter-fanout": define("letter-fanout", ref("letter-fanout").nameZh, ref("letter-fanout").nameEn, "進場", ref("letter-fanout").intro, "短標語與品牌文字", ["text", "heading", "paragraph"], "medium", ["scroll-enter"], {
+      durationMs: number("開合時長", 1100, 650, 1800), spread: number("開扇角度", 36, 20, 55),
+    }, ["保留作者原文", "離屏暫停且有資源上限"], "靜態原文", "適用短文字"),
+
+    "type-casts": define("type-casts", ref("type-casts").nameZh, ref("type-casts").nameEn, "內容", ref("type-casts").intro, "短標語與品牌文字", ["text", "heading", "paragraph"], "medium", ["idle-loop"], {
+      durationMs: number("輪替週期", 4900, 3000, 9000),
+    }, ["保留作者原文", "離屏暫停且有資源上限"], "靜態原文", "適用短文字"),
+
+    "word-shelf": define("word-shelf", ref("word-shelf").nameZh, ref("word-shelf").nameEn, "進場", ref("word-shelf").intro, "短標語與品牌文字", ["text", "heading", "paragraph"], "medium", ["scroll-enter"], {
+      durationMs: number("移入時長", 560, 350, 1000), maxWords: number("堆疊詞數", 5, 3, 7),
+    }, ["保留作者原文", "離屏暫停且有資源上限"], "靜態原文", "適用短文字"),
+
+    "reading-hop": define("reading-hop", ref("reading-hop").nameZh, ref("reading-hop").nameEn, "進場", ref("reading-hop").intro, "短標語與品牌文字", ["text", "heading", "paragraph"], "medium", ["scroll-enter"], {
+      durationMs: number("走完一行時間", 1900, 850, 3000),
+    }, ["保留作者原文", "離屏暫停且有資源上限"], "靜態原文", "適用短文字"),
+
 };
 export function controlsSchema(id: MotionId) {
     const fields: Record<string, z.ZodType> = {};

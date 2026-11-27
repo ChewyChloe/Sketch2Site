@@ -150,7 +150,7 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
     if(ids.has('spring-drag-snap')&&effects.length>1)return '拖曳吸附不可與其他位置效果同時套用';
     if(['float-idle','jelly-press'].some(id=>ids.has(id as MotionId))&&['hover-lift','slide-up','scale-in','perspective-tilt','magnetic-control','press-feedback','float-idle','jelly-press','blur-in'].filter(id=>ids.has(id as MotionId)).length>1)return '漂浮或彈跳不能與其他位移效果重疊';
     if(ids.has('color-wake')&&['pixel-dissolve','liquid-distortion-reveal','glitch-slice-reveal'].some(id=>ids.has(id as MotionId)))return '褪色回彩不能和會重畫圖片的動畫一起用';
-    if (["crosswind-ribbons", "drift-letterfall", "turning-letter-mosaic", "imprint-beats"]
+    if (["crosswind-ribbons", "drift-letterfall", "turning-letter-mosaic", "imprint-beats", "waterline-echo", "letter-fanout", "type-casts", "word-shelf", "reading-hop"]
         .filter(id => ids.has(id as MotionId)).length > 1) return "同一段文字只能使用一種背景動態";
     const textTravel: MotionId[] = ["cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring"];
     if (textTravel.some(id => ids.has(id)) && ([...textTravel, "float-idle", "slide-up", "scale-in", "hover-lift", "blur-in"] as const)
@@ -164,5 +164,6 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
 export const motionPerformanceLimits = { physicsFields: 3, physicsTags: 48, breathingButtons: 8, textAssemblies:12, scrollIndicators:8 } as const;
 export function withinMotionBudget(effects: readonly MotionInstance[]) {
     const physics = effects.filter(e => e.presetId === 'physics-tag-field');
+    if (effects.filter(e => e.presetId === "waterline-echo" || e.presetId === "type-casts").length > 4) return false;
     return effects.filter(e => e.presetId === "crosswind-ribbons" || e.presetId === "vanishing-lattice" || e.presetId === "drift-letterfall" || e.presetId === "turning-letter-mosaic").length <= 4 && effects.filter(e=>['text-morph-transition','elastic-word-bounce','text-spotlight-reveal','typographic-stretch'].includes(e.presetId)).length<=8 && effects.filter(e=>cinematicMotionIds.includes(e.presetId as typeof cinematicMotionIds[number])).length<=20 && effects.filter(e=>e.presetId==="particle-constellation"||e.presetId==="cursor-trail-particles").length<=3 && effects.filter(e=>e.presetId==="gooey-blob-merge"||e.presetId==="liquid-distortion-reveal").length<=4 && effects.filter(e=>advancedMotionIds.includes(e.presetId as typeof advancedMotionIds[number])).length<=24 && effects.filter(e=>e.presetId==='letter-assembly').length<=motionPerformanceLimits.textAssemblies && effects.filter(e=>e.presetId==='scroll-progress').length<=motionPerformanceLimits.scrollIndicators && physics.length <= motionPerformanceLimits.physicsFields && physics.reduce((sum, e) => sum + (e.validatedControls.labels as string[]).length, 0) <= motionPerformanceLimits.physicsTags && effects.filter(e => e.presetId === 'breathing-glow').length <= motionPerformanceLimits.breathingButtons;
 }

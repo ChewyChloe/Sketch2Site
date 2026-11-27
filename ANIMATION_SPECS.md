@@ -72,6 +72,13 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | quiet-landing | 顫波止步 | DONE | 進場 | low |
 | storm-landing | 雷痕落字 | DONE | 進場 | low |
 | inverse-spring | 逆重力跳點 | DONE | 進場 | low |
+| blur-in | 模糊淡入 | DONE | 進場 | low |
+| marquee-text | 跑馬燈 | DONE | 內容 | medium |
+| waterline-echo | 水紋字影 | DONE | 內容 | medium |
+| letter-fanout | 開扇首字 | DONE | 進場 | medium |
+| type-casts | 字型留光 | DONE | 內容 | medium |
+| word-shelf | 疊句收集 | DONE | 進場 | medium |
+| reading-hop | 讀字跳點 | DONE | 進場 | medium |
 
 ## 淡入 / Fade In
 
@@ -261,9 +268,9 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `breathing-glow` / version 1
 - 狀態：DONE
-- 說明：以平緩亮度節奏標示主要行動。
+- 說明：以平緩亮度節奏標示主要行動
 - 適用：主要行動按鈕
-- targetType：button
+- targetType：button、text、heading、paragraph
 - interactionType：idle-loop、hover、focus
 - techBase：CSS opacity keyframes
 - previewMapping：breathing-glow
@@ -273,6 +280,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| pulse | 光暈節奏 | select | "glow" | glow / heartbeat |
 | cycleMs | 週期（毫秒） | number | 3200 | 2000–6000; step 1 |
 | intensity | 強度 | select | "subtle" | subtle / medium |
 | spreadPx | 擴散（像素） | number | 12 | 4–24; step 1 |
@@ -280,11 +288,11 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **designIntent**：以平緩節奏提示一個重要操作，避免閃爍。
 
-**implementationBrief**：使用與內容分離的受控光暈層，opacity慢速循環；disabled停止，hover／focus優先。
+**implementationBrief**：使用與內容分離的受控光暈層慢速循環；如作者指定 pulse，保留心跳及擴散波紋。disabled停止，hover／focus優先。
 
-**compatibilityRules**：僅按鈕；不可與hover-glow重疊
+**compatibilityRules**：適用按鈕與文字；不可與hover-glow重疊
 
-**constraints**：不快速閃爍；不縮放按鈕；disabled不播放；hover與focus優先
+**constraints**：不快速閃爍；呼吸模式不縮放；心跳模式僅短暫微縮放；disabled不播放；hover與focus優先
 
 **reducedMotionFallback**：停止循環，保留靜態邊框
 
@@ -458,7 +466,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `letter-assembly` / version 1
 - 狀態：DONE
-- 說明：字元以短距離依序歸位，組成完整原文。
+- 說明：字元以短距離依序歸位，組成完整原文
 - 適用：短標題與介紹文字
 - targetType：text、heading、paragraph
 - interactionType：scroll-enter
@@ -470,13 +478,14 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| arrival | 聚合方向 | select | "rise" | rise / magnet |
 | durationMs | 時長（毫秒） | number | 600 | 200–1200; step 1 |
 | distancePx | 位移（像素） | number | 12 | 0–32; step 1 |
 | intervalMs | 字元間隔（毫秒） | number | 35 | 10–100; step 1 |
 
 **designIntent**：讓原文字素像短句的節拍依序歸位，完整語意始終可讀。
 
-**implementationBrief**：按字素建立可信呈現層，以distancePx、durationMs與intervalMs控制短距離位移及淡入；保留單份讀屏原文，總延遲限制1200ms，長文與reduced-motion直接顯示，不接收HTML。
+**implementationBrief**：按字素建立可信呈現層，以distancePx、durationMs與intervalMs控制短距離位移及淡入；映射作者選定的歸位方向；保留單份讀屏原文，總延遲限制1200ms，長文與reduced-motion直接顯示，不接收HTML。
 
 **compatibilityRules**：僅文字、標題與段落
 
@@ -808,7 +817,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `kinetic-text-wave` / version 1
 - 狀態：DONE
-- 說明：依字序傳遞有限的位移與旋轉，結束回原位。
+- 說明：依字序傳遞有限的位移與旋轉，結束回原位
 - 適用：文字、標題與段落
 - targetType：text、heading、paragraph
 - interactionType：scroll-enter、hover、focus
@@ -820,6 +829,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| form | 波動形態 | select | "bounce" | bounce / flag / stretch-wave |
 | durationMs | 時長（毫秒） | number | 650 | 200–1200; step 1 |
 | amplitudePx | 波幅（像素） | number | 8 | 2–16; step 1 |
 | trigger | 播放時機 | select | "in-view" | in-view / hover |
@@ -830,7 +840,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
 
-**constraints**：最多100字素，有限波浪後回原位；hover可用focus及觸控啟動；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+**constraints**：原型最多100字；旗面與伸縮模式限36字並只在視區循環；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
 
 **reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
 
@@ -1276,7 +1286,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `text-morph-transition` / version 1
 - 狀態：DONE
-- 說明：配對相同字素，連續移動至第二段使用者文字；支援不等長。
+- 說明：配對相同字素，連續移動至第二段使用者文字；支援不等長
 - 適用：text、heading、paragraph
 - targetType：text、heading、paragraph
 - interactionType：click、keyboard、on-enter
@@ -1288,6 +1298,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| style | 換詞方式 | select | "glyph" | glyph / portal / squash / orbit |
 | toText | 目標文字 | text | 使用者必填 | 1–120 |
 | durationMs | 時長（毫秒） | number | 800 | 250–1600; step 1 |
 | trigger | 播放時機 | select | "click" | click / in-view |
@@ -2010,3 +2021,206 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 **constraints**：兩次不等高的上彈；可見時播放一次
 
 **reducedMotionFallback**：保持原位
+
+## 模糊淡入 / Blur In
+
+- Preset: `blur-in` / version 1
+- 狀態：DONE
+- 說明：從模糊慢慢變清楚，像相機對焦
+- 適用：圖片、標題與卡片
+- targetType：text、heading、paragraph、image、card、container、button
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：blur-in
+- tags：進場、圖片、標題與卡片
+- rendererMapping：blur-in
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| entry | 入場形態 | select | "focus" | focus / trail |
+| durationMs | 時長（毫秒） | number | 900 | 300–2000; step 1 |
+| blurPx | 模糊程度（像素） | number | 12 | 4–24; step 1 |
+
+**designIntent**：內容從模糊對焦到清楚，進場柔和。生成只規劃來源布局。
+
+**implementationBrief**：映射受控blur-in Runtime，保留已選的對焦或拖影模式；只播放一次，不改變布局。
+
+**compatibilityRules**：任何元件皆可
+
+**constraints**：只播放一次；不改變布局
+
+**reducedMotionFallback**：直接清楚顯示
+
+## 跑馬燈 / Marquee Text
+
+- Preset: `marquee-text` / version 1
+- 狀態：DONE
+- 說明：文字橫向持續捲動，像店門口的跑馬燈
+- 適用：公告、標語與優惠訊息
+- targetType：text、heading、paragraph
+- interactionType：autoplay
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：marquee-text
+- tags：內容、公告、標語與優惠訊息
+- rendererMapping：marquee-text
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| layout | 跑馬燈版型 | select | "single" | single / dual-speed / counter-columns / layered-rush / vertical-stack / ribbon-cross |
+| speedPxPerSecond | 速度（像素／秒） | number | 60 | 20–160; step 1 |
+| direction | 方向 | select | "left" | left / right |
+
+**designIntent**：一行短句持續橫向捲動，吸引目光到公告或優惠。生成只規劃來源布局，不能改寫文字。
+
+**implementationBrief**：映射受控marquee-text Runtime；離屏暫停，原文保留給輔助科技。
+
+**compatibilityRules**：適用一行短句；不適合長段落
+
+**constraints**：原文保留給螢幕閱讀器；離開畫面暫停；單行模式保留原呈現；裝飾模式以原文為底圖素材
+
+**reducedMotionFallback**：靜止顯示原文
+
+## 水紋字影 / Waterline Echo
+
+- Preset: `waterline-echo` / version 1
+- 狀態：DONE
+- 說明：字影翻映到水線下，分層的漣漪讓倒影搖曳。
+- 適用：短標語與品牌文字
+- targetType：text、heading、paragraph
+- interactionType：idle-loop
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：waterline-echo
+- tags：內容、短標語與品牌文字
+- rendererMapping：waterline-echo
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 漣漪週期 | number | 3600 | 1600–6500; step 1 |
+| slices | 水紋分層 | number | 4 | 2–6; step 1 |
+
+**designIntent**：字影翻映到水線下，分層的漣漪讓倒影搖曳。
+
+**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：保留作者原文；離屏暫停且有資源上限
+
+**reducedMotionFallback**：靜態原文
+
+## 開扇首字 / Letter Fanout
+
+- Preset: `letter-fanout` / version 1
+- 狀態：DONE
+- 說明：從首字的下方支點展開文字扇面，再沿原角度收回。
+- 適用：短標語與品牌文字
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：letter-fanout
+- tags：進場、短標語與品牌文字
+- rendererMapping：letter-fanout
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 開合時長 | number | 1100 | 650–1800; step 1 |
+| spread | 開扇角度 | number | 36 | 20–55; step 1 |
+
+**designIntent**：從首字的下方支點展開文字扇面，再沿原角度收回。
+
+**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：保留作者原文；離屏暫停且有資源上限
+
+**reducedMotionFallback**：靜態原文
+
+## 字型留光 / Type Casts
+
+- Preset: `type-casts` / version 1
+- 狀態：DONE
+- 說明：原文的三種字型輪流浮現，帶著一圈短暫的光。
+- 適用：短標語與品牌文字
+- targetType：text、heading、paragraph
+- interactionType：idle-loop
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：type-casts
+- tags：內容、短標語與品牌文字
+- rendererMapping：type-casts
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 輪替週期 | number | 4900 | 3000–9000; step 1 |
+
+**designIntent**：原文的三種字型輪流浮現，帶著一圈短暫的光。
+
+**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：保留作者原文；離屏暫停且有資源上限
+
+**reducedMotionFallback**：靜態原文
+
+## 疊句收集 / Word Shelf
+
+- Preset: `word-shelf` / version 1
+- 狀態：DONE
+- 說明：小詞從側邊到達，各自落在一格，組成斜向文字層架。
+- 適用：短標語與品牌文字
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：word-shelf
+- tags：進場、短標語與品牌文字
+- rendererMapping：word-shelf
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 移入時長 | number | 560 | 350–1000; step 1 |
+| maxWords | 堆疊詞數 | number | 5 | 3–7; step 1 |
+
+**designIntent**：小詞從側邊到達，各自落在一格，組成斜向文字層架。
+
+**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：保留作者原文；離屏暫停且有資源上限
+
+**reducedMotionFallback**：靜態原文
+
+## 讀字跳點 / Reading Hop
+
+- Preset: `reading-hop` / version 1
+- 狀態：DONE
+- 說明：小點沿著閱讀順序跳躍，落到一個字就點亮一格。
+- 適用：短標語與品牌文字
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：reading-hop
+- tags：進場、短標語與品牌文字
+- rendererMapping：reading-hop
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 走完一行時間 | number | 1900 | 850–3000; step 1 |
+
+**designIntent**：小點沿著閱讀順序跳躍，落到一個字就點亮一格。
+
+**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：保留作者原文；離屏暫停且有資源上限
+
+**reducedMotionFallback**：靜態原文

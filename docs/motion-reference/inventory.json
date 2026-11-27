@@ -13,6 +13,12 @@
   "已有同等功能": 58,
   "需要新增複合互動元件": 9
  },
+ "delivery": {
+  "duplicate": 58,
+  "excluded": 74,
+  "verifiedMappings": 48,
+  "pending": 167
+ },
  "rows": [
   {
    "sourceId": 1,
@@ -395,7 +401,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "waterline-echo",
    "priority": "P4",
    "note": "水面倒影",
    "credit": [
@@ -408,6 +414,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 16,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -559,7 +566,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "letter-fanout",
    "priority": "P4",
    "note": "扇形展開",
    "credit": [
@@ -572,6 +579,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 16,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -582,7 +590,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "reading-hop",
    "priority": "P3",
    "note": "逐字點亮與跳點",
    "credit": [
@@ -595,6 +603,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 16,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -887,7 +896,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "type-casts",
    "priority": "P4",
    "note": "多字型輪替（需字型授權確認）",
    "credit": [
@@ -900,6 +909,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 16,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -1049,7 +1059,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "word-shelf",
    "priority": "P3",
    "note": "詞語堆疊",
    "credit": [
@@ -1062,6 +1072,7 @@
      "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
     }
    ],
+   "verifiedBatch": 16,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

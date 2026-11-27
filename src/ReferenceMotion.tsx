@@ -4,6 +4,7 @@ import { motionNumber, type MotionInstance } from './motion';
 import { useReducedMotion } from './MotionRuntime';
 import { resources } from './AdvancedMotion';
 import { referenceMotionIds } from './motionCatalog';
+import { playReferenceTypography, typographyMotionIds } from './ReferenceTypography';
 
 // Reference batch 1 (2026-11-27). Specs: referenceMotions.ts. Same rules as every preset:
 // the user's text and pictures stay real (selectable, readable by screen readers),
@@ -367,6 +368,12 @@ export function useReferenceMotion(node: PageNode, ref: RefObject<HTMLElement | 
                 { translate: "0 0", offset: .91 }, { translate: "0 0" },
             ], { duration: n(reverse, "durationMs", 760) });
         });
+        for (const id of typographyMotionIds) {
+            const effect = find(id);
+            if (!effect) continue;
+            addClass("ref-typography-host");
+            playReferenceTypography(host, effect, text, r, reduced);
+        }
         return () => { r.dispose(); cleanups.reverse().forEach(f => f()); };
     }, [node, ref, reduced, assetKey, preview]); // eslint-disable-line react-hooks/exhaustive-deps
 }

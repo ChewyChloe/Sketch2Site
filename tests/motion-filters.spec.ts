@@ -109,7 +109,7 @@ for (const [id, text] of [
   ["crosswind-ribbons", "巷口咖啡小店"], ["vanishing-lattice", "自家烘豆"],
   ["imprint-beats", "巷口咖啡小店"], ["drift-letterfall", "巷口咖啡小店"],
   ["turning-letter-mosaic", "巷口咖啡小店"],
-  ...(["cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring"] as const).map(id => [id, "巷口咖啡小店"] as const),
+  ...(["cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring", "waterline-echo", "letter-fanout", "type-casts", "word-shelf", "reading-hop"] as const).map(id => [id, "巷口咖啡小店"] as const),
 ] as const) {
   test(`${id}: draft trial replays without editing the source`, async ({ page }) => {
     await page.goto("/?draft");

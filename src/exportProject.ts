@@ -6,6 +6,7 @@ import cinematicTextSource from "./CinematicText.tsx?raw";
 import storyMotionSource from "./StoryMotion.tsx?raw";
 import advancedMotionSource from "./AdvancedMotion.tsx?raw";
 import signatureMotionSource from "./SignatureMotion.tsx?raw";
+import referenceTypographySource from "./ReferenceTypography.ts?raw";
 import referenceMotionSource from "./ReferenceMotion.tsx?raw";
 import referenceMetaSource from "./referenceMotions.ts?raw";
 import sectionLayoutSource from "./sectionLayout.ts?raw";
@@ -98,6 +99,7 @@ export async function exportProjectFiles(
     { path: "src/AdvancedMotion.tsx", content: advancedMotionSource },
     { path: "src/SignatureMotion.tsx", content: signatureMotionSource },
     { path: "src/ReferenceMotion.tsx", content: referenceMotionSource },
+    { path: "src/ReferenceTypography.ts", content: referenceTypographySource },
     { path: "src/referenceMotions.ts", content: referenceMetaSource },
     { path: "src/CinematicMotion.tsx", content: cinematicMotionSource },
     { path: "src/CinematicText.tsx", content: cinematicTextSource },

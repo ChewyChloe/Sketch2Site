@@ -28,7 +28,7 @@ test('library previews are live: hover, scroll and replay show the real effect',
     await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await page.getByRole('button', { name: '動畫素材庫', exact: true }).click();
-    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(85);
+    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(90);
     const card = (id: string) => page.locator(`.sidebar [data-effect-id="${id}"]`);
     for (const id of referenceMotionIds) {
         await card(id).scrollIntoViewIfNeeded();
@@ -360,6 +360,30 @@ for (const [id, key, value] of [
         await page.emulateMedia({ reducedMotion: "reduce" });
         await expect.poll(() => element.evaluate(el => el.getAnimations().length)).toBe(0);
         await expect(element).toHaveText(original ?? "");
+        expect(await page.locator(".preview-frame").evaluate(frame => frame.scrollWidth <= frame.clientWidth)).toBe(true);
+        done();
+    });
+}
+
+for (const [id, layer, key, value] of [
+    ["waterline-echo", ".ref-waterline", "transform", "scaleY(-1)"],
+    ["letter-fanout", ".ref-letter-fan", "rotate", "36deg"],
+    ["type-casts", ".ref-type-casts", "filter", "drop-shadow"],
+    ["word-shelf", ".ref-word-shelf", "translate", "36px"],
+    ["reading-hop", ".ref-reading-hop", "translate", "px"],
+] as const) {
+    test(`${id}: typographic layer plays and preserves the original at 375px`, async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 900 });
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+        const done = await load(page, true), element = target(page, id);
+        await element.scrollIntoViewIfNeeded();
+        await expect(element.locator(layer)).toHaveAttribute("aria-hidden", "true");
+        await expect.poll(() => element.locator(layer).evaluate((el, property) => el.getAnimations({ subtree: true })
+            .flatMap(animation => (animation.effect as KeyframeEffect).getKeyframes().map(frame => String(frame[property]))).join(" "), key)).toContain(value);
+        await expect(element).toHaveAccessibleName("自家烘豆");
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await expect(element.locator(layer)).toHaveCount(0);
+        await expect(element).toHaveAccessibleName("自家烘豆");
         expect(await page.locator(".preview-frame").evaluate(frame => frame.scrollWidth <= frame.clientWidth)).toBe(true);
         done();
     });

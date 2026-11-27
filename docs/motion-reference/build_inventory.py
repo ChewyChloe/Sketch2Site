@@ -11,12 +11,12 @@ M = {
 1:("N","storm-landing","P4","文字重落進場"),2:("U","","—",EXIT),3:("N","","P4","硬幣式翻轉循環"),4:("U","","—",EXIT),5:("U","","—",EXIT),
 6:("X","breathing-glow","P4","加上文字縮放與波紋"),7:("N","","P4","萬花筒旋轉"),8:("X","count-up","P4","原創落點倒數模式"),9:("S","kinetic-text-wave",""," "),10:("N","cutout-ticks","P4","定格晃動"),
 11:("N","drift-letterfall","P3","八條以內的分軌落字"),12:("N","","P4","文字放大鏡"),13:("S","character-decode","",""),14:("U","","—",EXIT),15:("S","gradient-text-flow","",""),
-16:("X","curved-path-text","P3","整圈旋轉"),17:("N","","P4","水面倒影"),18:("S","kinetic-text-wave","",""),19:("X","kinetic-text-wave","P4","旗面起伏"),20:("N","inverse-spring","P4","反重力彈跳"),
-21:("X","letter-assembly","P4","磁吸聚合"),22:("N","","P4","格狀文字背景"),23:("N","bold-relay","P1","批次一完成"),24:("N","","P4","扇形展開"),25:("N","","P3","逐字點亮與跳點"),
+16:("X","curved-path-text","P3","整圈旋轉"),17:("N","waterline-echo","P4","水面倒影"),18:("S","kinetic-text-wave","",""),19:("X","kinetic-text-wave","P4","旗面起伏"),20:("N","inverse-spring","P4","反重力彈跳"),
+21:("X","letter-assembly","P4","磁吸聚合"),22:("N","","P4","格狀文字背景"),23:("N","bold-relay","P1","批次一完成"),24:("N","letter-fanout","P4","扇形展開"),25:("N","reading-hop","P3","逐字點亮與跳點"),
 26:("N","sign-pivot","P4","鐘擺搖晃"),27:("X","pixel-dissolve","P4","文字版本"),28:("X","text-morph-transition","P3","環形換字"),29:("X","blur-in","P3","殘影進場"),30:("N","turning-letter-mosaic","P3","對角字磚依序翻轉"),
 31:("N","","P4","∞ 軌道"),32:("X","rolling-characters","P4","換位排序"),33:("N","","P4","漩渦"),34:("N","quiet-landing","P4","顫抖後穩定"),35:("X","kinetic-text-wave","P3","縱向波浪"),
-36:("N","","P3","墨水暈開"),37:("S","letter-assembly","",""),38:("N","","P4","多字型輪替（需字型授權確認）"),39:("U","","—",EXIT),40:("S","float-idle","",""),
-41:("S","elastic-word-bounce","",""),42:("X","elastic-word-bounce","P3","重落節奏"),43:("N","imprint-beats","P3","原文後方依序落下印記"),44:("N","","P4","縱深飛出"),45:("N","","P3","詞語堆疊"),
+36:("N","","P3","墨水暈開"),37:("S","letter-assembly","",""),38:("N","type-casts","P4","多字型輪替（需字型授權確認）"),39:("U","","—",EXIT),40:("S","float-idle","",""),
+41:("S","elastic-word-bounce","",""),42:("X","elastic-word-bounce","P3","重落節奏"),43:("N","imprint-beats","P3","原文後方依序落下印記"),44:("N","","P4","縱深飛出"),45:("N","word-shelf","P3","詞語堆疊"),
 46:("X","text-morph-transition","P3","穿越換詞"),47:("X","text-morph-transition","P3","擠壓換詞"),48:("X","marquee-text","P3","雙速巨字"),49:("X","marquee-text","P4","直排"),50:("N","crosswind-ribbons","P2","雙向裝飾字帶，保留中央原文"),
 51:("X","curved-path-text","P3","沿波浪線流動"),52:("X","marquee-text","P3","多層帶狀"),53:("X","marquee-text","P4","直排多欄"),54:("X","marquee-text","P3","交叉膠帶"),55:("U","","—","需要 3D 場景，效能與可讀性不符網站文字"),
 56:("U","","—","需要 3D 場景，效能與可讀性不符網站文字"),57:("N","","P4","CSS 3D 圓柱"),58:("U","","—","需要 3D 場景，效能與可讀性不符網站文字"),59:("N","","P4","帶景深環繞"),60:("N","","P3","四面方塊換字"),
@@ -82,7 +82,7 @@ M = {
 assert sorted(M) == list(range(1, 348)), "every source item needs one row"
 names = {"S": "已有同等功能", "X": "既有功能可擴充", "N": "需要新增動畫", "C": "需要新增複合互動元件", "U": "不適合目前架構或需要額外授權"}
 HANNAH = {"name": "Hannah’s Motion Library", "url": "https://kittenjam-motion-library.vercel.app/"}
-shipped = {50: 2, 223: 2, 11: 3, 30: 3, 43: 3, 1: 12, 10: 12, 20: 12, 26: 12, 34: 12}
+shipped = {50: 2, 223: 2, 11: 3, 30: 3, 43: 3, 1: 12, 10: 12, 20: 12, 26: 12, 34: 12, 17: 16, 24: 16, 25: 16, 38: 16, 45: 16}
 components = {207: 10, 208: 9, 209: 11, 339: 4, 340: 6, 341: 4}
 expansions = {8: 5, 176: 7, 210: 8, 6: 13, 19: 13, 21: 13, 29: 13, 35: 13, 48: 14, 49: 14, 52: 14, 53: 14, 54: 14, 28: 15, 46: 15, 47: 15}
 rows = []
@@ -104,6 +104,13 @@ for it in items:
 from collections import Counter
 summary = Counter(r["category"] for r in rows)
 out = {"source": HANNAH | {"dataFile": "https://kittenjam-motion-library.vercel.app/data.js", "readOn": "2026-11-27", "items": len(rows)},
-       "categories": dict(summary), "rows": rows}
+       "categories": dict(summary),
+       "delivery": {
+           "duplicate": summary[names["S"]],
+           "excluded": summary[names["U"]],
+           "verifiedMappings": sum(r["priority"] == "P1" or bool(r.get("verifiedBatch") or r.get("verifiedExpansionBatch") or r.get("verifiedComponentBatch")) for r in rows),
+       },
+       "rows": rows}
+out["delivery"]["pending"] = len(rows) - sum(out["delivery"].values())
 json.dump(out, open(sys.argv[2], "w"), ensure_ascii=False, indent=1)
 print(dict(summary), len(rows))

@@ -491,10 +491,45 @@ const list: ReferenceMotion[] = [
     performance: ["原文不拆成字元", "可見時播放一次"],
     reducedMotion: "不位移，保留原文字", inspiration: [ref(20)], batch: 12, status: "DONE",
   },
+  {
+    id: "waterline-echo", nameZh: "水紋字影", nameEn: "Waterline Echo", intro: "字影翻映到水線下，分層的漣漪讓倒影搖曳。",
+    behaviour: ["下方倒影跟著原文翻轉", "數條水平切片不同步蕩漾"], targets: ["text", "heading", "paragraph"],
+    triggers: ["idle-loop"], timing: "進入可視範圍後播放", params: ["時長與受控尺寸"],
+    performance: ["原文保留，裝飾有數量上限", "離屏時暫停"],
+    reducedMotion: "顯示清楚且不移動的原文", inspiration: [ref(17)], batch: 16, status: "DONE",
+  },
+  {
+    id: "letter-fanout", nameZh: "開扇首字", nameEn: "Letter Fanout", intro: "從首字的下方支點展開文字扇面，再沿原角度收回。",
+    behaviour: ["使用原文第一個字組成五瓣", "以各瓣底部為支點向兩側展開"], targets: ["text", "heading", "paragraph"],
+    triggers: ["scroll-enter"], timing: "進入可視範圍後播放", params: ["時長與受控尺寸"],
+    performance: ["原文保留，裝飾有數量上限", "離屏時暫停"],
+    reducedMotion: "顯示清楚且不移動的原文", inspiration: [ref(24)], batch: 16, status: "DONE",
+  },
+  {
+    id: "type-casts", nameZh: "字型留光", nameEn: "Type Casts", intro: "原文的三種字型輪流浮現，帶著一圈短暫的光。",
+    behaviour: ["無外部連線地切換三組字族", "各組出現時帶短暫邊緣光"], targets: ["text", "heading", "paragraph"],
+    triggers: ["idle-loop"], timing: "進入可視範圍後播放", params: ["時長與受控尺寸"],
+    performance: ["原文保留，裝飾有數量上限", "離屏時暫停"],
+    reducedMotion: "顯示清楚且不移動的原文", inspiration: [ref(38)], batch: 16, status: "DONE",
+  },
+  {
+    id: "word-shelf", nameZh: "疊句收集", nameEn: "Word Shelf", intro: "小詞從側邊到達，各自落在一格，組成斜向文字層架。",
+    behaviour: ["小詞從右側依序進場", "各詞停在分層的位置"], targets: ["text", "heading", "paragraph"],
+    triggers: ["scroll-enter"], timing: "進入可視範圍後播放", params: ["時長與受控尺寸"],
+    performance: ["原文保留，裝飾有數量上限", "離屏時暫停"],
+    reducedMotion: "顯示清楚且不移動的原文", inspiration: [ref(45)], batch: 16, status: "DONE",
+  },
+  {
+    id: "reading-hop", nameZh: "讀字跳點", nameEn: "Reading Hop", intro: "小點沿著閱讀順序跳躍，落到一個字就點亮一格。",
+    behaviour: ["依真正換行位置移動提示點", "每次落下亮起一個字的標記"], targets: ["text", "heading", "paragraph"],
+    triggers: ["scroll-enter"], timing: "進入可視範圍後播放", params: ["時長與受控尺寸"],
+    performance: ["原文保留，裝飾有數量上限", "離屏時暫停"],
+    reducedMotion: "顯示清楚且不移動的原文", inspiration: [ref(25)], batch: 16, status: "DONE",
+  },
 ];
 
 export const referenceMotions: readonly ReferenceMotion[] = z.array(ReferenceMotionSchema).parse(list);
 export const referenceMotion = (id: string) => referenceMotions.find((m) => m.id === id);
 /** Only motions that are built end to end. */
-export const referenceMotionIds = ["dolly-frame", "color-wake", "scroll-ink-words", "hollow-fill-sweep", "letter-windows", "bold-relay", "chart-build", "crosswind-ribbons", "vanishing-lattice", "imprint-beats", "drift-letterfall", "turning-letter-mosaic", "cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring"] as const;
+export const referenceMotionIds = ["dolly-frame", "color-wake", "scroll-ink-words", "hollow-fill-sweep", "letter-windows", "bold-relay", "chart-build", "crosswind-ribbons", "vanishing-lattice", "imprint-beats", "drift-letterfall", "turning-letter-mosaic", "cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring", "waterline-echo", "letter-fanout", "type-casts", "word-shelf", "reading-hop"] as const;
 export type ReferenceMotionId = (typeof referenceMotionIds)[number];

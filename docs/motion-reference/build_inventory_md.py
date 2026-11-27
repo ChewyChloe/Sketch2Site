@@ -9,6 +9,8 @@ L.append("這份盤點只記錄來源編號、元件類型、觸發方式與技�
 L.append("## 統計\n\n| 分類 | 筆數 |\n|---|---|")
 for k in order: L.append(f"| {k} | {d['categories'].get(k,0)} |")
 L.append(f"| 合計 | {len(rows)} |\n")
+if delivery := d.get("delivery"):
+    L.append(f"交付狀態：{delivery['duplicate']} 筆已有同等、{delivery['excluded']} 筆排除、{delivery['verifiedMappings']} 筆已驗證對應、{delivery['pending']} 筆待實作。\n")
 L.append("優先序用於排程。P1 與明列已驗證批次的資料有正式 Runtime；其他預計新增項目仍待實作。\n")
 done = {}
 for r in rows:
