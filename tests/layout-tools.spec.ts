@@ -76,6 +76,10 @@ test("holding Alt shows distances from the selection to its neighbours", async (
   await page.getByRole("button", { name: /^按鈕：立即報名/ }).click();
   await page.keyboard.down("Alt");
   await expect(page.locator(".spacing-line")).toHaveCount(4);
+  const other = page.locator('[data-testid="canvas-node"]:not(.selected)').first();
+  await other.hover();
+  await expect(page.locator(".spacing-label").first()).toContainText("px");
+  await expect(page.locator(".spacing-line")).not.toHaveCount(4);
   await page.keyboard.up("Alt");
   await expect(page.locator(".spacing-line")).toHaveCount(0);
 });

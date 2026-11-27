@@ -45,6 +45,10 @@ test("animation browser searches, combines facets, counts and remembers favorite
   await library.getByRole("button", { name: "清除條件" }).click();
   await search.fill("unmatched-motion-xyz");
   await expect(status).toHaveText("找不到符合的動畫");
+  await library.getByLabel("描述想要的動畫（本機規則推薦）").fill("文字像被風吹散後重新聚集");
+  await library.getByRole("button", { name: "推薦動畫" }).click();
+  await expect(library.locator('[data-effect-id="letter-assembly"]')).toContainText("分散後重新組合文字");
+  expect(await cards.count()).toBeLessThanOrEqual(5);
 });
 
 test("tuned animation is temporary until applied and survives undo and redo", async ({ page }) => {
