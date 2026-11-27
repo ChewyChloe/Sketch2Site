@@ -15,6 +15,12 @@ export function SiteToolbar({
   onApply,
   onNote,
   noteLabel,
+  onMoveStart,
+  onNudge,
+  onCopyStyle,
+  onPasteAll,
+  brushing,
+  sameKindCount = 0,
 }: {
   node: PageNode;
   stage: RefObject<HTMLElement | null>;
@@ -22,6 +28,13 @@ export function SiteToolbar({
   onApply: (patches: unknown[], scope: string[]) => boolean;
   onNote: () => void;
   noteLabel: string;
+  /** Pointer down on the drag handle: the element follows the pointer until dropped. */
+  onMoveStart?: (e: React.PointerEvent) => void;
+  onNudge?: (by: -1 | 1) => void;
+  onCopyStyle?: () => void;
+  onPasteAll?: () => void;
+  brushing?: boolean;
+  sameKindCount?: number;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -91,6 +104,22 @@ export function SiteToolbar({
         </div>
       ) : (
         <span className="site-tb-hint">說說想怎麼改</span>
+      )}
+      {(onMoveStart || onCopyStyle) && <span className="site-tb-sep" aria-hidden="true" />}
+      {onMoveStart && (
+        <span className="site-tb-move" role="group" aria-label="移動">
+          <button type="button" className="site-tb-grip" aria-label="拖曳移動" title="按住拖到想放的位置，也可以拖到別的區塊" onPointerDown={(e) => { e.stopPropagation(); onMoveStart(e); }}>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v16M2 10h16M10 2 7.5 4.5M10 2l2.5 2.5M10 18l-2.5-2.5M10 18l2.5-2.5M2 10l2.5-2.5M2 10l2.5 2.5M18 10l-2.5-2.5M18 10l-2.5 2.5" /></svg>
+          </button>
+          <button type="button" aria-label="往前移" title="往前移一格" onClick={() => onNudge?.(-1)}>↑</button>
+          <button type="button" aria-label="往後移" title="往後移一格" onClick={() => onNudge?.(1)}>↓</button>
+        </span>
+      )}
+      {onCopyStyle && (
+        <span className="site-tb-brush" role="group" aria-label="樣式">
+          <button type="button" aria-pressed={brushing} title="複製這個元件的樣式，再點別的元件套用（Esc 取消）" onClick={onCopyStyle}>{brushing ? "點要套用的元件" : "複製樣式"}</button>
+          {sameKindCount > 0 && <button type="button" title="整個網站同一種元件都換成這個樣式" onClick={onPasteAll}>套用到全部同類（{sameKindCount}）</button>}
+        </span>
       )}
       {note}
     </div>

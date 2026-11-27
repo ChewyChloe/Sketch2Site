@@ -1061,3 +1061,13 @@ body{background:var(--neo-cream)}
 .note-ask-own { display: flex; gap: 6px; }
 .note-ask-own input { flex: 1; min-width: 0; min-height: 28px; padding: 0 10px; border: 1.5px solid #c9c7bd; border-radius: 999px; font: inherit; font-size: 12px; }
 .note-ask-own button:disabled { opacity: .45; cursor: default; }
+/* Moving elements and copying looks on the site (SiteToolbar). */
+.site-tb-sep { width: 1px; align-self: stretch; margin: 4px 2px; background: #d8d6cc; }
+.site-tb-move, .site-tb-brush { display: inline-flex; align-items: center; gap: 4px; }
+.site-tb-move button, .site-tb-brush button { min-height: 32px; min-width: 32px; padding: 0 8px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.site-tb-move button:hover, .site-tb-brush button:hover { background: #f1efe6; }
+.site-tb-grip { cursor: grab !important; touch-action: none; }
+.site-tb-grip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.site-tb-brush button[aria-pressed="true"] { background: #10e560; }
+.site-drop-line { position: absolute; z-index: 60; height: 4px; margin-top: -2px; border-radius: 2px; background: #10e560; box-shadow: 0 0 0 2px #0d0e11; pointer-events: none; }
+.preview-frame .is-moving { opacity: .4; outline: 2px dashed #0d0e11; }

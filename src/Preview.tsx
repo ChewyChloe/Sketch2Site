@@ -1,5 +1,6 @@
 import { checkRendered, checkSite, type SiteIssue } from "./siteCheck";
 import { SiteCheckPanel } from "./SiteCheckPanel";
+import { copyStyle, dropPlacement, movePatch, nudge, pastePatches, sameKind, type CopiedStyle } from "./siteMove";
 import { VersionTimeline } from "./VersionTimeline";
 import { CompareView } from "./CompareView";
 import { addVersion, listVersions, sectionLabel, type SiteVersion } from "./versions";
@@ -388,6 +389,7 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
   useEffect(() => {
     const escape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !e.defaultPrevented) {
+        setBrush(null);
         if (!setSelectedIds([])) return;
         const inspector = document.getElementById("preview-inspector");
         if (inspector && !inspector.hidden) panelButton.current?.focus();
@@ -406,6 +408,12 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
       !indexNodes(current.current.history.present).has(id)
     )
       return;
+    if (brushRef.current) {
+      // Format painter: the picked element takes the copied look instead of being selected.
+      pasteStyle(brushRef.current, [indexNodes(current.current.history.present).get(id)!]);
+      setBrush(null);
+      return;
+    }
     if (!setSelected(id)) return;
     setNotice("");
   }
@@ -528,6 +536,53 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
 
   const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean } | null>(null);
   const [timeline, setTimeline] = useState(false);
+  // Format painter on the site: the copied look waits for the next element picked.
+  const [brush, setBrushState] = useState<CopiedStyle | null>(null);
+  // Read through a ref: the page's click handler can be an earlier render's function.
+  const brushRef = useRef<CopiedStyle | null>(null);
+  const setBrush = (b: CopiedStyle | null) => { brushRef.current = b; setBrushState(b); };
+  // Dragging an element: where it would land, drawn as a line.
+  const [dropLine, setDropLine] = useState<{ top: number; left: number; width: number } | null>(null);
+  const startMove = (e: React.PointerEvent, id: string) => {
+    e.preventDefault();
+    const stage = stageRef.current, frame = frameRef.current;
+    if (!stage || !frame) return;
+    const moving = frame.querySelector<HTMLElement>(`[data-page-id="${id}"]`);
+    moving?.classList.add("is-moving");
+    let target: { overId: string; after: boolean } | null = null;
+    const move = (ev: PointerEvent) => {
+      const under = document.elementsFromPoint(ev.clientX, ev.clientY).find((el) => el instanceof HTMLElement && el.dataset.pageId && frame.contains(el) && !moving?.contains(el)) as HTMLElement | undefined;
+      if (!under) { target = null; setDropLine(null); return; }
+      const r = under.getBoundingClientRect(), s = stage.getBoundingClientRect();
+      const after = ev.clientY > r.top + r.height / 2;
+      target = { overId: under.dataset.pageId!, after };
+      setDropLine({ top: (after ? r.bottom : r.top) - s.top, left: r.left - s.left, width: r.width });
+    };
+    const end = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      moving?.classList.remove("is-moving");
+      setDropLine(null);
+      if (!target) return;
+      const place = dropPlacement(current.current.history.present, id, target.overId, target.after);
+      if (!place) { setPatchError(true); setNotice("這裡放不下，換個位置試試"); return; }
+      if (patch([movePatch(id, place)], [id])) setNotice("已移動，按「撤銷修改」可以放回去");
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+  };
+  const nudgeSelected = (id: string, by: -1 | 1) => {
+    const place = nudge(current.current.history.present, id, by);
+    if (!place) { setNotice(by < 0 ? "已經在最前面" : "已經在最後面"); return; }
+    if (patch([movePatch(id, place)], [id])) setNotice(by < 0 ? "已往前移" : "已往後移");
+  };
+  const pasteStyle = (from: CopiedStyle, targets: import("./pageSpec").PageNode[]) => {
+    const list = targets.slice(0, 30);
+    if (!list.length) return false;
+    const ok = Boolean(patch(pastePatches(from, list), list.map((n) => n.id)));
+    if (ok) setNotice(`已套用樣式到 ${list.length} 個元件，按「撤銷修改」可以復原`);
+    return ok;
+  };
   const [compare, setCompare] = useState<{ before: import("./pageSpec").PageSpec; after: import("./pageSpec").PageSpec; sections?: string[] } | null>(null);
   const restoreVersion = (v: SiteVersion) => {
     if (pendingEdits.current) { setPatchError(true); setNotice("請先套用或捨棄屬性修改"); return; }
@@ -933,6 +988,11 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                   selected={selectedIds}
                   onSelect={(ids) => {
                     const valid = ids.filter((id) => nodes.has(id));
+                    if (brushRef.current && valid.length) {
+                      pasteStyle(brushRef.current, valid.map((id) => nodes.get(id)!));
+                      setBrush(null);
+                      return;
+                    }
                     if (valid.length === 1) {
                       if (!setSelected(valid[0])) return;
                     } else {
@@ -985,6 +1045,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                 </VisualSurface>
               )}
             </div>
+            {dropLine && <div className="site-drop-line" aria-hidden="true" style={{ top: dropLine.top, left: dropLine.left, width: dropLine.width }} />}
             {mode === "browse" && ready && !loadError && node && (
               <SiteToolbar
                 key={"tb" + node.id}
@@ -993,6 +1054,12 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                 themeColors={[...(page.brand?.primary ? [page.brand.primary] : []), ...(page.brand?.colors ?? [])]}
                 onApply={(patches, scope) => Boolean(patch(patches, scope))}
                 onNote={() => setNoteToken((t) => t + 1)}
+                onMoveStart={(e) => startMove(e, node.id)}
+                onNudge={(by) => nudgeSelected(node.id, by)}
+                brushing={Boolean(brush)}
+                onCopyStyle={() => { if (brush) { setBrush(null); setNotice("已取消複製樣式"); } else { setBrush(copyStyle(node)); setNotice("已複製樣式：點一下要套用的元件，可以是別的區塊（Esc 取消）"); } }}
+                sameKindCount={sameKind(page, node).length}
+                onPasteAll={() => pasteStyle(copyStyle(node), sameKind(page, node))}
                 noteLabel={"註解：說說這個" + (annotationNames[node.type] ?? "元件") + "要怎麼改"}
               />
             )}

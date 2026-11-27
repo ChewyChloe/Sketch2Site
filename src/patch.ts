@@ -128,6 +128,15 @@ export const PatchSchema = z.discriminatedUnion("operation", [
     .strict(),
   z
     .object({
+      // The author drags an element to another place, also into another section. "page" as the
+      // parent reorders top-level sections. Nothing about the element itself changes.
+      operation: z.literal("move-node"),
+      targetId,
+      payload: z.object({ parentId: z.union([z.string().uuid(), z.literal("page")]), index: z.number().int().min(0).max(200) }).strict(),
+    })
+    .strict(),
+  z
+    .object({
       // The author locks or unlocks parts of a section.
       operation: z.literal("set-lock"),
       targetId,
@@ -152,7 +161,8 @@ const BatchSchema = z
       .int()
       .nonnegative()
       .max(Number.MAX_SAFE_INTEGER - 1),
-    patches: z.array(PatchSchema).min(1).max(20),
+    // Up to 60: 套用到全部同類 restyles many elements in one undoable step.
+    patches: z.array(PatchSchema).min(1).max(60),
   })
   .strict();
 export type PatchBatch = z.infer<typeof BatchSchema>;
@@ -323,7 +333,8 @@ function authorized(patch: Patch, change: Change): boolean {
     case "set-theme":
       return change.property === "theme";
     case "replace-section":
-      return false; // its changes are checked as a whole in validateScope
+    case "move-node":
+      return false; // their changes are checked as a whole in validateScope
     case "set-lock":
       return change.property === "lock";
     case "set-property":
@@ -361,12 +372,81 @@ export function validateScope(
     const blank = (n: PageNode): PageNode => (replaced.has(n.id) ? { id: n.id, type: "section", style: { gap: "medium", padding: "medium", align: "start", tone: "plain", width: "full" }, effects: [], children: [] } : n);
     return { ...page, sections: page.sections.map(blank), ...(page.subpages ? { subpages: page.subpages.map((p) => ({ ...p, sections: p.sections.map(blank) })) } : {}) };
   };
+  const moved = new Set(patches.filter((p) => p.operation === "move-node").map((p) => p.targetId));
+  if (moved.size) return sameNodesMoved(before, after, moved) && patches.every((p) => p.operation === "move-node");
   const diff = diffPages(hollow(before), hollow(after));
   return (
     !diff.structureChanged &&
     !diff.pageChanged &&
     diff.changes.every((c) => patches.some((p) => authorized(p, c)))
   );
+}
+/** Where every node sits: its parent ("page" for a top-level section) and the page view. */
+function placements(page: PageSpec) {
+  const out = new Map<string, string>();
+  const views = [page.sections, ...(page.subpages ?? []).map((p) => p.sections)];
+  views.forEach((sections, v) => {
+    const walk = (n: PageNode, parent: string) => { out.set(n.id, v + ":" + parent); n.children?.forEach((c) => walk(c, n.id)); };
+    sections.forEach((s) => walk(s, "page"));
+  });
+  return out;
+}
+/** A move changes only where the moved elements sit: every node keeps its own data. */
+function sameNodesMoved(before: PageSpec, after: PageSpec, moved: Set<string>) {
+  const a = indexNodes(before), b = indexNodes(after);
+  if (a.size !== b.size) return false;
+  const own = (n: PageNode) => JSON.stringify({ ...n, children: undefined });
+  for (const [id, n] of a) { const m = b.get(id); if (!m || own(n) !== own(m)) return false; }
+  const pa = placements(before), pb = placements(after);
+  for (const [id, where] of pa) if (!moved.has(id) && pb.get(id) !== where) return false;
+  // The page itself (title, theme, pages) is untouched.
+  return !diffPages(before, after).pageChanged && (before.theme ?? "classic") === (after.theme ?? "classic");
+}
+const containerTypes = new Set(["section", "container", "stack", "grid", "card"]);
+/** Moves one node; null when the move is not allowed. */
+function moveNode(page: PageSpec, id: string, parentId: string, index: number): PageSpec | PatchError {
+  const views: PageNode[][] = [page.sections, ...(page.subpages ?? []).map((p) => p.sections)];
+  const sectionOfId = (sections: PageNode[], x: string) => sections.find((s) => indexNodes({ ...page, sections: [s], subpages: undefined }).has(x));
+  const v = views.findIndex((sections) => sectionOfId(sections, id));
+  if (v < 0) return "TARGET_NOT_FOUND";
+  const sections = views[v];
+  const fromSection = sectionOfId(sections, id)!;
+  const isSection = fromSection.id === id;
+  if (isSection !== (parentId === "page")) return "PROPERTY_NOT_ALLOWED";
+  let next: PageNode[];
+  if (isSection) {
+    const rest = sections.filter((s) => s.id !== id);
+    next = [...rest.slice(0, index), fromSection, ...rest.slice(index)];
+  } else {
+    const toSection = sectionOfId(sections, parentId);
+    if (!toSection) return "TARGET_NOT_FOUND";
+    // A section whose layout is locked keeps its elements where they are.
+    if (fromSection.lock?.layout || toSection.lock?.layout) return "LOCKED";
+    let moving: PageNode | undefined;
+    const take = (n: PageNode): PageNode => {
+      if (!n.children) return n;
+      const hit = n.children.find((c) => c.id === id);
+      if (hit) moving = hit;
+      return { ...n, children: n.children.filter((c) => c.id !== id).map(take) };
+    };
+    const without = sections.map(take);
+    if (!moving) return "TARGET_NOT_FOUND";
+    // Not into itself or anything inside it.
+    if (indexNodes({ ...page, sections: [moving], subpages: undefined }).has(parentId)) return "PROPERTY_NOT_ALLOWED";
+    let placed = false;
+    const put = (n: PageNode): PageNode => {
+      if (n.id === parentId) {
+        if (!containerTypes.has(n.type)) return n;
+        placed = true;
+        const kids = n.children ?? [];
+        return { ...n, children: [...kids.slice(0, index), moving!, ...kids.slice(index)] };
+      }
+      return n.children ? { ...n, children: n.children.map(put) } : n;
+    };
+    next = without.map(put);
+    if (!placed) return "PROPERTY_NOT_ALLOWED";
+  }
+  return v === 0 ? { ...page, sections: next } : { ...page, subpages: page.subpages!.map((p, i) => (i === v - 1 ? { ...p, sections: next } : p)) };
 }
 /** Pictures and outside links a page uses. */
 function pagePools(page: PageSpec) {
@@ -462,6 +542,7 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
     }
     case "set-theme": return node;
     case "replace-section": return node;
+    case "move-node": return node;
     case "set-lock": return node.type === "section" ? (Object.values(p.payload.lock).some(Boolean) ? { ...node, lock: p.payload.lock } : (({ lock: _l, ...rest }) => (void _l, rest))(node)) : "PROPERTY_NOT_ALLOWED";
     case "remove-effect": return !node.effects.some(e=>e.presetId===p.payload.effectId)?"EFFECT_CONFLICT":{...node,effects:node.effects.filter(e=>e.presetId!==p.payload.effectId)};
   }
@@ -518,6 +599,13 @@ export function applyPatchBatch(
       if (JSON.stringify(target.lock ?? {}) !== JSON.stringify(p.payload.section.lock ?? {}) || lockViolation(target, p.payload.section)) return fail("LOCKED");
       const swap = (n: PageNode) => (n.id === p.targetId ? p.payload.section : n);
       candidate = { ...candidate, sections: candidate.sections.map(swap), ...(candidate.subpages ? { subpages: candidate.subpages.map((x) => ({ ...x, sections: x.sections.map(swap) })) } : {}) };
+      if (!PageSchema.safeParse(candidate).success) return fail("INVALID_PAGE");
+      continue;
+    }
+    if (p.operation === "move-node") {
+      const moved = moveNode(candidate, p.targetId, p.payload.parentId, p.payload.index);
+      if (typeof moved === "string") return fail(moved);
+      candidate = moved;
       if (!PageSchema.safeParse(candidate).success) return fail("INVALID_PAGE");
       continue;
     }

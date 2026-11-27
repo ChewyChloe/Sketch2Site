@@ -369,7 +369,7 @@ describe("ID-scoped atomic patch engine", () => {
       batch(s, []),
       batch(
         s,
-        Array.from({ length: 21 }, () => structuredClone(p)),
+        Array.from({ length: 61 }, () => structuredClone(p)),
       ),
       deep,
       cyclic,
