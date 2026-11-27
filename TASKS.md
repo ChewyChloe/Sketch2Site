@@ -402,3 +402,4 @@
 
 ## 延續開發 P0–P4
 - P0 DONE：tests/motion-filters.spec.ts 瀏覽器驗證搜尋、收藏、最近使用、排序、跨欄 AND／同欄 OR 和結果數量，1 PASS。下一步 P1。
+- P1 PARTIAL：AnimationLibrary、App、Preview 共用參數；加入重設、真實元件試看與取消。Typecheck 和試看／取消／套用／Undo／Redo E2E PASS；待確認儲存重載、匯出與草稿元件試看。下一步 P2。

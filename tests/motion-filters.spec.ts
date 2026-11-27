@@ -46,3 +46,32 @@ test("animation browser searches, combines facets, counts and remembers favorite
   await search.fill("unmatched-motion-xyz");
   await expect(status).toHaveText("找不到符合的動畫");
 });
+
+test("tuned animation is temporary until applied and survives undo and redo", async ({ page }) => {
+  const fixture = motionFixture();
+  const heading = fixture.sections[0].children!.find(node => node.type === "heading")!;
+  heading.effects = [];
+  await page.goto("/?draft");
+  await openWebsiteWorkspace(page);
+  await page.getByLabel("載入頁面檔案").setInputFiles({ name: "page.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(fixture)) });
+  const target = page.locator(`.preview-frame [data-page-id="${heading.id}"]`);
+  await target.click();
+  await openPanel(page, "動畫");
+  const library = page.getByRole("region", { name: "預覽動畫效果庫" });
+  await library.getByRole("searchbox").fill("fade-in");
+  const card = library.locator('[data-effect-id="fade-in"]');
+  await card.getByRole("button", { name: /調整.*參數/ }).click();
+  await card.getByLabel("動畫時長（毫秒）").fill("700");
+  await card.getByRole("button", { name: /在元件上試看/ }).click();
+  await expect(target).toHaveAttribute("data-effects", /fade-in/);
+  await page.getByRole("button", { name: "取消試看" }).click();
+  await expect(target).not.toHaveAttribute("data-effects", /fade-in/);
+  await card.locator(".asset-choose").click();
+  await expect(target).toHaveAttribute("data-effects", /fade-in/);
+  await page.getByRole("button", { name: "撤銷修改" }).click();
+  await expect(target).not.toHaveAttribute("data-effects", /fade-in/);
+  await page.getByRole("button", { name: "重做修改" }).click();
+  await expect(target).toHaveAttribute("data-effects", /fade-in/);
+  await openPanel(page, "屬性");
+  await expect(page.getByLabel("動畫時長（毫秒）")).toHaveValue("700");
+});

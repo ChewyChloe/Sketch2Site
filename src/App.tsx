@@ -2524,11 +2524,12 @@ node ? (
                         ? "已經加過這個動畫了"
                         : node ? targetReason(node,id) : null
                     }
-                    onChoose={(id) => {
+                    onChoose={(id, controls) => {
                       const effect = id;
-                      if (node) attach(effect, node.id);
+                      if (node) attach(effect, node.id, controls);
                       else {
                         setPending(effect);
+                        setPendingControls({...defaultControls(effect),...controls});
                         setTarget("");
                       }
                     }}

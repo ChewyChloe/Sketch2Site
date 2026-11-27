@@ -1,5 +1,5 @@
 import {cinematicSample} from "./cinematicSamples";
-import {createMotion} from "./motion";
+import {createMotion,defaultControls} from "./motion";
 import {cinematicMotionIds,advancedMotionIds,motionCatalog,signatureMotionIds,referenceMotionIds} from "./motionCatalog";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { useEffect, useRef, useMemo, useState } from "react";
@@ -8,7 +8,7 @@ import { PageSchema, type effectIds } from "./pageSpec";
 import { effectLabels } from "./visualEditing";
 import { MotionControlsFields } from "./MotionControls";
 import { facetDimensions, matchesFilter, motionFacets, searchMotions, type Dimension, type FacetFilter } from "./motionFacets";
-import type { MotionId } from "./motionCatalog";
+import type { MotionId, MotionControls } from "./motionCatalog";
 type EffectId = (typeof effectIds)[number];
 // Per-browser lists; storage may be unavailable (private mode), then nothing is remembered.
 const readList=(key:string):string[]=>{try{const v=JSON.parse(localStorage.getItem(key)??"[]");return Array.isArray(v)?v.filter((x):x is string=>typeof x==="string"&&x in motionCatalog):[];}catch{return [];}};
@@ -31,8 +31,13 @@ function replayCinematic(root:HTMLElement,id:EffectId){
                     }else if(['cursor-image-follower','directional-hover-wipe','typographic-stretch'].includes(id))root.querySelector<HTMLElement>('[tabindex="0"],a')?.focus({preventScroll:true});
 
 }
-function CinematicSample({id,replay}:{id:typeof cinematicMotionIds[number];replay:number}){
- const [page]=useState(()=>cinematicSample(id)),ref=useRef<HTMLDivElement>(null);
+function CinematicSample({id,replay,text,controls}:{id:typeof cinematicMotionIds[number];replay:number;text?:string;controls?:Record<string,unknown>}){
+ const [base]=useState(()=>cinematicSample(id)),ref=useRef<HTMLDivElement>(null);
+ const page=useMemo(()=>{
+   const section=base.sections[0], node=section.children![0], effect=node.effects[0];
+   const next={...node, ...(text&&node.content?{content:text}:{}),effects:[sampleMotion(id,node.id,controls,effect.validatedControls)]};
+   return {...base,sections:[{...section,children:[next]}]};
+ },[base,id,text,controls]);
  useEffect(()=>{const element=ref.current;if(!replay||!element)return;if(typeof IntersectionObserver==='undefined'){replayCinematic(element,id);return;}const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer.disconnect();replayCinematic(element,id);}});observer.observe(element);return()=>observer.disconnect();},[id,replay]);
  return <div ref={ref}><PageRenderer input={page} motionPreview/></div>;
 }
@@ -86,14 +91,14 @@ export function AnimationLibrary({
 }: {
   selectedLabel?: string;
   compatibility(id: EffectId): string | null;
-  onChoose(id: EffectId): void;
+  onChoose(id: EffectId, controls?: MotionControls): void;
   onDragStart(id: EffectId, data: DataTransfer): void;
   onDragEnd?(): void;
   disabled?: boolean;
   filter?: string;
   draft?: boolean;
   /** Plays a motion on the selected element of the real site for a moment, without saving. */
-  onTry?(id: EffectId): void;
+  onTry?(id: EffectId, controls?: MotionControls): void;
   /** The selected element, for 描述想要的效果 (A8). */
   recommendFor?: { type: string; content?: string; media?: { kind?: string }; children?: unknown[] };
 }) {
@@ -106,7 +111,7 @@ export function AnimationLibrary({
   const [speed,setSpeed]=useState(1);
   const [autoReplay,setAutoReplay]=useState(true);
   const [tuning,setTuning]=useState<string|null>(null);
-  const [tuned,setTuned]=useState<Record<string,Record<string,unknown>>>({});
+  const [tuned,setTuned]=useState<Record<string,MotionControls>>({});
   const [sort,setSort]=useState<"default"|"name"|"gentle"|"recent">("default");
   const [only,setOnly]=useState<""|"fit"|"favorites"|"recent">("");
   // Favorites and recently used: this browser only (A5). Never counts or popularity.
@@ -237,7 +242,7 @@ export function AnimationLibrary({
                 <div className="asset-preview" role="group" aria-label={effectLabels[id]+"效果示意"} onClickCapture={e=>{if((e.target as Element).closest("a"))e.preventDefault();}}>
                   <span className="asset-category">{motionCatalog[id].category}</span>{([...signatureMotionIds,...referenceMotionIds] as readonly string[]).includes(id)&&<span className="asset-new">NEW</span>}
                   <div className="asset-sample">
-                    {cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?<CinematicSample key={replay[id]??0} id={id as typeof cinematicMotionIds[number]} replay={replay[id]??0}/>:<EffectSample key={replay[id]??0} id={id} active={active === id} text={previewText.trim()||undefined} controls={tuned[id]} />}
+                    {cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?<CinematicSample key={replay[id]??0} id={id as typeof cinematicMotionIds[number]} replay={replay[id]??0} text={previewText.trim()} controls={tuned[id]}/>:<EffectSample key={replay[id]??0} id={id} active={active === id} text={previewText.trim()||undefined} controls={tuned[id]} />}
                   </div>
                 </div>
                 <div className="asset-actions">
@@ -252,7 +257,7 @@ export function AnimationLibrary({
                       : "")
                   }
                   disabled={disabled || Boolean(reason)}
-                  onClick={() => { remember(id); onChoose(id); }}
+                  onClick={() => { remember(id); onChoose(id,tuned[id]); }}
                   title={reason ?? descriptions[id]}
                 >
                   <span className="asset-name"><strong>{effectLabels[id]}</strong><span>{motionCatalog[id].nameEn}</span></span>
@@ -265,11 +270,11 @@ export function AnimationLibrary({
                     if(asset?.isConnected)asset.querySelector<HTMLElement>(".effect-lift,.effect-glow")?.focus({preventScroll:true});
                   });
                 }}>{["hover-lift","hover-glow"].includes(id)?"試玩":"重播"}</button>
-                {onTry&&!reason&&<button type="button" className="motion-tune" aria-label={"在元件上試看"+effectLabels[id]} onClick={()=>onTry(id)}>試看</button>}
+                {onTry&&!reason&&<button type="button" className="motion-tune" aria-label={"在元件上試看"+effectLabels[id]} onClick={()=>onTry(id,tuned[id])}>試看</button>}
                 <button type="button" className="motion-favorite" aria-pressed={favorites.includes(id)} aria-label={(favorites.includes(id)?"取消收藏":"收藏")+effectLabels[id]} onClick={()=>toggleFavorite(id)}>{favorites.includes(id)?"★":"☆"}</button>
-                {Object.values(motionCatalog[id].controls).some(c=>c.kind==="number"||c.kind==="select")&&!cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])&&<button type="button" className="motion-tune" aria-expanded={tuning===id} aria-label={"調整"+effectLabels[id]+"參數"} onClick={()=>setTuning(tuning===id?null:id)}>調整</button>}
+                {Object.keys(motionCatalog[id].controls).length>0&&<button type="button" className="motion-tune" aria-expanded={tuning===id} aria-label={"調整"+effectLabels[id]+"參數"} onClick={()=>setTuning(tuning===id?null:id)}>調整</button>}
                 </div>
-                {tuning===id&&<div className="motion-tune-fields" role="group" aria-label={effectLabels[id]+"預覽參數"}><MotionControlsFields id={id} values={{...Object.fromEntries(Object.entries(motionCatalog[id].controls).filter(([,c])=>c.default!==undefined).map(([k,c])=>[k,c.default])),...tuned[id]} as never} onChange={(values:Record<string,unknown>)=>{setTuned(t=>({...t,[id]:Object.fromEntries(Object.entries(values).filter(([k])=>["number","select","boolean"].includes(motionCatalog[id].controls[k]?.kind??"")))}));setReplay(v=>({...v,[id]:(v[id]??0)+1}));}}/><small>只影響這裡的範例；套用後可在元件上再調整</small></div>}
+                {tuning===id&&<div className="motion-tune-fields" role="group" aria-label={effectLabels[id]+"預覽參數"}><MotionControlsFields id={id} values={{...defaultControls(id),...tuned[id]} as never} onChange={(values:MotionControls)=>{setTuned(t=>({...t,[id]:values}));setReplay(v=>({...v,[id]:(v[id]??0)+1}));}}/><button type="button" onClick={()=>{setTuned(previous=>{const next={...previous};delete next[id];return next;});setReplay(v=>({...v,[id]:(v[id]??0)+1}));}}>恢復預設值</button></div>}
                 <small>{reason ?? descriptions[id]}</small>
                 <span className="asset-use-case">{motionCatalog[id].bestFor}</span><span className="asset-trigger">{[...new Set(motionCatalog[id].interactionType.map(t=>triggerLabels[t]??t))].join(" · ")}</span>
               </div>

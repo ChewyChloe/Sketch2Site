@@ -442,7 +442,7 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
     setNotice(result.changed ? "已套用" : "沒有需要套用的變更");
     return result.ok;
   }
-  function attach(id: string, value: string) {
+  function attach(id: string, value: string, controls?: Record<string,unknown>) {
     const target = indexNodes(current.current.history.present).get(id);
     if (!target || !effectIds.includes(value as (typeof effectIds)[number])) {
       setPatchError(true);
@@ -457,12 +457,16 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
     }
     const conflict=combinationReason([...target.effects,{presetId:effectId}]);if(conflict){setPatchError(true);setNotice(conflict);return;}
     if (!setSelectedIds([id])) return;
-    if(Object.values(motionCatalog[effectId].controls).some(c=>c.required)){
+    if(!controls && Object.values(motionCatalog[effectId].controls).some(c=>c.required)){
       setCompose({id:effectId,targetId:id,revision:current.current.revision,controls:{...defaultControls(effectId),...(effectId==="count-up"?(numericContent(target.content??"")??{}):{})}});
       setPanelTab("properties");setPanelOpen(true);return;
     }
+    let effect;
+    try { effect=createMotion(effectId,id,controls); }
+    catch { setPatchError(true);setNotice("動畫參數尚未填妥");return; }
+    setTrial(null);
     patch(
-      [{ operation: "attach-effect", targetId: id, payload: createMotion(effectId,id) }],
+      [{ operation: "attach-effect", targetId: id, payload: effect }],
       id,
     );
   }
@@ -537,12 +541,12 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
   const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean } | null>(null);
   const [timeline, setTimeline] = useState(false);
   // Trying a motion on the real element before applying it (A7): shown, never saved.
-  const [trial, setTrial] = useState<{ nodeId: string; effectId: string; key: number } | null>(null);
+  const [trial, setTrial] = useState<{ nodeId: string; effectId: string; controls?: Record<string,unknown>; key: number } | null>(null);
   const trialPage = (() => {
     if (!trial) return null;
     const base = session.history.present;
     try {
-      const motion = createMotion(trial.effectId as (typeof effectIds)[number], trial.nodeId);
+      const motion = createMotion(trial.effectId as (typeof effectIds)[number], trial.nodeId,trial.controls);
       const add = (n: import("./pageSpec").PageNode): import("./pageSpec").PageNode => n.id === trial.nodeId ? { ...n, effects: [...n.effects.filter((e) => e.presetId !== motion.presetId), motion] } : n.children ? { ...n, children: n.children.map(add) } : n;
       return { ...base, sections: base.sections.map(add), ...(base.subpages ? { subpages: base.subpages.map((x) => ({ ...x, sections: x.sections.map(add) })) } : {}) };
     } catch { return null; }
@@ -1160,7 +1164,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
             )}
             {panelTab === "animations" && (
               <AnimationLibrary
-                onTry={selected ? (id) => { setTrial({ nodeId: selected, effectId: id, key: Date.now() }); setReplay((n) => n + 1); setNotice("正在元件上試看，4 秒後回到原樣；喜歡再按套用"); frameRef.current?.querySelector(`[data-page-id="${selected}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }); } : undefined}
+                onTry={selected ? (id, controls) => { try { createMotion(id,selected,controls); } catch { setNotice("請先填妥動畫參數再試看");return; } setTrial({ nodeId: selected, effectId: id, controls, key: Date.now() }); setReplay((n) => n + 1); setNotice("正在元件上試看，4 秒後回到原樣；喜歡再按套用"); frameRef.current?.querySelector(`[data-page-id="${selected}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }); } : undefined}
                 selectedLabel={
                   node
                     ? node.content?.slice(0, 18) || nodeLabels[node.type]
@@ -1175,8 +1179,8 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                         ? "已附加"
                         : null
                 }
-                onChoose={(id) => {
-                  if (selected) attach(selected, id);
+                onChoose={(id, controls) => {
+                  if (selected) attach(selected, id, controls);
                   else {
                     setPatchError(false);
                     setNotice("請先選取元件，或將動畫拖至目標");
@@ -1192,6 +1196,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                 onDragEnd={() => setDraggedEffect(null)}
               />
             )}
+            {panelTab === "animations" && trial && <button type="button" onClick={()=>setTrial(null)}>取消試看</button>}
             {panelTab === "animations" && node && (
               <button
                 className="edit-selection"
