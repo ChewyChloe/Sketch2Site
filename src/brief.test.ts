@@ -80,3 +80,18 @@ it("keeps the top-priority focus section in place when it is already second (pai
   expect(order(["hero", "faq", "cta", "contact"])).toEqual(["hero", "contact", "faq", "cta"]);
   expect(order(["hero", "faq", "cta"])).toEqual(["hero", "cta", "faq"]);
 });
+
+import { mergeStyles, type ReferenceStyle } from "./referenceStyle";
+describe("several reference pictures", () => {
+  const base = { mood: "calm", colorMode: "mono", temperature: "cool", lightness: "light", contrast: "strong", typeFamily: "sans", typeScale: "huge", space: "airy", imagery: "full-bleed", motion: "still", principles: ["big-type", "negative-space"], direction: "ocean" } as ReferenceStyle;
+  it("takes what most pictures share and the most common techniques", () => {
+    const warm: ReferenceStyle = { ...base, mood: "warm", temperature: "warm", principles: ["paper-grain", "negative-space"] };
+    const merged = mergeStyles([base, warm, { ...warm, principles: ["negative-space"] }])!;
+    expect(merged.mood).toBe("warm");
+    expect(merged.temperature).toBe("warm");
+    expect(merged.principles[0]).toBe("negative-space");
+    expect(merged.principles.length).toBeLessThanOrEqual(5);
+    expect(mergeStyles([])).toBeUndefined();
+    expect(mergeStyles([base])).toEqual(base);
+  });
+});

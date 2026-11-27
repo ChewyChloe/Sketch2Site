@@ -152,7 +152,7 @@ export function createGenerationServer(options: Options = {}) {
     )
       return failure(res, 403, "FORBIDDEN");
     // A reference picture is a small JPEG; every other request is short text.
-    const maxBody = req.url === "/api/generation/reference" ? 320000 : req.url === "/api/generation/rewrite" ? 300000 : req.url === "/api/generation" ? 32768 + snapshotLimits.maxChars + 1024 : 32768;
+    const maxBody = req.url === "/api/generation/reference" ? 1250000 : req.url === "/api/generation/rewrite" ? 300000 : req.url === "/api/generation" ? 32768 + snapshotLimits.maxChars + 1024 : 32768;
     if (
       req.headers["content-type"] !== "application/json" ||
       Number(req.headers["content-length"] ?? 0) > maxBody
@@ -180,8 +180,10 @@ export function createGenerationServer(options: Options = {}) {
       let input: ReferenceRequest;
       try {
         input = ReferenceRequestSchema.parse(JSON.parse(body));
-        const bytes = Buffer.from(input.image.slice(input.image.indexOf(",") + 1), "base64");
-        if (bytes.length < 100 || bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("not a jpeg");
+        for (const image of input.images) {
+          const bytes = Buffer.from(image.slice(image.indexOf(",") + 1), "base64");
+          if (bytes.length < 100 || bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("not a jpeg");
+        }
       } catch {
         return failure(res, 400, "INVALID_INPUT");
       }
@@ -191,8 +193,8 @@ export function createGenerationServer(options: Options = {}) {
       if (active >= 1) return failure(res, 429, "BUSY");
       const now = Date.now();
       while (arrivals[0] && arrivals[0] < now - 60000) arrivals.shift();
-      // A low-detail picture plus the rules: reserve generously.
-      const reserve = (4000 * (options.inputRate ?? 2)) / 1e6 + (1024 * (options.outputRate ?? 8)) / 1e6;
+      // Low-detail pictures (up to five) plus the rules: reserve generously.
+      const reserve = ((3000 + 1000 * input.images.length) * (options.inputRate ?? 2)) / 1e6 + (1024 * (options.outputRate ?? 8)) / 1e6;
       if (arrivals.length >= (options.maxPerMinute ?? 3) || calls >= (options.maxCalls ?? 5) || reserved + reserve > (options.budgetUsd ?? 0.25))
         return failure(res, 429, "LIMIT");
       arrivals.push(now);

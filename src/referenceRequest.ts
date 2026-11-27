@@ -1,8 +1,8 @@
 import { GenerationError, generationCodes } from "./generation";
 import { ReferenceStyleSchema, type ReferenceStyle } from "./referenceStyle";
 
-/** Asks the AI what a reference picture's style is; only fixed choices come back. */
-export async function requestReferenceStyle(image: string, signal?: AbortSignal): Promise<ReferenceStyle> {
+/** Asks the AI what one to five reference pictures share; only fixed choices come back. */
+export async function requestReferenceStyle(images: string[], signal?: AbortSignal): Promise<ReferenceStyle> {
   if (import.meta.env.VITE_SITES_FRONTEND_ONLY === "true") throw new GenerationError("NOT_CONFIGURED");
   let config: { configured?: boolean; csrfToken?: string };
   try {
@@ -20,7 +20,7 @@ export async function requestReferenceStyle(image: string, signal?: AbortSignal)
       credentials: "same-origin",
       signal,
       headers: { "Content-Type": "application/json", "X-Sketch-CSRF": config.csrfToken! },
-      body: JSON.stringify({ requestId, image }),
+      body: JSON.stringify({ requestId, images }),
     });
   } catch {
     throw new GenerationError("UNAVAILABLE");

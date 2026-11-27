@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { describeStyle, prepareReference } from "./referenceStyle";
+import { describeStyle, maxReferences, mergeStyles, prepareReference, type ReferenceStyle } from "./referenceStyle";
 import { requestReferenceStyle } from "./referenceRequest";
 import { useEscapeToClose } from "./useEscape";
 import { briefOptions, emptyBrief, suggestion, type Brief, type BriefField } from "./brief";
@@ -100,17 +100,21 @@ export function BriefPanel({
   const [moreOpen, setMoreOpen] = useState(Boolean(initial?.details));
   const first = useRef<HTMLButtonElement>(null);
   useEffect(() => first.current?.focus(), []);
-  // Reference picture: read locally at once; the AI looks at it only when the site is generated.
-  // The picture stays in this panel's memory and is never saved; only the style choices are.
-  const [reference, setReference] = useState<{ jpeg: string; preview: string } | null>(null);
+  // Reference pictures (up to five): read locally at once; the AI looks at them only when the
+  // site is generated. They stay in this panel's memory and are never saved; only the style is.
+  const [references, setReferences] = useState<{ jpeg: string; preview: string; style: ReferenceStyle }[]>([]);
   const [refBusy, setRefBusy] = useState<"" | "reading" | "asking">("");
   const [refNote, setRefNote] = useState("");
   const pictureInput = useRef<HTMLInputElement>(null);
+  const keepReferences = (next: typeof references) => {
+    setReferences(next);
+    setBrief((b) => ({ ...b, style: mergeStyles(next.map((r) => r.style)) }));
+  };
   const generate = async () => {
-    if (reference && aiReady) {
+    if (references.length && aiReady) {
       setRefBusy("asking");
       try {
-        const style = await requestReferenceStyle(reference.jpeg);
+        const style = await requestReferenceStyle(references.map((r) => r.jpeg));
         onGenerate({ ...brief, style });
         return;
       } catch {
@@ -224,33 +228,42 @@ export function BriefPanel({
       <section className="brief-reference" aria-label="參考圖片">
         <div className="brief-reference-head">
           <strong>參考圖片（選填）</strong>
-          <small>學它為什麼好看，不照抄內容或排版</small>
+          <small>最多 5 張，學它們為什麼好看，不照抄內容或排版</small>
         </div>
-        {reference && brief.style ? (
+        {references.length > 0 && (
+          <ul className="brief-reference-thumbs" aria-label="已選的參考圖">
+            {references.map((r, i) => (
+              <li key={r.preview}>
+                <img src={r.preview} alt={`參考圖片縮圖 ${i + 1}`} />
+                <button type="button" className="brief-clear" aria-label={`移除第 ${i + 1} 張參考圖`} onClick={() => { keepReferences(references.filter((_, k) => k !== i)); setRefNote(""); }}>×</button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {references.length > 0 && brief.style && (
           <div className="brief-reference-card">
-            <img src={reference.preview} alt="參考圖片縮圖" />
-            <div>
-              {describeStyle(brief.style).length ? (
-                <ul className="brief-reference-principles" aria-label="看到的設計手法">
-                  {describeStyle(brief.style).map((p) => (
-                    <li key={p.id}>
-                      <strong>{p.name}</strong>
-                      <span>{p.why}</span>
-                      <small>用在你的網站：{p.use}</small>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>這張圖看不出明顯的設計手法，換一張更有特色的試試</p>
-              )}
-            </div>
-            <button type="button" className="brief-clear" onClick={() => { setReference(null); setBrief((b) => ({ ...b, style: undefined })); setRefNote(""); }}>移除</button>
+            {describeStyle(brief.style).length ? (
+              <ul className="brief-reference-principles" aria-label="看到的設計手法">
+                {describeStyle(brief.style).map((p) => (
+                  <li key={p.id}>
+                    <strong>{p.name}</strong>
+                    <span>{p.why}</span>
+                    <small>用在你的網站：{p.use}</small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>{references.length > 1 ? "這幾張圖看不出共同的設計手法，換更有特色的試試" : "這張圖看不出明顯的設計手法，換一張更有特色的試試"}</p>
+            )}
           </div>
-        ) : (
-          <button type="button" className="brief-reference-add" disabled={refBusy === "reading"} onClick={() => pictureInput.current?.click()}>{refBusy === "reading" ? "讀取中…" : "＋ 上傳一張參考圖"}</button>
+        )}
+        {references.length < maxReferences && (
+          <button type="button" className="brief-reference-add" disabled={refBusy === "reading"} onClick={() => pictureInput.current?.click()}>
+            {refBusy === "reading" ? "讀取中…" : references.length ? `＋ 再加一張（${references.length}/${maxReferences}）` : `＋ 上傳參考圖（最多 ${maxReferences} 張）`}
+          </button>
         )}
         <small className="brief-reference-privacy">
-          {aiReady ? "上面是電腦先看出的手法；生成時 AI 會再看一次縮小的圖，補上字體、構圖這些，圖片不會保存，也不會用到圖裡的文字或標誌" : "這些手法是在你的電腦上讀出的，圖片不會上傳；字體、構圖要開啟 AI 才看得出來"}
+          {aiReady ? "上面是電腦先看出的手法；生成時 AI 會再看一次縮小的圖，找出它們的共同點，補上字體、構圖這些，圖片不會保存，也不會用到圖裡的文字或標誌" : "這些手法是在你的電腦上讀出的，圖片不會上傳；字體、構圖要開啟 AI 才看得出來"}
         </small>
         {refNote && <p className="brief-reference-msg" role="status">{refNote}</p>}
         <input
@@ -258,18 +271,20 @@ export function BriefPanel({
           hidden
           type="file"
           accept="image/png,image/jpeg,image/webp"
-          aria-label="選一張參考圖"
+          multiple
+          aria-label="選參考圖"
           onChange={async (e) => {
-            const file = e.target.files?.[0];
+            const files = [...(e.target.files ?? [])].slice(0, maxReferences - references.length);
+            const skipped = (e.target.files?.length ?? 0) - files.length;
             e.target.value = "";
-            if (!file) return;
+            if (!files.length) return;
             setRefBusy("reading");
             setRefNote("");
-            const out = await prepareReference(file);
+            const read = (await Promise.all(files.map((f) => prepareReference(f)))).filter((x): x is NonNullable<typeof x> => !!x);
             setRefBusy("");
-            if (!out) { setRefNote("這張圖讀不到，換一張 PNG 或 JPG 試試"); return; }
-            setReference({ jpeg: out.jpeg, preview: out.preview });
-            setBrief((b) => ({ ...b, style: out.style }));
+            const failed = files.length - read.length;
+            keepReferences([...references, ...read].slice(0, maxReferences));
+            if (failed || skipped) setRefNote([failed ? `${failed} 張讀不到，換 PNG 或 JPG 試試` : "", skipped ? `最多 ${maxReferences} 張，多的沒有加入` : ""].filter(Boolean).join("；"));
           }}
         />
       </section>
@@ -279,7 +294,7 @@ export function BriefPanel({
           : "選的感覺會換成搭配的顏色，想被注意的區塊會放前面"}
       </p>
       <div className="brief-actions">
-        <button type="button" className="brief-reset" onClick={() => { setBrief(emptyBrief); setReference(null); setRefNote(""); setActive("audience"); }}>全部清除</button>
+        <button type="button" className="brief-reset" onClick={() => { setBrief(emptyBrief); setReferences([]); setRefNote(""); setActive("audience"); }}>全部清除</button>
         <button type="button" className="primary" disabled={refBusy !== ""} onClick={() => void generate()}>{refBusy === "asking" ? "AI 正在看參考圖…" : "用這個描述生成網站"}</button>
       </div>
     </div>

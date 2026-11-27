@@ -27,31 +27,31 @@ const answer = { mood: "calm", colorMode: "mono", temperature: "cool", lightness
 it("returns only fixed style choices plus a direction worked out by trusted code", async () => {
   const provider = { ...mockProvider, describeReference: vi.fn(async () => ({ ...usage, answer })) };
   const { post } = await setup({ provider, testMode: true, maxCalls: 5, maxPerMinute: 5 });
-  const r = await post({ requestId: crypto.randomUUID(), image: jpeg });
+  const r = await post({ requestId: crypto.randomUUID(), images: [jpeg] });
   expect(r.status).toBe(200);
   const data = await r.json();
   expect(data.style).toEqual({ ...answer, direction: "ocean" });
   // Anything outside the list of techniques is refused.
   const bad = { ...mockProvider, describeReference: vi.fn(async () => ({ ...usage, answer: { ...answer, principles: ["copy-the-layout"] } })) };
   const second = await setup({ provider: bad, testMode: true, maxCalls: 5, maxPerMinute: 5 });
-  expect((await second.post({ requestId: crypto.randomUUID(), image: jpeg })).status).toBe(502);
+  expect((await second.post({ requestId: crypto.randomUUID(), images: [jpeg] })).status).toBe(502);
   expect(JSON.stringify(data)).not.toContain("base64");
 });
 
 it("rejects extra text, non-JPEG data and over-limit calls", async () => {
   const provider = { ...mockProvider, describeReference: vi.fn(async () => ({ ...usage, answer: { ...answer, caption: "抄下來的標題" } })) };
   const { post } = await setup({ provider, testMode: true, maxCalls: 1, maxPerMinute: 5 });
-  expect((await post({ requestId: crypto.randomUUID(), image: "data:image/png;base64,AAAA" })).status).toBe(400);
-  expect((await post({ requestId: crypto.randomUUID(), image: "data:image/jpeg;base64," + Buffer.alloc(200, 1).toString("base64") })).status).toBe(400);
-  expect((await post({ requestId: crypto.randomUUID(), image: jpeg, note: "x" })).status).toBe(400);
-  expect((await post({ requestId: crypto.randomUUID(), image: jpeg }, { "X-Sketch-CSRF": "0".repeat(64) })).status).toBe(403);
+  expect((await post({ requestId: crypto.randomUUID(), images: ["data:image/png;base64,AAAA"] })).status).toBe(400);
+  expect((await post({ requestId: crypto.randomUUID(), images: ["data:image/jpeg;base64," + Buffer.alloc(200, 1).toString("base64")] })).status).toBe(400);
+  expect((await post({ requestId: crypto.randomUUID(), images: [jpeg], note: "x" })).status).toBe(400);
+  expect((await post({ requestId: crypto.randomUUID(), images: [jpeg] }, { "X-Sketch-CSRF": "0".repeat(64) })).status).toBe(403);
   // An answer with anything beyond the fixed choices is refused.
-  expect((await post({ requestId: crypto.randomUUID(), image: jpeg })).status).toBe(502);
-  expect((await post({ requestId: crypto.randomUUID(), image: jpeg })).status).toBe(429);
+  expect((await post({ requestId: crypto.randomUUID(), images: [jpeg] })).status).toBe(502);
+  expect((await post({ requestId: crypto.randomUUID(), images: [jpeg] })).status).toBe(429);
 });
 
 it("sends the picture at low detail with rules that forbid copying", () => {
-  const req = buildReferenceRequest({ requestId: crypto.randomUUID(), image: jpeg });
+  const req = buildReferenceRequest({ requestId: crypto.randomUUID(), images: [jpeg] });
   expect(JSON.stringify(req.input[1])).toContain('"detail":"low"');
   expect(req.store).toBe(false);
   expect(referenceRules).toMatch(/Never transcribe/);
@@ -71,4 +71,14 @@ it("reads a picture's look locally and picks a direction", () => {
   for (let y = 0; y < 40; y++) for (let x = 0; x < 40; x++) { const line = (x + y * 2) % 12 < 1; lanes.push(...(line ? [240, 244, 248, 255] : [40, 110, 200, 255])); }
   const lane = styleFromPixels(lanes, 40, 40)!;
   expect(lane.principles).toEqual(expect.arrayContaining(["color-field", "diagonal-lines"]));
+});
+
+it("takes one to five pictures in one call and refuses six", async () => {
+  const provider = { ...mockProvider, describeReference: vi.fn(async () => ({ ...usage, answer })) };
+  const { post } = await setup({ provider, testMode: true, maxCalls: 5, maxPerMinute: 5 });
+  expect((await post({ requestId: crypto.randomUUID(), images: Array(5).fill(jpeg) })).status).toBe(200);
+  expect(provider.describeReference).toHaveBeenCalledTimes(1);
+  expect((await post({ requestId: crypto.randomUUID(), images: Array(6).fill(jpeg) })).status).toBe(400);
+  expect((await post({ requestId: crypto.randomUUID(), images: [] })).status).toBe(400);
+  expect(buildReferenceRequest({ requestId: crypto.randomUUID(), images: [jpeg, jpeg, jpeg] }).input[1].content).toHaveLength(3);
 });

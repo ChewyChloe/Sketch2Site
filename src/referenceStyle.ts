@@ -170,13 +170,16 @@ export async function prepareReference(file: File): Promise<{ jpeg: string; styl
   }
 }
 
-/** What the browser sends: one small JPEG (EXIF already dropped by the canvas). */
+/** What the browser sends: one to five small JPEGs (EXIF already dropped by the canvas). */
+export const maxReferences = 5;
+const referenceJpeg = z.string().max(300000).regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/);
 export const ReferenceRequestSchema = z
   .object({
     requestId: z.string().uuid(),
-    image: z.string().max(300000).regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/),
+    images: z.array(referenceJpeg).min(1).max(maxReferences),
   })
-  .strict();
+  .strict()
+  .refine((r) => r.images.reduce((n, i) => n + i.length, 0) <= 1200000, "參考圖太大");
 export type ReferenceRequest = z.infer<typeof ReferenceRequestSchema>;
 /** What the AI may answer: the fixed choices only; the direction is worked out by trusted code. */
 export const ReferenceAnswerSchema = ReferenceStyleSchema.omit({ direction: true });
@@ -185,4 +188,29 @@ export const referenceJSONSchema = z.toJSONSchema(ReferenceAnswerSchema, { targe
 export function styleFromAnswer(answer: unknown): ReferenceStyle | null {
   const parsed = ReferenceAnswerSchema.safeParse(answer);
   return parsed.success ? { ...parsed.data, direction: directionFor(parsed.data) } : null;
+}
+
+/**
+ * Several pictures read locally become one style: each choice is the one most pictures share
+ * (ties go to the first picture), and the techniques are the ones seen most often.
+ */
+export function mergeStyles(styles: readonly ReferenceStyle[]): ReferenceStyle | undefined {
+  if (!styles.length) return undefined;
+  if (styles.length === 1) return styles[0];
+  const vote = <K extends keyof Omit<ReferenceStyle, "principles" | "direction">>(key: K): ReferenceStyle[K] => {
+    const counts = new Map<ReferenceStyle[K], number>();
+    for (const s of styles) counts.set(s[key], (counts.get(s[key]) ?? 0) + 1);
+    let best = styles[0][key];
+    for (const [v, n] of counts) if (n > (counts.get(best) ?? 0)) best = v;
+    return best;
+  };
+  const seen = new Map<ReferenceStyle["principles"][number], number>();
+  styles.forEach((s) => s.principles.forEach((p) => seen.set(p, (seen.get(p) ?? 0) + 1)));
+  const principles = [...seen.entries()].sort((a, b) => b[1] - a[1]).map(([p]) => p).slice(0, 5);
+  const base = {
+    mood: vote("mood"), colorMode: vote("colorMode"), temperature: vote("temperature"), lightness: vote("lightness"),
+    contrast: vote("contrast"), typeFamily: vote("typeFamily"), typeScale: vote("typeScale"), space: vote("space"),
+    imagery: vote("imagery"), motion: vote("motion"), principles,
+  };
+  return { ...base, direction: directionFor(base) };
 }

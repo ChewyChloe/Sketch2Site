@@ -18,8 +18,8 @@ test("reference picture without AI: read in the browser, site follows its direct
   const panel = await openBrief(page);
   const ref = panel.getByRole("region", { name: "參考圖片" });
   await expect(ref).toContainText("圖片不會上傳");
-  await panel.getByLabel("選一張參考圖").setInputFiles("public/assets/samples/camera.jpg");
-  await expect(ref.getByRole("img", { name: "參考圖片縮圖" })).toBeVisible();
+  await panel.getByLabel("選參考圖").setInputFiles("public/assets/samples/camera.jpg");
+  await expect(ref.getByRole("img", { name: "參考圖片縮圖 1" })).toBeVisible();
   // Design techniques with why they work and how the site will use them; no theme names.
   const techniques = ref.getByRole("list", { name: "看到的設計手法" }).getByRole("listitem");
   expect(await techniques.count()).toBeGreaterThan(0);
@@ -34,7 +34,7 @@ test("reference picture without AI: read in the browser, site follows its direct
 test("reference picture with AI: one small JPEG to the AI, only style choices in the layout request", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/\/api\/generation\/ready$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: true }) }));
-  const sent: { image?: string }[] = [];
+  const sent: { images?: string[] }[] = [];
   await page.route(/\/api\/generation\/reference$/, async (r) => {
     const req = JSON.parse(r.request().postData() ?? "{}");
     sent.push(req);
@@ -43,12 +43,13 @@ test("reference picture with AI: one small JPEG to the AI, only style choices in
   const layoutBodies: string[] = [];
   page.on("request", (r) => { if (r.method() === "POST" && /\/api\/generation$/.test(r.url())) layoutBodies.push(r.postData() ?? ""); });
   const panel = await openBrief(page);
-  await panel.getByLabel("選一張參考圖").setInputFiles("public/assets/samples/cafe.jpg");
+  await panel.getByLabel("選參考圖").setInputFiles("public/assets/samples/cafe.jpg");
   await expect(panel.getByRole("region", { name: "參考圖片" })).toContainText("不會保存");
   await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
   await expect.poll(() => sent.length).toBe(1);
   // A re-encoded, small JPEG: no EXIF segment, well under the size limit.
-  const bytes = Buffer.from(sent[0].image!.split(",")[1], "base64");
+  expect(sent[0].images).toHaveLength(1);
+  const bytes = Buffer.from(sent[0].images![0].split(",")[1], "base64");
   expect(bytes.subarray(0, 2).toString("hex")).toBe("ffd8");
   expect(bytes.includes(Buffer.from("Exif"))).toBe(false);
   expect(bytes.length).toBeLessThan(240000);
@@ -57,7 +58,7 @@ test("reference picture with AI: one small JPEG to the AI, only style choices in
   // The reference picture itself never reaches the layout step; only the drawing of the author's own draft does.
   const layout = JSON.parse(layoutBodies[0]);
   expect(JSON.stringify(layout.canvasSpec)).not.toContain("base64");
-  expect(layout.snapshot).not.toBe(sent[0].image);
+  expect(layout.snapshot).not.toBe(sent[0].images![0]);
 });
 
 test("AI build sends a small drawing of the draft only to a back end that asks for it", async ({ page }) => {
@@ -105,4 +106,36 @@ test("a back end that does not ask for the drawing never gets one", async ({ pag
   await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
   await expect.poll(() => bodies.length).toBe(1);
   expect(bodies[0]).not.toContain("snapshot");
+});
+
+test("up to five reference pictures: thumbnails, remove one, and all five in one AI request", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/\/api\/generation\/ready$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: true }) }));
+  const sent: { images?: string[] }[] = [];
+  await page.route(/\/api\/generation\/reference$/, async (r) => {
+    const req = JSON.parse(r.request().postData() ?? "{}");
+    sent.push(req);
+    return r.fulfill({ contentType: "application/json", body: JSON.stringify({ requestId: req.requestId, style: { mood: "warm", colorMode: "duo", temperature: "warm", lightness: "light", contrast: "soft", typeFamily: "serif", typeScale: "large", space: "airy", imagery: "framed", motion: "gentle", principles: ["negative-space"], direction: "forest" } }) });
+  });
+  const panel = await openBrief(page);
+  const ref = panel.getByRole("region", { name: "參考圖片" });
+  const photos = ["cafe", "camera", "coffee-flatwhite", "coffee-pourover", "coffee-tonic", "coffee-coldbrew"].map((n) => `public/assets/samples/${n}.jpg`);
+  // Six chosen at once: five are kept and the note says why.
+  await panel.getByLabel("選參考圖").setInputFiles(photos);
+  await expect(ref.getByRole("list", { name: "已選的參考圖" }).getByRole("listitem")).toHaveCount(5);
+  await expect(ref).toContainText("最多 5 張");
+  await expect(ref.getByRole("button", { name: /再加一張/ })).toHaveCount(0);
+  await expect(ref.getByRole("list", { name: "看到的設計手法" })).toBeVisible();
+  await ref.scrollIntoViewIfNeeded();
+  await ref.screenshot({ path: "test-results/reference-five.png" });
+  await ref.getByRole("button", { name: "移除第 2 張參考圖" }).click();
+  await expect(ref.getByRole("list", { name: "已選的參考圖" }).getByRole("listitem")).toHaveCount(4);
+  await expect(ref.getByRole("button", { name: "＋ 再加一張（4/5）" })).toBeVisible();
+  await panel.getByLabel("選參考圖").setInputFiles(photos[5]);
+  await expect(ref.getByRole("list", { name: "已選的參考圖" }).getByRole("listitem")).toHaveCount(5);
+  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await expect.poll(() => sent.length).toBe(1);
+  expect(sent[0].images).toHaveLength(5);
+  for (const image of sent[0].images!) expect(Buffer.from(image.split(",")[1], "base64").subarray(0, 2).toString("hex")).toBe("ffd8");
+  expect(JSON.stringify(sent[0]).length).toBeLessThan(1200000);
 });
