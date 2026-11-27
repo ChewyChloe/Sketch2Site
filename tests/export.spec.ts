@@ -3,6 +3,7 @@ import {advancedFixture} from "./fixtures/advancedMotions";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import {serverMotionRegistry} from "../server/motionBriefs";
 import {extendedMotionFixture} from "./fixtures/extendedMotions";
+import {referenceFixture} from "./fixtures/referenceMotions";
 import {createServer} from "node:net";
 import { test, expect } from "@playwright/test";
 import {motionFixture,motionId} from "./fixtures/motions";
@@ -60,7 +61,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   );
   await openWebsiteWorkspace(page);
   const input = structuredClone(demoPage);
-  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...thirdFixture().sections);
+  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...thirdFixture().sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
   const replaceImage = (nodes: typeof input.sections) =>
     nodes.forEach((n) => {
       if (n.type === "image") n.src = localRef;

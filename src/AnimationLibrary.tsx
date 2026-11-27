@@ -1,6 +1,6 @@
 import {cinematicSample} from "./cinematicSamples";
 import {createMotion} from "./motion";
-import {cinematicMotionIds,advancedMotionIds,motionCatalog,signatureMotionIds} from "./motionCatalog";
+import {cinematicMotionIds,advancedMotionIds,motionCatalog,signatureMotionIds,referenceMotionIds} from "./motionCatalog";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { useEffect, useRef, useMemo, useState } from "react";
 import { PageRenderer, animationRegistry } from "./PageRenderer";
@@ -8,9 +8,9 @@ import { PageSchema, type effectIds } from "./pageSpec";
 import { effectLabels } from "./visualEditing";
 type EffectId = (typeof effectIds)[number];
 const descriptions=Object.fromEntries(Object.entries(motionCatalog).map(([id,d])=>[id,d.summary])) as Record<EffectId,string>;
-const signatureFamily:Record<string,number>={typewriter:0,'marquee-text':0,'gradient-text-flow':0,'blur-in':2,'float-idle':2,'confetti-burst':1,'jelly-press':1,'shine-sweep':1};
+const signatureFamily:Record<string,number>={'dolly-frame':2,'color-wake':2,'scroll-ink-words':0,'hollow-fill-sweep':0,'letter-windows':0,'bold-relay':0,'chart-build':3,typewriter:0,'marquee-text':0,'gradient-text-flow':0,'blur-in':2,'float-idle':2,'confetti-burst':1,'jelly-press':1,'shine-sweep':1};
 const motionFamily=(id:EffectId)=>{if(id in signatureFamily)return signatureFamily[id];const cinematic=cinematicMotionIds.indexOf(id as typeof cinematicMotionIds[number]);if(cinematic>=0)return cinematic<4?0:cinematic<9?1:cinematic<14?2:cinematic<18?3:4;const index=advancedMotionIds.indexOf(id as typeof advancedMotionIds[number]);if(index>=0)return Math.floor(index/5);const d=motionCatalog[id];return d.targetType.every(t=>['text','heading','paragraph'].includes(t))?0:d.targetType.includes('button')&&!d.targetType.includes('container')?1:d.targetType.includes('image')||['flip-card','fold-reveal'].includes(id)?2:3;};
-const autoplayIds=new Set<string>(['fade-in','slide-up','scale-in','stagger-reveal','letter-assembly','accent-stroke','image-reveal','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','venetian-reveal','circular-mask-expansion','grid-diagonal-turn','svg-path-drawing','numeric-gauge-sweep','count-up','elastic-word-bounce','pixel-dissolve','shutter-lens-transition','glitch-slice-reveal','liquid-distortion-reveal','typewriter','blur-in','curved-path-text','kinetic-text-wave']);
+const autoplayIds=new Set<string>(['chart-build','fade-in','slide-up','scale-in','stagger-reveal','letter-assembly','accent-stroke','image-reveal','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','venetian-reveal','circular-mask-expansion','grid-diagonal-turn','svg-path-drawing','numeric-gauge-sweep','count-up','elastic-word-bounce','pixel-dissolve','shutter-lens-transition','glitch-slice-reveal','liquid-distortion-reveal','typewriter','blur-in','curved-path-text','kinetic-text-wave']);
 const triggerLabels:Record<string,string>={'on-enter':'出現時','scroll-enter':'捲到時',hover:'滑過',focus:'鍵盤選取','idle-loop':'持續播放',click:'點一下',keyboard:'鍵盤',autoplay:'自動播放',drag:'拖曳',throw:'拋出','pointer-move':'游標移動','pointer-down':'按下','focus-within':'鍵盤選取',scroll:'捲動','text-change':'換字',touch:'觸控','pointer-enter':'滑入','pointer-leave':'滑出','progress-control':'進度控制'};
 const families=['文字動態 · Typography','按鈕與互動 · Interactions','圖片與卡片 · Images & Cards','捲動與版面 · Scroll & Layout','實驗圖形 · Graphics'];
 function replayCinematic(root:HTMLElement,id:EffectId){
@@ -36,6 +36,15 @@ function EffectSample({ id, active }: { id: EffectId; active: boolean }) {
   );
   const page = useMemo(() => {
     const paragraph=(index:number,content:string)=>({id:ids[index],type:"paragraph",content,style:{padding:"none",gap:"none"}});
+    // Reference batch 1: each preview uses the kind of element the motion is made for.
+    if((referenceMotionIds as readonly string[]).includes(id)){
+      const on=active||id!=="chart-build";
+      const effect=on?[createMotion(id as typeof referenceMotionIds[number],ids[1])]:[];
+      const child=id==="dolly-frame"||id==="color-wake"?{id:ids[1],type:"image",src:id==="dolly-frame"?"/assets/samples/coffee-pourover.jpg":"/assets/samples/coffee-tonic.jpg",alt:"手沖咖啡，慢慢萃取",style:{padding:"none",gap:"none"},effects:effect}
+        :id==="chart-build"?{id:ids[1],type:"media",content:"本月來客",media:{kind:"chart",chart:"bar",points:[{label:"一",value:32},{label:"二",value:48},{label:"三",value:41},{label:"四",value:66}],unit:""},style:{padding:"none",gap:"none"},effects:effect}
+        :{id:ids[1],type:"heading",level:2,content:id==="scroll-ink-words"?"每一杯咖啡，都從一顆豆子的旅程開始。慢慢讀，字會跟著亮起來。":id==="letter-windows"?"COFFEE 咖啡":id==="hollow-fill-sweep"?"滑過填滿":"粗體接力中",style:{padding:"none",gap:"none"},effects:effect};
+      return PageSchema.parse({schemaVersion:2,metadata:{title:"動畫素材示意",language:"zh-Hant"},typography:"sans",styles:"neutral",responsive:{mobileColumns:1,desktopColumns:1},sections:[{id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:[child]}]});
+    }
     const persistent=advancedMotionIds.includes(id as typeof advancedMotionIds[number])||id in signatureFamily||["breathing-glow","curved-path-text","count-up","flip-card","fold-reveal","physics-tag-field","magnetic-control","press-feedback","focus-transfer","scroll-progress","disclosure-panel"].includes(id);
     const controls=id==="count-up"?{endValue:128,durationMs:1200}:id==="curved-path-text"?{curvature:"medium"}:id==="flip-card"?{backText:"把細節，說清楚"}:id==="fold-reveal"?{underText:"下一層，藏著新想法"}:id==="physics-tag-field"?{labels:["設計","工程","研究"]}:{};
     const button=["confetti-burst","jelly-press","shine-sweep","cursor-spotlight","liquid-button-fill","radial-ink-ripple","orbiting-icon","border-light-trace","hover-glow","breathing-glow","magnetic-control","press-feedback"].includes(id);
@@ -151,7 +160,7 @@ export function AnimationLibrary({
                 onBlurCapture={(e) => {if(!e.currentTarget.contains(e.relatedTarget as Node))setActive(null);}}
               >
                 <div className="asset-preview" role="group" aria-label={effectLabels[id]+"效果示意"} onClickCapture={e=>{if((e.target as Element).closest("a"))e.preventDefault();}}>
-                  <span className="asset-category">{motionCatalog[id].category}</span>{(signatureMotionIds as readonly string[]).includes(id)&&<span className="asset-new">NEW</span>}
+                  <span className="asset-category">{motionCatalog[id].category}</span>{([...signatureMotionIds,...referenceMotionIds] as readonly string[]).includes(id)&&<span className="asset-new">NEW</span>}
                   <div className="asset-sample">
                     {cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?<CinematicSample key={replay[id]??0} id={id as typeof cinematicMotionIds[number]} replay={replay[id]??0}/>:<EffectSample key={replay[id]??0} id={id} active={active === id} />}
                   </div>

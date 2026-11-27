@@ -194,7 +194,7 @@ for (const id of cinematicMotionIds)
         check();
     });
 for (const width of [1440, 768, 375])
-    test(`third gallery ${width}: sixty real presets, replay, focus and local scroll previews`, async ({ page }) => { await page.setViewportSize({ width, height: 1000 }); const errors: string[] = []; page.on('pageerror', e => errors.push(e.message)); await page.goto('/?draft'); await expect(page.getByRole('status')).toContainText('草稿已就緒'); await page.getByRole('button', { name: '動畫素材庫', exact: true }).click(); await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(68); for (const id of cinematicMotionIds) {
+    test(`third gallery ${width}: sixty real presets, replay, focus and local scroll previews`, async ({ page }) => { await page.setViewportSize({ width, height: 1000 }); const errors: string[] = []; page.on('pageerror', e => errors.push(e.message)); await page.goto('/?draft'); await expect(page.getByRole('status')).toContainText('草稿已就緒'); await page.getByRole('button', { name: '動畫素材庫', exact: true }).click(); await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(75); for (const id of cinematicMotionIds) {
         const asset = page.locator(`.sidebar [data-effect-id="${id}"]`);
         await asset.scrollIntoViewIfNeeded();
         await asset.locator('.motion-replay').click();

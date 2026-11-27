@@ -5,7 +5,7 @@ for(const width of [1440,768,375])test(`native library review: readable, directl
  const errors:string[]=[],external:string[]=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/generation'))external.push(r.url());});
  await page.setViewportSize({width,height:1000});await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');await openWebsiteWorkspace(page);await openPanel(page,'動畫');
- const library=page.locator('#preview-inspector .animation-library');await expect(library.locator('[data-effect-id]')).toHaveCount(68);await expect(library.locator('.preview-error')).toHaveCount(0);
+ const library=page.locator('#preview-inspector .animation-library');await expect(library.locator('[data-effect-id]')).toHaveCount(75);await expect(library.locator('.preview-error')).toHaveCount(0);
  for(const sample of await library.locator('.rendered-page').all()){
   expect(await sample.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);await expect(sample).toHaveCSS('transform','none');
  }

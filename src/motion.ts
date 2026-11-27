@@ -71,6 +71,7 @@ export type MotionTarget = {
     type: string;
     content?: string;
     children?: unknown[];
+    media?: { kind?: string };
 };
 export const structuredGroupMotions=["card-stack-shuffle","horizontal-scroll-gallery","pinned-story-panels"] as const;
 export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 = 1): string | null {
@@ -86,6 +87,8 @@ export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 
         if(count<(id==='card-stack-shuffle'?3:2)||count>5||items?.some(n=>!n||typeof n!=='object'||!('type' in n)||n.type!=='card')||!items&&lines.some(line=>!line.trim()))return '需要'+(id==='card-stack-shuffle'?'3':'2')+'至5張真實子卡片；草稿卡片每行代表一張卡片';
     }
     if (id === 'numeric-gauge-sweep' && (!/^\s*(?:\d{1,3})(?:\.\d{1,4})?\s*[%％]?\s*$/.test(target.content ?? '') || !numericContent(target.content ?? '') || numericContent(target.content ?? '')!.endValue > 100)) return '儀表需使用0到100的真實數字或百分比';
+    if (id === 'chart-build' && target.media?.kind !== 'chart')
+        return '圖表動畫只適用於圖表';
     if (id === 'count-up' && !numericContent(target.content ?? ''))
         return '數字遞增只適用於既有數字內容';
     return null;
@@ -113,11 +116,11 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
         return '互動內容效果一次只能套用一種';
     if (ids.has('physics-tag-field') && ids.has('stagger-reveal'))
         return '物理標籤不能再套用逐項進場';
-    if (['typewriter','marquee-text','gradient-text-flow','letter-assembly','accent-stroke','count-up','curved-path-text','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','kinetic-text-wave','numeric-gauge-sweep','text-morph-transition','elastic-word-bounce','text-spotlight-reveal','typographic-stretch'].filter(id=>ids.has(id as MotionId)).length>1)
+    if (['typewriter','marquee-text','gradient-text-flow','scroll-ink-words','hollow-fill-sweep','letter-windows','bold-relay','letter-assembly','accent-stroke','count-up','curved-path-text','character-decode','split-line-assembly','rolling-characters','hand-drawn-highlight','kinetic-text-wave','numeric-gauge-sweep','text-morph-transition','elastic-word-bounce','text-spotlight-reveal','typographic-stretch'].filter(id=>ids.has(id as MotionId)).length>1)
         return '文字呈現效果一次只能套用一種';
     if(ids.has('magnetic-control') && ['hover-lift','slide-up','press-feedback'].some(id=>ids.has(id as MotionId)))
         return '磁吸按鈕不能和其他會移動或按壓的動畫一起用';
-    const imageModes=['image-reveal','venetian-reveal','circular-mask-expansion','cinematic-image-pan','pixel-dissolve','shutter-lens-transition','glitch-slice-reveal','liquid-distortion-reveal','scroll-image-sequence'];
+    const imageModes=['dolly-frame','image-reveal','venetian-reveal','circular-mask-expansion','cinematic-image-pan','pixel-dissolve','shutter-lens-transition','glitch-slice-reveal','liquid-distortion-reveal','scroll-image-sequence'];
     if(imageModes.filter(id=>ids.has(id as MotionId)).length>1)return '一張圖片一次只能用一種圖片動畫';
     if(ids.has('perspective-tilt')&&['hover-lift','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '透視傾斜不能和其他會移動位置的動畫一起用';
     const childrenModes=['card-deck-fan','layered-parallax','grid-diagonal-turn','stagger-reveal','focus-transfer','disclosure-panel','fold-reveal','flip-card','physics-tag-field'];
@@ -127,6 +130,8 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
     if(scene.length&&['card-stack-shuffle','horizontal-scroll-gallery','sticky-section-morph','pinned-story-panels'].some(id=>ids.has(id as MotionId))&&effects.length>1)return '這個效果不能和其他動畫一起用';
     if(ids.has('spring-drag-snap')&&effects.length>1)return '拖曳吸附不可與其他位置效果同時套用';
     if(['float-idle','jelly-press'].some(id=>ids.has(id as MotionId))&&['hover-lift','slide-up','scale-in','perspective-tilt','magnetic-control','press-feedback','float-idle','jelly-press','blur-in'].filter(id=>ids.has(id as MotionId)).length>1)return '漂浮或彈跳不能與其他位移效果重疊';
+    if(ids.has('color-wake')&&['pixel-dissolve','liquid-distortion-reveal','glitch-slice-reveal'].some(id=>ids.has(id as MotionId)))return '褪色回彩不能和會重畫圖片的動畫一起用';
+    if(ids.has('chart-build')&&effects.length>1)return '圖表動畫不能和其他動畫一起用';
     if(ids.has('blur-in')&&['fade-in','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '進場效果一次只能套用一種';
     return null;
 }

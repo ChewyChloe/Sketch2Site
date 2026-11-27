@@ -4,6 +4,7 @@ import {CinematicText} from "./CinematicText";
 import {StoryGroup,CardShuffle,FrameSequence,storyGroupIds} from "./StoryMotion";
 import {useAdvancedMotion,AdvancedText,advancedTextIds} from "./AdvancedMotion";
 import {useSignatureMotion} from "./SignatureMotion";
+import {useReferenceMotion} from "./ReferenceMotion";
 import {useExtendedMotion,LetterAssembly,AccentStroke,DisclosurePanel} from "./ExtendedMotion";
 import {FoldReveal} from "./FoldReveal";
 import {PhysicsTags} from "./PhysicsTags";
@@ -317,6 +318,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   useSignatureMotion(node,ref);
   const motionUrls=useContext(AssetUrls),motionPreview=useContext(MotionPreview);
   useCinematicMotion(node,ref,motionUrls);
+  useReferenceMotion(node,ref,motionUrls);
   const entry = componentRegistry[node.type],
     Tag =
       node.type === "heading"

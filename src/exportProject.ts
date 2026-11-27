@@ -6,6 +6,9 @@ import cinematicTextSource from "./CinematicText.tsx?raw";
 import storyMotionSource from "./StoryMotion.tsx?raw";
 import advancedMotionSource from "./AdvancedMotion.tsx?raw";
 import signatureMotionSource from "./SignatureMotion.tsx?raw";
+import referenceMotionSource from "./ReferenceMotion.tsx?raw";
+import referenceMetaSource from "./referenceMotions.ts?raw";
+import sectionLockSource from "./sectionLock.ts?raw";
 import assetSchema from "./assetRef.ts?raw";
 import { builtInAssets, motionAssetRefs, isLocalAsset } from "./assetRef";
 import { readAsset } from "./assets";
@@ -87,10 +90,13 @@ export async function exportProjectFiles(
     },
     { path: "src/PageRuntime.tsx", content: runtime },
     { path: "src/pageSpec.ts", content: schema },
+    { path: "src/sectionLock.ts", content: sectionLockSource },
     { path: "src/motion.ts", content: motionSource },
     { path: "src/ExtendedMotion.tsx", content: extendedMotionSource },
     { path: "src/AdvancedMotion.tsx", content: advancedMotionSource },
     { path: "src/SignatureMotion.tsx", content: signatureMotionSource },
+    { path: "src/ReferenceMotion.tsx", content: referenceMotionSource },
+    { path: "src/referenceMotions.ts", content: referenceMetaSource },
     { path: "src/CinematicMotion.tsx", content: cinematicMotionSource },
     { path: "src/CinematicText.tsx", content: cinematicTextSource },
     { path: "src/StoryMotion.tsx", content: storyMotionSource },

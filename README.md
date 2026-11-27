@@ -47,3 +47,10 @@ npm run test:e2e 會另外啟動 8788 的隔離 Mock API；不需真實金鑰、
 
 
 Phase 5.1 預設 gpt-6-luna 是尚未完成官方核實的候選，並非已驗證可用的模型；不再啟用舊預設。保持 .env.example 的停用狀態，先閱讀 [生成驗收計畫](docs/GENERATION_EVALUATION.md)。使用者需自行確認 API Project 支出限制。授權一次時設定 SKETCH_AI_MAX_CALLS=1、SKETCH_AI_BUDGET_USD 不超過核准金額；上限 5 次／$0.25，不可重啟繞過。本機可用 `cp .env.example .env` 後自行以編輯器填入秘密，切勿把檔案內容列印或貼回聊天；環境設定只是配置，不代表付費授權。`npm run generation:preflight` 是不讀 .env、不連網的五份草稿指紋檢查。
+
+### 動態設計參考與致謝
+Sketch2Site 的部分動畫設計概念參考了 [Hannah’s Motion Library](https://kittenjam-motion-library.vercel.app/) 所整理的網頁動態效果。
+感謝 Hannah 與相關創作者分享動態設計作品，讓我們能研究不同的互動方式與視覺表現。
+Sketch2Site 會依照自身的元件架構、操作需求與設計語言，獨立開發動畫功能。第三方內容如有直接使用，將另行標註來源及適用授權。
+
+參考盤點與來源紀錄見 [docs/motion-reference](docs/motion-reference/INVENTORY.md)。

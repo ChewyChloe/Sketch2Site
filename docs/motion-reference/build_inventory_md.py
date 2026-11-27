@@ -1,0 +1,25 @@
+import json, sys
+d = json.load(open(sys.argv[1]))
+rows = d["rows"]
+order = ["已有同等功能", "既有功能可擴充", "需要新增動畫", "需要新增複合互動元件", "不適合目前架構或需要額外授權"]
+L = []
+L.append("# 動畫參考盤點\n")
+L.append(f"來源：[{d['source']['name']}]({d['source']['url']})（資料檔 `data.js`，{d['source']['readOn']} 讀取）。共 **{d['source']['items']}** 筆，編號 1–347，每筆一列，完整資料見 [`inventory.json`](inventory.json)。\n")
+L.append("這份盤點只記錄來源編號、元件類型、觸發方式與技術類別這幾項事實，以及 Sketch2Site 自己的分類與計畫。不收錄來源的名稱、簡介、Prompt、程式或素材。要查原始效果，請用編號到來源網站對照。\n")
+L.append("## 統計\n\n| 分類 | 筆數 |\n|---|---|")
+for k in order: L.append(f"| {k} | {d['categories'].get(k,0)} |")
+L.append(f"| 合計 | {len(rows)} |\n")
+L.append("優先序：P1 = 批次一（已完成）、P2 = 批次二、P3 = 批次三、P4 = 之後再評估。只有 P1 的 7 個動畫已實作；其他都還只是計畫，**不算完成**。\n")
+done = {}
+for r in rows:
+    if r["priority"] == "P1": done.setdefault(r["sketch2site"], []).append(str(r["sourceId"]))
+L.append(f"## 第一批完成（{len(done)} 個新動畫，對應 {sum(map(len, done.values()))} 筆來源）\n\n| Sketch2Site ID | 對應來源編號 |\n|---|---|")
+for k, v in done.items(): L.append(f"| `{k}` | {', '.join(v)} |")
+L.append("")
+for k in order:
+    L.append(f"## {k}\n\n| # | 元件 | 觸發 | 技術 | Sketch2Site | 優先 | 說明 |\n|---|---|---|---|---|---|---|")
+    for r in rows:
+        if r["category"] != k: continue
+        L.append(f"| {r['sourceId']} | {r['component']} | {r['trigger']} | {r['technique']} | {r['sketch2site'] or '—'} | {r['priority'] or '—'} | {r['note'] or ''} |")
+    L.append("")
+open(sys.argv[2], "w").write("\n".join(L))

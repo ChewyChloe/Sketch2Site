@@ -72,6 +72,13 @@ const briefs: Record<MotionId, [
     "confetti-burst": ["點擊按鈕時噴出彩紙，適合送出與慶祝。生成只規劃來源布局。", "映射受控confetti-burst Runtime；紙片播完移除，不阻擋原動作。"],
     "jelly-press": ["滑過或按下時Q彈回饋，讓可點元件更有趣。生成只規劃來源布局。", "映射受控jelly-press Runtime；結束回到原尺寸。"],
     "shine-sweep": ["一道亮光掃過按鈕或卡片，提示可以點。生成只規劃來源布局。", "映射受控shine-sweep Runtime；每次只掃一次。"],
+    "dolly-frame": ["照片在框內慢慢推近，適合作品與商品。生成只規劃來源布局。", "映射受控dolly-frame Runtime；只放大框內圖片，外框不變。"],
+    "color-wake": ["低彩度照片在滑過時恢復原色，適合作品集。生成只規劃來源布局。", "映射受控color-wake Runtime；只調整CSS濾鏡。"],
+    "scroll-ink-words": ["長段落隨閱讀逐字變深，適合理念與故事。生成只規劃來源布局。", "映射受控scroll-ink-words Runtime；原文保留可讀。"],
+    "hollow-fill-sweep": ["大標從輪廓被填成實心，適合封面大字。生成只規劃來源布局。", "映射受控hollow-fill-sweep Runtime；只用於大字。"],
+    "letter-windows": ["照片填進粗大標題中緩慢移動，適合封面品牌名。生成只規劃來源布局。", "映射受控letter-windows Runtime；照片只用內建或已匯入素材。"],
+    "bold-relay": ["字重逐字接力加粗，適合短標語。生成只規劃來源布局。", "映射受控bold-relay Runtime；最多80字。"],
+    "chart-build": ["圖表捲到時依序長出，適合數據區。生成只規劃來源布局。", "映射受控chart-build Runtime；只適用圖表元件。"],
 };
 export const serverMotionRegistry = Object.fromEntries(motionIds.map(id => [id, { ...motionCatalog[id], designIntent: briefs[id][0], implementationBrief: briefs[id][1] }])) as Record<MotionId, typeof motionCatalog[MotionId] & {
     designIntent: string;

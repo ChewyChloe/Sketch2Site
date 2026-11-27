@@ -1,3 +1,20 @@
+## 動畫庫擴充：參考盤點與第一批（2026-11-27）
+- DONE：讀取 Hannah’s Motion Library 的 data.js，共 347 筆（編號 1–347）。逐筆分類並記錄在 docs/motion-reference/：
+  - 已有同等功能 60 筆、既有功能可擴充 110 筆、需要新增動畫 92 筆、需要新增複合元件 11 筆、不適合或需授權 74 筆
+  - 只記錄編號、元件、觸發、技術與自己的分類，不收錄來源的名稱、簡介、Prompt、程式或素材
+  - 來源與授權紀錄在 SOURCES.md；README 已加上致謝
+- DONE：原創 metadata 放在 src/referenceMotions.ts（Zod 驗證），與 runtime 分開。共 7 個 DONE、12 個 PLANNED；PLANNED 不在動畫庫裡，也不算完成
+- DONE：第一批 7 個新動畫，原本 68 個 ID 都沒變，動畫庫現在 75 個：
+  - dolly-frame 鏡頭推近、color-wake 褪色回彩、scroll-ink-words 逐字上墨、hollow-fill-sweep 空心填色
+  - letter-windows 字窗風景、bold-relay 粗體接力、chart-build 圖表長出來
+  - 每個都有：即時預覽、套用與移除、參數、Undo/Redo、儲存重開、PageSpec 驗證、AI 生成保留、React 匯出、手機寬度、減少動態版本
+- DONE（既有問題）：鎖定功能讓 pageSpec.ts 引用 sectionLock.ts，但匯出時沒帶上這個檔，匯出的專案無法建置。已補上，匯出建置測試通過
+- 驗證：
+  - 單元測試 681 PASS、typecheck PASS
+  - 新的端對端 reference-motions 12 PASS；匯出建置 1 PASS
+  - 動畫相關端對端 160 PASS
+  - 瀏覽器截圖檢查 7 個預覽
+
 ## 菜單品項卡片（2026-11-27）
 - DONE：新區塊範本「菜單品項」：每張卡片上方一張照片；卡片每行依形狀自動辨識：名稱、英文名（只有英文字母）、價格（NT$／元）、說明、#標籤（變成小標籤）、※備註（虛線下方）；價格靠右與名稱同一列；照片與卡片照列交錯排，照片一定在自己的卡片正上方（標題長高把照片推低也不會錯位）；AI 不能把菜單區塊改成別的角色
 - 驗證：單元測試 655 PASS、typecheck PASS、相關端對端 21 PASS、瀏覽器實際生成檢查

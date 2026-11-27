@@ -32,7 +32,7 @@ test('library exposes sixty effects and filters by name, identifier and category
     const check = await load(page);
     await openPanel(page, '動畫');
     const library = page.locator('#preview-inspector .animation-library'), assets = library.locator('[data-effect-id]');
-    await expect(assets).toHaveCount(68);
+    await expect(assets).toHaveCount(75);
     for (const id of effects) {
         await page.getByLabel('搜尋動畫').fill(id);
         await expect(assets).toHaveCount(1);
@@ -50,7 +50,7 @@ test('library exposes sixty effects and filters by name, identifier and category
         for (const asset of await assets.all()) await expect(asset).toHaveAttribute('data-category', category);
     }
     await page.getByRole('group', { name: '動畫使用情境' }).getByRole('button', { name: '全部', exact: true }).click();
-    await expect(assets).toHaveCount(68);
+    await expect(assets).toHaveCount(75);
     check();
 });
 
@@ -219,7 +219,7 @@ for (const round of [1, 2]) for (const width of [1440, 768, 375]) test(`review $
     await page.locator('.preview-scroll').evaluate(el=>{el.scrollTop=0;});
     await openPanel(page, '動畫');
     const library = page.locator('#preview-inspector .animation-library');
-    await expect(library.locator('[data-effect-id]')).toHaveCount(68);
+    await expect(library.locator('[data-effect-id]')).toHaveCount(75);
     await library.locator('[data-effect-id="fade-in"]').scrollIntoViewIfNeeded();
     await page.screenshot({ path: `test-results/extended-review${round}-gallery-upper-${width}.png` });
     const disclosure = library.locator('[data-effect-id="disclosure-panel"]');

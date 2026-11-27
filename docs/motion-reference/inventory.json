@@ -1,0 +1,7034 @@
+{
+ "source": {
+  "name": "Hannah’s Motion Library",
+  "url": "https://kittenjam-motion-library.vercel.app/",
+  "dataFile": "https://kittenjam-motion-library.vercel.app/data.js",
+  "readOn": "2026-11-27",
+  "items": 347
+ },
+ "categories": {
+  "需要新增動畫": 92,
+  "不適合目前架構或需要額外授權": 74,
+  "既有功能可擴充": 110,
+  "已有同等功能": 60,
+  "需要新增複合互動元件": 11
+ },
+ "rows": [
+  {
+   "sourceId": 1,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "文字重落進場",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 2,
+   "component": "text",
+   "trigger": [
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "沒有離場生命週期：網站元件不會被移除",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 3,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "硬幣式翻轉循環",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 4,
+   "component": "text",
+   "trigger": [
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "沒有離場生命週期：網站元件不會被移除",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 5,
+   "component": "text",
+   "trigger": [
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "沒有離場生命週期：網站元件不會被移除",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 6,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "breathing-glow",
+   "priority": "P4",
+   "note": "加上文字縮放與波紋",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 7,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "萬花筒旋轉",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 8,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "count-up",
+   "priority": "P4",
+   "note": "倒數模式",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 9,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "kinetic-text-wave",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 10,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "定格晃動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 11,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "文字落雨背景",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 12,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "文字放大鏡",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 13,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "character-decode",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 14,
+   "component": "text",
+   "trigger": [
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "沒有離場生命週期：網站元件不會被移除",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 15,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "gradient-text-flow",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 16,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "curved-path-text",
+   "priority": "P3",
+   "note": "整圈旋轉",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 17,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "水面倒影",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 18,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "kinetic-text-wave",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 19,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "kinetic-text-wave",
+   "priority": "P4",
+   "note": "旗面起伏",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 20,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "反重力彈跳",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 21,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "letter-assembly",
+   "priority": "P4",
+   "note": "磁吸聚合",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 22,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "格狀文字背景",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 23,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "bold-relay",
+   "priority": "P1",
+   "note": "批次一完成",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 24,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "扇形展開",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 25,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "逐字點亮與跳點",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 26,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "鐘擺搖晃",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 27,
+   "component": "text",
+   "trigger": [
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "pixel-dissolve",
+   "priority": "P4",
+   "note": "文字版本",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 28,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "text-morph-transition",
+   "priority": "P3",
+   "note": "環形換字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 29,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "blur-in",
+   "priority": "P3",
+   "note": "殘影進場",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 30,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "棋盤翻轉背景",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 31,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "∞ 軌道",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 32,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "rolling-characters",
+   "priority": "P4",
+   "note": "換位排序",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 33,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "漩渦",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 34,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "顫抖後穩定",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 35,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "typographic-stretch",
+   "priority": "P3",
+   "note": "縱向波浪",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 36,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "墨水暈開",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 37,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "letter-assembly",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 38,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "多字型輪替（需字型授權確認）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 39,
+   "component": "text",
+   "trigger": [
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "沒有離場生命週期：網站元件不會被移除",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 40,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "float-idle",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_yunon_ai（Threads）",
+     "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 41,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "elastic-word-bounce",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 42,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "elastic-word-bounce",
+   "priority": "P3",
+   "note": "重落節奏",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 43,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "蓋章進場",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 44,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "縱深飛出",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 45,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "詞語堆疊",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 46,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "text-morph-transition",
+   "priority": "P3",
+   "note": "穿越換詞",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 47,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "text-morph-transition",
+   "priority": "P3",
+   "note": "擠壓換詞",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 48,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "marquee-text",
+   "priority": "P3",
+   "note": "雙速巨字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 49,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "marquee-text",
+   "priority": "P4",
+   "note": "直排",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 50,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "marquee-text",
+   "priority": "P3",
+   "note": "斜向帶狀",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 51,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "curved-path-text",
+   "priority": "P3",
+   "note": "沿波浪線流動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 52,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "marquee-text",
+   "priority": "P3",
+   "note": "多層帶狀",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 53,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "marquee-text",
+   "priority": "P4",
+   "note": "直排多欄",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 54,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "marquee-text",
+   "priority": "P3",
+   "note": "交叉膠帶",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 55,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要 3D 場景，效能與可讀性不符網站文字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 56,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要 3D 場景，效能與可讀性不符網站文字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 57,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "CSS 3D 圓柱",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 58,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要 3D 場景，效能與可讀性不符網站文字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 59,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "帶景深環繞",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 60,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "四面方塊換字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 61,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "Depth3D",
+   "priority": "P4",
+   "note": "既有 3D 效果加文字厚度",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 62,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "flap-board",
+   "priority": "P4",
+   "note": "規劃於批次四",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 63,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "flip-card",
+   "priority": "P3",
+   "note": "翻卡換字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 64,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "typewriter",
+   "priority": "P2",
+   "note": "多句輪替",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 65,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "rolling-characters",
+   "priority": "P3",
+   "note": "滾輪停定",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 66,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "rolling-characters",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 67,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "text-morph-transition",
+   "priority": "P3",
+   "note": "標題輪替",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 68,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "點陣字（Canvas）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 69,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "hollow-fill-sweep",
+   "priority": "P1",
+   "note": "批次一完成（逐行版本另列）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 70,
+   "component": "text",
+   "trigger": [
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "glitch-slice-reveal",
+   "priority": "P3",
+   "note": "文字版本",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 71,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "letter-windows",
+   "priority": "P3",
+   "note": "條紋圖樣選項",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 72,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "長陰影",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 73,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "液面填字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 74,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "hand-drawn-highlight",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 75,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "斜線互換",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "@ai_tjb（Threads）",
+     "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 76,
+   "component": "text",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "split-line-assembly",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 77,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "character-decode",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 78,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "typewriter",
+   "priority": "P2",
+   "note": "打字刪除輪替",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 79,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "elastic-word-bounce",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 80,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "逐字 3D 翻轉",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 81,
+   "component": "text",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "letter-assembly",
+   "priority": "P3",
+   "note": "四散飛入",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 82,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "grid-diagonal-turn",
+   "priority": "P3",
+   "note": "由中心擴散",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 83,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "text-morph-transition",
+   "priority": "P2",
+   "note": "固定前綴換詞",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 84,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "numeric-gauge-sweep",
+   "priority": "P3",
+   "note": "數字與進度條同步",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 85,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "文字被游標推開",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 86,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "split-line-assembly",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 87,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "elastic-word-bounce",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 88,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "hand-drawn-highlight",
+   "priority": "P2",
+   "note": "圈選樣式",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 89,
+   "component": "shape",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "elastic-svg-morph",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 90,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "沿曲線飛行",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 91,
+   "component": "card",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "相簿版型切換（gallery view switcher）",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 92,
+   "component": "layout",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "scroll-progress",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 93,
+   "component": "layout",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "horizontal-scroll-gallery",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 94,
+   "component": "layout",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "layered-parallax",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 95,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "magnetic-control",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 96,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "cursor-trail-particles",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 97,
+   "component": "card",
+   "trigger": [
+    "drag"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "spring-drag-snap",
+   "priority": "P3",
+   "note": "慣性甩出",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 98,
+   "component": "card",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "card-deck-fan",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 99,
+   "component": "bg",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "confetti-burst",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 100,
+   "component": "bg",
+   "trigger": [
+    "scroll",
+    "drag"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "marquee-text",
+   "priority": "P3",
+   "note": "依捲動速度加速",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 101,
+   "component": "layout",
+   "trigger": [
+    "scroll",
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "側邊圓點導覽（side-dots nav）",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 102,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "rolling-characters",
+   "priority": "P2",
+   "note": "按鈕滑過翻字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 103,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "directional-hover-wipe",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 104,
+   "component": "card",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "stagger-reveal",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 105,
+   "component": "media",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "perspective-tilt",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 106,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "區塊背景光暈",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 107,
+   "component": "bg",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "cursor-spotlight",
+   "priority": "P3",
+   "note": "格線背景",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 108,
+   "component": "bg",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "已有同等功能",
+   "sketch2site": "particle-constellation",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 109,
+   "component": "button",
+   "trigger": [
+    "hover",
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "shine-sweep",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 110,
+   "component": "button",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "border-light-trace",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 111,
+   "component": "button",
+   "trigger": [
+    "hover",
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "confetti-burst",
+   "priority": "P3",
+   "note": "愛心噴點",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 112,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "hover-lift",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 113,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "cursor-spotlight",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 114,
+   "component": "card",
+   "trigger": [
+    "loop",
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "靜態網站沒有載入中狀態",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 115,
+   "component": "media",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "image-reveal",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 116,
+   "component": "media",
+   "trigger": [
+    "drag",
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增複合互動元件",
+   "sketch2site": "compare-slider",
+   "priority": "P2",
+   "note": "規劃於批次二",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 117,
+   "component": "layout",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "導覽列樣式",
+   "priority": "P3",
+   "note": "捲動縮小",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 118,
+   "component": "card",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 119,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "取代系統游標，影響可用性與無障礙",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 120,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "cursor-image-follower",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 121,
+   "component": "cursor",
+   "trigger": [
+    "hover",
+    "loop"
+   ],
+   "technique": "Canvas",
+   "category": "已有同等功能",
+   "sketch2site": "cursor-trail-particles",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 122,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "radial-ink-ripple",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 123,
+   "component": "cursor",
+   "trigger": [
+    "hover",
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "取代系統游標，影響可用性與無障礙",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 124,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "text-spotlight-reveal",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 125,
+   "component": "layout",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "stagger-reveal",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 126,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "split-line-assembly",
+   "priority": "P3",
+   "note": "逐行模糊轉清楚",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 127,
+   "component": "layout",
+   "trigger": [
+    "enter",
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "scroll-milestones",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 128,
+   "component": "layout",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "stagger-reveal",
+   "priority": "P3",
+   "note": "Z 字順序",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 129,
+   "component": "card",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "scroll-milestones",
+   "priority": "P3",
+   "note": "連線後出現",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 130,
+   "component": "button",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "breathing-glow",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 131,
+   "component": "media",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "image-reveal",
+   "priority": "P2",
+   "note": "柔邊揭露",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 132,
+   "component": "card",
+   "trigger": [
+    "enter",
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "stagger-reveal",
+   "priority": "P3",
+   "note": "左右交錯",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 133,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要接受外部 SVG，違反素材安全規則",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 134,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "svg-path-drawing",
+   "priority": "P3",
+   "note": "簽名路徑",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 135,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "svg-path-drawing",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 136,
+   "component": "shape",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "svg-path-drawing",
+   "priority": "P3",
+   "note": "滑過重描",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 137,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "流動連接線",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 138,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "區塊波浪分隔",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 139,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "numeric-gauge-sweep",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 140,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "表單元件",
+   "priority": "P3",
+   "note": "送出成功動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 141,
+   "component": "control",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 142,
+   "component": "layout",
+   "trigger": [
+    "drag"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 143,
+   "component": "layout",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 144,
+   "component": "layout",
+   "trigger": [
+    "switch",
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 145,
+   "component": "card",
+   "trigger": [
+    "drag",
+    "exit"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 146,
+   "component": "button",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "表單元件",
+   "priority": "P3",
+   "note": "送出中狀態",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 147,
+   "component": "control",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 148,
+   "component": "control",
+   "trigger": [
+    "hover",
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "表單元件",
+   "priority": "P3",
+   "note": "浮動標籤",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 149,
+   "component": "control",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 150,
+   "component": "layout",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "啟動畫面不屬於網站內容",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 151,
+   "component": "control",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "表單元件",
+   "priority": "P3",
+   "note": "錯誤提示震動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 152,
+   "component": "text",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": "scroll-ink-words",
+   "priority": "P1",
+   "note": "批次一完成",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 153,
+   "component": "media",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": "grow-to-stage",
+   "priority": "P2",
+   "note": "規劃於批次二",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 154,
+   "component": "card",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增複合互動元件",
+   "sketch2site": "stacked-chapters",
+   "priority": "P2",
+   "note": "規劃於批次二",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 155,
+   "component": "card",
+   "trigger": [
+    "scroll",
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "count-up",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 156,
+   "component": "layout",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "導覽列樣式",
+   "priority": "P3",
+   "note": "捲動隱藏",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 157,
+   "component": "shape",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "svg-path-drawing",
+   "priority": "P3",
+   "note": "捲動驅動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 158,
+   "component": "media",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "CSS 捲動視差（既有）",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 159,
+   "component": "text",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "marquee-text",
+   "priority": "P3",
+   "note": "捲動驅動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 160,
+   "component": "bg",
+   "trigger": [
+    "scroll",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "依章節切換頁面配色",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 161,
+   "component": "layout",
+   "trigger": [
+    "scroll",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "circular-mask-expansion",
+   "priority": "P3",
+   "note": "捲動驅動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 162,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P2",
+   "note": "連結底線滑入",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 163,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "hollow-fill-sweep",
+   "priority": "P1",
+   "note": "批次一完成",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 164,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "flip-card",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 165,
+   "component": "media",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "圓形縮圖展開",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 166,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "圖示列放大",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 167,
+   "component": "layout",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "導覽列樣式",
+   "priority": "P3",
+   "note": "滑動底色",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 168,
+   "component": "media",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增複合互動元件",
+   "sketch2site": "accordion-gallery",
+   "priority": "P3",
+   "note": "規劃於批次三",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 169,
+   "component": "control",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "網站內容提示框",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 170,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "elastic-word-bounce",
+   "priority": "P3",
+   "note": "滑過觸發",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 171,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "border-light-trace",
+   "priority": "P2",
+   "note": "滑過描邊",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 172,
+   "component": "bg",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "Canvas 星際背景",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 173,
+   "component": "bg",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "Canvas 流場",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 174,
+   "component": "bg",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "花瓣飄落",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 175,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "字元雨",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 176,
+   "component": "bg",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "已有同等功能",
+   "sketch2site": "gooey-blob-merge",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 177,
+   "component": "text",
+   "trigger": [
+    "hover",
+    "enter"
+   ],
+   "technique": "Canvas",
+   "category": "既有功能可擴充",
+   "sketch2site": "particle-constellation",
+   "priority": "P4",
+   "note": "粒子組字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 178,
+   "component": "bg",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "圓點網格背景",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 179,
+   "component": "bg",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "既有功能可擴充",
+   "sketch2site": "liquid-distortion-reveal",
+   "priority": "P4",
+   "note": "滑過漣漪",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 180,
+   "component": "card",
+   "trigger": [
+    "drag"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增複合互動元件",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "刮開揭露（Canvas）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 181,
+   "component": "bg",
+   "trigger": [
+    "hover",
+    "loop"
+   ],
+   "technique": "Canvas",
+   "category": "既有功能可擴充",
+   "sketch2site": "confetti-burst",
+   "priority": "P4",
+   "note": "煙火",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 182,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "float-idle",
+   "priority": "P3",
+   "note": "縮放呼吸模式",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 183,
+   "component": "text",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "float-idle",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 184,
+   "component": "media",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "cinematic-image-pan",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 185,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "letter-assembly",
+   "priority": "P3",
+   "note": "翻滾進場",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 186,
+   "component": "text",
+   "trigger": [
+    "loop",
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "neon-ignite",
+   "priority": "P4",
+   "note": "規劃於批次四",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 187,
+   "component": "card",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "stagger-reveal",
+   "priority": "P3",
+   "note": "歪斜貼上",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 188,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "上下半合成",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 189,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "blur-in",
+   "priority": "P3",
+   "note": "字距收合",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 190,
+   "component": "text",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "斜滑煞車",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 191,
+   "component": "media",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "cinematic-image-pan",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 192,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "svg-path-drawing",
+   "priority": "P4",
+   "note": "標誌組合",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 193,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "音訊波形",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 194,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "border-light-trace",
+   "priority": "P3",
+   "note": "漸層描邊",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 195,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "圖示液面",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 196,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "雷達掃描",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 197,
+   "component": "shape",
+   "trigger": [
+    "enter",
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": "chart-build",
+   "priority": "P1",
+   "note": "批次一完成（折線）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 198,
+   "component": "shape",
+   "trigger": [
+    "enter",
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": "chart-build",
+   "priority": "P1",
+   "note": "批次一完成（長條）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 199,
+   "component": "shape",
+   "trigger": [
+    "enter",
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": "chart-build",
+   "priority": "P1",
+   "note": "批次一完成（圓餅）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 200,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "載入動畫不屬於靜態網站內容",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 201,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "liquid-distortion-reveal",
+   "priority": "P4",
+   "note": "持續波動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 202,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "頁面轉場需路由層，目前多頁網站不做轉場",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 203,
+   "component": "layout",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "導覽列樣式",
+   "priority": "P3",
+   "note": "選單展開",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 204,
+   "component": "layout",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 205,
+   "component": "layout",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "網站內容沒有對話框；大圖檢視另列 photo-spotlight",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 206,
+   "component": "layout",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "disclosure-panel",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 207,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增複合互動元件",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "分頁內容切換",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 208,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "相簿版型切換",
+   "priority": "P3",
+   "note": "分類篩選",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 209,
+   "component": "layout",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增複合互動元件",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "便當格展開",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 210,
+   "component": "layout",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "pinned-story-panels",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 211,
+   "component": "layout",
+   "trigger": [
+    "scroll",
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "scroll-progress",
+   "priority": "P3",
+   "note": "回到頂部按鈕",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 212,
+   "component": "card",
+   "trigger": [
+    "switch",
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "輪播元件",
+   "priority": "P2",
+   "note": "中央放大樣式",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 213,
+   "component": "card",
+   "trigger": [
+    "drag",
+    "exit"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "card-stack-shuffle",
+   "priority": "P3",
+   "note": "拖曳甩出",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 214,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "card-deck-fan",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 215,
+   "component": "card",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "互動價目表（既有）",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 216,
+   "component": "card",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增複合互動元件",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "卡片展開詳情",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 217,
+   "component": "card",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "標誌牆（既有）",
+   "priority": "P3",
+   "note": "卡片雙向輪播",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 218,
+   "component": "card",
+   "trigger": [
+    "switch",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "輪播元件",
+   "priority": "P3",
+   "note": "推薦語輪播",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 219,
+   "component": "card",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "stagger-reveal",
+   "priority": "P3",
+   "note": "瀑布流落下",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 220,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "focus-transfer",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 221,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要購物車與電商後端",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 222,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "顆粒漸層背景",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 223,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "復古網格地平線",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 224,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "柔焦光點",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 225,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "脈衝圓環",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 226,
+   "component": "bg",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "放射光芒",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 227,
+   "component": "bg",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "星空",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 228,
+   "component": "bg",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "layered-parallax",
+   "priority": "P3",
+   "note": "游標視差",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 229,
+   "component": "bg",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "細線起伏",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 230,
+   "component": "bg",
+   "trigger": [
+    "loop",
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "幾何漂浮背景",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 231,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "press-feedback",
+   "priority": "P2",
+   "note": "立體按壓",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 232,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "jelly-press",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 233,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "已有同等功能",
+   "sketch2site": "radial-ink-ripple",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 234,
+   "component": "button",
+   "trigger": [
+    "drag"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 235,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 236,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P2",
+   "note": "箭頭替換按鈕",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 237,
+   "component": "button",
+   "trigger": [
+    "loop",
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "breathing-glow",
+   "priority": "P3",
+   "note": "霓虹樣式",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 238,
+   "component": "button",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 239,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "圖示展開成文字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 240,
+   "component": "button",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "表單元件",
+   "priority": "P4",
+   "note": "送出飛走",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 241,
+   "component": "control",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 242,
+   "component": "control",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 243,
+   "component": "control",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 244,
+   "component": "control",
+   "trigger": [
+    "drag"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 245,
+   "component": "control",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 246,
+   "component": "control",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "網站沒有站內搜尋",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 247,
+   "component": "control",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 248,
+   "component": "control",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 249,
+   "component": "control",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 250,
+   "component": "control",
+   "trigger": [
+    "drag",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "網站表單不收檔案",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 251,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "取代系統游標，影響可用性與無障礙",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 252,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "取代系統游標，影響可用性與無障礙",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 253,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "取代系統游標，影響可用性與無障礙",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 254,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "取代系統游標，影響可用性與無障礙",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 255,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "取代系統游標，影響可用性與無障礙",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 256,
+   "component": "cursor",
+   "trigger": [
+    "hover",
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "跟隨游標的眼睛裝飾",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 257,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "loupe-pan",
+   "priority": "P3",
+   "note": "放大鏡樣式（批次三）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 258,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "cursor-trail-particles",
+   "priority": "P4",
+   "note": "黏液拖尾",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 259,
+   "component": "cursor",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "confetti-burst",
+   "priority": "P4",
+   "note": "圖案噴發",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 260,
+   "component": "media",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "dolly-frame",
+   "priority": "P1",
+   "note": "批次一完成",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 261,
+   "component": "media",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "loupe-pan",
+   "priority": "P3",
+   "note": "規劃於批次三",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 262,
+   "component": "media",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "color-wake",
+   "priority": "P1",
+   "note": "批次一完成",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 263,
+   "component": "media",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "second-look",
+   "priority": "P3",
+   "note": "規劃於批次三",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 264,
+   "component": "media",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "影片元件",
+   "priority": "P2",
+   "note": "滑過播放",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 265,
+   "component": "media",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增複合互動元件",
+   "sketch2site": "photo-spotlight",
+   "priority": "P2",
+   "note": "規劃於批次二",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 266,
+   "component": "media",
+   "trigger": [
+    "switch",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "輪播元件",
+   "priority": "P2",
+   "note": "縮圖導覽",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 267,
+   "component": "media",
+   "trigger": [
+    "switch",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "venetian-reveal",
+   "priority": "P3",
+   "note": "輪播切換",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 268,
+   "component": "media",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "card-stack-shuffle",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 269,
+   "component": "media",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "glitch-slice-reveal",
+   "priority": "P3",
+   "note": "滑過觸發",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 270,
+   "component": "card",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "flip-card",
+   "priority": "P3",
+   "note": "捲動觸發",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 271,
+   "component": "shape",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "Depth3D",
+   "priority": "P4",
+   "note": "捲動旋轉方塊",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 272,
+   "component": "text",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "穿越大字",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 273,
+   "component": "media",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": "rush-skew",
+   "priority": "P3",
+   "note": "規劃於批次三",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 274,
+   "component": "text",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "letter-assembly",
+   "priority": "P3",
+   "note": "捲動驅動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 275,
+   "component": "shape",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "elastic-svg-morph",
+   "priority": "P4",
+   "note": "捲動驅動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 276,
+   "component": "card",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "card-deck-fan",
+   "priority": "P3",
+   "note": "捲動驅動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 277,
+   "component": "text",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "blur-in",
+   "priority": "P3",
+   "note": "雙向捲動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 278,
+   "component": "text",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "curved-path-text",
+   "priority": "P3",
+   "note": "捲動驅動",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 279,
+   "component": "layout",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": "door-split",
+   "priority": "P3",
+   "note": "規劃於批次三",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 280,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "上下錯開",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 281,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "typographic-stretch",
+   "priority": "P2",
+   "note": "滑過拉開字距",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 282,
+   "component": "layout",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "row-paint",
+   "priority": "P3",
+   "note": "規劃於批次三",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 283,
+   "component": "shape",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要圖示庫，網站內容目前沒有圖示元件",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 284,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "dolly-frame",
+   "priority": "P2",
+   "note": "資訊面板樣式",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 285,
+   "component": "button",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要社群圖示素材授權",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 286,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "hand-drawn-highlight",
+   "priority": "P2",
+   "note": "滑過觸發",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 287,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "perspective-tilt",
+   "priority": "P4",
+   "note": "炫彩箔光",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 288,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要抓取外部網頁",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 289,
+   "component": "control",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "表格元件",
+   "priority": "P2",
+   "note": "十字高亮",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 290,
+   "component": "text",
+   "trigger": [
+    "enter",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要字形筆畫資料，涉及字型授權",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 291,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "bold-relay",
+   "priority": "P1",
+   "note": "批次一完成",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 292,
+   "component": "text",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "光源長陰影",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 293,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "letter-windows",
+   "priority": "P1",
+   "note": "批次一完成",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 294,
+   "component": "text",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "blur-in",
+   "priority": "P3",
+   "note": "逐字版本",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 295,
+   "component": "text",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "劃掉重寫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 296,
+   "component": "text",
+   "trigger": [
+    "enter",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增複合互動元件",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "對話訊息",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 297,
+   "component": "text",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": "echo-layers",
+   "priority": "P4",
+   "note": "規劃於批次四",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 298,
+   "component": "text",
+   "trigger": [
+    "switch",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "text-morph-transition",
+   "priority": "P3",
+   "note": "多語輪替",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 299,
+   "component": "card",
+   "trigger": [
+    "drag"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 300,
+   "component": "card",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 301,
+   "component": "card",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "cursor-spotlight",
+   "priority": "P3",
+   "note": "卡片群邊框",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 302,
+   "component": "card",
+   "trigger": [
+    "loop",
+    "drag"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "3D 物件元件（既有）",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 303,
+   "component": "card",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "遊戲互動，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 304,
+   "component": "card",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增複合互動元件",
+   "sketch2site": null,
+   "priority": "P3",
+   "note": "數據卡：count-up + chart-build",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 305,
+   "component": "card",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "已有同等功能",
+   "sketch2site": "翻頁書元件（既有）",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 306,
+   "component": "card",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "相簿版型切換",
+   "priority": "P3",
+   "note": "疊放與網格",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 307,
+   "component": "card",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "fold-reveal",
+   "priority": "P3",
+   "note": "封面開啟",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 308,
+   "component": "layout",
+   "trigger": [
+    "enter",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "靜態網站沒有換頁載入",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 309,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 310,
+   "component": "layout",
+   "trigger": [
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "大型選單屬於導覽架構，暫不納入",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 311,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 312,
+   "component": "layout",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "網站沒有搜尋結果狀態",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 313,
+   "component": "layout",
+   "trigger": [
+    "enter",
+    "exit"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "同意橫幅屬法務介面",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 314,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 315,
+   "component": "layout",
+   "trigger": [
+    "scroll"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "靜態網站沒有分頁載入",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 316,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 317,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 318,
+   "component": "shape",
+   "trigger": [
+    "enter",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要地圖圖資與授權",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 319,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "指針時鐘",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 320,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要天氣圖示素材",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 321,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "編輯器介面，不是網站內容",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 322,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "gooey-blob-merge",
+   "priority": "P3",
+   "note": "單顆變形",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 323,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "徽章解鎖",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 324,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "心電圖",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 325,
+   "component": "shape",
+   "trigger": [
+    "enter"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "植物生長",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 326,
+   "component": "shape",
+   "trigger": [
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "齒輪",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 327,
+   "component": "shape",
+   "trigger": [
+    "enter",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "驗證介面，不是網站內容",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 328,
+   "component": "text",
+   "trigger": [
+    "enter",
+    "drag"
+   ],
+   "technique": "Canvas",
+   "category": "已有同等功能",
+   "sketch2site": "physics-tag-field",
+   "priority": null,
+   "note": null,
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "Framer Marketplace",
+     "url": "https://www.framer.com/marketplace/components/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
+  },
+  {
+   "sourceId": 329,
+   "component": "card",
+   "trigger": [
+    "enter",
+    "drag"
+   ],
+   "technique": "Canvas",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "吊繩識別證（物理）",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "Framer Marketplace",
+     "url": "https://www.framer.com/marketplace/components/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
+  },
+  {
+   "sourceId": 330,
+   "component": "card",
+   "trigger": [
+    "hover",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "fold-reveal",
+   "priority": "P4",
+   "note": "撕貼紙角",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "Framer Marketplace",
+     "url": "https://www.framer.com/marketplace/components/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
+  },
+  {
+   "sourceId": 331,
+   "component": "media",
+   "trigger": [
+    "enter",
+    "loop"
+   ],
+   "technique": "Canvas",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "需要 3D 紙張模擬",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "Framer Marketplace",
+     "url": "https://www.framer.com/marketplace/components/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
+  },
+  {
+   "sourceId": 332,
+   "component": "card",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "flip-card",
+   "priority": "P3",
+   "note": "依方向翻面",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "Framer Marketplace",
+     "url": "https://www.framer.com/marketplace/components/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
+  },
+  {
+   "sourceId": 333,
+   "component": "card",
+   "trigger": [
+    "enter",
+    "switch",
+    "hover",
+    "drag"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "第三方付費元件，需授權",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "Framer Marketplace",
+     "url": "https://framer.com/m/Docket-bUiXTw.js@Ng9fXttlL2B8cqH3aiFf"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
+  },
+  {
+   "sourceId": 334,
+   "component": "card",
+   "trigger": [
+    "switch",
+    "loop",
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增複合互動元件",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "推薦語便當牆",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "Framer Marketplace",
+     "url": "https://www.framer.com/marketplace/components/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
+  },
+  {
+   "sourceId": 335,
+   "component": "button",
+   "trigger": [
+    "hover",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "按鈕內眼睛",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    },
+    {
+     "name": "Framer Marketplace",
+     "url": "https://www.framer.com/marketplace/components/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
+  },
+  {
+   "sourceId": 336,
+   "component": "control",
+   "trigger": [
+    "drag",
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 337,
+   "component": "button",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 338,
+   "component": "media",
+   "trigger": [
+    "switch",
+    "loop"
+   ],
+   "technique": "GSAP",
+   "category": "需要新增動畫",
+   "sketch2site": null,
+   "priority": "P4",
+   "note": "唱盤播放",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 339,
+   "component": "button",
+   "trigger": [
+    "switch",
+    "hover"
+   ],
+   "technique": "CSS",
+   "category": "既有功能可擴充",
+   "sketch2site": "導覽列樣式",
+   "priority": "P3",
+   "note": "漢堡變形",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 340,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "導覽列樣式",
+   "priority": "P4",
+   "note": "百葉選單",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 341,
+   "component": "layout",
+   "trigger": [
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "導覽列樣式",
+   "priority": "P3",
+   "note": "膠囊展開",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 342,
+   "component": "button",
+   "trigger": [
+    "switch",
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 343,
+   "component": "card",
+   "trigger": [
+    "hover",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 344,
+   "component": "media",
+   "trigger": [
+    "drag",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "既有功能可擴充",
+   "sketch2site": "photo-spotlight",
+   "priority": "P3",
+   "note": "下滑關閉",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 345,
+   "component": "control",
+   "trigger": [
+    "drag",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 346,
+   "component": "button",
+   "trigger": [
+    "drag",
+    "hover"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  },
+  {
+   "sourceId": 347,
+   "component": "layout",
+   "trigger": [
+    "drag",
+    "hover",
+    "switch"
+   ],
+   "technique": "GSAP",
+   "category": "不適合目前架構或需要額外授權",
+   "sketch2site": null,
+   "priority": "—",
+   "note": "App 介面控制，不是網站內容動畫",
+   "credit": [
+    {
+     "name": "Hannah’s Motion Library",
+     "url": "https://kittenjam-motion-library.vercel.app/"
+    }
+   ],
+   "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
+  }
+ ]
+}

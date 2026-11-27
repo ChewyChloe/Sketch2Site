@@ -390,3 +390,12 @@
 
 ## Demo Day 簡報（2026/12/4）
 - [ ] PARTIAL：第一版簡報（10 頁 .pptx＋逐字稿）與第一版 85 秒操作影片（字幕版）已完成，見 docs/demo-day/。待使用者審稿、配音、實際 PowerPoint 彩排。參考：docs/DECK_REFERENCE.md。
+
+## 動畫庫擴充：參考來源盤點（2026-11-27）
+- [x] DONE：347 筆全量盤點（docs/motion-reference/INVENTORY.md、inventory.json）與來源授權紀錄（SOURCES.md）。
+- [x] DONE：原創 metadata（src/referenceMotions.ts）。
+- [x] DONE：第一批 7 個動畫（dolly-frame、color-wake、scroll-ink-words、hollow-fill-sweep、letter-windows、bold-relay、chart-build）。
+- [ ] NOT STARTED：第二批：stacked-chapters（章節疊卡）、compare-slider（前後對照）、photo-spotlight（放大細看）、grow-to-stage（放大成舞台）。
+- [ ] NOT STARTED：第三批：door-split、rush-skew、loupe-pan、second-look、accordion-gallery、row-paint。
+- [ ] NOT STARTED：第四批：flap-board、echo-layers、neon-ignite。
+- [ ] NOT STARTED：盤點中標為「既有功能可擴充」的 110 筆，依優先序 P2 → P3 逐項評估。

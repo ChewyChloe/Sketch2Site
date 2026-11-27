@@ -126,8 +126,8 @@ it('materializes a versioned stagger marker into actual original lines without i
 });
 
 it.each(motionIds)('Mock layout preserves original source content and bound motion %s',id=>{
- const kind=motionCatalog[id].targetType.find(t=>['text','heading','button','card','image'].includes(t))! as 'text'|'heading'|'button'|'card'|'image';
- const n=createNode(kind,80,80);n.content=id==='numeric-gauge-sweep'?'75%':id==='count-up'?'128':kind==='card'?(cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?'使用者摘要\n使用者補充內容\n使用者結語':'使用者摘要\n使用者補充內容'):'使用者原始內容';if(kind==='button')n.href='https://example.com';
+ const kind=motionCatalog[id].targetType.find(t=>['text','heading','button','card','image','media'].includes(t))! as 'text'|'heading'|'button'|'card'|'image'|'media';
+ const n=createNode(kind,80,80);if(kind==='media')n.media={kind:'chart',chart:'bar',points:[{label:'一月',value:3},{label:'二月',value:5}],unit:''};n.content=id==='numeric-gauge-sweep'?'75%':id==='count-up'?'128':kind==='media'?'使用者圖表':kind==='card'?(cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?'使用者摘要\n使用者補充內容\n使用者結語':'使用者摘要\n使用者補充內容'):'使用者原始內容';if(kind==='button')n.href='https://example.com';
  n.effects=[createMotion(id,n.id,cinematicMotionIds.includes(id as typeof cinematicMotionIds[number])?cinematicSampleControls(id):id==='count-up'?{endValue:128}:id==='flip-card'?{backText:'使用者背面'}:id==='fold-reveal'?{underText:'使用者下層'}:id==='physics-tag-field'?{labels:['使用者標籤']}: {})];
  const canvas={...blank(),nodes:[n]};const snapshot=JSON.stringify(canvas);
  const page=materialize(canvas,mockLayout(prepareIntent(canvas)));expect(()=>verifyPreservation(canvas,page)).not.toThrow();expect(indexNodes(page).get(n.id)!.effects).toEqual(n.effects);expect(JSON.stringify(canvas)).toBe(snapshot);

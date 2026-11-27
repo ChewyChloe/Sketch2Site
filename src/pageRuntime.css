@@ -1523,3 +1523,20 @@
 .rendered-page .page-card > [data-line="note"] { margin-top: 10px !important; padding-top: 10px; border-top: 1px dashed var(--line, #ddd); font-size: .8em; color: var(--muted); }
 .rendered-page .role-menu .page-card > .page-paragraph:not([data-line]):not(:first-child) { margin-top: 8px !important; color: var(--muted); font-size: .92em; line-height: 1.7; }
 .rendered-page .role-menu .page-grid > * { grid-column: auto !important; grid-row: auto !important; order: 0 !important; }
+
+/* Reference batch 1 (see ReferenceMotion.tsx). */
+.ref-dolly > :not(.ref-caption) { transition: transform var(--ref-ms, 600ms) cubic-bezier(.2,.7,.2,1); transform-origin: 50% 50%; }
+.ref-dolly[data-ref-on] > :not(.ref-caption) { transform: scale(var(--ref-zoom, 1.08)); }
+.ref-caption { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: .9em 1em .8em; font-size: .92rem; line-height: 1.4; color: #fff; background: linear-gradient(transparent, rgb(0 0 0 / .62)); opacity: 0; transform: translateY(40%); transition: opacity var(--ref-ms, 600ms) ease, transform var(--ref-ms, 600ms) cubic-bezier(.2,.7,.2,1); pointer-events: none; }
+.ref-dolly[data-ref-on] .ref-caption { opacity: 1; transform: none; }
+.ref-wake > * { transition: filter var(--ref-ms, 500ms) ease; filter: grayscale(var(--ref-muted, .85)) brightness(calc(1 - var(--ref-muted, .85) * .15)); }
+.ref-wake[data-ref-on] > * { filter: none; }
+.ref-ink, .ref-relay { position: absolute; inset: 0; padding: inherit; font: inherit; letter-spacing: inherit; line-height: inherit; text-align: inherit; white-space: pre-wrap; overflow-wrap: anywhere; pointer-events: none; }
+.ref-ink > span { transition: opacity .12s linear; }
+.ref-hollow { -webkit-text-stroke: var(--ref-stroke, 2px) var(--ref-ink); background-image: linear-gradient(90deg, var(--ref-ink) 0 50%, transparent 50% 100%); background-size: 200% 100%; background-position: 100% 0; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; transition: background-position var(--ref-ms, 700ms) cubic-bezier(.6,.1,.3,1); }
+.ref-hollow[data-ref-on] { background-position: 0 0; }
+.ref-windows { background-size: 170% auto, 100% 100%; background-position: 0% 30%, 0 0; background-repeat: no-repeat; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .ref-dolly > :not(.ref-caption), .ref-caption, .ref-wake > *, .ref-hollow { transition: none; }
+  .ref-caption { transform: none; }
+}
