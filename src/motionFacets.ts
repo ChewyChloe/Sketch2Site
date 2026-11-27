@@ -79,6 +79,7 @@ const recommendationRules: { pattern: RegExp; label: string; match: (id: MotionI
   { pattern: /吹散|重聚|聚集|風吹|scatter|reassembl|gather/i, label: "分散後重新組合文字", match: id => ["letter-assembly", "split-line-assembly", "text-morph-transition"].includes(id) },
   { pattern: /蓋章|印記|stamp/i, label: "原文後方依序出現印記", match: id => id === "imprint-beats" },
   { pattern: /字雨|落字|letter.*rain/i, label: "裝飾文字分軌落下", match: id => id === "drift-letterfall" },
+  { pattern: /雙速橫幅|逆行直欄|疊層急流|三疊直欄|交叉字帶/i, label: "跑馬燈可調整成多軌或交叉字帶", match: id => id === "marquee-text" },
   { pattern: /心跳|heartbeat/i, label: "心跳節奏與主題色波紋", match: id => id === "breathing-glow" },
   { pattern: /旗面|伸縮波浪|flag wave/i, label: "字元可在旗面或縱向伸縮模式錯拍循環", match: id => id === "kinetic-text-wave" },
   { pattern: /雙向吸附|從兩邊聚合/i, label: "字元從兩側受到吸引後歸位", match: id => id === "letter-assembly" },

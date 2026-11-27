@@ -1,3 +1,4 @@
+import { marqueeId, marqueeLayouts, marqueeModesSection } from "./fixtures/marqueeModes";
 import { textModeId, textModes, textModesSection } from "./fixtures/textModes";
 import { galleryCategorySection } from "./fixtures/galleryCategories";
 import {thirdFixture, tabsFixture} from "./fixtures/cinematicMotions";
@@ -11,6 +12,7 @@ import {createServer} from "node:net";
 import { test, expect } from "@playwright/test";
 import {motionFixture,motionId} from "./fixtures/motions";
 import { createMotion } from "../src/motion";
+import { PageSchema } from "../src/pageSpec";
 import { demoPage } from "../src/pageFixtures";
 import { pageAction } from "./helpers/workbench";
 import { mkdtemp, readFile, readdir, copyFile } from "node:fs/promises";
@@ -87,13 +89,15 @@ test("downloaded React project installs and builds independently; runtime stays 
   replaceImage(input.sections);
   const interactiveBento = galleryCategorySection();
   interactiveBento.sectionLayout = { arrangement: { mode: "bento", columns: 3, gap: "medium", interactive: true }, fullBleed: false };
-  input.sections.push(interactiveBento, ...tabsFixture().sections, textModesSection());
+  const textSection = textModesSection();
+  textSection.children!.push(...marqueeModesSection().children!);
+  input.sections.push(interactiveBento, ...tabsFixture().sections, textSection);
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
   await page.getByLabel("載入頁面檔案").setInputFiles({
     name: "export.json",
     mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(input)),
+    buffer: Buffer.from(JSON.stringify(PageSchema.parse(JSON.parse(JSON.stringify(input))))),
   });
   await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
   const download = page.waitForEvent("download");
@@ -212,6 +216,11 @@ z.extractall(root)
       await expect(text).toHaveAttribute("data-effects", mode.id);
       await expect(text).toHaveAccessibleName(mode.title + "文字");
     }
+    for (const [index] of marqueeLayouts.entries()) {
+      const text = standalone.locator(`[data-page-id="${marqueeId(index + 2)}"]`);
+      await expect(text).toHaveAttribute("data-effects", "marquee-text");
+      await expect(text).toHaveAccessibleName("城市聲音與日常風景");
+    }
     const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
     await expect(exportedLayout).toHaveCSS("column-count", "2");
     await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");
@@ -237,6 +246,10 @@ z.extractall(root)
     await disclosure.getByRole('button',{name:'收合內容'}).click();await expect(disclosure.getByText('展開後閱讀完整補充說明')).toBeHidden();
     for(const node of advancedFixture().sections[0].children!){const target=standalone.locator(`[data-page-id="${node.id}"]`);await expect(target).toHaveAttribute('data-effects',node.effects[0].presetId);}
     await standalone.emulateMedia({reducedMotion:'no-preference'});
+    const exportedRibbons = standalone.locator('.sig-multiband[data-layout="ribbon-cross"]');
+    await exportedRibbons.scrollIntoViewIfNeeded();
+    await expect(exportedRibbons.locator(".sig-band")).toHaveCount(2);
+
     await gallery.getByRole("button", { name: "全部作品" }).click();
     const bento = gallery.locator("[data-section-arrangement=bento]");
     const secondTile = bento.locator("> .page-node").nth(1);

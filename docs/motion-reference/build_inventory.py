@@ -84,7 +84,7 @@ names = {"S": "已有同等功能", "X": "既有功能可擴充", "N": "需要�
 HANNAH = {"name": "Hannah’s Motion Library", "url": "https://kittenjam-motion-library.vercel.app/"}
 shipped = {50: 2, 223: 2, 11: 3, 30: 3, 43: 3, 1: 12, 10: 12, 20: 12, 26: 12, 34: 12}
 components = {207: 10, 208: 9, 209: 11, 339: 4, 340: 6, 341: 4}
-expansions = {8: 5, 176: 7, 210: 8, 6: 13, 19: 13, 21: 13, 29: 13, 35: 13}
+expansions = {8: 5, 176: 7, 210: 8, 6: 13, 19: 13, 21: 13, 29: 13, 35: 13, 48: 14, 49: 14, 52: 14, 53: 14, 54: 14}
 rows = []
 for it in items:
     i = it["id"]; code, target, prio, note = M[i]

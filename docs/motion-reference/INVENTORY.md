@@ -60,6 +60,11 @@
 | `letter-assembly` | 21 | 13 |
 | `blur-in` | 29 | 13 |
 | `kinetic-text-wave` | 35 | 13 |
+| `marquee-text` | 48 | 14 |
+| `marquee-text` | 49 | 14 |
+| `marquee-text` | 52 | 14 |
+| `marquee-text` | 53 | 14 |
+| `marquee-text` | 54 | 14 |
 | `gooey-blob-merge` | 176 | 7 |
 | `pinned-story-panels` | 210 | 8 |
 

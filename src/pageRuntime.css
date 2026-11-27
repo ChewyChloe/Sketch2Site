@@ -2018,3 +2018,26 @@
 [inert] .effect-breathing[data-breathing-pulse]::before { animation-play-state: paused; }
 .effect-breathing[data-breathing-pulse][aria-disabled=true]::before,
 .effect-breathing[data-breathing-pulse]:disabled::before { animation: none; opacity: 0; }
+
+.sig-multiband { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; color: color-mix(in srgb, var(--accent, currentColor) 33%, transparent); }
+.sig-band { position: absolute; display: block; white-space: nowrap; }
+.sig-band-runway { display: flex; width: max-content; }
+.sig-band-runway > span { flex: none; padding-inline-end: 1em; }
+.sig-multiband[data-layout="dual-speed"] > .sig-band { inset-inline: 0; font-size: 1.6em; line-height: 1.05; }
+.sig-multiband[data-layout="dual-speed"] > .sig-band:first-child { inset-block-start: 3%; }
+.sig-multiband[data-layout="dual-speed"] > .sig-band:last-child { inset-block-end: 3%; color: color-mix(in srgb, var(--ink, currentColor) 19%, transparent); }
+.sig-multiband:is([data-layout="counter-columns"], [data-layout="vertical-stack"]) .sig-band { inset-block-start: 0; font-size: 1.15em; }
+.sig-multiband:is([data-layout="counter-columns"], [data-layout="vertical-stack"]) .sig-band-runway { flex-direction: column; }
+.sig-multiband:is([data-layout="counter-columns"], [data-layout="vertical-stack"]) .sig-band-runway > span { writing-mode: vertical-rl; padding-inline-end: 1em; }
+.sig-multiband[data-layout="counter-columns"] > .sig-band:first-child { inset-inline-start: 8%; }
+.sig-multiband[data-layout="counter-columns"] > .sig-band:last-child { inset-inline-end: 9%; }
+.sig-multiband[data-layout="vertical-stack"] > .sig-band:nth-child(1) { inset-inline-start: 26%; }
+.sig-multiband[data-layout="vertical-stack"] > .sig-band:nth-child(2) { inset-inline-start: 43%; opacity: .5; }
+.sig-multiband[data-layout="vertical-stack"] > .sig-band:nth-child(3) { inset-inline-start: 60%; opacity: .75; }
+.sig-multiband[data-layout="vertical-stack"] > .sig-band:nth-child(2) .sig-band-runway > span { -webkit-text-stroke: 1px currentColor; color: color-mix(in srgb, var(--accent, currentColor) 20%, transparent); }
+.sig-multiband[data-layout="layered-rush"] > .sig-band { inset-inline: -8%; }
+.sig-multiband[data-layout="layered-rush"] > .sig-band:nth-child(1) { top: 0; font: 700 1.5em/1.1 var(--pg-heading-font, inherit); rotate: -4deg; }
+.sig-multiband[data-layout="layered-rush"] > .sig-band:nth-child(2) { top: 32%; font: 1em/1.4 ui-monospace, monospace; opacity: .66; }
+.sig-multiband[data-layout="layered-rush"] > .sig-band:nth-child(3) { bottom: 0; font: italic 1.2em/1.2 var(--pg-body-font, serif); rotate: 5deg; opacity: .84; }
+.sig-multiband[data-layout="ribbon-cross"] > .sig-band { inset-inline: -10%; top: calc(50% - .7em); padding-block: .12em; background: color-mix(in srgb, var(--accent, currentColor) 17%, transparent); rotate: 13deg; }
+.sig-multiband[data-layout="ribbon-cross"] > .sig-band:last-child { rotate: -13deg; background: color-mix(in srgb, var(--ink, currentColor) 13%, transparent); }

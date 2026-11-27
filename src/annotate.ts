@@ -45,6 +45,7 @@ const motionWords: [RegExp, MotionId[]][] = [
   [/旗面|伸縮波浪|波浪/, ["kinetic-text-wave"]],
   [/雙向吸附|從兩邊聚合/, ["letter-assembly"]],
   [/拖影|殘影.*入場/, ["blur-in"]],
+  [/雙速橫幅|逆行直欄|疊層急流|三疊直欄|交叉字帶/, ["marquee-text"]],
   [/心跳|脈衝波紋/, ["breathing-glow"]],
   [/滾輪|滾動數字/, ["rolling-characters"]],
   [/數字|遞增|跑數字|倒數/, ["count-up"]],
@@ -131,6 +132,11 @@ function motionPatches(node: PageNode, wanted: MotionId[], replace: boolean, req
       if (id === "letter-assembly" && /吸附|兩邊/.test(request)) custom.arrival = "magnet";
       if (id === "blur-in" && /拖影|殘影/.test(request)) custom.entry = "trail";
       if (id === "breathing-glow" && /心跳|脈衝/.test(request)) custom.pulse = "heartbeat";
+      if (id === "marquee-text") {
+        const layouts = [["雙速橫幅", "dual-speed"], ["逆行直欄", "counter-columns"], ["疊層急流", "layered-rush"], ["三疊直欄", "vertical-stack"], ["交叉字帶", "ribbon-cross"]];
+        const layout = layouts.find(([label]) => request.includes(label))?.[1];
+        if (layout) custom.layout = layout;
+      }
       motion = createMotion(id, node.id, {
         ...defaultControls(id), ...values, ...custom,
         ...(falling && values ? { cadence: "impact", startValue: values.endValue + 3 } : {}),

@@ -26,6 +26,7 @@ export function useSignatureMotion(node: PageNode, ref: RefObject<HTMLElement | 
         const own = node.effects.filter(e => (signatureMotionIds as readonly string[]).includes(e.presetId));
         if (!host || !own.length) return;
         const r = resources(host, reduced);
+        const cleanups: (() => void)[] = [];
         const find = (id: string) => own.find(e => e.presetId === id);
         const n = (e: MotionInstance, key: string, fallback: number) => motionNumber(e, key, fallback);
         const style = getComputedStyle(host);
@@ -62,20 +63,67 @@ export function useSignatureMotion(node: PageNode, ref: RefObject<HTMLElement | 
         // Marquee: the text slides across in a loop; the original stays for screen readers.
         const marquee = find('marquee-text');
         if (marquee && text && !reduced) {
-            const track = document.createElement('span');
-            track.className = 'sig-marquee-track';
-            track.setAttribute('aria-hidden', 'true');
-            for (let k = 0; k < 4; k++) { const item = document.createElement('span'); item.textContent = text; track.append(item); }
-            const box = deco('sig-marquee');
-            box.append(track);
-            r.property(host, 'overflow', 'hidden');
-            r.property(host, 'color', 'transparent');
-            box.style.color = style.color;
-            const speed = n(marquee, 'speedPxPerSecond', 60), dir = marquee.validatedControls.direction === 'right' ? 1 : -1;
-            requestAnimationFrame(() => {
+            const layout = String(marquee.validatedControls.layout ?? 'single');
+            const speed = n(marquee, 'speedPxPerSecond', 60);
+            const dir = marquee.validatedControls.direction === 'right' ? 1 : -1;
+            if (layout === 'single') {
+                const track = document.createElement('span');
+                track.className = 'sig-marquee-track';
+                track.setAttribute('aria-hidden', 'true');
+                for (let k = 0; k < 4; k++) { const item = document.createElement('span'); item.textContent = text; track.append(item); }
+                const box = deco('sig-marquee');
+                box.append(track);
+                r.property(host, 'overflow', 'hidden');
+                r.property(host, 'color', 'transparent');
+                box.style.color = style.color;
                 const width = (track.firstElementChild as HTMLElement | null)?.offsetWidth ?? 200;
                 r.animate(track, [{ transform: `translateX(${dir < 0 ? 0 : -width}px)` }, { transform: `translateX(${dir < 0 ? -width : 0}px)` }], { duration: (width / speed) * 1000, iterations: Infinity, easing: 'linear' });
-            });
+            } else {
+                const vertical = layout === 'counter-columns' || layout === 'vertical-stack';
+                const count = layout === 'layered-rush' || layout === 'vertical-stack' ? 3 : 2;
+                const box = deco('sig-multiband');
+                box.dataset.layout = layout;
+                r.property(host, 'isolation', 'isolate');
+                r.property(host, 'overflow', 'hidden');
+                r.property(host, '--sig-band-height', vertical ? '9em' : '4.1em');
+                if (style.minBlockSize === '0px' || style.minBlockSize === 'auto')
+                    r.property(host, 'min-block-size', 'var(--sig-band-height)');
+                const snippet = Array.from(text.replace(/\s+/g, ' ')).slice(0, 48).join('');
+                for (let index = 0; index < count; index++) {
+                    const band = document.createElement('span'), runway = document.createElement('span');
+                    band.className = 'sig-band';
+                    runway.className = 'sig-band-runway';
+                    band.append(runway);
+                    box.append(band);
+                    const item = () => { const cell = document.createElement('span'); cell.textContent = snippet; return cell; };
+                    const unit = item();
+                    runway.append(unit);
+                    const direction = (layout === 'counter-columns' || layout === 'ribbon-cross') && index % 2 ? -dir : dir;
+                    const tempo = layout === 'dual-speed' ? [0.44, 1.45][index] :
+                        layout === 'layered-rush' ? [0.58, 1.12, 1.7][index] : 0.9;
+                    const move = (distance: number) => vertical ? `0px ${distance}px` : `${distance}px 0px`;
+                    let animation: Animation | null = null, distance = 0;
+                    const sizeTrack = () => {
+                        const span = Math.max(24, vertical ? unit.offsetHeight : unit.offsetWidth);
+                        const visibleSpan = vertical ? box.clientHeight : box.clientWidth;
+                        const repeats = Math.max(4, Math.min(16, Math.ceil(visibleSpan / span) + 2));
+                        while (runway.children.length < repeats) runway.append(item());
+                        while (runway.children.length > repeats) runway.lastElementChild?.remove();
+                        if (span === distance) return;
+                        distance = span;
+                        animation?.cancel();
+                        animation = r.animate(runway, [
+                            { translate: move(direction < 0 ? 0 : -span) },
+                            { translate: move(direction < 0 ? -span : 0) },
+                        ], { duration: Math.max(400, span / (speed * tempo) * 1000), iterations: Infinity, easing: 'linear' });
+                    };
+                    sizeTrack();
+                    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(sizeTrack);
+                    resize?.observe(unit);
+                    resize?.observe(box);
+                    cleanups.push(() => resize?.disconnect());
+                }
+            }
         }
 
         // Gradient text: a slow colour flow through the letters.
@@ -151,6 +199,6 @@ export function useSignatureMotion(node: PageNode, ref: RefObject<HTMLElement | 
             hover(play);
             r.entrance(() => { window.setTimeout(play, 300); });
         }
-        return () => r.dispose();
+        return () => { cleanups.forEach(cleanup => cleanup()); r.dispose(); };
     }, [node, ref, reduced]);
 }

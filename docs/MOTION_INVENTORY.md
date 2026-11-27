@@ -73,7 +73,7 @@
 | `particle-constellation` | 粒子星座連線 / Particle Constellation | 卡片與區塊 | 一直動、滑過時 | 線條圖形 | 互動回饋、營造氣氛 | 強烈 | particles, linkDistancePx, speed | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `elastic-svg-morph` | 彈性圖形變形 / Elastic SVG Morph | 卡片與區塊 | 點擊時 | 彈性 | 互動回饋 | 強烈 | durationMs, shape | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `typewriter` | 打字機 / Typewriter | 文字、按鈕 | 出現時 | 文字逐字 | 引導閱讀 | 輕柔 | charsPerSecond, caret | — | SignatureMotion.tsx |
-| `marquee-text` | 跑馬燈 / Marquee Text | 文字 | 一直動 | 位移滑動 | 吸引注意 | 適中 | speedPxPerSecond, direction | — | SignatureMotion.tsx |
+| `marquee-text` | 跑馬燈 / Marquee Text | 文字 | 一直動 | 位移滑動 | 吸引注意 | 適中 | layout, speedPxPerSecond, direction | — | SignatureMotion.tsx |
 | `gradient-text-flow` | 流光漸層字 / Gradient Text Flow | 文字 | 一直動 | 光影色彩 | 吸引注意 | 輕柔 | palette, cycleMs | — | SignatureMotion.tsx |
 | `blur-in` | 模糊淡入 / Blur In | 文字、圖片、卡片與區塊、按鈕 | 出現時 | 淡入顯現 | 引導閱讀 | 輕柔 | entry, durationMs, blurPx | — | SignatureMotion.tsx |
 | `float-idle` | 輕飄浮動 / Floating Idle | 圖片、卡片與區塊、按鈕 | 一直動 | 位移滑動 | 營造氣氛 | 輕柔 | distancePx, cycleMs | — | SignatureMotion.tsx |
