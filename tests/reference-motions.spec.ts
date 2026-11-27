@@ -28,7 +28,7 @@ test('library previews are live: hover, scroll and replay show the real effect',
     await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await page.getByRole('button', { name: '動畫素材庫', exact: true }).click();
-    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(80);
+    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(85);
     const card = (id: string) => page.locator(`.sidebar [data-effect-id="${id}"]`);
     for (const id of referenceMotionIds) {
         await card(id).scrollIntoViewIfNeeded();
@@ -337,3 +337,30 @@ test("impact countdown lands on successive numbers and respects Reduced Motion",
     await expect(visual).toHaveText('7');
     await expect.poll(() => visual.evaluate(el => el.getAnimations().length)).toBe(0);
 });
+
+for (const [id, key, value] of [
+    ["cutout-ticks", "easing", "steps(1)"],
+    ["sign-pivot", "rotate", "7deg"],
+    ["quiet-landing", "translate", "-7px"],
+    ["storm-landing", "scale", "0.83"],
+    ["inverse-spring", "translate", "-15px"],
+] as const) {
+    test(`${id}: text movement renders real keyframes and reduces to static original`, async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 900 });
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+        const done = await load(page, true);
+        const element = target(page, id);
+        await element.scrollIntoViewIfNeeded();
+        await expect.poll(() => element.evaluate((node, property) =>
+            node.getAnimations().flatMap(animation => (animation.effect as KeyframeEffect).getKeyframes().map(frame => String(frame[property]))).join(" "),
+            key
+        )).toContain(value);
+        const original = await element.textContent();
+        if (id === "storm-landing") await expect(element.locator(".ref-storm-mark")).toHaveCount(0);
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await expect.poll(() => element.evaluate(el => el.getAnimations().length)).toBe(0);
+        await expect(element).toHaveText(original ?? "");
+        expect(await page.locator(".preview-frame").evaluate(frame => frame.scrollWidth <= frame.clientWidth)).toBe(true);
+        done();
+    });
+}

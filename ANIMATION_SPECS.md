@@ -67,6 +67,11 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | pinned-story-panels | 分鏡敘事面板 | DONE | 資訊 | high |
 | particle-constellation | 粒子星座連線 | DONE | 互動 | high |
 | elastic-svg-morph | 彈性圖形變形 | DONE | 內容 | high |
+| cutout-ticks | 剪紙頓拍 | DONE | 內容 | low |
+| sign-pivot | 懸牌擺弧 | DONE | 內容 | low |
+| quiet-landing | 顫波止步 | DONE | 進場 | low |
+| storm-landing | 雷痕落字 | DONE | 進場 | low |
+| inverse-spring | 逆重力跳點 | DONE | 進場 | low |
 
 ## 淡入 / Fade In
 
@@ -1859,3 +1864,149 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 **constraints**：8段相容二次曲線座標插值，不接受外部Path，彈性進度受限；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
 
 **reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
+
+
+## 剪紙頓拍 / Cutout Ticks
+
+- Preset: `cutout-ticks` / version 1
+- 狀態：DONE
+- 說明：短句在幾個錯位角度間跳拍，中間保留清楚的定格。
+- 適用：海報與短標題
+- targetType：text、heading、paragraph
+- interactionType：idle-loop
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：cutout-ticks
+- tags：內容、海報與短標題
+- rendererMapping：cutout-ticks
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| travelPx | 水平幅度 | number | 5 | 2–12; step 1 |
+| cycleMs | 一輪時長（毫秒） | number | 1400 | 800–3400; step 1 |
+
+**designIntent**：原文停在離散的錯位影格。
+
+**implementationBrief**：映射有界停格位移；保持原本文案與閱讀順序。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：每格明確停留；原文持續可讀
+
+**reducedMotionFallback**：固定原位
+
+## 懸牌擺弧 / Sign Pivot
+
+- Preset: `sign-pivot` / version 1
+- 狀態：DONE
+- 說明：文字像掛起的招牌，繞著上方支點左右擺。
+- 適用：迎賓短句與招牌標題
+- targetType：text、heading、paragraph
+- interactionType：idle-loop
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：sign-pivot
+- tags：內容、迎賓短句與招牌標題
+- rendererMapping：sign-pivot
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| angleDeg | 擺角（度） | number | 7 | 3–15; step 1 |
+| cycleMs | 來回時間（毫秒） | number | 3000 | 1800–6500; step 1 |
+
+**designIntent**：短文字繞上方支點緩慢回擺。
+
+**implementationBrief**：只映射受控擺角和時長，離屏暫停。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：支點位於上方；離屏暫停
+
+**reducedMotionFallback**：保持直立
+
+## 顫波止步 / Quiet Landing
+
+- Preset: `quiet-landing` / version 1
+- 狀態：DONE
+- 說明：文字進場時有幾次逐漸縮小的顫動，最後在原位停住。
+- 適用：活動字標和重點短句
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：quiet-landing
+- tags：進場、活動字標和重點短句
+- rendererMapping：quiet-landing
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| travelPx | 初始震幅（像素） | number | 10 | 4–16; step 1 |
+| durationMs | 歸位時間（毫秒） | number | 720 | 400–1400; step 1 |
+
+**designIntent**：原文進場時顫動並逐漸歸位。
+
+**implementationBrief**：映射有限次逐漸衰減的位移，保留原文。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：震幅遞減；可見時播放一次
+
+**reducedMotionFallback**：固定原位
+
+## 雷痕落字 / Storm Landing
+
+- Preset: `storm-landing` / version 1
+- 狀態：DONE
+- 說明：短標題從上方落下，在觸地時打出一道主題色亮痕。
+- 適用：演出標題與活動消息
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：storm-landing
+- tags：進場、演出標題與活動消息
+- rendererMapping：storm-landing
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| travelPx | 落下距離（像素） | number | 22 | 12–40; step 1 |
+| durationMs | 進場時間（毫秒） | number | 700 | 450–1200; step 1 |
+
+**designIntent**：短標題落下，出現一次低亮度主題色痕。
+
+**implementationBrief**：只保留原始文字與受控落下距離。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：一次低亮度落點；原文不消失
+
+**reducedMotionFallback**：固定原位
+
+## 逆重力跳點 / Inverse Spring
+
+- Preset: `inverse-spring` / version 1
+- 狀態：DONE
+- 說明：文字從原位往上彈兩次，第二次反彈較低。
+- 適用：俏皮品牌與短標語
+- targetType：text、heading、paragraph
+- interactionType：scroll-enter
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：inverse-spring
+- tags：進場、俏皮品牌與短標語
+- rendererMapping：inverse-spring
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| travelPx | 最高反彈（像素） | number | 15 | 6–26; step 1 |
+| durationMs | 雙拍時長（毫秒） | number | 760 | 520–1400; step 1 |
+
+**designIntent**：從正常位置上彈兩次，第二次幅度較低。
+
+**implementationBrief**：原文留在原有節點，只映射受控進場。
+
+**compatibilityRules**：適用短文字
+
+**constraints**：兩次不等高的上彈；可見時播放一次
+
+**reducedMotionFallback**：保持原位

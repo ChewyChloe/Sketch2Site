@@ -22,7 +22,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "storm-landing",
    "priority": "P4",
    "note": "文字重落進場",
    "credit": [
@@ -35,6 +35,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 12,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -230,7 +231,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "cutout-ticks",
    "priority": "P4",
    "note": "定格晃動",
    "credit": [
@@ -243,6 +244,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 12,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -461,7 +463,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "inverse-spring",
    "priority": "P4",
    "note": "反重力彈跳",
    "credit": [
@@ -474,6 +476,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 12,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -599,7 +602,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "sign-pivot",
    "priority": "P4",
    "note": "鐘擺搖晃",
    "credit": [
@@ -612,6 +615,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 12,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -784,7 +788,7 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "quiet-landing",
    "priority": "P4",
    "note": "顫抖後穩定",
    "credit": [
@@ -797,6 +801,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedBatch": 12,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

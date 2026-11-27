@@ -152,6 +152,9 @@ export function combinationReason(effects: readonly Pick<MotionInstance, "preset
     if(ids.has('color-wake')&&['pixel-dissolve','liquid-distortion-reveal','glitch-slice-reveal'].some(id=>ids.has(id as MotionId)))return '褪色回彩不能和會重畫圖片的動畫一起用';
     if (["crosswind-ribbons", "drift-letterfall", "turning-letter-mosaic", "imprint-beats"]
         .filter(id => ids.has(id as MotionId)).length > 1) return "同一段文字只能使用一種背景動態";
+    const textTravel: MotionId[] = ["cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring"];
+    if (textTravel.some(id => ids.has(id)) && ([...textTravel, "float-idle", "slide-up", "scale-in", "hover-lift", "blur-in"] as const)
+        .filter(id => ids.has(id)).length > 1) return "同一段文字只能使用一種位置動態";
     if (ids.has("crosswind-ribbons") && ids.has("marquee-text")) return "同一段文字只能使用一種字帶";
     if(ids.has('chart-build')&&effects.length>1)return '圖表動畫不能和其他動畫一起用';
     if(ids.has('blur-in')&&['fade-in','slide-up','scale-in'].some(id=>ids.has(id as MotionId)))return '進場效果一次只能套用一種';

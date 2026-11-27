@@ -8,7 +8,7 @@
 - 編輯器：AnimationLibrary.tsx（素材庫）、MotionControls.tsx（參數）
 - 匯出：exportProject.ts 把 runtime 原始碼一起放進 React 專案
 
-共 80 種。
+共 85 種。
 
 | ID | 名稱 | 用在 | 什麼時候動 | 樣子 | 想達成 | 程度 | 參數 | 鍵盤 | Runtime |
 |---|---|---|---|---|---|---|---|---|---|
@@ -92,3 +92,8 @@
 | `imprint-beats` | 印記拍點 / Imprint Beats | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | imprintMs, stepMs | — | ReferenceMotion.tsx |
 | `drift-letterfall` | 字雨垂幕 / Drift Letterfall | 文字 | 一直動 | 位移滑動 | 營造氣氛 | 適中 | cycleMs, lanes | — | ReferenceMotion.tsx |
 | `turning-letter-mosaic` | 翻頁字磚 / Turning Letter Mosaic | 文字 | 一直動 | 立體 | 營造氣氛 | 適中 | cycleMs, columns | — | ReferenceMotion.tsx |
+| `cutout-ticks` | 剪紙頓拍 / Cutout Ticks | 文字 | 一直動 | 位移滑動 | 營造氣氛 | 輕柔 | travelPx, cycleMs | — | ReferenceMotion.tsx |
+| `sign-pivot` | 懸牌擺弧 / Sign Pivot | 文字 | 一直動 | 位移滑動 | 營造氣氛 | 輕柔 | angleDeg, cycleMs | — | ReferenceMotion.tsx |
+| `quiet-landing` | 顫波止步 / Quiet Landing | 文字 | 出現時 | 位移滑動 | 引導閱讀 | 輕柔 | travelPx, durationMs | — | ReferenceMotion.tsx |
+| `storm-landing` | 雷痕落字 / Storm Landing | 文字 | 出現時 | 位移滑動 | 引導閱讀 | 輕柔 | travelPx, durationMs | — | ReferenceMotion.tsx |
+| `inverse-spring` | 逆重力跳點 / Inverse Spring | 文字 | 出現時 | 位移滑動 | 引導閱讀 | 輕柔 | travelPx, durationMs | — | ReferenceMotion.tsx |

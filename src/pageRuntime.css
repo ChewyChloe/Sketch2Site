@@ -1993,3 +1993,5 @@
     }
   }
 }
+
+.ref-storm-mark { position: absolute; bottom: 0; inset-inline: 15%; height: .12em; background: color-mix(in srgb, var(--accent, currentColor) 60%, transparent); pointer-events: none; opacity: 0; }

@@ -152,6 +152,23 @@ export const motionCatalog: Record<MotionId, MotionDefinition> = {
       columns: number("格陣欄數", 4, 3, 5),
     }, ["最多十五格", "離屏暫停"], "背景字感靜止", "適用文字元件"),
 
+    "cutout-ticks": define("cutout-ticks", ref("cutout-ticks").nameZh, ref("cutout-ticks").nameEn, "內容", ref("cutout-ticks").intro, "海報與短標題", ["text", "heading", "paragraph"], "low", ["idle-loop"], {
+      travelPx: number("水平幅度", 5, 2, 12), cycleMs: number("一輪時長（毫秒）", 1400, 800, 3400),
+    }, ["每格明確停留", "原文持續可讀"], "固定原位", "適用短文字"),
+    "sign-pivot": define("sign-pivot", ref("sign-pivot").nameZh, ref("sign-pivot").nameEn, "內容", ref("sign-pivot").intro, "迎賓短句與招牌標題", ["text", "heading", "paragraph"], "low", ["idle-loop"], {
+      angleDeg: number("擺角（度）", 7, 3, 15), cycleMs: number("來回時間（毫秒）", 3000, 1800, 6500),
+    }, ["支點位於上方", "離屏暫停"], "保持直立", "適用短文字"),
+    "quiet-landing": define("quiet-landing", ref("quiet-landing").nameZh, ref("quiet-landing").nameEn, "進場", ref("quiet-landing").intro, "活動字標和重點短句", ["text", "heading", "paragraph"], "low", ["scroll-enter"], {
+      travelPx: number("初始震幅（像素）", 10, 4, 16), durationMs: number("歸位時間（毫秒）", 720, 400, 1400),
+    }, ["震幅遞減", "可見時播放一次"], "固定原位", "適用短文字"),
+
+    "storm-landing": define("storm-landing", ref("storm-landing").nameZh, ref("storm-landing").nameEn, "進場", ref("storm-landing").intro, "演出標題與活動消息", ["text", "heading", "paragraph"], "low", ["scroll-enter"], {
+      travelPx: number("落下距離（像素）", 22, 12, 40), durationMs: number("進場時間（毫秒）", 700, 450, 1200),
+    }, ["一次低亮度落點", "原文不消失"], "固定原位", "適用短文字"),
+    "inverse-spring": define("inverse-spring", ref("inverse-spring").nameZh, ref("inverse-spring").nameEn, "進場", ref("inverse-spring").intro, "俏皮品牌與短標語", ["text", "heading", "paragraph"], "low", ["scroll-enter"], {
+      travelPx: number("最高反彈（像素）", 15, 6, 26), durationMs: number("雙拍時長（毫秒）", 760, 520, 1400),
+    }, ["兩次不等高的上彈", "可見時播放一次"], "保持原位", "適用短文字"),
+
 };
 export function controlsSchema(id: MotionId) {
     const fields: Record<string, z.ZodType> = {};

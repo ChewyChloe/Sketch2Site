@@ -315,6 +315,58 @@ export function useReferenceMotion(node: PageNode, ref: RefObject<HTMLElement | 
                 ], { duration, delay: -duration + diagonal * duration * .06, iterations: Infinity });
             }
         }
+        const ticks = find("cutout-ticks");
+        if (ticks && text) {
+            const dx = n(ticks, "travelPx", 5);
+            r.animate(host, [
+                { translate: "0px", rotate: "0deg", easing: "steps(1, end)" },
+                { translate: `${dx}px -1px`, rotate: "2deg", easing: "steps(1, end)" },
+                { translate: `${-dx}px 2px`, rotate: "-2deg", easing: "steps(1, end)" },
+                { translate: `${dx / 2}px`, rotate: "1deg", easing: "steps(1, end)" },
+                { translate: "0px", rotate: "0deg" },
+            ], { duration: n(ticks, "cycleMs", 1400), iterations: Infinity });
+        }
+        const pivot = find("sign-pivot");
+        if (pivot && text) {
+            const angle = n(pivot, "angleDeg", 7), transformOrigin = "50% -45%";
+            r.animate(host, [
+                { rotate: `${-angle}deg`, transformOrigin, easing: "ease-in-out" },
+                { rotate: `${angle}deg`, transformOrigin, easing: "ease-in-out" },
+                { rotate: `${-angle}deg`, transformOrigin },
+            ], { duration: n(pivot, "cycleMs", 3000), iterations: Infinity });
+        }
+        const settle = find("quiet-landing");
+        if (settle && text) r.entrance(() => {
+            const dx = n(settle, "travelPx", 10);
+            const frames = [1, -.7, .42, -.23, .12, 0].map(t => ({ translate: `${t * dx}px ${Math.abs(t) * -3}px` }));
+            r.animate(host, frames, { duration: n(settle, "durationMs", 720), easing: "ease-out" });
+        });
+        const storm = find("storm-landing");
+        if (storm && text && !reduced) r.entrance(() => {
+            const y = n(storm, "travelPx", 22), duration = n(storm, "durationMs", 700);
+            const strike = deco("ref-storm-mark");
+            r.animate(host, [
+                { translate: `0 -${y}px`, scale: "1 1.14", easing: "cubic-bezier(.5, .04, .9, .7)" },
+                { translate: "0 0", scale: "1 .83", offset: .62 },
+                { translate: "0 0", scale: "1 1", offset: .88 },
+                { translate: "0 0", scale: "1 1" },
+            ], { duration });
+            const light = r.animate(strike, [
+                { opacity: 0, scale: ".2 1" }, { opacity: 1, scale: "1 1", offset: .27 }, { opacity: 0, scale: "1.1 .3" },
+            ], { duration: duration * .45, delay: duration * .6 });
+            light?.addEventListener("finish", () => r.remove(strike), { once: true });
+        });
+        const reverse = find("inverse-spring");
+        if (reverse && text) r.entrance(() => {
+            const y = n(reverse, "travelPx", 15);
+            r.animate(host, [
+                { translate: "0 0", easing: "ease-out" },
+                { translate: `0 -${y}px`, offset: .25, easing: "ease-in" },
+                { translate: "0 0", offset: .5, easing: "ease-out" },
+                { translate: `0 -${Math.round(y * .45)}px`, offset: .7, easing: "ease-in" },
+                { translate: "0 0", offset: .91 }, { translate: "0 0" },
+            ], { duration: n(reverse, "durationMs", 760) });
+        });
         return () => { r.dispose(); cleanups.reverse().forEach(f => f()); };
     }, [node, ref, reduced, assetKey, preview]); // eslint-disable-line react-hooks/exhaustive-deps
 }

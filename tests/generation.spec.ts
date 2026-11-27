@@ -312,10 +312,11 @@ test("Mock generation retains authored background motions with their controls", 
   heading.effects = [createMotion("crosswind-ribbons", heading.id, { angleDeg: 18 })];
   card.effects = [createMotion("vanishing-lattice", card.id, { spacingPx: 36 })];
   const { createNode } = await import("../src/spec");
-  for (const [index, preset] of ["drift-letterfall", "turning-letter-mosaic", "imprint-beats"].entries()) {
+  const presets = ["drift-letterfall", "turning-letter-mosaic", "imprint-beats", "cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring"] as const;
+  for (const [index, preset] of presets.entries()) {
     const node = createNode("text", 80, 520 + index * 96);
     node.content = "機制驗證：風格由網站主題決定";
-    node.effects = [createMotion(preset as "drift-letterfall" | "turning-letter-mosaic" | "imprint-beats", node.id)];
+    node.effects = [createMotion(preset, node.id)];
     canvas.nodes.push(node);
   }
   await seed(page, canvas);
@@ -325,6 +326,6 @@ test("Mock generation retains authored background motions with their controls", 
   const preview = candidate.locator(".preview-frame");
   await expect(preview.locator(`[data-page-id="${heading.id}"] .ref-ribbons`)).toHaveCSS("--ribbon-angle", "18deg");
   await expect(preview.locator(`[data-page-id="${card.id}"] .ref-lattice-floor`)).toHaveCSS("--lattice-gap", "36px");
-  for (const node of canvas.nodes.slice(-3))
+  for (const node of canvas.nodes.slice(-presets.length))
     await expect(preview.locator(`[data-page-id="${node.id}"]`)).toHaveAttribute("data-effects", node.effects[0].presetId);
 });

@@ -84,6 +84,11 @@ const briefs: Record<MotionId, [
     "imprint-beats": ["保留原文後的短暫印記節奏。", "映射固定數量的依序印記；原文保持可讀。"],
     "drift-letterfall": ["保留原文後面的分道落字。", "映射有限字元在主題色背景中循環；不得改字。"],
     "turning-letter-mosaic": ["保留原文後的對角字磚動態。", "映射固定欄數的字磚翻轉；不得改欄位布局或原文。"],
+    "cutout-ticks": ["原文停在離散的錯位影格。", "映射有界停格位移；保持原本文案與閱讀順序。"],
+    "sign-pivot": ["短文字繞上方支點緩慢回擺。", "只映射受控擺角和時長，離屏暫停。"],
+    "quiet-landing": ["原文進場時顫動並逐漸歸位。", "映射有限次逐漸衰減的位移，保留原文。"],
+    "storm-landing": ["短標題落下，出現一次低亮度主題色痕。", "只保留原始文字與受控落下距離。"],
+    "inverse-spring": ["從正常位置上彈兩次，第二次幅度較低。", "原文留在原有節點，只映射受控進場。"],
 };
 export const serverMotionRegistry = Object.fromEntries(motionIds.map(id => [id, { ...motionCatalog[id], designIntent: briefs[id][0], implementationBrief: briefs[id][1] }])) as Record<MotionId, typeof motionCatalog[MotionId] & {
     designIntent: string;

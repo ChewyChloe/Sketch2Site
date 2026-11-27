@@ -36,7 +36,7 @@ export const ReferenceMotionSchema = z
     performance: z.array(z.string()).min(1),
     reducedMotion: z.string().min(2),
     inspiration: z.array(Inspiration).min(1),
-    batch: z.number().int().min(1).max(9),
+    batch: z.number().int().min(1),
     status: z.enum(["DONE", "PLANNED"]),
   })
   .strict();
@@ -446,10 +446,55 @@ const list: ReferenceMotion[] = [
     performance: ["最多十五格", "離屏或分頁隱藏暫停"],
     reducedMotion: "背景字磚保持靜止", inspiration: [ref(30)], batch: 3, status: "DONE",
   },
+  {
+    id: "cutout-ticks", nameZh: "剪紙頓拍", nameEn: "Cutout Ticks",
+    intro: "短句在幾個錯位角度間跳拍，中間保留清楚的定格。",
+    behaviour: ["原文在離散影格間跳動", "每個影格先停留，再瞬間切換位置"],
+    targets: ["text", "heading", "paragraph"], triggers: ["可見時循環"],
+    timing: "停格節拍持續循環", params: ["水平幅度", "一輪時長"],
+    performance: ["只改變原文字容器", "離屏或分頁隱藏時暫停"],
+    reducedMotion: "原文留在正常位置", inspiration: [ref(10)], batch: 12, status: "DONE",
+  },
+  {
+    id: "sign-pivot", nameZh: "懸牌擺弧", nameEn: "Sign Pivot",
+    intro: "文字像掛起的招牌，繞著上方支點左右擺。",
+    behaviour: ["上方支點固定不追隨文字", "文字在弧線兩端減速再回擺"],
+    targets: ["text", "heading", "paragraph"], triggers: ["可見時循環"],
+    timing: "兩端緩入緩出", params: ["擺角", "來回時間"],
+    performance: ["單一文字容器旋轉", "離屏或分頁隱藏時暫停"],
+    reducedMotion: "原文保持直立", inspiration: [ref(26)], batch: 12, status: "DONE",
+  },
+  {
+    id: "quiet-landing", nameZh: "顫波止步", nameEn: "Quiet Landing",
+    intro: "文字進場時有幾次逐漸縮小的顫動，最後在原位停住。",
+    behaviour: ["首次進場震幅逐次下降", "一輪完成後原文回到初始位置"],
+    targets: ["text", "heading", "paragraph"], triggers: ["進入畫面"],
+    timing: "隨幅度遞減播放一次", params: ["初始震幅", "歸位時間"],
+    performance: ["單一容器位移", "離屏暫停並在卸載後清理"],
+    reducedMotion: "直接顯示原文字與位置", inspiration: [ref(34)], batch: 12, status: "DONE",
+  },
+  {
+    id: "storm-landing", nameZh: "雷痕落字", nameEn: "Storm Landing",
+    intro: "短標題從上方落下，在觸地時打出一道主題色亮痕。",
+    behaviour: ["文字短距落下並壓縮後恢復", "落點只出現一次低亮度色帶"],
+    targets: ["text", "heading", "paragraph"], triggers: ["進入畫面"],
+    timing: "先下墜，再出現一筆低亮度落點", params: ["落下距離", "進場時間"],
+    performance: ["一個裝飾色帶", "單次亮痕且不覆蓋整個視窗"],
+    reducedMotion: "直接顯示原文字與正常位置", inspiration: [ref(1)], batch: 12, status: "DONE",
+  },
+  {
+    id: "inverse-spring", nameZh: "逆重力跳點", nameEn: "Inverse Spring",
+    intro: "文字從原位往上彈兩次，第二次反彈較低。",
+    behaviour: ["第一拍從原位朝上跳", "第二拍高度縮小並回到基線"],
+    targets: ["text", "heading", "paragraph"], triggers: ["進入畫面"],
+    timing: "一次有兩個不等高的峰值", params: ["最高反彈", "雙拍時長"],
+    performance: ["原文不拆成字元", "可見時播放一次"],
+    reducedMotion: "不位移，保留原文字", inspiration: [ref(20)], batch: 12, status: "DONE",
+  },
 ];
 
 export const referenceMotions: readonly ReferenceMotion[] = z.array(ReferenceMotionSchema).parse(list);
 export const referenceMotion = (id: string) => referenceMotions.find((m) => m.id === id);
 /** Only motions that are built end to end. */
-export const referenceMotionIds = ["dolly-frame", "color-wake", "scroll-ink-words", "hollow-fill-sweep", "letter-windows", "bold-relay", "chart-build", "crosswind-ribbons", "vanishing-lattice", "imprint-beats", "drift-letterfall", "turning-letter-mosaic"] as const;
+export const referenceMotionIds = ["dolly-frame", "color-wake", "scroll-ink-words", "hollow-fill-sweep", "letter-windows", "bold-relay", "chart-build", "crosswind-ribbons", "vanishing-lattice", "imprint-beats", "drift-letterfall", "turning-letter-mosaic", "cutout-ticks", "sign-pivot", "quiet-landing", "storm-landing", "inverse-spring"] as const;
 export type ReferenceMotionId = (typeof referenceMotionIds)[number];
