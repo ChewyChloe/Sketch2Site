@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blank, CanvasSchema, createNode, type CanvasNode, type CanvasSpec } from "./spec";
-import { alignSelection, distribute, fitHeights, reorder, snapBox, spacingAround, toggleLock } from "./layoutTools";
+import { alignSelection, distribute, fitHeights, reorder, snapBox, spacingAround, spacingTo, toggleLock } from "./layoutTools";
 
 const box = (x: number, y: number, width = 100, height = 50, type: CanvasNode["type"] = "text") => ({ ...createNode(type, x, y), width, height });
 const draft = (...nodes: CanvasNode[]): CanvasSpec => CanvasSchema.parse({ ...blank(), nodes });
@@ -85,4 +85,10 @@ describe("Alt distances", () => {
     expect(by("v", 140)?.length).toBe(160); // the box above ends at 140
     expect(by("v", 350)?.length).toBe(850); // canvas bottom
   });
+});
+
+it("measures both gaps to a diagonal target and padding inside a container", () => {
+  const box = { x: 50, y: 60, width: 100, height: 70 };
+  expect(spacingTo(box, { x: 190, y: 180, width: 70, height: 80 }).map(x => [x.axis, x.length])).toEqual([["h", 40], ["v", 50]]);
+  expect(spacingTo(box, { x: 20, y: 40, width: 200, height: 160 }).map(x => [x.axis, x.length])).toEqual([["h", 30], ["h", 70], ["v", 20], ["v", 70]]);
 });

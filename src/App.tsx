@@ -30,7 +30,7 @@ import { MediaView } from "./MediaRuntime";
 import { carryLocks } from "./sectionLock";
 import { PageSchema } from "./pageSpec";
 import { MediaControls } from "./MediaControls";
-import { alignSelection, distribute, fitHeights, reorder, snapBox, spacingAround, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
+import { alignSelection, distribute, fitHeights, reorder, snapBox, spacingAround, spacingTo, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {
@@ -238,6 +238,7 @@ export default function App() {
   const [guides, setGuides] = useState<Guide[]>([]);
   // Holding Alt shows the distances from the selected element to its neighbours and the canvas edges.
   const [altHeld, setAltHeld] = useState(false);
+  const [spacingTarget, setSpacingTarget] = useState<string | null>(null);
   useEffect(() => {
     const down = (e: KeyboardEvent) => { if (e.key === "Alt") setAltHeld(true); };
     const up = (e: KeyboardEvent) => { if (e.key === "Alt") setAltHeld(false); };
@@ -2007,7 +2008,10 @@ node ? (
                       setMarquee({ x0: x, y0: y, x1: x, y1: y, additive: e.shiftKey });
                       e.currentTarget.setPointerCapture(e.pointerId);
                     }}
+                    onPointerLeave={() => setSpacingTarget(null)}
                     onPointerMove={(e) => {
+                      const target = (e.target as Element).closest<HTMLElement>("[data-node-id]");
+                      setSpacingTarget(target?.dataset.nodeId ?? null);
                       if (!marquee) return;
                       const r = e.currentTarget.getBoundingClientRect();
                       setMarquee({ ...marquee, x1: (e.clientX - r.left) / scale, y1: (e.clientY - r.top) / scale });
@@ -2042,10 +2046,12 @@ node ? (
                       if (!chosen.length) return null;
                       const x = Math.min(...chosen.map((n) => n.x)), y = Math.min(...chosen.map((n) => n.y));
                       const box = { x, y, width: Math.max(...chosen.map((n) => n.x + n.width)) - x, height: Math.max(...chosen.map((n) => n.y + n.height)) - y };
-                      return spacingAround(box, displayedNodes.filter((n) => !chosen.includes(n)), { width: 1440, height: spec.metadata.height }).map((m, i) => (
+                      const hovered = displayedNodes.find(n => n.id === spacingTarget && !chosen.includes(n));
+                      const gaps = hovered ? spacingTo(box, hovered) : spacingAround(box, displayedNodes.filter(n => !chosen.includes(n)), { width: 1440, height: spec.metadata.height });
+                      return gaps.map((m, i) => (
                         <div key={"sp" + i} className={"spacing-line " + m.axis} aria-hidden="true"
-                          style={m.axis === "h" ? { left: Math.min(m.x1, m.x2), top: m.y1, width: m.length } : { top: Math.min(m.y1, m.y2), left: m.x1, height: m.length }}>
-                          <span className="spacing-label" style={{ "--s": scale } as CSSProperties}>{m.length}</span>
+                          style={m.axis === "h" ? { left: Math.min(m.x1, m.x2), top: m.y1, width: Math.abs(m.x2-m.x1) } : { top: Math.min(m.y1, m.y2), left: m.x1, height: Math.abs(m.y2-m.y1) }}>
+                          <span className="spacing-label" style={{ "--s": scale } as CSSProperties}>{m.length} px</span>
                         </div>
                       ));
                     })()}

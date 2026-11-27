@@ -180,3 +180,26 @@ export function spacingAround(box: Box, others: readonly Box[], canvas: { width:
   push({ axis: "v", y1: box.y + box.height, y2: bottom ? bottom.y : canvas.height, x1: midH(bottom), x2: midH(bottom) });
   return out;
 }
+
+/** Canvas-space gaps to a specific hovered box, including padding to an enclosing container. */
+export function spacingTo(box: Box, target: Box): Spacing[] {
+  const result: Spacing[] = [];
+  const add = (axis: "h" | "v", start: number, end: number, cross: number) => {
+    const length = Math.round(Math.abs(end - start));
+    if (!length) return;
+    result.push(axis === "h" ? { axis, x1: start, x2: end, y1: cross, y2: cross, length }
+      : { axis, x1: cross, x2: cross, y1: start, y2: end, length });
+  };
+  const measure = (axis: "h" | "v", a: number, b: number, c: number, d: number, cross: number) => {
+    if (b <= c) add(axis, b, c, cross);
+    else if (d <= a) add(axis, d, a, cross);
+    else if (c <= a && b <= d) {
+      add(axis, c, a, cross);
+      add(axis, b, d, cross);
+    }
+  };
+  const midpoint = (a: number, b: number, c: number, d: number) => (Math.max(a, c) + Math.min(b, d)) / 2;
+  measure("h", box.x, box.x + box.width, target.x, target.x + target.width, midpoint(box.y, box.y + box.height, target.y, target.y + target.height));
+  measure("v", box.y, box.y + box.height, target.y, target.y + target.height, midpoint(box.x, box.x + box.width, target.x, target.x + target.width));
+  return result;
+}
