@@ -16,6 +16,7 @@ import {
   type PageSpec,
   type PageNode,
 } from "./pageSpec";
+import { lockViolation, SectionLockSchema } from "./sectionLock";
 import {
   commitHistory,
   undoHistory,
@@ -127,6 +128,14 @@ export const PatchSchema = z.discriminatedUnion("operation", [
     .strict(),
   z
     .object({
+      // The author locks or unlocks parts of a section.
+      operation: z.literal("set-lock"),
+      targetId,
+      payload: z.object({ lock: SectionLockSchema }).strict(),
+    })
+    .strict(),
+  z
+    .object({
       operation: z.literal("remove-effect"),
       targetId,
       payload: z.object({ effectId: z.enum(effectIds) }).strict(),
@@ -172,7 +181,8 @@ export type PatchError =
   | "TARGET_NOT_FOUND"
   | "PROPERTY_NOT_ALLOWED"
   | "EFFECT_CONFLICT"
-  | "SCOPE_VIOLATION";
+  | "SCOPE_VIOLATION"
+  | "LOCKED";
 export const patchMessages: Record<PatchError, string> = {
   INVALID_PATCH: "數值不對，請檢查後再試",
   INVALID_PAGE: "這樣改不了，頁面沒有變動",
@@ -181,6 +191,7 @@ export const patchMessages: Record<PatchError, string> = {
   PROPERTY_NOT_ALLOWED: "此元素不支援這項修改",
   EFFECT_CONFLICT: "動畫不存在或已附加，請重新檢查",
   SCOPE_VIOLATION: "這樣改不了，頁面沒有變動",
+  LOCKED: "這一區已鎖定，這樣改會動到鎖住的內容",
 };
 export function indexNodes(page: PageSpec) {
   const map = new Map<string, PageNode>();
@@ -217,6 +228,7 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
     )
       structureChanged = true;
     for (const key of [
+      "lock",
       "content",
       "level",
       "href",
@@ -312,6 +324,8 @@ function authorized(patch: Patch, change: Change): boolean {
       return change.property === "theme";
     case "replace-section":
       return false; // its changes are checked as a whole in validateScope
+    case "set-lock":
+      return change.property === "lock";
     case "set-property":
       return change.property === patch.payload.property;
     case "set-style":
@@ -448,6 +462,7 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
     }
     case "set-theme": return node;
     case "replace-section": return node;
+    case "set-lock": return node.type === "section" ? (Object.values(p.payload.lock).some(Boolean) ? { ...node, lock: p.payload.lock } : (({ lock: _l, ...rest }) => (void _l, rest))(node)) : "PROPERTY_NOT_ALLOWED";
     case "remove-effect": return !node.effects.some(e=>e.presetId===p.payload.effectId)?"EFFECT_CONFLICT":{...node,effects:node.effects.filter(e=>e.presetId!==p.payload.effectId)};
   }
 }
@@ -499,6 +514,8 @@ export function applyPatchBatch(
       // Only the site's own pictures and links.
       const own = pagePools(original), next = pagePools({ ...candidate, sections: [p.payload.section], subpages: undefined });
       if ([...next.pictures].some((x) => !own.pictures.has(x)) || [...next.links].some((x) => !own.links.has(x))) return fail("SCOPE_VIOLATION");
+      // A rewrite may not touch what the author locked, nor change the lock itself.
+      if (JSON.stringify(target.lock ?? {}) !== JSON.stringify(p.payload.section.lock ?? {}) || lockViolation(target, p.payload.section)) return fail("LOCKED");
       const swap = (n: PageNode) => (n.id === p.targetId ? p.payload.section : n);
       candidate = { ...candidate, sections: candidate.sections.map(swap), ...(candidate.subpages ? { subpages: candidate.subpages.map((x) => ({ ...x, sections: x.sections.map(swap) })) } : {}) };
       if (!PageSchema.safeParse(candidate).success) return fail("INVALID_PAGE");

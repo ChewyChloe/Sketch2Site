@@ -34,6 +34,8 @@ import { AnnotationBubble, typeNames as annotationNames } from "./AnnotationBubb
 import { LayerTree } from "./LayerTree";
 import { SiteToolbar } from "./SiteToolbar";
 import { NoteMarkers, NoteTray, type StagedNote, type NoteBrief } from "./NoteBatch";
+import { sectionOf } from "./sectionRewrite";
+import { lockLabels } from "./sectionLock";
 import { pickableThemes, themeIds, themeLabels, allSections } from "./pageSpec";
 function changeLabel(c: Change) {
   return c.property === "style.align"
@@ -70,6 +72,8 @@ function valueLabel(value: unknown): string {
 }
 export type PreviewHandle = {
   target(): { sessionId: string; revision: number } | null;
+  /** The site as it is now (null before one is saved or while it loads). */
+  site(): import("./pageSpec").PageSpec | null;
   /** replacing: a site built earlier is being replaced, so offer 換回上一版 afterwards. */
   accept(
     page: import("./pageSpec").PageSpec,
@@ -106,6 +110,7 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
     if (after !== before && !quiet) onSiteChange?.(before, after);
   };
   useImperativeHandle(ref, () => ({
+    site: () => (ready && !loadError ? current.current.history.present : null),
     target: () =>
       pendingEdits.current ? null : persistence.generationTarget(),
     accept: async (page, target, replacing) => {
@@ -1095,6 +1100,31 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                     </div>
                     <button onClick={() => setSelected(null)}>取消選取</button>
                   </div>
+                  {(() => {
+                    // Lock the section this element is in: AI rewrites and new generations keep the locked parts.
+                    const section = sectionOf(page, node.id);
+                    if (!section) return null;
+                    const lock = section.lock ?? {};
+                    const set = (key: keyof typeof lockLabels) => {
+                      const next = { ...lock, [key]: !lock[key] };
+                      if (patch([{ operation: "set-lock", targetId: section.id, payload: { lock: next } }], section.id))
+                        setNotice(next[key] ? `這一區的${lockLabels[key]}已鎖定，AI 不會改動它` : `已解除這一區的${lockLabels[key]}鎖定`);
+                    };
+                    return (
+                      <div className="section-lock" role="group" aria-label="鎖定這一區">
+                        <strong>鎖定這一區</strong>
+                        <div>
+                          {(Object.keys(lockLabels) as (keyof typeof lockLabels)[]).map((key) => (
+                            <button key={key} type="button" aria-pressed={!!lock[key]} onClick={() => set(key)}>
+                              <svg viewBox="0 0 24 24" aria-hidden="true">{lock[key] ? <path d="M7 11V8a5 5 0 0110 0v3M5 11h14v10H5z" /> : <path d="M7 11V8a5 5 0 019.6-2M5 11h14v10H5z" />}</svg>
+                              {lockLabels[key]}
+                            </button>
+                          ))}
+                        </div>
+                        <small>鎖住的部分，AI 修改和重新生成都不會動到；你自己仍然可以改</small>
+                      </div>
+                    );
+                  })()}
                   <form
                     id="properties-form"
                     noValidate

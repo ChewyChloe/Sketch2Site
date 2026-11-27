@@ -356,6 +356,7 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       ref={ref as never}
       id={thumbnail ? undefined : "page-" + node.id}
       data-page-id={thumbnail ? undefined : node.id}
+      data-locked={!thumbnail && node.lock ? (["text", "assets", "layout"] as const).filter((k) => node.lock![k]).join(" ") || undefined : undefined}
       data-page-type={node.type}
       data-text-style={node.text ? "" : undefined}
       data-pause-hover={breathing?.validatedControls.pauseOnHover===true}
@@ -430,7 +431,7 @@ export function navLinks(page: PageSpec, sections: PageNode[], placed?: PageNode
     // No choices made: pages, or each section's heading (not the opening one), at most five.
     const auto: NavLink[] = pages ?? (placed
       ? placed.filter((n) => n.type === "heading" && n.content).map((n, i) => ({ key: n.id, target: n.id, label: shortNavLabel(n.content!), hero: i === 0 }))
-      : sections.flatMap((s) => { const h = firstHeading(s); return h?.content ? [{ key: h.id, target: s.id, label: shortNavLabel(h.content), hero: s.role === "hero" }] : []; }));
+      : sections.flatMap((s) => { const h = s.role === "footer" ? undefined : firstHeading(s); return h?.content ? [{ key: h.id, target: s.id, label: shortNavLabel(h.content), hero: s.role === "hero" }] : []; }));
     return auto.filter((l) => !l.hero).slice(0, 5);
   }
   const candidates = pages ?? linkable(placed ?? sections);

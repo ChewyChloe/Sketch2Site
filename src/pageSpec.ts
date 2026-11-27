@@ -1,4 +1,5 @@
 import { imageSource } from "./assetRef";
+import { SectionLockSchema, type SectionLock } from "./sectionLock";
 import { z } from "zod";
 import { motionIds, MotionSchema, bindMotionInput, compatibleMotion, combinationReason, targetReason, withinMotionBudget, type MotionInstance } from "./motion";
 // Site navigation set in the draft (導覽列). Items are keyed by the heading or page they link to;
@@ -429,6 +430,8 @@ export type PageNode = {
   text?: TextStyle;
   columns?: 1 | 2 | 3;
   children?: PageNode[];
+  /** Sections only: parts the author locked (see sectionLock.ts). */
+  lock?: SectionLock;
 };
 export function effectCompatible(
   node: PageNode,
@@ -461,6 +464,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         ...common,
         type: z.literal("section"),
         role: z.enum(sectionRoles).optional(),
+        lock: SectionLockSchema.optional(),
         children: z.array(PageNodeSchema).max(100),
       })
       .strict(),

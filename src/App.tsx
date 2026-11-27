@@ -27,6 +27,8 @@ import { smartFocus } from "./smartCrop";
 import { CopySuggest } from "./CopySuggest";
 import { textCss, mediaKinds, mediaKindLabels, mediaAssetRefs, type MediaKind, type TextStyle } from "./pageSpec";
 import { MediaView } from "./MediaRuntime";
+import { carryLocks } from "./sectionLock";
+import { PageSchema } from "./pageSpec";
 import { MediaControls } from "./MediaControls";
 import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
@@ -310,6 +312,10 @@ export default function App() {
         }
       // Layout tweaks made earlier on the site come back on the new version.
       result = { ...result, page: applySiteOverrides(result.page, spec) };
+      // Sections the author locked keep their locked parts on the new version.
+      const site = previewRef.current?.site();
+      const carried = site ? PageSchema.safeParse(carryLocks(site, result.page)) : null;
+      if (carried?.success) result = { ...result, page: carried.data };
       const latest = previewRef.current?.target();
       if (
         run !== generationRun.current ||

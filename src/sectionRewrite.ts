@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createMotion, combinationReason, targetReason, type MotionId } from "./motion";
 import { imageSource } from "./assetRef";
+import { lockViolation } from "./sectionLock";
 import {
   allSections,
   ImageLookSchema,
@@ -45,6 +46,8 @@ export type CompactNode = {
   columns?: 1 | 2 | 3;
   style?: Partial<z.infer<typeof styleSchema>>;
   motions?: string[];
+  /** Read only: what the author locked in this section (text, assets, layout). */
+  locked?: ("text" | "assets" | "layout")[];
   children?: CompactNode[];
 };
 const CompactNodeSchema: z.ZodType<CompactNode> = z.lazy(() =>
@@ -81,6 +84,7 @@ const CompactNodeSchema: z.ZodType<CompactNode> = z.lazy(() =>
       columns: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
       style: styleSchema.partial().optional(),
       motions: z.array(z.string().max(40)).max(4).optional(),
+      locked: z.array(z.enum(["text", "assets", "layout"])).max(3).optional(),
       children: z.array(CompactNodeSchema).max(40).optional(),
     })
     .strict(),
@@ -162,6 +166,7 @@ export function compactSite(page: PageSpec) {
     if (n.columns) c.columns = n.columns;
     c.style = n.style;
     if (n.effects.length) c.motions = n.effects.map((e) => e.presetId);
+    if (n.lock) c.locked = (["text", "assets", "layout"] as const).filter((k) => n.lock![k]);
     if (n.children) c.children = n.children.map(toCompact);
     return c;
   };
@@ -226,6 +231,8 @@ export function fromCompact(page: PageSpec, sectionId: string, input: CompactNod
       }
     } else if (same) node.effects = same.effects;
     if (c.type === "section" && (c.role ?? same?.role)) node.role = c.role ?? same?.role;
+    // The lock stays exactly as the author set it; the model cannot add or remove one.
+    if (top && section.lock) node.lock = section.lock;
     const container = ["section", "container", "card", "stack", "grid"].includes(c.type);
     if (container) node.children = (c.children ?? []).map((k) => build(k, depth + 1, false));
     if (c.type === "grid") node.columns = c.columns ?? same?.columns ?? 2;
@@ -283,6 +290,8 @@ export function fromCompact(page: PageSpec, sectionId: string, input: CompactNod
   const built = build(input, 0, true);
   const parsed = PageNodeSchema.safeParse(built);
   if (!parsed.success) fail("schema: " + (parsed.error.issues[0]?.message ?? ""));
+  const locked = lockViolation(section, parsed.data!);
+  if (locked) fail("locked: " + locked);
   // Pictures must still be the site's own (the schema allows any built-in sample).
   const { pictures } = sitePools(page);
   (function check(n: PageNode) {

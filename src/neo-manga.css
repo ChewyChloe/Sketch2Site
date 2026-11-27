@@ -960,3 +960,12 @@ body{background:var(--neo-cream)}
 .note-bubble .note-send svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 .note-bubble .note-send:disabled { background: #c9c8c1; color: #fff; cursor: default; }
 .note-bubble .note-chips { margin-top: 10px; }
+/* ---- Section lock: switches in the site panel, a quiet mark on locked sections in the preview ---- */
+.section-lock { display: grid; gap: 8px; margin: 4px 0 14px; padding: 12px; border: 1.5px solid #2c3031; border-radius: 14px; }
+.section-lock > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.section-lock button { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1.5px solid #455048; border-radius: 999px; background: transparent; color: inherit; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.section-lock button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.section-lock button[aria-pressed="true"] { background: #10e560; border-color: #10e560; color: #0d0e11; }
+.section-lock small { color: #5b6a63; font-size: 12px; line-height: 1.5; }
+.preview-frame .page-section[data-locked] { position: relative; outline: 1.5px dashed color-mix(in srgb, #10e560 70%, transparent); outline-offset: -6px; }
+.preview-frame .page-section[data-locked]::after { content: "已鎖定"; position: absolute; top: 10px; right: 12px; z-index: 3; padding: 3px 10px; border-radius: 999px; background: #0d0e11; color: #10e560; font-size: 12px; font-weight: 800; pointer-events: none; }
