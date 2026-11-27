@@ -156,3 +156,27 @@ export function fitHeights(canvas: CanvasSpec, heights: ReadonlyMap<string, numb
   nodes = nodes.map((n) => (n.y + n.height > height ? { ...n, y: Math.max(0, height - n.height) } : n));
   return { ...canvas, metadata: { ...canvas.metadata, height }, nodes };
 }
+
+/** A measured gap: a line from (x1, y1) to (x2, y2) and its length in canvas px. */
+export type Spacing = { axis: "h" | "v"; x1: number; y1: number; x2: number; y2: number; length: number };
+/**
+ * Distances from a box to the nearest element on each side (one that overlaps it across that
+ * side), or to the canvas edge when nothing is there. Shown while Alt is held.
+ */
+export function spacingAround(box: Box, others: readonly Box[], canvas: { width: number; height: number }): Spacing[] {
+  const overlapsV = (o: Box) => o.y < box.y + box.height && o.y + o.height > box.y;
+  const overlapsH = (o: Box) => o.x < box.x + box.width && o.x + o.width > box.x;
+  const midV = (o?: Box) => (o ? (Math.max(box.y, o.y) + Math.min(box.y + box.height, o.y + o.height)) / 2 : box.y + box.height / 2);
+  const midH = (o?: Box) => (o ? (Math.max(box.x, o.x) + Math.min(box.x + box.width, o.x + o.width)) / 2 : box.x + box.width / 2);
+  const out: Spacing[] = [];
+  const left = others.filter((o) => overlapsV(o) && o.x + o.width <= box.x).sort((a, b) => b.x + b.width - (a.x + a.width))[0];
+  const right = others.filter((o) => overlapsV(o) && o.x >= box.x + box.width).sort((a, b) => a.x - b.x)[0];
+  const top = others.filter((o) => overlapsH(o) && o.y + o.height <= box.y).sort((a, b) => b.y + b.height - (a.y + a.height))[0];
+  const bottom = others.filter((o) => overlapsH(o) && o.y >= box.y + box.height).sort((a, b) => a.y - b.y)[0];
+  const push = (s: Omit<Spacing, "length">) => { const length = Math.round(Math.abs(s.x2 - s.x1) + Math.abs(s.y2 - s.y1)); if (length > 0) out.push({ ...s, length }); };
+  push({ axis: "h", x1: left ? left.x + left.width : 0, x2: box.x, y1: midV(left), y2: midV(left) });
+  push({ axis: "h", x1: box.x + box.width, x2: right ? right.x : canvas.width, y1: midV(right), y2: midV(right) });
+  push({ axis: "v", y1: top ? top.y + top.height : 0, y2: box.y, x1: midH(top), x2: midH(top) });
+  push({ axis: "v", y1: box.y + box.height, y2: bottom ? bottom.y : canvas.height, x1: midH(bottom), x2: midH(bottom) });
+  return out;
+}

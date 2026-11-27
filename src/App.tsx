@@ -30,7 +30,7 @@ import { MediaView } from "./MediaRuntime";
 import { carryLocks } from "./sectionLock";
 import { PageSchema } from "./pageSpec";
 import { MediaControls } from "./MediaControls";
-import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
+import { alignSelection, distribute, fitHeights, reorder, snapBox, spacingAround, toggleLock, type AlignMode, type Guide, type LayerMove } from "./layoutTools";
 import { frameIds, frameLabels, frameRatios, type FrameId, type ImageLook } from "./pageSpec";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {
@@ -236,6 +236,17 @@ export default function App() {
   const [moving, setMoving] = useState<CanvasNode | null>(null);
   // Smart guides shown while dragging (hold Alt to move freely).
   const [guides, setGuides] = useState<Guide[]>([]);
+  // Holding Alt shows the distances from the selected element to its neighbours and the canvas edges.
+  const [altHeld, setAltHeld] = useState(false);
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => { if (e.key === "Alt") setAltHeld(true); };
+    const up = (e: KeyboardEvent) => { if (e.key === "Alt") setAltHeld(false); };
+    const off = () => setAltHeld(false);
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    window.addEventListener("blur", off);
+    return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); window.removeEventListener("blur", off); };
+  }, []);
   // Dragging a framed photo onto another frame swaps their photos.
   const [swapTarget, setSwapTarget] = useState<string | null>(null);
   const board = useRef<HTMLDivElement>(null);
@@ -2025,6 +2036,19 @@ node ? (
                         style={g.axis === "v" ? { left: g.pos, top: g.from, height: g.to - g.from } : { top: g.pos, left: g.from, width: g.to - g.from }}
                       />
                     ))}
+                    {altHeld && !moving && !resizing && selected && (() => {
+                      // Measure from the whole selection (a group selects together).
+                      const chosen = displayedNodes.filter((n) => n.id === selected || selectedIds.includes(n.id));
+                      if (!chosen.length) return null;
+                      const x = Math.min(...chosen.map((n) => n.x)), y = Math.min(...chosen.map((n) => n.y));
+                      const box = { x, y, width: Math.max(...chosen.map((n) => n.x + n.width)) - x, height: Math.max(...chosen.map((n) => n.y + n.height)) - y };
+                      return spacingAround(box, displayedNodes.filter((n) => !chosen.includes(n)), { width: 1440, height: spec.metadata.height }).map((m, i) => (
+                        <div key={"sp" + i} className={"spacing-line " + m.axis} aria-hidden="true"
+                          style={m.axis === "h" ? { left: Math.min(m.x1, m.x2), top: m.y1, width: m.length } : { top: Math.min(m.y1, m.y2), left: m.x1, height: m.length }}>
+                          <span className="spacing-label" style={{ "--s": scale } as CSSProperties}>{m.length}</span>
+                        </div>
+                      ));
+                    })()}
                     {marquee && (
                       <div
                         className="canvas-marquee"

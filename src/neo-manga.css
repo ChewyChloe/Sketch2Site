@@ -969,3 +969,8 @@ body{background:var(--neo-cream)}
 .section-lock small { color: #5b6a63; font-size: 12px; line-height: 1.5; }
 .preview-frame .page-section[data-locked] { position: relative; outline: 1.5px dashed color-mix(in srgb, #10e560 70%, transparent); outline-offset: -6px; }
 .preview-frame .page-section[data-locked]::after { content: "已鎖定"; position: absolute; top: 10px; right: 12px; z-index: 3; padding: 3px 10px; border-radius: 999px; background: #0d0e11; color: #10e560; font-size: 12px; font-weight: 800; pointer-events: none; }
+/* ---- Alt: distances from the selected element (canvas px) ---- */
+.spacing-line { position: absolute; z-index: 40; pointer-events: none; }
+.spacing-line.h { height: 0; border-top: calc(1.5px / var(--s, 1)) solid #e5484d; }
+.spacing-line.v { width: 0; border-left: calc(1.5px / var(--s, 1)) solid #e5484d; }
+.spacing-line .spacing-label { --k: calc(1 / var(--s, 1)); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: calc(2px * var(--k)) calc(6px * var(--k)); border-radius: calc(4px * var(--k)); background: #e5484d; color: #fff; font-size: calc(12px * var(--k)); font-weight: 800; line-height: 1.2; white-space: nowrap; }

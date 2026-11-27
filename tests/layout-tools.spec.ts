@@ -67,3 +67,15 @@ test("smart guides, layer order, align, lock and Alt-drag duplicate", async ({ p
   await expect(nodes.filter({ hasText: "最後，請訪客做一件事" })).toHaveCount(1);
   expect(errors).toEqual([]);
 });
+
+test("holding Alt shows distances from the selection to its neighbours", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：社團招生頁" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await page.getByRole("button", { name: /^按鈕：立即報名/ }).click();
+  await page.keyboard.down("Alt");
+  await expect(page.locator(".spacing-line")).toHaveCount(4);
+  await page.keyboard.up("Alt");
+  await expect(page.locator(".spacing-line")).toHaveCount(0);
+});

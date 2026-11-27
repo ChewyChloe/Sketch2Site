@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blank, CanvasSchema, createNode, type CanvasNode, type CanvasSpec } from "./spec";
-import { alignSelection, distribute, fitHeights, reorder, snapBox, toggleLock } from "./layoutTools";
+import { alignSelection, distribute, fitHeights, reorder, snapBox, spacingAround, toggleLock } from "./layoutTools";
 
 const box = (x: number, y: number, width = 100, height = 50, type: CanvasNode["type"] = "text") => ({ ...createNode(type, x, y), width, height });
 const draft = (...nodes: CanvasNode[]): CanvasSpec => CanvasSchema.parse({ ...blank(), nodes });
@@ -71,5 +71,18 @@ describe("text boxes fit their text", () => {
     const next = fitHeights(draft(last), new Map([[last.id, 300]]), 4800);
     expect(next.metadata.height).toBe(1800);
     expect(CanvasSchema.safeParse(next).success).toBe(true);
+  });
+});
+
+describe("Alt distances", () => {
+  it("measures to the nearest element on each side, or to the canvas edge", () => {
+    const box = { x: 200, y: 300, width: 100, height: 50 };
+    const others = [{ x: 40, y: 310, width: 100, height: 20 }, { x: 400, y: 100, width: 50, height: 50 }, { x: 220, y: 100, width: 40, height: 40 }];
+    const m = spacingAround(box, others, { width: 1440, height: 1200 });
+    const by = (axis: string, x1: number) => m.find((s) => s.axis === axis && (s.x1 === x1 || s.y1 === x1));
+    expect(by("h", 140)?.length).toBe(60); // left neighbour ends at 140
+    expect(by("h", 300)?.length).toBe(1140); // nothing overlaps on the right: canvas edge
+    expect(by("v", 140)?.length).toBe(160); // the box above ends at 140
+    expect(by("v", 350)?.length).toBe(850); // canvas bottom
   });
 });
