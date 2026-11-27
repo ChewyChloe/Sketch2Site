@@ -131,3 +131,13 @@ describe("3D by note", () => {
     expect(indexNodes(r.page).get(h.id)!.text?.depth).toBe(true);
   });
 });
+
+it("recognizes a bare floating request and explains unsupported targets", () => {
+  const page = site();
+  const image = first(page, node => node.type === "image");
+  expect(run(page, image.id, "漂浮").page.sections).toBeDefined();
+  const edit = interpretAnnotation(page, image.id, "漂浮");
+  expect(edit.ok && edit.patches.some(patch => patch.operation === "attach-effect" && "presetId" in patch.payload && patch.payload.presetId === "float-idle")).toBe(true);
+  const heading = first(page, node => node.type === "heading");
+  expect(interpretAnnotation(page, heading.id, "漂浮")).toMatchObject({ ok: false, message: expect.stringContaining("不適合") });
+});

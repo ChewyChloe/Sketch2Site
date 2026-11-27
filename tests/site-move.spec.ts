@@ -85,3 +85,25 @@ test("copy a heading's look to a heading in another section, then to every headi
   await expect(el(page, 5)).not.toHaveClass(/align-center/);
   await expect(el(page, 9)).not.toHaveClass(/align-center/);
 });
+
+test("nudge reorders actual positioned items and the toolbar yields to the view menu", async ({ page }) => {
+  const positioned = { ...site, draftLayout: { width: 1440, height: 1200, items: [
+    { id: uid(2), x: 80, y: 80, width: 400, height: 80, zIndex: 1 },
+    { id: uid(3), x: 80, y: 260, width: 400, height: 80, zIndex: 2 },
+  ] } };
+  await page.getByLabel("載入頁面檔案").setInputFiles({ name: "positioned.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(positioned)) });
+  await expect(el(page, 2)).toBeVisible();
+  await el(page, 2).click();
+  const toolbar = page.getByRole("toolbar", { name: "直接修改這個元件" });
+  const offset = () => el(page, 2).locator("xpath=..").evaluate(node => (node as HTMLElement).style.getPropertyValue("--draft-top"));
+  const before = await offset();
+  await toolbar.getByRole("button", { name: "往後移" }).click();
+  await expect.poll(offset).not.toBe(before);
+  await page.getByRole("button", { name: "撤銷修改", exact: true }).click();
+  await expect.poll(offset).toBe(before);
+  await el(page, 2).click();
+  await expect(toolbar).toBeVisible();
+  await page.locator(".visual-tools .workbench-menu > summary").filter({ hasText: "檢視" }).click();
+  await expect(toolbar).toBeHidden();
+  await expect(page.getByRole("button", { name: "重播動畫" })).toBeVisible();
+});

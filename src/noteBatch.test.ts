@@ -49,7 +49,7 @@ describe("batch notes", () => {
     const { page, heading } = site();
     const ask = vi.fn(async (): Promise<RewriteAnswer> => { throw new GenerationError("NOT_CONFIGURED"); });
     const { outcomes, aiError } = await processNotes(page, [{ key: "a", nodeId: heading.id, text: "置中" }, { key: "b", nodeId: heading.id, text: "更有質感" }], ask, new AbortController().signal);
-    expect(aiError).toContain("AI 目前沒有開啟");
+    expect(aiError).toContain("AI 目前未連線");
     expect(outcomes[0].by).toBe("local");
     expect(outcomes[1].by).toBe("none");
     expect(outcomes[1].summary).toContain("看不懂");

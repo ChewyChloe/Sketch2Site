@@ -40,8 +40,8 @@ export type GenerationCode = (typeof generationCodes)[number];
 export const generationMessages: Record<GenerationCode, string> = {
   NOT_CONFIGURED: "現在用不了 AI，可以先用智慧排版",
   INVALID_INPUT: "這份草稿還不能生成，請檢查按鈕連結和內容",
-  INVALID_OUTPUT: "這次沒有生成成功，原本的版本還在",
-  REFUSED: "這次沒有生成成功，原本的版本還在",
+  INVALID_OUTPUT: "生成結果未通過內容、布局或動畫檢查，已保留原本的版本。請檢查草稿設定，也可以改用本機智慧排版。",
+  REFUSED: "AI 未接受這次生成要求，已保留原本的版本。可以調整描述或改用本機智慧排版。",
   INCOMPLETE: "草稿太大了，請刪掉一些內容再試",
   TIMEOUT: "等太久了，請稍後再試",
   BUSY: "正在生成中，請等一下",

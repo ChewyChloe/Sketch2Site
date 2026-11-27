@@ -6,7 +6,7 @@ import { allSections, type PageNode, type PageSpec } from "./pageSpec";
 //   element of the same kind at once (ordinary set-style / set-property patches).
 
 const containers = new Set(["section", "container", "stack", "grid", "card"]);
-type Placement = { parentId: string; index: number };
+type Placement = { parentId: string; index: number; positionOnly?: true };
 
 function parentsOf(page: PageSpec) {
   const up = new Map<string, PageNode | "page">();
@@ -59,6 +59,14 @@ export function dropPlacement(page: PageSpec, movingId: string, overId: string, 
 export function nudge(page: PageSpec, id: string, by: -1 | 1): Placement | null {
   const up = parentsOf(page), parent = up.get(id);
   if (!parent) return null;
+  const viewIndex = viewOf(page, id);
+  const view = viewIndex === 0 ? page : page.subpages?.[viewIndex - 1];
+  if (view?.draftLayout) {
+    const items = [...view.draftLayout.items].sort((a, b) => a.y - b.y || a.x - b.x);
+    const index = items.findIndex(item => item.id === id);
+    if (index < 0 || !items[index + by]) return null;
+    return { parentId: parent === "page" ? "page" : parent.id, index: index + by, positionOnly: true };
+  }
   const list = parent === "page" ? [page.sections, ...(page.subpages ?? []).map((p) => p.sections)][viewOf(page, id)] : parent.children ?? [];
   const i = list.findIndex((c) => c.id === id), j = i + by;
   if (i < 0 || j < 0 || j >= list.length) return null;

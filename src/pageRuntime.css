@@ -1804,3 +1804,9 @@
     }
   }
 }
+
+.pg-gen-grid { align-items: center; gap: clamp(8px, 2cqi, 24px); opacity: .42; }
+.pg-gen-grid span { display: block; aspect-ratio: 1; max-height: 100%; width: 100%; border-radius: 18%; }
+.pg-gen-grid [data-grid-tone="1"] { background: color-mix(in srgb, var(--accent, #20704a) 24%, transparent); }
+.pg-gen-grid [data-grid-tone="2"] { background: color-mix(in srgb, var(--ink, #16231d) 14%, transparent); }
+.pg-gen-grid [data-grid-tone="3"] { border: 1px solid color-mix(in srgb, var(--accent, #20704a) 38%, transparent); }

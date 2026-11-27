@@ -397,3 +397,6 @@
 .section-layout-options button[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: -2px; }
 .section-layout-options svg { width: min(100%, 74px); fill: currentColor; opacity: .65; }
 .section-layout-picker > label { display: block; margin-block: 8px; }
+
+.theme-picker[aria-label="設計概念"] { flex-wrap: wrap; overflow-x: visible; }
+.theme-picker[aria-label="設計概念"] > span { flex-basis: 100%; }

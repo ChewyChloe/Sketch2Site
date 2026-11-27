@@ -104,7 +104,7 @@ export const conceptText: Record<ConceptId, { name: string; idea: string }> = {
   "gallery-wall": { name: "作品牆", idea: "介面退到最後，讓作品說話：無框作品牆、兩層圖說" },
   darkroom: { name: "暗場", idea: "全黑的房間，作品像在發光，字極小" },
   poster: { name: "單色海報", idea: "一個大膽的底色、超粗的字、像封鎖線的標語條，一眼記住" },
-  "generative-grid": { name: "生成網格", idea: "用網站名稱長出一張專屬的彩色數字網格，每個網站都不一樣" },
+  "generative-grid": { name: "生成網格", idea: "用網站名稱產生一組主題色幾何色塊" },
   "swiss": { name: "瑞士國際主義", idea: "左對齊的非對稱網格與細分隔線" },
   "japanese-minimal": { name: "日式極簡", idea: "窄幅文字、長留白與置中的照片" },
   "nordic": { name: "北歐美學", idea: "寬闊的暖白空間、自然照片與柔和介面" },

@@ -1114,3 +1114,28 @@ body{background:var(--neo-cream)}
 .plan-motion-choices { margin-block: 8px; }
 .plan-motion-choices > summary { cursor: pointer; }
 .plan-motion-preview { max-height: min(46vh, 400px); overflow: auto; border: 1px solid var(--line, #aaa); }
+
+.animation-library .lib-only button { color: #0d0e11 !important; background: #fff !important; }
+.animation-library .lib-only button[aria-pressed=true] { background: #fff3b0 !important; }
+.animation-library .motion-library-filters > button:disabled { color: #4d5550 !important; background: #e6e9e6 !important; opacity: 1 !important; }
+.animation-library .motion-library-filters label > input { color: inherit; }
+.animation-library .motion-library-filters label > input:focus-visible { outline: 2px solid #39845b; outline-offset: 2px; }
+
+.neo-workspace > .sidebar, .neo-inspector, .preview-inspector, .preview-inspector .patch-panel {
+  scrollbar-width: thin;
+  scrollbar-color: #708577 transparent;
+}
+.preview-inspector .patch-panel,
+.preview-inspector .patch-panel .side-head,
+.preview-inspector .patch-panel .selected-component .component-icon {
+  background: transparent;
+}
+
+.preview-workspace:has(.visual-tools .workbench-menu[open]) .site-toolbar { display: none; }
+.preview-workspace .visual-tools .workbench-menu-content {
+  max-height: min(60dvh, 440px);
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #708577 transparent;
+}
+.preview-inspector .inspector-content { scrollbar-width: thin; scrollbar-color: #708577 transparent; }

@@ -135,7 +135,7 @@ export const PatchSchema = z.discriminatedUnion("operation", [
       // parent reorders top-level sections. Nothing about the element itself changes.
       operation: z.literal("move-node"),
       targetId,
-      payload: z.object({ parentId: z.union([z.string().uuid(), z.literal("page")]), index: z.number().int().min(0).max(200) }).strict(),
+      payload: z.object({ parentId: z.union([z.string().uuid(), z.literal("page")]), index: z.number().int().min(0).max(200), positionOnly: z.literal(true).optional() }).strict(),
     })
     .strict(),
   z
@@ -413,13 +413,29 @@ function sameNodesMoved(before: PageSpec, after: PageSpec, moved: Set<string>) {
 }
 const containerTypes = new Set(["section", "container", "stack", "grid", "card"]);
 /** Moves one node; null when the move is not allowed. */
-function moveNode(page: PageSpec, id: string, parentId: string, index: number): PageSpec | PatchError {
+const equalDraftPlacements = (before: PageSpec, after: PageSpec) => {
+  const layouts = (page: PageSpec) => [page.draftLayout, ...(page.subpages ?? []).map(view => view.draftLayout)];
+  return JSON.stringify(layouts(before)) === JSON.stringify(layouts(after));
+};
+function moveNode(page: PageSpec, id: string, parentId: string, index: number, positionOnly?: true): PageSpec | PatchError {
   const views: PageNode[][] = [page.sections, ...(page.subpages ?? []).map((p) => p.sections)];
   const sectionOfId = (sections: PageNode[], x: string) => sections.find((s) => indexNodes({ ...page, sections: [s], subpages: undefined }).has(x));
   const v = views.findIndex((sections) => sectionOfId(sections, id));
   if (v < 0) return "TARGET_NOT_FOUND";
   const sections = views[v];
   const fromSection = sectionOfId(sections, id)!;
+  const view = v === 0 ? page : page.subpages![v - 1];
+  if (positionOnly) {
+    const layout = view.draftLayout;
+    if (!layout) return "PROPERTY_NOT_ALLOWED";
+    const sorted = [...layout.items].sort((a, b) => a.y - b.y || a.x - b.x);
+    const from = sorted.find(item => item.id === id), to = sorted[index];
+    if (!from || !to || Math.abs(sorted.indexOf(from) - index) !== 1) return "PROPERTY_NOT_ALLOWED";
+    if (fromSection.lock?.layout || sectionOfId(sections, to.id)?.lock?.layout) return "LOCKED";
+    const draftLayout = { ...layout, items: layout.items.map(item => item.id === id
+      ? { ...item, x: to.x, y: to.y } : item.id === to.id ? { ...item, x: from.x, y: from.y } : item) };
+    return v === 0 ? { ...page, draftLayout } : { ...page, subpages: page.subpages!.map((p, i) => i === v - 1 ? { ...p, draftLayout } : p) };
+  }
   const isSection = fromSection.id === id;
   if (isSection !== (parentId === "page")) return "PROPERTY_NOT_ALLOWED";
   let next: PageNode[];
@@ -618,7 +634,7 @@ export function applyPatchBatch(
       continue;
     }
     if (p.operation === "move-node") {
-      const moved = moveNode(candidate, p.targetId, p.payload.parentId, p.payload.index);
+      const moved = moveNode(candidate, p.targetId, p.payload.parentId, p.payload.index, p.payload.positionOnly);
       if (typeof moved === "string") return fail(moved);
       candidate = moved;
       if (!PageSchema.safeParse(candidate).success) return fail("INVALID_PAGE");
@@ -662,7 +678,9 @@ export function applyPatchBatch(
   if (!validateScope(original, after, batch.patches))
     return fail("SCOPE_VIOLATION");
   const diff = diffPages(original, after);
-  const changed = diff.changes.length > 0 || diff.structureChanged;
+  const placementChanged = batch.patches.some(p => p.operation === "move-node" && p.payload.positionOnly)
+    && !equalDraftPlacements(original, after);
+  const changed = diff.changes.length > 0 || diff.structureChanged || placementChanged;
   const history = changed ? commitHistory(state.history, after) : state.history;
   return {
     ok: true,

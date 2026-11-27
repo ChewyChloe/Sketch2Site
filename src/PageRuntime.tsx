@@ -464,22 +464,16 @@ function scrollRoot(el: HTMLElement | null): HTMLElement | Window {
   for (let p = el?.parentElement; p; p = p.parentElement) { const o = getComputedStyle(p).overflowY; if ((o === "auto" || o === "scroll") && p.scrollHeight > p.clientHeight) return p; }
   return window;
 }
-// 生成網格: a field of coloured numbers grown from the site's name. The same name always gives
-// the same field, so it is the site's own pattern; it sits behind the opening and never takes input.
-const gridColours = ["#ff4d2e", "#1f6bff", "#13b26b", "#ff9f1c", "#b04bff", "#111111", "#ff5fa2", "#00a6c8"];
+// Deterministic, decorative blocks using the active palette.
 function GenerativeGrid({ seed }: { seed: string }) {
-  let h = 2166136261;
-  for (const ch of seed) h = Math.imul(h ^ ch.codePointAt(0)!, 16777619);
-  const rand = () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0) / 4294967296;
-  const cells = Array.from({ length: 48 }, () => {
-    const r = rand();
-    return r < 0.38 ? null : { n: 1 + Math.floor(rand() * 50), c: gridColours[Math.floor(rand() * gridColours.length)], faint: rand() < 0.45 };
-  });
-  return (
-    <div className="pg-gen-grid" aria-hidden="true">
-      {cells.map((c, i) => <span key={i} style={c ? { color: c.c, opacity: c.faint ? 0.22 : 1 } : undefined}>{c ? c.n : ""}</span>)}
-    </div>
-  );
+  let hash = 2166136261;
+  for (const ch of seed) hash = Math.imul(hash ^ ch.codePointAt(0)!, 16777619);
+  return <div className="pg-gen-grid" aria-hidden="true">
+    {Array.from({ length: 48 }, (_, index) => {
+      hash = Math.imul(hash ^ (hash >>> 15), 2246822507);
+      return <span key={index} data-grid-tone={(hash >>> 0) % 5} />;
+    })}
+  </div>;
 }
 function PageNav({ page, view, sections, placed }: { page: PageSpec; view: string | null; sections: PageNode[]; placed?: PageNode[] }) {
   const style = page.chrome?.navStyle ?? "top-sticky";

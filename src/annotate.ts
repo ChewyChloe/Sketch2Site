@@ -251,7 +251,7 @@ function clause(text: string, ctx: Ctx): Step {
   }
 
   // 4. Add or change motion (named or default).
-  if (/動態|動畫|特效|效果|動起來|會動/.test(t) || motionWords.some(([re]) => re.test(t) && /加|換|改|用|要|讓|做/.test(t))) {
+  if (/動態|動畫|特效|效果|動起來|會動/.test(t) || /^(漂浮|飄浮|浮動)$/.test(t) || motionWords.some(([re]) => re.test(t) && /加|換|改|用|要|讓|做/.test(t))) {
     const replace = /換|改/.test(t);
     const named = motionIds.find((id) => t.includes(motionCatalog[id].nameZh));
     // Every matching word is a candidate; the first one that suits this element wins.

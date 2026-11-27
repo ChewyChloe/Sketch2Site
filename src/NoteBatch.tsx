@@ -120,12 +120,12 @@ export async function processNotes(
       }
     } catch (e) {
       const code = e instanceof GenerationError ? e.code : "UNAVAILABLE";
-      aiError = code === "NOT_CONFIGURED" || code === "UNAVAILABLE" ? "AI 目前沒有開啟，看不懂的註解先跳過" : code === "LIMIT" ? "AI 這次的次數用完了，看不懂的註解先跳過" : "AI 這次沒有回應，看不懂的註解先跳過";
+      aiError = code === "NOT_CONFIGURED" || code === "UNAVAILABLE" ? "AI 目前未連線，這些註解尚未由 AI 處理" : code === "LIMIT" ? "AI 次數已用完，這些註解尚未處理" : "AI 這次沒有完成註解處理";
       // Without the AI, notes the reader fully understood still work on their own.
       for (const o of toAi) {
         const r = reads[o.n - 1];
         if (r.ok && r.patches.length && !needsAi(o.n - 1)) { o.by = "local"; o.patches = r.patches; o.scope = r.scope; o.summary = r.summary.join("、"); }
-        else o.summary = "看不懂，換個說法試試，例如「大一點」或改成「新的文字」";
+        else o.summary = r.ok ? aiError : r.message;
       }
     }
   }
