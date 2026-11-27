@@ -95,7 +95,7 @@ export const imageFilters = ["none", "mono", "warm", "cool", "vintage", "vivid",
 export const filterLabels: Record<(typeof imageFilters)[number], string> = { none: "原圖", mono: "黑白", warm: "暖調", cool: "冷調", vintage: "復古", vivid: "鮮豔", fade: "褪色", noir: "高對比黑白" };
 // Design concepts (docs/REFERENCE_STUDY.md): one idea the whole site follows, deciding type,
 // numbering, lines, navigation and how pictures are shown. Stronger than a theme's colours.
-export const conceptIds = ["exhibition", "archive", "gallery-wall", "darkroom", "poster", "generative-grid"] as const;
+export const conceptIds = ["exhibition", "archive", "gallery-wall", "darkroom", "poster", "generative-grid", "swiss", "japanese-minimal", "nordic", "editorial-magazine", "retro-digital", "y2k", "neo-brutalist", "organic", "storybook", "architectural"] as const;
 export type ConceptId = (typeof conceptIds)[number];
 export const conceptText: Record<ConceptId, { name: string; idea: string }> = {
   exhibition: { name: "展覽空間", idea: "像走進展場：一進來是一整面照片，之後一次只看一件作品，標籤小而寬" },
@@ -104,6 +104,16 @@ export const conceptText: Record<ConceptId, { name: string; idea: string }> = {
   darkroom: { name: "暗場", idea: "全黑的房間，作品像在發光，字極小" },
   poster: { name: "單色海報", idea: "一個大膽的底色、超粗的字、像封鎖線的標語條，一眼記住" },
   "generative-grid": { name: "生成網格", idea: "用網站名稱長出一張專屬的彩色數字網格，每個網站都不一樣" },
+  "swiss": { name: "瑞士國際主義", idea: "左對齊的非對稱網格與細分隔線" },
+  "japanese-minimal": { name: "日式極簡", idea: "窄幅文字、長留白與置中的照片" },
+  "nordic": { name: "北歐美學", idea: "寬闊的暖白空間、自然照片與柔和介面" },
+  "editorial-magazine": { name: "雜誌編輯排版", idea: "襯線大標、寬窄欄與圖說節奏" },
+  "retro-digital": { name: "復古數位", idea: "像素感等寬文字、格線和方形控制項" },
+  "y2k": { name: "Y2K", idea: "銀色反光面、圓形照片和膠囊按鈕" },
+  "neo-brutalist": { name: "新粗獷主義", idea: "厚框、偏移陰影、強烈字級反差" },
+  "organic": { name: "有機自然", idea: "不規則照片輪廓、寬鬆段落與自然色" },
+  "storybook": { name: "童話繪本", idea: "圓體大標、插畫式照片框與置中敘事" },
+  "architectural": { name: "建築作品集", idea: "全寬橫幅攝影、窄字欄與精準格線" },
 };
 /** Concepts whose pictures drift with the scroll (CSS only, off for reduced motion). */
 export const parallaxConcepts: readonly ConceptId[] = ["exhibition", "archive", "darkroom"];
