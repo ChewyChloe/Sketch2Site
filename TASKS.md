@@ -399,3 +399,6 @@
 - [ ] NOT STARTED：第三批：door-split、rush-skew、loupe-pan、second-look、accordion-gallery、row-paint。
 - [ ] NOT STARTED：第四批：flap-board、echo-layers、neon-ignite。
 - [ ] NOT STARTED：盤點中標為「既有功能可擴充」的 110 筆，依優先序 P2 → P3 逐項評估。
+
+## 延續開發 P0–P4
+- P0 DONE：tests/motion-filters.spec.ts 瀏覽器驗證搜尋、收藏、最近使用、排序、跨欄 AND／同欄 OR 和結果數量，1 PASS。下一步 P1。
