@@ -3,7 +3,7 @@ import { buildSite } from "./helpers/workbench";
 // Replacing a site built earlier asks once and can be undone with 換回上一版; the draft is never touched.
 test("replacing an existing site: confirm, then 換回上一版", async ({ page }) => {
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增標題", exact: true }).click();
   await page.getByLabel("元素內容").fill("第一版標題");

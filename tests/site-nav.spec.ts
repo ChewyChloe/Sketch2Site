@@ -14,7 +14,7 @@ test.setTimeout(90_000);
 
 test("nav settings: side list with renamed, reordered and hidden items; undo; reset", async ({ page }) => {
   await offline(page);
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await useTemplate(page, "巷口咖啡小店");
   const dialog = await openNav(page);
@@ -60,7 +60,7 @@ test("nav settings: side list with renamed, reordered and hidden items; undo; re
 
 test("nav styles: floating pill, hidden menu, and the phone menu button", async ({ page }) => {
   await offline(page);
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await useTemplate(page, "巷口咖啡小店");
   let dialog = await openNav(page);

@@ -75,6 +75,14 @@ const effects = Object.fromEntries(motionIds.map(id=>[id,motionCatalog[id].nameZ
 type Effect = keyof typeof effects;
 const dragType = "application/x-sketch2site";
 const demoFixtures = generationFixtures();
+// The app opens on the home page. It opens the draft right away after switching projects
+// (the switch reloads the page) or when the address has #draft or ?draft.
+const openDraftKey = "sketch2site.openDraft";
+const startInDraft = (() => {
+  let switched = false;
+  try { switched = sessionStorage.getItem(openDraftKey) === "1"; sessionStorage.removeItem(openDraftKey); } catch { /* storage blocked */ }
+  return switched || (typeof location !== "undefined" && (location.hash === "#draft" || new URLSearchParams(location.search).has("draft")));
+})();
 // Example drafts offered on the home page (the product fixture is reserved for generation checks).
 const homeDemos = demoFixtures.filter((_, index) => index !== 2);
 // New drafts start in smart layout; stored drafts keep whatever mode they had.
@@ -107,7 +115,7 @@ export default function App() {
     target: { sessionId: string; revision: number };
   } | null>(null);
   const [generationError, setGenerationError] = useState("");
-  const [mode, setMode] = useState<"draft" | "preview" | "home">("draft");
+  const [mode, setMode] = useState<"draft" | "preview" | "home">(startInDraft ? "draft" : "home");
   const [motionFull,setMotionFull]=useState(false);
   const [history, setHistory] = useState<History>({
     past: [],
@@ -587,6 +595,7 @@ export default function App() {
       if (dirty) await saveDraft(state.current.present);
       await work();
       projectSwitch.reloading = true;
+      try { sessionStorage.setItem(openDraftKey, "1"); } catch { /* the draft can still be opened from the home page */ }
       location.reload();
     } catch (e) {
       report(e instanceof Error ? e.message : "專案操作失敗，目前草稿已保留", true);
@@ -1810,17 +1819,19 @@ node ? (
                 <div>
                   <button
                     className="tools-history"
+                    aria-label="還原"
                     disabled={disabled || !history.past.length}
                     onClick={() => setHistory(undo)}
                   >
-                    還原
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-3" /></svg>
                   </button>
                   <button
                     className="tools-history"
+                    aria-label="重做"
                     disabled={disabled || !history.future.length}
                     onClick={() => setHistory(redo)}
                   >
-                    重做
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5M20 9H9a5 5 0 000 10h3" /></svg>
                   </button>
                   <label>
                     縮放{" "}

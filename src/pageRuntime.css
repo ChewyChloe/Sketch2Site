@@ -1473,3 +1473,5 @@
   .rendered-page[data-compose="editorial"] .role-cta h2.page-heading { font-size: 11cqi !important; }
   .rendered-page[data-compose="editorial"] .role-features .page-grid > .page-card { margin-top: 0 !important; }
 }
+/* A screenshot (chart, dashboard, slide) is shown whole in every composition: cropping cuts off its edges. */
+.rendered-page .page-image[data-kind="screen"]:not([data-frame]) img { object-fit: contain !important; height: auto !important; aspect-ratio: auto !important; }

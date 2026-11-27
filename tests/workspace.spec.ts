@@ -1,7 +1,7 @@
 import { choose } from "./helpers/select";
 import { test, expect, type Page, type Locator } from "@playwright/test";
 async function ready(page: Page) {
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
 }
 async function drag(

@@ -7,6 +7,7 @@ import {
   TextStyleSchema,
   allSections,
   PageSchema,
+  PageNodeSchema,
   EffectSchema,
   effectIds,
   href,
@@ -113,6 +114,15 @@ export const PatchSchema = z.discriminatedUnion("operation", [
       operation: z.literal("set-theme"),
       targetId,
       payload: z.object({ theme: z.enum(themeIds) }).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      // A whole top-level section rewritten (AI notes). Other sections must stay exactly as they were,
+      // and it may only use pictures and links already on the site.
+      operation: z.literal("replace-section"),
+      targetId,
+      payload: z.object({ section: PageNodeSchema }).strict(),
     })
     .strict(),
   z
@@ -300,6 +310,8 @@ function authorized(patch: Patch, change: Change): boolean {
       return change.property === "content";
     case "set-theme":
       return change.property === "theme";
+    case "replace-section":
+      return false; // its changes are checked as a whole in validateScope
     case "set-property":
       return change.property === patch.payload.property;
     case "set-style":
@@ -328,22 +340,42 @@ export function validateScope(
     !PageSchema.safeParse(after).success
   )
     return false;
-  const diff = diffPages(before, after);
+  // Replaced sections are compared as placeholders: everything else must match exactly.
+  const replaced = new Set(patches.filter((p) => p.operation === "replace-section").map((p) => p.targetId));
+  const hollow = (page: PageSpec): PageSpec => {
+    if (!replaced.size) return page;
+    const blank = (n: PageNode): PageNode => (replaced.has(n.id) ? { id: n.id, type: "section", style: { gap: "medium", padding: "medium", align: "start", tone: "plain", width: "full" }, effects: [], children: [] } : n);
+    return { ...page, sections: page.sections.map(blank), ...(page.subpages ? { subpages: page.subpages.map((p) => ({ ...p, sections: p.sections.map(blank) })) } : {}) };
+  };
+  const diff = diffPages(hollow(before), hollow(after));
   return (
     !diff.structureChanged &&
     !diff.pageChanged &&
     diff.changes.every((c) => patches.some((p) => authorized(p, c)))
   );
 }
+/** Pictures and outside links a page uses. */
+function pagePools(page: PageSpec) {
+  const pictures = new Set<string>(), links = new Set<string>();
+  const walk = (n: PageNode) => {
+    if (n.src) pictures.add(n.src);
+    if (n.media && "images" in n.media) n.media.images.forEach((s) => pictures.add(s));
+    if (n.href && !n.href.startsWith("#")) links.add(n.href);
+    n.children?.forEach(walk);
+  };
+  allSections(page).forEach(walk);
+  return { pictures, links };
+}
 function bounded(input: unknown) {
   let count = 0,
     chars = 0;
   const seen = new WeakSet<object>();
   const walk = (v: unknown, d: number): boolean => {
-    if (++count > 2000 || d > 8) return false;
+    // A rewritten section (replace-section) nests deeper and carries more text than other patches.
+    if (++count > 8000 || d > 28) return false;
     if (typeof v === "string") {
       chars += v.length;
-      return chars <= 16000;
+      return chars <= 60000;
     }
     if (v && typeof v === "object") {
       if (seen.has(v)) return false;
@@ -415,6 +447,7 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
       try{return {...node,effects:node.effects.map(e=>e.presetId===p.payload.effectId?updateMotion(e,"validatedControls" in p.payload?p.payload.validatedControls:p.payload.parameters,!("validatedControls" in p.payload)):e)};}catch{return "INVALID_PATCH";}
     }
     case "set-theme": return node;
+    case "replace-section": return node;
     case "remove-effect": return !node.effects.some(e=>e.presetId===p.payload.effectId)?"EFFECT_CONFLICT":{...node,effects:node.effects.filter(e=>e.presetId!==p.payload.effectId)};
   }
 }
@@ -460,6 +493,17 @@ export function applyPatchBatch(
   for (const p of batch.patches) {
     const target = indexNodes(candidate).get(p.targetId);
     if (!target) return fail("TARGET_NOT_FOUND");
+    if (p.operation === "replace-section") {
+      const top = allSections(candidate).some((n) => n.id === p.targetId);
+      if (!top || p.payload.section.id !== p.targetId || p.payload.section.type !== "section") return fail("PROPERTY_NOT_ALLOWED");
+      // Only the site's own pictures and links.
+      const own = pagePools(original), next = pagePools({ ...candidate, sections: [p.payload.section], subpages: undefined });
+      if ([...next.pictures].some((x) => !own.pictures.has(x)) || [...next.links].some((x) => !own.links.has(x))) return fail("SCOPE_VIOLATION");
+      const swap = (n: PageNode) => (n.id === p.targetId ? p.payload.section : n);
+      candidate = { ...candidate, sections: candidate.sections.map(swap), ...(candidate.subpages ? { subpages: candidate.subpages.map((x) => ({ ...x, sections: x.sections.map(swap) })) } : {}) };
+      if (!PageSchema.safeParse(candidate).success) return fail("INVALID_PAGE");
+      continue;
+    }
     if (p.operation === "set-theme") {
       if (candidate.sections[0]?.id !== target.id) return fail("PROPERTY_NOT_ALLOWED");
       candidate = { ...candidate, theme: p.payload.theme };
@@ -488,7 +532,7 @@ export function applyPatchBatch(
   if (!validateScope(original, after, batch.patches))
     return fail("SCOPE_VIOLATION");
   const diff = diffPages(original, after);
-  const changed = diff.changes.length > 0;
+  const changed = diff.changes.length > 0 || diff.structureChanged;
   const history = changed ? commitHistory(state.history, after) : state.history;
   return {
     ok: true,

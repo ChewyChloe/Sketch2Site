@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 // Collapsing the side panels gives the canvas the whole width: no empty column is left on the right.
 test("collapsed side panels leave no empty column on wide screens", async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 760 });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "收合側欄" }).click();
   await expect(page.getByRole("complementary", { name: "物件檢查器" })).toHaveCount(0);

@@ -5,7 +5,7 @@ for (const width of [1440, 375])
     await page.setViewportSize({ width, height: 1000 });
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
     const home = page.getByRole("main", { name: "Sketch2Site 首頁" });
@@ -31,3 +31,16 @@ for (const width of [1440, 375])
     await expect(page.locator(".sidebar [data-effect-id]")).toHaveCount(68);
     expect(errors).toEqual([]);
   });
+
+// Visiting the site opens the home page; choosing a project opens its draft, and reloading stays there.
+test("the site opens on the home page, and a chosen project opens on the canvas", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const home = page.getByRole("main", { name: "Sketch2Site 首頁" });
+  await expect(home.getByRole("heading", { name: "我的工作區" })).toBeVisible();
+  await expect(page.getByTestId("canvas-node")).toHaveCount(0);
+  await home.getByRole("article", { name: "範本：社團招生頁" }).getByRole("button", { name: /用這個範本開始/ }).click();
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await expect(page.getByTestId("canvas-node").first()).toBeVisible();
+  await expect(home).toHaveCount(0);
+});

@@ -7,7 +7,7 @@ test("video, carousel and flipbook from draft to site; character and 3D object a
   // The video player is a third party; stub it so the test stays offline.
   const players: string[] = [];
   await page.route(/youtube-nocookie\.com|player\.vimeo\.com/, (r) => { players.push(r.request().url()); return r.fulfill({ contentType: "text/html", body: "<p>player</p>" }); });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   // Still in development: shown greyed out, cannot be added.
   for (const soon of ["動畫角色", "3D 物件"]) await expect(page.getByRole("button", { name: soon + "（開發中）" })).toBeDisabled();
@@ -52,7 +52,7 @@ test("video, carousel and flipbook from draft to site; character and 3D object a
 
 test("看手機版 opens the preview at phone width, and the 桌面／手機 switch stays on the toolbar", async ({ page }) => {
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
   await page.getByRole("button", { name: "看手機版" }).click();

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 test("describe-site panel: fill-in blanks, Tab suggestions, details, and generation follows the brief", async ({ page }) => {
   // Exercise the local-layout path (AI not configured).
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   for (const n of ["首屏介紹", "三欄特色", "價目表", "行動呼籲"]) await page.getByRole("button", { name: "新增區塊：" + n }).click();
   await page.getByRole("button", { name: "描述網站" }).click();

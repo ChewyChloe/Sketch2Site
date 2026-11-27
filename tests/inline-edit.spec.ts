@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 // Double-click a canvas element to type directly into it.
 test("double-click edits text in place; Enter / Ctrl+Enter save, Escape cancels, undo restores", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增區塊：行動呼籲" }).click();
   const heading = page.locator('[data-testid="canvas-node"].heading');

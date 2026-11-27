@@ -1,7 +1,7 @@
 import { choose } from "./helpers/select";
 import {test,expect} from '@playwright/test';
 async function setup(page:import('@playwright/test').Page){
- await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');
+ await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');
  const canvas=page.getByTestId('canvas');
  for(const [name,x,y] of [['按鈕',100,100],['卡片',400,100],['文字',100,300]] as const)
   await page.getByRole('button',{name:'新增'+name,exact:true}).dragTo(canvas,{targetPosition:{x,y}});

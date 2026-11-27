@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 // three variants of the chosen one. Works without AI; with AI the answers go to the layout request.
 async function club(page: import("@playwright/test").Page) {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
   await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：社團招生頁" }).getByRole("button", { name: /用這個範本開始/ }).click()]);

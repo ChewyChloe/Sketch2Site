@@ -23,7 +23,7 @@ for (const width of [1440, 768, 375])
       )
         network.push(r.url());
     });
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     await useTemplate(page, "活動介紹");
     if (
@@ -161,7 +161,7 @@ for (const width of [1440, 768, 375])
 test("100-node drag preserves grab offset at 50/75% and can be cancelled", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   const canvas = generationFixtures()[0];
   const sample = canvas.nodes[0];
@@ -239,7 +239,7 @@ test("200% text magnification preserves readable controls and exits at narrow wi
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const width of [1440, 375]) {
     await page.setViewportSize({ width, height: 1000 });
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     await openWebsiteWorkspace(page);
     // Simulate text-only enlargement explicitly; this is not a claim about browser zoom settings.

@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
 async function open(page: Page) {
-  await page.goto("/");
+  await page.goto("/?draft");
   await openWebsiteWorkspace(page);
   await expect(page.locator(".rendered-page h1")).toBeVisible();
 }
@@ -57,7 +57,7 @@ test("自動保存、刷新、新 Session 歷史、範例取消與 Canvas 隔離
   page,
   context,
 }) => {
-  await page.goto("/");
+  await page.goto("/?draft");
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
   const draftId = await page
     .getByTestId("canvas-node")
@@ -282,7 +282,7 @@ test("禁止 IndexedDB 時安全失敗且不顯示預設範例", async ({ page }
       throw new DOMException("blocked", "SecurityError");
     };
   });
-  await page.goto("/");
+  await page.goto("/?draft");
   await openWebsiteWorkspace(page);
   await expect(page.getByRole("alert")).toContainText("瀏覽器不讓網站存資料");
   await expect(page.locator("[data-page-id]")).toHaveCount(0);
@@ -323,7 +323,7 @@ test("關閉 Chromium 程序後使用同一隔離 profile 可恢復已保存頁�
     await second.close();
   }
   async function openPersistent(p: Page) {
-    await p.goto("http://127.0.0.1:5173");
+    await p.goto("http://127.0.0.1:5173/?draft");
     await p.getByRole("button", { name: "預覽", exact: true }).click();
     await expect(p.locator(".rendered-page h1")).toBeVisible();
   }

@@ -5,7 +5,7 @@ test("signature motions play in the library and carry into the site", async ({ p
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "動畫素材庫", exact: true }).click();
   const card = (id: string) => page.locator(`.sidebar [data-effect-id="${id}"]`);

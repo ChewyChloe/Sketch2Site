@@ -92,7 +92,7 @@ for (const width of [1440, 768, 375])
     });
     await page.setViewportSize({ width, height: 1000 });
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     await expect(
       page.getByRole("heading", { name: "從一個想法開始", exact: true }),

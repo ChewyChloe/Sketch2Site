@@ -15,7 +15,7 @@ import type { CanvasSpec } from "../src/spec";
 const fixtures = generationFixtures();
 async function seed(page: Page, canvas = fixtures[0]) {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.evaluate(
     async (value) =>
@@ -265,7 +265,7 @@ test("候選保存失敗仍保留候選，最後有效頁面不變，可重試�
   expect(await savedPage(page)).not.toEqual(previous);
 });
 test("透過既有元件庫建立標題、圖片與可操作按鈕再生成", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增標題", exact: true }).click();
   await page.getByRole("button", { name: "新增圖片", exact: true }).click();

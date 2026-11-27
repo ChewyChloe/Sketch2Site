@@ -6,7 +6,7 @@ const ready = (page: import("@playwright/test").Page) => page.route(/\/api\/gene
 test("before sign-in is set up, the button shows both options as coming soon", async ({ page }) => {
   await ready(page);
   await page.route(/\/api\/auth\/me$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ providers: [], user: null }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "登入", exact: true }).click();
   const card = page.getByRole("dialog", { name: "登入" });

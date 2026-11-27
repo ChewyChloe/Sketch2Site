@@ -19,7 +19,7 @@ test("frames hold photos with crop and adjustments, in the draft and on the site
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增區塊：首屏介紹" }).click();
   await page.getByRole("button", { name: "新增相框：愛心" }).click();

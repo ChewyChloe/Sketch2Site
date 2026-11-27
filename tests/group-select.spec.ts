@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 test("grouped blocks: first press moves the group, a second press moves one element", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增區塊：行動呼籲" }).click();
   const heading = page.locator('[data-testid="canvas-node"].heading');

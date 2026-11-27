@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {generationFixtures} from './fixtures/generation';
 test('draft supports copy/paste/select-all/cut/group/ungroup and native text editing',async({page})=>{
- await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');
+ await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');
  const c=generationFixtures()[0];await page.evaluate(async c=>new Promise<void>((res,rej)=>{const r=indexedDB.open('sketch2site',3);r.onsuccess=()=>{const d=r.result,t=d.transaction('drafts','readwrite');t.objectStore('drafts').put(c,'current');t.oncomplete=()=>{d.close();res();};t.onabort=()=>rej(t.error);};}),c);await page.reload();await expect(page.getByRole('status')).toContainText('草稿已就緒');
  const nodes=page.getByTestId('canvas-node');await expect(nodes).toHaveCount(6);await page.screenshot({path:'test-results/studio-clean.png',fullPage:true});
  await nodes.first().click();await page.keyboard.press('Control+c');await page.keyboard.press('Control+v');await expect(nodes).toHaveCount(7);

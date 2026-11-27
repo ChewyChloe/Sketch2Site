@@ -89,7 +89,7 @@ function ArtShip() {
 export function WhySection() {
   const cards: [string, string, string, ReactNode][] = [
     ["排版", "亂擺也能變整齊", "標題、文字、卡片隨便放，智慧排版會看懂順序，排成首屏、特色、價目表和問答", <ArtSketchToSite />],
-    ["風格", "換風格只要一下", `${Object.keys(themeLabels).length} 套配色與字體一鍵切換，內容不變；再加上動畫，頁面立刻有個性`, <ArtThemes />],
+    ["風格", "換風格只要一下", "多套配色與字體一鍵切換，內容都不變！再加上動畫，頁面立刻有個性～", <ArtThemes />],
     ["上線", "做完就能帶走", "匯出獨立的 React + TypeScript 專案，聯絡表單也能接上收件服務，放到任何主機都能用", <ArtShip />],
   ];
   return (
@@ -118,7 +118,7 @@ const stepIcons: Record<string, ReactNode> = {
 };
 const steps: [string, string, string][] = [
   ["draw", "畫草稿", "拖入元件或區塊範本，位置不必精準"],
-  ["build", "生成網站", "自動整理成完整、好看的頁面"],
+  ["build", "生成網站", "自動整理成完整且好看的頁面"],
   ["style", "調整風格", "換主題、加動畫、雙擊直接改字"],
   ["ship", "匯出上線", "下載 React 專案，部署到任何靜態主機"],
 ];

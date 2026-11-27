@@ -18,7 +18,7 @@ test("swap photos between frames by dragging, and smart crop", async ({ page }) 
   await page.setViewportSize({ width: 1440, height: 900 });
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增相框：圓形" }).click();
   await page.getByRole("button", { name: "新增相框：愛心" }).click();

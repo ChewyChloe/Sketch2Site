@@ -4,7 +4,7 @@ import {openPanel} from './helpers/workbench';
 for(const width of [1440,768,375])test(`native library review: readable, directly interactive, isolated replay ${width}`,async({page})=>{
  const errors:string[]=[],external:string[]=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/generation'))external.push(r.url());});
- await page.setViewportSize({width,height:1000});await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');await openWebsiteWorkspace(page);await openPanel(page,'動畫');
+ await page.setViewportSize({width,height:1000});await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');await openWebsiteWorkspace(page);await openPanel(page,'動畫');
  const library=page.locator('#preview-inspector .animation-library');await expect(library.locator('[data-effect-id]')).toHaveCount(68);await expect(library.locator('.preview-error')).toHaveCount(0);
  for(const sample of await library.locator('.rendered-page').all()){
   expect(await sample.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);await expect(sample).toHaveCSS('transform','none');
@@ -37,7 +37,7 @@ for(const width of [1440,768,375])test(`native library review: readable, directl
  const {writeFileSync}=await import('node:fs');writeFileSync(`test-results/library-metrics-${width}.json`,JSON.stringify(metrics,null,2));
 });
 test('hover demos respond to keyboard trials and previews never navigate away',async({page})=>{
- await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');await openWebsiteWorkspace(page);await openPanel(page,'動畫');
+ await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');await openWebsiteWorkspace(page);await openPanel(page,'動畫');
  const library=page.locator('#preview-inspector .animation-library'),lift=library.locator('[data-effect-id="hover-lift"]'),glow=library.locator('[data-effect-id="hover-glow"]');
  await lift.getByRole('button',{name:'體驗懸停浮起示意'}).click();await expect(lift.locator('.effect-lift')).toBeFocused();await expect.poll(()=>lift.locator('.effect-lift').evaluate(el=>getComputedStyle(el).transform)).not.toBe('none');
  await glow.getByRole('button',{name:'體驗懸停光暈示意'}).click();await expect(glow.locator('.effect-glow')).toBeFocused();await expect.poll(()=>glow.locator('.effect-glow').evaluate(el=>getComputedStyle(el).boxShadow)).not.toBe('none');

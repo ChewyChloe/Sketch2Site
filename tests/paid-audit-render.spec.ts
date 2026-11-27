@@ -4,7 +4,7 @@ for(let i=0;i<6;i++)test('paid saved response case '+i+' geometry, motion intera
  const folder='outputs/paid-six-audit/'+i;test.skip(!existsSync(folder+'/page.json'),'Await paid case');
  const canvas=JSON.parse(readFileSync(folder+'/canvas.json','utf8')),result=JSON.parse(readFileSync(folder+'/result.json','utf8')),generated=JSON.parse(readFileSync(folder+'/page.json','utf8'));
  expect(result.status).toBe('PASS');const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');
+ await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');
  await page.evaluate(async c=>new Promise<void>(res=>{const r=indexedDB.open('sketch2site',3);r.onsuccess=()=>{const d=r.result,t=d.transaction('drafts','readwrite');t.objectStore('drafts').put(c,'current');t.oncomplete=()=>{d.close();res();};};}),canvas);await page.reload();await expect(page.getByRole('status')).toContainText('草稿已就緒');
  await page.route('**/api/generation',async route=>{const request=route.request().postDataJSON();await route.fulfill({contentType:'application/json',body:JSON.stringify({requestId:request.requestId,page:generated,mode:'live',usage:result.usage})});});
  await page.getByRole('button',{name:'生成網站',exact:true}).click();await expect(page.getByRole('main',{name:'生成候選預覽'})).toBeVisible();

@@ -3,7 +3,7 @@ import { test, expect, devices } from "@playwright/test";
 test.use({ ...devices["Pixel 7"] });
 test("pinch and double-tap zoom the draft canvas on phones", async ({ page }) => {
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   const zoom = page.getByLabel("畫布縮放");
   await expect(zoom).toHaveAttribute("data-value", "fit");

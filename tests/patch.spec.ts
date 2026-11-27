@@ -15,7 +15,7 @@ test("依 ID 選取、套用、Diff、撤銷重做、非法修改與草稿隔離
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
   const draft = page.getByTestId("canvas-node");
@@ -94,7 +94,7 @@ for (const width of [768, 375]) {
   test("標題編輯在 " + width + "px 可操作", async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     await openWebsiteWorkspace(page);
     await page.locator(".rendered-page h1").click();

@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-27",
+  "purpose": "First real check of AI notes that rewrite whole sections (the model reads the whole site)",
+  "page": "社團招生頁 template, built locally",
+  "notes": ["gallery photo: 把這幾張照片做成旋轉木馬滾動", "FAQ heading: 標題寫得更親切，讓新生敢問"],
+  "calls": 1,
+  "result": "PASS: gallery grid became a carousel of the site's own three photos; FAQ heading became 新生有問題，放心問！; both sections passed fromCompact and applied as replace-section patches; other sections unchanged",
+  "usage": { "inputTokens": 2522, "outputTokens": 1022, "cachedInputTokens": 0, "reasoningTokens": 150, "estimatedCostUsd": 0.0007632, "latencyMs": 8029 },
+  "rates": "USD 0.10 / 0.50 / 0.01 per million input / output / cached input tokens (server settings)"
+}

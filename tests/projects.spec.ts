@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("project workspace keeps drafts separate and survives reloads", async ({ page }) => {
   const dialogs: string[] = [];
   page.on("dialog", (d) => { dialogs.push(d.message()); void d.dismiss(); });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增區塊：首屏介紹" }).click(); // unsaved on purpose
   const homeLink = page.getByRole("button", { name: "Sketch2Site 首頁" });

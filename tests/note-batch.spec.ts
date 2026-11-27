@@ -4,16 +4,20 @@ import { buildSite } from "./helpers/workbench";
 test("batch notes: stage, send once, review, apply and undo", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/\/api\/generation\/ready$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  // AI is stubbed: one notes request, answering only within what it was offered.
-  const sent: unknown[] = [];
+  // AI is stubbed: one rewrite request with the whole site; it returns the note's section reworded.
+  const sent: { page: { sections: Node[] }; notes: { nodeId: string; note: string }[] }[] = [];
+  type Node = { id: string; content?: string; children?: Node[] };
   await page.route(/\/api\/generation\/status$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: true, csrfToken: "a".repeat(64) }) }));
-  await page.route(/\/api\/generation\/notes$/, async (r) => {
+  await page.route(/\/api\/generation\/rewrite$/, async (r) => {
     const req = JSON.parse(r.request().postData() ?? "{}");
     sent.push(req);
-    const n = req.notes[0].n;
-    return r.fulfill({ contentType: "application/json", body: JSON.stringify({ requestId: req.requestId, results: [{ n, newText: "一起來喝咖啡吧", commands: [] }] }) });
+    const has = (n: Node, id: string): boolean => n.id === id || (n.children ?? []).some((c) => has(c, id));
+    const section = structuredClone(req.page.sections.find((s: Node) => has(s, req.notes[0].nodeId)));
+    const walk = (n: Node) => { if (n.id === req.notes[0].nodeId) n.content = "一起來喝咖啡吧"; n.children?.forEach(walk); };
+    walk(section);
+    return r.fulfill({ contentType: "application/json", body: JSON.stringify({ requestId: req.requestId, sections: [section], notes: [{ n: req.notes[0].n, summary: "改得更溫暖" }] }) });
   });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
   await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：巷口咖啡小店" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
@@ -45,7 +49,9 @@ test("batch notes: stage, send once, review, apply and undo", async ({ page }) =
   await expect(tray.getByText("可以改 2 / 2 則")).toBeVisible();
   // Only the note the local reader did not understand went to the AI, in one request.
   expect(sent).toHaveLength(1);
-  expect((sent[0] as { notes: { note: string }[] }).notes.map((x) => x.note)).toEqual(["寫得更溫暖一點"]);
+  expect(sent[0].notes.map((x) => x.note)).toEqual(["寫得更溫暖一點"]);
+  // The AI got the whole site, not just the element.
+  expect(sent[0].page.sections.length).toBeGreaterThan(1);
   await expect(tray.getByRole("listitem").nth(1)).toContainText("AI：");
   await tray.getByRole("button", { name: "套用 2 則" }).click();
   await expect(frame.getByRole("heading", { name: "一起來喝咖啡吧" })).toBeVisible();

@@ -19,7 +19,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   context,
 }) => {
   test.setTimeout(180000);
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await openWebsiteWorkspace(page);
   // A local raster is imported through the real UI, then referenced by the page being exported.

@@ -13,7 +13,7 @@ for (const width of [1440, 768, 375])
       outbound.push(r.request().url());
       return r.abort();
     });
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     if (width < 1000)
       await page.getByRole("button", { name: "展開側欄", exact: true }).click();

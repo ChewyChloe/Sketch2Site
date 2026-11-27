@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   });
 });
 async function openPreview(page: Page) {
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await openWebsiteWorkspace(page);
   await expect(
@@ -34,7 +34,7 @@ async function upload(page: Page, data: unknown) {
 test("預覽互動、動畫、草稿隔離與恢復", async ({ page, context }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "新增文字", exact: true }).click();
   const id = await page.getByTestId("canvas-node").getAttribute("data-node-id");

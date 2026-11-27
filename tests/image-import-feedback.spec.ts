@@ -18,7 +18,7 @@ async function raster(page: Page, format: "png" | "jpeg") {
 
 for (const format of ["png", "jpeg"] as const) {
   test(`real ${format}: selecting the same file twice adds two decoded images`, async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     const file = { name: `same.${format}`, mimeType: `image/${format}`, buffer: Buffer.from(await raster(page, format), "base64") };
     for (let count = 1; count <= 2; count++) {
@@ -43,7 +43,7 @@ for (const format of ["png", "jpeg"] as const) {
 
 for (const [format, mime] of [["png", ""], ["jpeg", ""], ["png", "image/x-png"], ["jpeg", "image/pjpeg"], ["jpeg", "image/jpg"]] as const) {
   test(`native ${format} MIME ${mime || "missing"} still requires real raster bytes`, async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     const base64 = await raster(page, format);
     await page.getByLabel("匯入圖片檔案").evaluate((input: HTMLInputElement, data) => {
@@ -60,7 +60,7 @@ for (const [format, mime] of [["png", ""], ["jpeg", ""], ["png", "image/x-png"],
 for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 667 }]) {
   test(`failed import has visible feedback at ${viewport.width}px and preserves the draft`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     await openDraftComponents(page);
     await page.getByRole("button", { name: "新增文字", exact: true }).click();

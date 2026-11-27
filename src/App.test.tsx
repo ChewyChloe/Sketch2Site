@@ -7,6 +7,8 @@ import {
   waitFor,
   cleanup,
 } from "@testing-library/react";
+// The app opens on the home page; #draft opens the draft directly (set before App loads).
+vi.hoisted(() => { window.history.replaceState(null, "", "/?draft"); });
 import App from "./App";
 vi.mock("./storage", () => ({
   loadDraft: vi.fn(async () => null),

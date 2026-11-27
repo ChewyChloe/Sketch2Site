@@ -8,7 +8,7 @@ test('renders recorded real Luna response with six animations, saves it, and nev
  const generated=JSON.parse(readFileSync(folder+'/page.json','utf8'));
  expect(result.status).toBe('LIVE_PROVIDER_PASS');
  await page.emulateMedia({reducedMotion:'reduce'});
- await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');
+ await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');
  await page.evaluate(async canvas=>new Promise<void>((resolve,reject)=>{const r=indexedDB.open('sketch2site',3);r.onsuccess=()=>{const d=r.result,t=d.transaction('drafts','readwrite');t.objectStore('drafts').put(canvas,'current');t.oncomplete=()=>{d.close();resolve();};t.onabort=()=>reject(t.error);};}),canvas);
  await page.reload();await expect(page.getByRole('status')).toContainText('草稿已就緒');
  let replayCount=0;

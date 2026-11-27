@@ -4,7 +4,7 @@ import {PageSchema} from '../src/pageSpec';
 import {createMotion} from '../src/motion';
 const text='在這裡寫下想法'.repeat(6),id='83000000-0000-4000-8000-000000000002';
 for(const width of [1002,375])test(`long Chinese text actually follows visible curves at ${width}px`,async({page})=>{
- await page.setViewportSize({width,height:900});await page.goto('/');await expect(page.getByRole('status')).toContainText('草稿已就緒');await page.getByRole('button',{name:'預覽',exact:true}).click();
+ await page.setViewportSize({width,height:900});await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');await page.getByRole('button',{name:'預覽',exact:true}).click();
  const input=PageSchema.parse({schemaVersion:2,metadata:{title:'曲線驗證（非AI）',language:'zh-Hant'},typography:'sans',styles:'neutral',responsive:{mobileColumns:1,desktopColumns:1},sections:[{id:'83000000-0000-4000-8000-000000000001',type:'section',children:[{id,type:'paragraph',content:text,effects:[createMotion('curved-path-text',id)]}]}]});
  await page.getByLabel('載入頁面檔案').setInputFiles({name:'curve-test.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(input))});
  await page.emulateMedia({reducedMotion:'reduce'});

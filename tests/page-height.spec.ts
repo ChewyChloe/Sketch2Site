@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 // The page frame's bottom edge can be dragged (or moved with arrow keys) to change the page height.
 test("page height: drag the bottom edge, keyboard steps, minimum and undo", async ({ page }) => {
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   const handle = page.getByRole("slider", { name: "網頁高度" });
   await expect(handle).toHaveAttribute("aria-valuenow", "1200");

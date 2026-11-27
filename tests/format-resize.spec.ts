@@ -2,7 +2,7 @@ import { choose } from "./helpers/select";
 import { test, expect } from "@playwright/test";
 // Slide-editor style editing: resize handles, Ctrl/Cmd+Shift+C/V format copy, format brush.
 test("resize handles, format copy/paste and format brush", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await choose(page.getByLabel("畫布縮放"), "1");
   for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "新增卡片", exact: true }).click();

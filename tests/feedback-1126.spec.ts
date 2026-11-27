@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 // rows above the live preview squeezed, and a strip of page showing above the sticky site nav.
 test("home page has no step tabs; project card hover has no band", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await expect(page.getByRole("group", { name: "工作區模式" })).toBeVisible();
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
@@ -16,7 +16,7 @@ test("home page has no step tabs; project card hover has no band", async ({ page
 test("晨光 is not offered; rows keep their height; the site nav sticks to the very top", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
   await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：巷口咖啡小店" }).getByRole("button", { name: /用這個範本開始/ }).click()]);

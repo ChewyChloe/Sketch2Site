@@ -11,7 +11,7 @@ async function load(page: Page, bare = false) {
     const errors: string[] = [], generation: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/api/generation')) generation.push(request.url()); });
-    await page.goto('/');
+    await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await openWebsiteWorkspace(page);
     const fixture = extendedMotionFixture();

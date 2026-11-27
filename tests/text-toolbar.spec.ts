@@ -6,7 +6,7 @@ test("text toolbar, text shortcuts and the shortcuts panel", async ({ page }) =>
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   // No text selected: no toolbar.
   await expect(page.getByRole("toolbar", { name: "文字樣式" })).toHaveCount(0);

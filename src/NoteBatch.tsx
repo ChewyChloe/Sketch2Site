@@ -1,18 +1,22 @@
 import { useLayoutEffect, useState, type RefObject } from "react";
-import { interpretAnnotation, suggestionsFor } from "./annotate";
+import { interpretAnnotation } from "./annotate";
 import { GenerationError, generationCodes } from "./generation";
-import { NoteEditResponseSchema, noteKinds, type NoteEdit, type NoteKind } from "./noteEdits";
+import { RewriteResponseSchema, sectionOf } from "./sectionRewrite";
 import { allSections, type PageNode, type PageSpec } from "./pageSpec";
 
 // Batch notes: leave notes on several parts of the site, then send them together.
-// Each note is read locally first (free); only what is not understood goes to the AI,
-// all in one request. Nothing changes until the user presses 套用 on the summary.
+// Each note is read locally first (free). Notes it does not fully understand go to the AI in
+// one request with the whole site; the AI returns new versions of those notes' sections
+// (it may restructure them), checked by sectionRewrite.ts and the patch rules.
+// Nothing changes until the user presses 套用 on the summary.
 
 /** What 描述網站 says about the site, so a rewrite fits who it is for. */
 export type NoteBrief = { audience?: string; purpose?: string; mood?: string };
 const short = (v?: string) => (v && v.trim() ? v.trim().slice(0, 20) : undefined);
 export type StagedNote = { key: string; nodeId: string; text: string };
-export type NoteOutcome = { n: number; note: StagedNote; by: "local" | "ai" | "none"; summary: string; patches: unknown[]; scope: string[] };
+// shared: the AI rewrote this note's section together with an earlier note's (one patch for both).
+export type NoteOutcome = { n: number; note: StagedNote; by: "local" | "ai" | "none"; summary: string; patches: unknown[]; scope: string[]; shared?: boolean };
+export type RewriteAnswer = { sections: PageNode[]; notes: { n: number; summary: string }[] };
 
 const typeNames: Record<string, string> = { heading: "標題", paragraph: "文字", button: "按鈕", card: "卡片", image: "圖片", form: "表單", media: "媒體", grid: "網格", section: "區塊", stack: "群組" };
 const nodeOf = (page: PageSpec, id: string): PageNode | undefined => {
@@ -21,15 +25,13 @@ const nodeOf = (page: PageSpec, id: string): PageNode | undefined => {
   return undefined;
 };
 export const noteLabel = (page: PageSpec, id: string) => typeNames[nodeOf(page, id)?.type ?? ""] ?? "元件";
-// Generic commands the local reader understands for most elements, offered to the AI as well.
-const generic = ["大一點", "小一點", "粗體", "置中", "靠左", "淡入", "加動態", "留白多一點", "底色淡一點"];
-
-/** Sends the notes the local reader could not handle to the AI in one request. */
-export async function requestNoteEdits(
-  notes: { n: number; kind: NoteKind; text: string; note: string; allowed: string[] }[],
+/** Sends the notes the local reader could not handle, with the whole site, to the AI in one request. */
+export async function requestSectionRewrite(
+  page: PageSpec,
+  notes: { n: number; nodeId: string; note: string }[],
   signal: AbortSignal,
   brief?: NoteBrief,
-): Promise<NoteEdit[]> {
+): Promise<RewriteAnswer> {
   if (import.meta.env.VITE_SITES_FRONTEND_ONLY === "true") throw new GenerationError("NOT_CONFIGURED");
   let config: { configured?: boolean; csrfToken?: string };
   try {
@@ -42,12 +44,12 @@ export async function requestNoteEdits(
   const requestId = crypto.randomUUID();
   let response: Response;
   try {
-    response = await fetch("/api/generation/notes", {
+    response = await fetch("/api/generation/rewrite", {
       method: "POST",
       credentials: "same-origin",
       signal,
       headers: { "Content-Type": "application/json", "X-Sketch-CSRF": config.csrfToken! },
-      body: JSON.stringify({ requestId, notes, audience: short(brief?.audience), purpose: short(brief?.purpose), mood: short(brief?.mood) }),
+      body: JSON.stringify({ requestId, page, notes, audience: short(brief?.audience), purpose: short(brief?.purpose), mood: short(brief?.mood) }),
     });
   } catch {
     throw new GenerationError("UNAVAILABLE");
@@ -62,63 +64,61 @@ export async function requestNoteEdits(
     const code = (data as { code?: unknown })?.code;
     throw new GenerationError(generationCodes.includes(code as never) ? (code as (typeof generationCodes)[number]) : "UNAVAILABLE");
   }
-  const parsed = NoteEditResponseSchema.safeParse({ requestId: (data as { requestId?: unknown }).requestId, results: (data as { results?: unknown }).results });
+  const d = data as { requestId?: unknown; sections?: unknown; notes?: unknown };
+  const parsed = RewriteResponseSchema.safeParse({ requestId: d.requestId, sections: d.sections, notes: d.notes });
   if (!parsed.success || parsed.data.requestId !== requestId) throw new GenerationError("INVALID_OUTPUT");
-  return parsed.data.results;
+  return { sections: parsed.data.sections, notes: parsed.data.notes };
 }
 
 /**
- * Reads every note locally; notes (or parts of notes) the reader did not understand are sent
- * to the AI once, and its answer is read by the same local reader. Returns one outcome per note.
+ * Reads every note locally. Notes it fully understands become local edits; the others, plus
+ * any local note in the same section, go to the AI once, which rewrites those sections.
+ * Returns one outcome per note.
  */
 export async function processNotes(
   page: PageSpec,
   notes: StagedNote[],
-  ask: typeof requestNoteEdits,
+  ask: typeof requestSectionRewrite,
   signal: AbortSignal,
   brief?: NoteBrief,
 ): Promise<{ outcomes: NoteOutcome[]; aiError?: string }> {
-  const outcomes: NoteOutcome[] = [];
-  const pending: { outcome: NoteOutcome; leftover: string }[] = [];
-  notes.forEach((note, i) => {
-    const n = i + 1;
-    const read = interpretAnnotation(page, note.nodeId, note.text);
-    const outcome: NoteOutcome = { n, note, by: "none", summary: "", patches: [], scope: [] };
-    if (read.ok && read.patches.length) { outcome.by = "local"; outcome.patches = read.patches; outcome.scope = read.scope; outcome.summary = read.summary.join("、"); }
-    const leftover = read.ok ? read.skipped.join("，") : note.text;
-    if (leftover.trim()) pending.push({ outcome, leftover });
-    else if (!read.ok) outcome.summary = read.message;
-    outcomes.push(outcome);
+  const outcomes: NoteOutcome[] = notes.map((note, i) => ({ n: i + 1, note, by: "none", summary: "", patches: [], scope: [] }));
+  const reads = notes.map((note) => interpretAnnotation(page, note.nodeId, note.text));
+  const needsAi = (i: number) => { const r = reads[i]; return !r.ok || !r.patches.length || r.skipped.some((x) => x.trim()); };
+  const aiSections = new Set(outcomes.filter((_, i) => needsAi(i)).map((o) => sectionOf(page, o.note.nodeId)?.id).filter(Boolean) as string[]);
+  const toAi = outcomes.filter((o) => aiSections.has(sectionOf(page, o.note.nodeId)?.id ?? ""));
+  outcomes.forEach((o, i) => {
+    if (toAi.includes(o)) return;
+    const r = reads[i];
+    if (r.ok && r.patches.length) { o.by = "local"; o.patches = r.patches; o.scope = r.scope; o.summary = r.summary.join("、"); }
+    else o.summary = r.ok ? "看不懂，換個說法試試" : r.message;
   });
   let aiError: string | undefined;
-  if (pending.length) {
-    const asks = pending.map(({ outcome, leftover }) => {
-      const node = nodeOf(page, outcome.note.nodeId);
-      const kind = (noteKinds as readonly string[]).includes(node?.type ?? "") ? (node!.type as NoteKind) : "other";
-      const text = node?.type === "heading" || node?.type === "paragraph" || node?.type === "button" ? (node.content ?? "").slice(0, 400) : "";
-      return { n: outcome.n, kind, text, note: leftover.slice(0, 300), allowed: [...new Set([...suggestionsFor(page, outcome.note.nodeId), ...generic])].filter((c) => c.length <= 20).slice(0, 16) };
-    });
+  if (toAi.length) {
     try {
-      const edits = await ask(asks, signal, brief);
-      for (const { outcome } of pending) {
-        const edit = edits.find((e) => e.n === outcome.n);
-        if (!edit) continue;
-        const current = asks.find((a) => a.n === outcome.n)?.text ?? "";
-        const newText = edit.newText && edit.newText.trim() !== current.trim() ? edit.newText : "";
-        const instruction = [...(newText ? [`改成「${newText}」`] : []), ...edit.commands].join("，");
-        const read = instruction ? interpretAnnotation(page, outcome.note.nodeId, instruction) : null;
-        if (read?.ok && read.patches.length) {
-          outcome.patches = [...outcome.patches, ...read.patches];
-          outcome.scope = [...new Set([...outcome.scope, ...read.scope])];
-          outcome.summary = [outcome.summary, read.summary.join("、")].filter(Boolean).join("、");
-          outcome.by = "ai";
-        }
+      const answer = await ask(page, toAi.map((o) => ({ n: o.n, nodeId: o.note.nodeId, note: o.note.text.slice(0, 300) })), signal, brief);
+      for (const o of toAi) {
+        const sectionId = sectionOf(page, o.note.nodeId)!.id;
+        const section = answer.sections.find((s) => s.id === sectionId);
+        const said = answer.notes.find((x) => x.n === o.n)?.summary;
+        if (!section || JSON.stringify(section) === JSON.stringify(sectionOf(page, sectionId))) { o.summary = said ? "AI：" + said : "AI 沒有改這則，換個說法試試"; continue; }
+        o.by = "ai";
+        o.scope = [sectionId];
+        o.summary = said ?? "改好了這一區";
+        const first = toAi.find((x) => sectionOf(page, x.note.nodeId)?.id === sectionId);
+        if (first === o) o.patches = [{ operation: "replace-section", targetId: sectionId, payload: { section } }];
+        else o.shared = true;
       }
     } catch (e) {
       const code = e instanceof GenerationError ? e.code : "UNAVAILABLE";
       aiError = code === "NOT_CONFIGURED" || code === "UNAVAILABLE" ? "AI 目前沒有開啟，看不懂的註解先跳過" : code === "LIMIT" ? "AI 這次的次數用完了，看不懂的註解先跳過" : "AI 這次沒有回應，看不懂的註解先跳過";
+      // Without the AI, notes the reader fully understood still work on their own.
+      for (const o of toAi) {
+        const r = reads[o.n - 1];
+        if (r.ok && r.patches.length && !needsAi(o.n - 1)) { o.by = "local"; o.patches = r.patches; o.scope = r.scope; o.summary = r.summary.join("、"); }
+        else o.summary = "看不懂，換個說法試試，例如「大一點」或改成「新的文字」";
+      }
     }
-    for (const { outcome } of pending) if (!outcome.patches.length) { outcome.by = "none"; outcome.summary = aiError ? "看不懂，換個說法試試，例如「大一點」或改成「新的文字」" : "AI 沒有改這則，換個說法試試，例如改成「新的文字」"; }
   }
   return { outcomes, aiError };
 }
@@ -177,12 +177,12 @@ export function NoteTray({
   const [result, setResult] = useState<{ outcomes: NoteOutcome[]; aiError?: string } | null>(null);
   const [error, setError] = useState("");
   if (!notes.length && phase === "list") return null;
-  const usable = result?.outcomes.filter((o) => o.patches.length) ?? [];
+  const usable = result?.outcomes.filter((o) => o.patches.length || o.shared) ?? [];
   const send = async () => {
     setPhase("working");
     setError("");
     const controller = new AbortController();
-    const out = await processNotes(page, notes, requestNoteEdits, controller.signal, brief);
+    const out = await processNotes(page, notes, requestSectionRewrite, controller.signal, brief);
     setResult(out);
     setPhase("review");
   };
@@ -201,12 +201,12 @@ export function NoteTray({
         <small>{phase === "review" ? `可以改 ${usable.length} / ${notes.length} 則` : `${notes.length} 則`}</small>
       </header>
       <ol>
-        {(phase === "review" && result ? result.outcomes : notes.map((note, i) => ({ n: i + 1, note, by: "none" as const, summary: "", patches: [], scope: [] }))).map((o) => (
-          <li key={o.note.key} className={phase === "review" ? "is-" + (o.patches.length ? o.by : "none") : undefined}>
+        {(phase === "review" && result ? result.outcomes : notes.map((note, i): NoteOutcome => ({ n: i + 1, note, by: "none", summary: "", patches: [], scope: [] }))).map((o) => (
+          <li key={o.note.key} className={phase === "review" ? "is-" + (o.patches.length || o.shared ? o.by : "none") : undefined}>
             <span className="note-no">{o.n}</span>
             <span className="note-body">
               <small>{noteLabel(page, o.note.nodeId)}：{o.note.text}</small>
-              {phase === "review" && <span className="note-result">{o.patches.length ? (o.by === "ai" ? "AI：" : "") + o.summary : o.summary}</span>}
+              {phase === "review" && <span className="note-result">{o.patches.length || o.shared ? (o.by === "ai" ? "AI：" : "") + o.summary : o.summary}</span>}
             </span>
             {phase === "list" && <button type="button" className="note-remove" aria-label={`刪除第 ${o.n} 則註解`} onClick={() => onRemove(o.note.key)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>}
           </li>

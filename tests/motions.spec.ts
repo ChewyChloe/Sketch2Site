@@ -7,7 +7,7 @@ async function load(page: Page) {
     const calls: string[] = [];
     page.on('request', r => { if (r.method() === 'POST' && r.url().includes('/api/generation'))
         calls.push(r.url()); });
-    await page.goto('/');
+    await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await openWebsiteWorkspace(page);
     await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'original-motions-test.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(motionFixture())) });
@@ -190,7 +190,7 @@ test('draft markers retain user-supplied faces and labels without running them o
     const calls: string[] = [];
     page.on('request', r => { if (r.method() === 'POST' && r.url().includes('/api/generation'))
         calls.push(r.url()); });
-    await page.goto('/');
+    await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await page.getByRole('button', { name: '新增卡片', exact: true }).click();
     await page.getByRole('tab', { name: '動畫', exact: true }).click();

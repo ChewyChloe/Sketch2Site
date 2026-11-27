@@ -41,7 +41,7 @@ for (const width of [1440, 768, 375])
       unexpected.push(r.request().url());
       return r.abort();
     });
-    await page.goto("/");
+    await page.goto("/?draft");
     await expect(page.getByRole("status")).toContainText("草稿已就緒");
     await useTemplate(page, "個人作品集");
     await expect(page.getByTestId("canvas-node")).toHaveCount(6);
@@ -116,7 +116,7 @@ for (const width of [1440, 768, 375])
   });
 test("a home template builds into a site and the site is saved", async ({ page }) => {
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await useTemplate(page, "活動介紹");
   await expect(page.getByTestId("canvas-node")).not.toHaveCount(0);

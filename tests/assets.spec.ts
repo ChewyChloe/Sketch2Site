@@ -16,7 +16,7 @@ test("private raster import, reload, Mock generation, page edits, animation and 
     external.push(r.request().url());
     return r.abort();
   });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   const png = await page.evaluate(async () => {
     const canvas = document.createElement("canvas");
@@ -125,7 +125,7 @@ print('PASS')`,
 test("forged images fail without modifying the draft or retaining filenames", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByLabel("匯入圖片檔案").setInputFiles({
     name: "forged.png",
@@ -160,7 +160,7 @@ test("JPEG downscales to a re-encoded JPEG and replacing refs revokes object URL
     };
     Object.assign(window, { assetUrlState: { tracked, revoked } });
   });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   const jpeg = await page.evaluate(() => {
     const c = document.createElement("canvas");
@@ -238,7 +238,7 @@ test("an import completing after a draft edit cannot overwrite the new draft", a
       return (decode as any)(...args);
     }) as typeof createImageBitmap;
   });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   const png = await page.evaluate(() => {
     const c = document.createElement("canvas");

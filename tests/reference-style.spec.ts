@@ -3,7 +3,7 @@ import { writeFileSync } from "node:fs";
 // A reference picture teaches style only: read locally at once, and (with AI) described by fixed
 // choices. The layout request carries those choices, never the picture.
 async function openBrief(page: import("@playwright/test").Page) {
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   for (const n of ["首屏介紹", "三欄特色", "行動呼籲"]) await page.getByRole("button", { name: "新增區塊：" + n }).click();
   await page.getByRole("button", { name: "描述網站" }).click();
@@ -64,7 +64,7 @@ test("AI build sends a small drawing of the draft only to a back end that asks f
   await page.setViewportSize({ width: 1440, height: 900 });
   const bodies: { snapshot?: string; canvasSpec?: unknown }[] = [];
   page.on("request", (r) => { if (r.method() === "POST" && /\/api\/generation$/.test(r.url())) bodies.push(JSON.parse(r.postData() ?? "{}")); });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
   await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：社團招生頁" }).getByRole("button", { name: /用這個範本開始/ }).click()]);

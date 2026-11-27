@@ -4,7 +4,7 @@ import { buildSite } from "./helpers/workbench";
 test("exhibition concept: picked on the candidate, kept on the saved site, readable on phone", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
   await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：社團招生頁" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
@@ -29,7 +29,7 @@ test("exhibition concept: picked on the candidate, kept on the saved site, reada
 async function clubCandidate(page: import("@playwright/test").Page, width = 1440) {
   await page.setViewportSize({ width, height: 900 });
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
   await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：社團招生頁" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
@@ -75,12 +75,13 @@ test("side dots nav marks where the visitor is", async ({ page }) => {
 test("interactive pricing totals, gallery views switch, logo wall and numbers stand out", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
   await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：巷口咖啡小店" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
-  for (const n of ["圖片展示", "數字證明", "合作夥伴"]) await page.getByRole("button", { name: "新增區塊：" + n }).click();
+  // The template already has a gallery of drinks.
+  for (const n of ["數字證明", "合作夥伴"]) await page.getByRole("button", { name: "新增區塊：" + n }).click();
   await buildSite(page);
   const site = page.locator("main[aria-label='生成候選預覽'] .rendered-page").first();
   const extras = page.getByRole("group", { name: "互動功能" });

@@ -6,7 +6,7 @@ import { editSelection, pageAction, openPanel } from "./helpers/workbench";
 async function setup(page: Page, width = 1440) {
   await page.setViewportSize({ width, height: 1000 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?draft");
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await openWebsiteWorkspace(page);
   await page.getByLabel("載入頁面檔案").setInputFiles({

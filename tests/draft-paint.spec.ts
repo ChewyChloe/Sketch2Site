@@ -33,7 +33,7 @@ for (const scale of [0.6, 0.75]) {
   test(`draft selection leaves no painted trails after many moves at ${scale * 100}%`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1800, height: 1100 });
     await page.route('https://**/*', route => route.abort());
-    await page.goto('/');
+    await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await choose(page.getByLabel('畫布縮放'), String(scale));
     const canvas = page.getByTestId('canvas');
