@@ -10,19 +10,30 @@ const running = (el: ReturnType<typeof target>) => el.evaluate(e => e.getAnimati
 for (const id of advancedMotionIds)
     test(`${id}: real runtime, stable final state and reduced motion`, async ({ page }) => {
         await page.emulateMedia({ reducedMotion: 'no-preference' });
+        // Capture transient frames in the browser; polling a locator after the
+        // overlay has been removed can wait for an animation that already ended.
+        if (id === 'character-decode') await page.addInitScript(() => {
+            const frames = new Set<string>();
+            new MutationObserver(() => {
+                const overlay = document.querySelector('.preview-frame .advanced-text-overlay');
+                if (overlay?.textContent) {
+                    frames.add(overlay.textContent);
+                    document.documentElement.dataset.decodeFrames = String(frames.size);
+                }
+            }).observe(document, { subtree: true, childList: true, characterData: true });
+        });
         const check = await load(page, id);
         const el = target(page, id);
         await el.scrollIntoViewIfNeeded();
         await el.evaluate(e => e.addEventListener('click', event => event.preventDefault()));
         if (['character-decode', 'split-line-assembly', 'rolling-characters', 'kinetic-text-wave'].includes(id)) {
-            await expect(el.locator('.advanced-text-overlay')).toBeVisible();
             const original = await el.locator('.advanced-text-source').textContent();
             if (id === 'character-decode') {
-                const first = await el.locator('.advanced-text-overlay').textContent();
-                await expect.poll(() => el.locator('.advanced-text-overlay').textContent()).not.toBe(first);
-            }
-            else
+                await expect.poll(() => page.locator('html').getAttribute('data-decode-frames').then(value => Number(value))).toBeGreaterThan(1);
+            } else {
+                await expect(el.locator('.advanced-text-overlay')).toBeVisible();
                 await expect.poll(() => running(el)).toBeGreaterThan(0);
+            }
             await expect(el.locator('.advanced-text-overlay')).toHaveCount(0, { timeout: 5000 });
             await expect(el.locator('.advanced-text-source')).toHaveText(original!);
             await expect(el.locator('.advanced-text-source')).toHaveCSS('opacity', '1');

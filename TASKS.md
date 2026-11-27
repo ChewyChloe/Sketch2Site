@@ -407,3 +407,6 @@
 - P3 DONE：motionFacets、AnimationLibrary 加入中英本機規則推薦、相容性、動態條件與理由，沿用原試看及套用。5 單元 PASS。下一步 P4。
 - P4：App、layoutTools 沿用 Alt 量距，新增游標指定目標、雙軸間距及容器內距。8 單元與既有 Alt E2E PASS；待補精確 hover／縮放驗證。下一步完整回歸。
 - 交接：P1 補草稿本機試看及重播；P2 補布局鎖定防護及減少動態適配；P3 推薦理由與 P4 游標量距的瀏覽器測試通過。5 項目標 E2E PASS（含獨立 React 安裝、建置及離線預覽），Typecheck PASS。完整 E2E 313 項尚未驗收，已有 annotation、character-decode、assets 流程失敗，需以單 worker 確認根因。P1 需驗證草稿試看與自訂參數重載／匯出；P2 需逐款確認鎖定元素及動畫；P4 需補非預設縮放／平移。付費呼叫 0。
+
+## 驗收與修復（起點 b7c7d2e）
+- 已知 E2E：單 worker 重現測試 3/3 PASS。逐字解碼原本可能在讀取前就卸載暫態層，改用瀏覽器內記錄多個真實影格，保留原文與清理斷言，修正後 1/1 PASS。註解與圖片匯出並行失敗、單 worker 通過，未證實產品故障或唯一環境根因。
