@@ -7,17 +7,17 @@
   "items": 347
  },
  "categories": {
-  "需要新增動畫": 93,
+  "需要新增動畫": 92,
   "不適合目前架構或需要額外授權": 74,
-  "既有功能可擴充": 113,
+  "既有功能可擴充": 114,
   "已有同等功能": 58,
   "需要新增複合互動元件": 9
  },
  "delivery": {
   "duplicate": 58,
   "excluded": 74,
-  "verifiedMappings": 58,
-  "pending": 157
+  "verifiedMappings": 65,
+  "pending": 150
  },
  "rows": [
   {
@@ -391,6 +391,7 @@
      "url": "https://www.threads.com/@ai_yunon_ai/post/DeeJRUjkXlM"
     }
    ],
+   "verifiedExpansionBatch": 19,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -1002,6 +1003,7 @@
      "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
     }
    ],
+   "verifiedExpansionBatch": 19,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -1035,10 +1037,10 @@
     "enter"
    ],
    "technique": "CSS",
-   "category": "需要新增動畫",
-   "sketch2site": null,
+   "category": "既有功能可擴充",
+   "sketch2site": "blur-in",
    "priority": "P4",
-   "note": "縱深飛出",
+   "note": "縱深進場和跟隨拖影",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -1049,6 +1051,7 @@
      "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
     }
    ],
+   "verifiedExpansionBatch": 19,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -1216,6 +1219,7 @@
      "url": "https://www.threads.com/@ai_tjb/post/DeeHoA3ktZ5"
     }
    ],
+   "verifiedExpansionBatch": 19,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -2801,6 +2805,7 @@
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedExpansionBatch": 19,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -2879,6 +2884,7 @@
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedExpansionBatch": 19,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -2917,6 +2923,7 @@
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedExpansionBatch": 19,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

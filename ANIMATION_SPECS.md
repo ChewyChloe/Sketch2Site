@@ -238,7 +238,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `stagger-reveal` / version 1
 - 狀態：DONE
-- 說明：讓群組內容依序顯現。
+- 說明：讓群組內容依序顯現
 - 適用：列表與作品群組
 - targetType：card、container、section、stack、grid
 - interactionType：on-enter、scroll-enter
@@ -252,6 +252,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | --- | --- | --- | --- | --- |
 | intervalMs | 間隔（毫秒） | number | 100 | 40–300; step 1 |
 | childDurationMs | 子項時長（毫秒） | number | 400 | 150–900; step 1 |
+| sequence | 進場路徑 | select | "document" | document / reading-z / alternate |
 | direction | 順序 | select | "forward" | forward / reverse |
 | revealStyle | 顯示方式 | select | "slide-up" | fade / slide-up / scale |
 
@@ -301,10 +302,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `curved-path-text` / version 1
 - 狀態：DONE
-- 說明：讓短文字沿自製弧線呈現。
+- 說明：讓短文字沿自製弧線呈現
 - 適用：品牌標語與短標題
 - targetType：text、heading、paragraph
-- interactionType：on-enter、scroll-enter
+- interactionType：on-enter、scroll-enter、idle-loop
 - techBase：SVG textPath / Web Animations
 - previewMapping：curved-path-text
 - tags：內容、品牌標語與短標題
@@ -313,6 +314,8 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| pathMode | 字路 | select | "arc" | arc / circle / flow |
+| cycleSeconds | 流動週期（秒） | number | 12 | 5–30; step 1 |
 | curvature | 曲度 | select | "gentle" | gentle / medium / strong |
 | direction | 弧線方向 | select | "upward" | upward / downward |
 | revealDurationMs | 揭露時長（毫秒） | number | 900 | 300–1800; step 1 |
@@ -1219,7 +1222,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | durationMs | 時長（毫秒） | number | 1000 | 300–1800; step 1 |
 | thicknessPx | 線寬（像素） | number | 2 | 1–5; step 1 |
 | color | 線條顏色 | select | "theme" | theme / lime / amber / sky |
-| shape | 圖形 | select | "curve" | curve / arrow / check |
+| shape | 圖形 | select | "curve" | curve / arrow / check / signature |
 
 **designIntent**：安全的內建裝飾路徑以描線方式成形，不接受外部SVG。生成布局時保留來源的穩定識別與閱讀空間，僅映射受控動態，不擴寫文案。
 
@@ -1227,7 +1230,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **compatibilityRules**：只套用相容元件；受控參數及全頁資源限額
 
-**constraints**：只接受curve、arrow、check內建path，不接受外部SVG或腳本；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
+**constraints**：只接受內建path，不接受外部SVG或腳本；不改寫來源內容或網路資產；動畫有界，卸載清理事件、Observer及動畫
 
 **reducedMotionFallback**：靜態保留原始內容；互動操作仍可使用
 
@@ -1323,7 +1326,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `elastic-word-bounce` / version 1
 - 狀態：DONE
-- 說明：按中英文詞片段跳躍、拉伸、落地與壓縮回彈，不改原文。
+- 說明：按中英文詞片段跳躍、拉伸、落地與壓縮回彈，不改原文
 - 適用：text、heading、paragraph
 - targetType：text、heading、paragraph
 - interactionType：scroll-enter
@@ -1335,6 +1338,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| style | 跳動形式 | select | "elastic" | elastic / impact |
 | amplitudePx | 跳躍高度 | number | 18 | 4–32; step 1 |
 | elasticity | 彈性 | number | 0.6 | 0.1–1; step 0.1 |
 | staggerMs | 片語間隔 | number | 70 | 20–140; step 1 |
@@ -2044,7 +2048,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
-| entry | 入場形態 | select | "focus" | focus / trail |
+| entry | 入場形態 | select | "focus" | focus / trail / depth-trail |
 | durationMs | 時長（毫秒） | number | 900 | 300–2000; step 1 |
 | blurPx | 模糊程度（像素） | number | 12 | 4–24; step 1 |
 
@@ -2107,9 +2111,9 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | durationMs | 漣漪週期 | number | 3600 | 1600–6500; step 1 |
 | slices | 水紋分層 | number | 4 | 2–6; step 1 |
 
-**designIntent**：字影翻映到水線下，分層的漣漪讓倒影搖曳。
+**designIntent**：遇到現有字影效果時，只以原作者節點作為圖層來源。
 
-**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+**implementationBrief**：保留字面與 slices 的既有值，元件相容性沿用文字節點規則。
 
 **compatibilityRules**：適用短文字
 
@@ -2136,9 +2140,9 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | durationMs | 開合時長 | number | 1100 | 650–1800; step 1 |
 | spread | 開扇角度 | number | 36 | 20–55; step 1 |
 
-**designIntent**：從首字的下方支點展開文字扇面，再沿原角度收回。
+**designIntent**：使用作者標題作展扇焦點，生成不另提供展示字。
 
-**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+**implementationBrief**：用已驗證的 spread 與 durationMs 欄位，保留原字及所在欄位。
 
 **compatibilityRules**：適用短文字
 
@@ -2164,9 +2168,9 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | --- | --- | --- | --- | --- |
 | durationMs | 輪替週期 | number | 4900 | 3000–9000; step 1 |
 
-**designIntent**：原文的三種字型輪流浮現，帶著一圈短暫的光。
+**designIntent**：不依設計方向重寫已帶字型輪替的原始標語。
 
-**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+**implementationBrief**：按作者既有週期映射輪替效果，禁止從生成輸入補充字體網址。
 
 **compatibilityRules**：適用短文字
 
@@ -2193,9 +2197,9 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | durationMs | 移入時長 | number | 560 | 350–1000; step 1 |
 | maxWords | 堆疊詞數 | number | 5 | 3–7; step 1 |
 
-**designIntent**：小詞從側邊到達，各自落在一格，組成斜向文字層架。
+**designIntent**：保留原標題的可讀層及文字堆疊設定，禁止調整內容以配合疊層。
 
-**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+**implementationBrief**：確認受控 maxWords；若用在生成候選，只映射已有節點的實例。
 
 **compatibilityRules**：適用短文字
 
@@ -2221,9 +2225,9 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | --- | --- | --- | --- | --- |
 | durationMs | 走完一行時間 | number | 1900 | 850–3000; step 1 |
 
-**designIntent**：小點沿著閱讀順序跳躍，落到一個字就點亮一格。
+**designIntent**：讓現有字元順序引導提示點，生成時以作者文字作唯一內容來源。
 
-**implementationBrief**：只映射受控動畫與使用者原文字，不加入素材。
+**implementationBrief**：帶入已驗證的時間參數，不建立新增標記節點或可見文案。
 
 **compatibilityRules**：適用短文字
 

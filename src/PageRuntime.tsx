@@ -63,15 +63,41 @@ function useAnimations(node:PageNode,ref:React.RefObject<HTMLElement|null>) {
   const cancel=()=>{observer?.disconnect();running.forEach(a=>a.cancel());};
   const play=(effects:Effect[])=>{if(media.matches)return;const own=animateEntrance(el,effects);if(own)running.push(own);
    const stagger=effects.find(e=>e.presetId==="stagger-reveal");
-   if(stagger)node.children?.forEach((child,index)=>{
-    if(child.effects.some(e=>animationRegistry[e.presetId]?.entrance))return;
-    const target=el.querySelector<HTMLElement>('[data-page-id="'+child.id+'"]');if(!target)return;
-    const v1=stagger.presetVersion===1,c=stagger.validatedControls;
-    const presetId=v1?(c.revealStyle==="fade"?"fade-in":c.revealStyle==="scale"?"scale-in":"slide-up"):"slide-up";
-    const animation=animateEntrance(target,[{...stagger,presetId,validatedControls:{durationMs:motionDuration(stagger),delayMs:0,distancePx:v1?16:motionNumber(stagger,"distancePx"),initialScale:.96}}],
-      Math.min(1200,(c.direction==="reverse"?(node.children!.length-1-index):index)*motionNumber(stagger,"intervalMs",100)));
-    if(animation)running.push(animation);
-   });
+   if (stagger) {
+    const c = stagger.validatedControls, v1 = stagger.presetVersion === 1;
+    const perLayout = v1 && (c.sequence === "reading-z" || c.sequence === "alternate");
+    const declared = node.children ?? [];
+    const positions = new Map<HTMLElement, number>();
+    const children = (perLayout ? declared.slice(0, 30) : declared).flatMap((child, position) => {
+      if (child.effects.some(e => animationRegistry[e.presetId]?.entrance)) return [];
+      const target = el.querySelector<HTMLElement>('[data-page-id="' + child.id + '"]');
+      if (target) positions.set(target, position);
+      return target ? [target] : [];
+    });
+    const geometry = new Map(perLayout ? children.map(child => [child, child.getBoundingClientRect()]) : []);
+    if (v1 && c.sequence === "reading-z") children.sort((a, b) => {
+      const first = geometry.get(a)!, second = geometry.get(b)!;
+      return Math.abs(first.top - second.top) < 8 ? first.left - second.left : first.top - second.top;
+    });
+    children.forEach((target, index) => {
+      const position = perLayout ? index : positions.get(target)!;
+      const total = perLayout ? children.length : declared.length;
+      const delay = Math.min(1200, (c.direction === "reverse" ? total - 1 - position : position) * motionNumber(stagger, "intervalMs", 100));
+      if (v1 && (c.sequence === "reading-z" || c.sequence === "alternate")) {
+        const previous = geometry.get(children[index - 1]), current = geometry.get(target)!;
+        const rowStart = !!previous && current.top - previous.top > 8;
+        const distance = c.sequence === "alternate" ? (index % 2 ? 22 : -22) : (rowStart ? -18 : -10);
+        const rise = c.sequence === "reading-z" && rowStart ? 12 : 3;
+        running.push(target.animate([{ opacity: 0, translate: `${distance}px ${rise}px` }, { opacity: 1, translate: "0 0" }], {
+          duration: motionDuration(stagger), delay, fill: "backwards", easing: "ease-out",
+        }));
+      } else {
+        const presetId = v1 ? c.revealStyle === "fade" ? "fade-in" : c.revealStyle === "scale" ? "scale-in" : "slide-up" : "slide-up";
+        const animation = animateEntrance(target, [{ ...stagger, presetId, validatedControls: { durationMs: motionDuration(stagger), delayMs: 0, distancePx: v1 ? 16 : motionNumber(stagger, "distancePx"), initialScale: .96 } }], delay);
+        if (animation) running.push(animation);
+      }
+    });
+   }
   };
   if(!media.matches){
    play(node.effects.filter(e=>e.validatedControls.trigger==="enter"||e.presetId==="scale-in"&&e.presetVersion===1));

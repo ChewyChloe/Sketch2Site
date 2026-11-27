@@ -17,9 +17,9 @@
 | `scale-in` | 縮放進入 / Scale In | 圖片、卡片與區塊 | 出現時 | 放大縮小 | 吸引注意 | 輕柔 | initialScale, durationMs, delayMs | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `hover-lift` | 懸停浮起 / Hover Lift | 卡片與區塊、按鈕、圖片 | 滑過時 | 位移滑動 | 互動回饋 | 輕柔 | liftPx, durationMs, shadowIntensity | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `hover-glow` | 懸停光暈 / Hover Glow | 按鈕、卡片與區塊 | 滑過時 | 光影色彩 | 吸引注意 | 輕柔 | intensity, spreadPx, durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
-| `stagger-reveal` | 依序顯示 / Stagger Reveal | 卡片與區塊 | 出現時 | 淡入顯現 | 引導閱讀、吸引注意 | 適中 | intervalMs, childDurationMs, direction, revealStyle | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
+| `stagger-reveal` | 依序顯示 / Stagger Reveal | 卡片與區塊 | 出現時 | 淡入顯現 | 引導閱讀、吸引注意 | 適中 | intervalMs, childDurationMs, sequence, direction, revealStyle | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `breathing-glow` | 呼吸光按鈕 / Breathing Glow Button | 按鈕、文字 | 一直動、滑過時 | 光影色彩 | 吸引注意 | 適中 | pulse, cycleMs, intensity, spreadPx, pauseOnHover | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
-| `curved-path-text` | 曲線文字 / Curved Path Text | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | curvature, direction, revealDurationMs, textAlign | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
+| `curved-path-text` | 曲線文字 / Curved Path Text | 文字 | 出現時、一直動 | 文字逐字 | 營造氣氛、引導閱讀 | 適中 | pathMode, cycleSeconds, curvature, direction, revealDurationMs, textAlign | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `count-up` | 數字遞增 / Count Up | 文字 | 出現時 | 數字資料 | 呈現資料、吸引注意、引導閱讀 | 適中 | cadence, startValue, endValue, durationMs, decimals, locale, prefix, suffix | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `flip-card` | 雙面卡片 / Flip Card | 卡片與區塊 | 點擊時、滑過時 | 立體 | 互動回饋 | 適中 | axis, durationMs, perspectivePx, trigger, backText | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `physics-tag-field` | 物理標籤場 / Physics Tag Field | 卡片與區塊 | 一直動、拖曳 | 彈性 | 互動回饋、營造氣氛 | 強烈 | labels, gravity, friction, restitution, spawnIntervalMs, maxTags, draggable, collisionEnabled | — | PhysicsTags.tsx |
@@ -53,7 +53,7 @@
 | `numeric-gauge-sweep` | 數值儀表掃描 / Numeric Gauge Sweep | 文字 | 出現時 | 數字資料 | 呈現資料、引導閱讀 | 適中 | durationMs | — | AdvancedMotion.tsx |
 | `scroll-milestones` | 區塊閱讀里程碑 / Scroll Milestones | 卡片與區塊 | 捲動時 | 數字資料 | 呈現資料 | 適中 | steps, orientation | — | AdvancedMotion.tsx |
 | `text-morph-transition` | 文字形態轉換 / Text Morph Transition | 文字 | 點擊時、出現時 | 文字逐字 | 互動回饋、引導閱讀 | 強烈 | style, toText, durationMs, trigger | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
-| `elastic-word-bounce` | 彈性片語跳動 / Elastic Word Bounce | 文字 | 出現時 | 彈性 | 引導閱讀 | 強烈 | amplitudePx, elasticity, staggerMs, durationMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
+| `elastic-word-bounce` | 彈性片語跳動 / Elastic Word Bounce | 文字 | 出現時 | 彈性 | 引導閱讀 | 強烈 | style, amplitudePx, elasticity, staggerMs, durationMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `text-spotlight-reveal` | 聚光文字顯影 / Text Spotlight Reveal | 文字 | 滑過時、出現時 | 光影色彩 | 互動回饋、引導閱讀 | 強烈 | radiusPx, durationMs, trigger | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `typographic-stretch` | 字體延展回彈 / Typographic Stretch | 文字 | 滑過時 | 文字逐字 | 互動回饋 | 強烈 | maxScale, durationMs | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `cursor-trail-particles` | 游標粒子軌跡 / Cursor Trail Particles | 卡片與區塊 | 滑過時 | 線條圖形 | 互動回饋 | 強烈 | maxParticles, lifetimeMs, sizePx | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |

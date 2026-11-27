@@ -2075,3 +2075,5 @@
 .sig-multiband[data-layout="scroll-counter"] > .sig-band:nth-child(2) { top: 36%; }
 .sig-multiband[data-layout="scroll-counter"] > .sig-band:nth-child(2) .sig-band-runway > span { -webkit-text-stroke: 1px color-mix(in srgb, var(--accent, currentColor) 50%, transparent); color: transparent; }
 .sig-multiband[data-layout="scroll-counter"] > .sig-band:nth-child(3) { bottom: 2%; }
+
+.motion-curve-travel { display: block; width: min(100%, 390px); height: auto; margin-inline: auto; overflow: hidden; }

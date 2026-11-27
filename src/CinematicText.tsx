@@ -19,7 +19,9 @@ export function CinematicText({ text, effect }: {
         const source = host.querySelector<HTMLElement>('.cin-text-source')!, r = resources(host, reduced);
         let overlay: HTMLElement | null = null, frame = 0;
         const stop = () => { cancelAnimationFrame(frame); overlay?.getAnimations({ subtree: true }).forEach(a => a.cancel()); overlay?.remove(); overlay = null; source.style.removeProperty('opacity'); source.style.removeProperty('mask-image'); };
-        const values = segments(target, effect.presetId === 'elastic-word-bounce'), from = previous.current;
+        const impact = effect.presetId === 'elastic-word-bounce' && effect.validatedControls.style === 'impact';
+        const byWord = effect.presetId === 'elastic-word-bounce' && !impact;
+        const values = segments(target, byWord), from = previous.current;
         previous.current = target;
         const measure = (value: string, wordMode: boolean) => { const spans = segments(value, wordMode), range = document.createRange(), parent = host.getBoundingClientRect(); let offset = 0; return spans.map(letter => { range.setStart(source.firstChild!, offset); offset += letter.length; range.setEnd(source.firstChild!, offset); const box = range.getBoundingClientRect(); return { letter, x: box.left - parent.left, y: box.top - parent.top, w: box.width, h: box.height }; }); };
         const makeLayer = () => { overlay = document.createElement('span'); overlay.className = 'cin-text-overlay'; overlay.setAttribute('aria-hidden', 'true'); host.append(overlay); source.style.opacity = '0'; };
@@ -85,7 +87,7 @@ export function CinematicText({ text, effect }: {
                 enter?.addEventListener('finish', stop, { once: true });
                 return;
             }
-            const end = measure(target, effect.presetId === 'elastic-word-bounce');
+            const end = measure(target, byWord);
             let old: ReturnType<typeof measure> = [];
             if (morph) {
                 source.textContent = from;
@@ -101,7 +103,16 @@ export function CinematicText({ text, effect }: {
                     return; const el = glyph(c.letter, c); r.animate(el, [{ opacity: 1, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: 'translateY(-10px) scale(.7)' }], { duration: duration * .6, fill: 'forwards' }); });
             }
             else
-                end.forEach((c, i) => { const el = glyph(c.letter, c), amp = motionNumber(effect, 'amplitudePx', 18), elasticity = motionNumber(effect, 'elasticity', .6); r.animate(el, [{ transform: 'translateY(0) scale(1)' }, { transform: `translateY(-${amp}px) scale(.94,1.12)`, offset: .28 }, { transform: `translateY(0) scale(${1 + .18 * elasticity},${1 - .2 * elasticity})`, offset: .58 }, { transform: `translateY(-${amp * .25 * elasticity}px) scale(1)`, offset: .77 }, { transform: 'translateY(0) scale(1)' }], { duration, delay: i*Math.min(motionNumber(effect,'staggerMs',70),900/Math.max(1,end.length-1)), fill: 'backwards', easing: 'cubic-bezier(.25,.6,.3,1)' }); });
+                end.forEach((c, i) => {
+                    const el = glyph(c.letter, c), amp = motionNumber(effect, 'amplitudePx', 18), elasticity = motionNumber(effect, 'elasticity', .6);
+                    const frames = impact ? [
+                        { opacity: .14, transform: `translateY(-${amp}px) scale(.95,1.18)`, easing: 'ease-in' },
+                        { opacity: 1, transform: 'translateY(0) scale(1.13,.72)', offset: .55 },
+                        { transform: 'translateY(-3px) scale(.97,1.08)', offset: .78 },
+                        { transform: 'translateY(0) scale(1)' },
+                    ] : [{ transform: 'translateY(0) scale(1)' }, { transform: `translateY(-${amp}px) scale(.94,1.12)`, offset: .28 }, { transform: `translateY(0) scale(${1 + .18 * elasticity},${1 - .2 * elasticity})`, offset: .58 }, { transform: `translateY(-${amp * .25 * elasticity}px) scale(1)`, offset: .77 }, { transform: 'translateY(0) scale(1)' }];
+                    r.animate(el, frames, { duration, delay: i * Math.min(motionNumber(effect,'staggerMs',70),900/Math.max(1,end.length-1)), fill: 'backwards', easing: 'cubic-bezier(.25,.6,.3,1)' });
+                });
             const total = duration + (morph ? 350 : Math.min(900, end.length * motionNumber(effect, 'staggerMs', 70)));
             const finish = (now: number) => { if (document.hidden || now - start >= total) {
                 stop();

@@ -68,7 +68,60 @@ export function curveRows(text:string, available:number, measure:(value:string)=
     }
     rows.push(row);return rows;
 }
-export function CurvedText({ effect, text }: {effect:MotionInstance;text:string}) {
+function TravelingCurve({ effect, text }: { effect: MotionInstance; text: string }) {
+    const id = useId();
+    const svg = useRef<SVGSVGElement>(null);
+    const reduced = useReducedMotion();
+    const circle = effect.validatedControls.pathMode === 'circle';
+    const cycle = motionNumber(effect, 'cycleSeconds', 12) * 1000;
+    const staticText = reduced || !text.trim() || Array.from(text).length > 48;
+    const label = text;
+    useEffect(() => {
+        const host = svg.current;
+        const pathText = host?.querySelector<SVGTextPathElement>('textPath');
+        if (!host || !pathText || staticText) return;
+        const travelingText = host.querySelector('text');
+        let frame = 0, active = false, elapsed = 0, last = 0;
+        const tick = (now: number) => {
+            if (!active || document.hidden) { frame = 0; last = 0; return; }
+            if (last) elapsed = (elapsed + Math.min(70, now - last)) % cycle;
+            last = now;
+            const phase = elapsed / cycle;
+            if (circle) travelingText?.setAttribute('transform', 'rotate(' + phase * 360 + ' 180 89)');
+            else pathText.setAttribute('startOffset', 22 - phase * 36 + '%');
+            frame = requestAnimationFrame(tick);
+        };
+        const sync = () => {
+            if (!active || document.hidden) {
+                cancelAnimationFrame(frame); frame = 0; last = 0;
+            } else if (!frame) frame = requestAnimationFrame(tick);
+        };
+        const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
+            active = entries.some(entry => entry.isIntersecting); sync();
+        });
+        if (observer) observer.observe(host); else { active = true; sync(); }
+        document.addEventListener('visibilitychange', sync);
+        return () => { observer?.disconnect(); cancelAnimationFrame(frame); document.removeEventListener('visibilitychange', sync); };
+    }, [cycle, circle, staticText, text]);
+    const circular = "M 180 22 A 67 67 0 1 1 179.99 22";
+    const flowing = "M -360 72 C -275 18 -205 121 -120 64 S 20 24 100 64 S 240 104 320 59 S 460 20 540 65 S 680 105 760 58";
+    return <span className="motion-curve" data-curve-layout={staticText ? "static" : circle ? "circle" : "flow"}>
+        {staticText ? text : <>
+            <span className="motion-sr">{text}</span>
+            <svg ref={svg} aria-hidden="true" className="motion-curve-travel" viewBox={circle ? "45 0 270 180" : "0 0 380 118"}>
+                <defs><path id={id} d={circle ? circular : flowing}/></defs>
+                <text style={{ fontSize: circle ? 16 : 22 }}><textPath href={'#' + id} startOffset={circle ? "0%" : "22%"}>
+                    {Array.from({ length: circle ? 4 : 9 }, () => label).join('  ·  ')}
+                </textPath></text>
+            </svg>
+        </>}
+    </span>;
+}
+export function CurvedText(props: { effect: MotionInstance; text: string }) {
+    const mode = props.effect.validatedControls.pathMode;
+    return mode === 'circle' || mode === 'flow' ? <TravelingCurve {...props}/> : <StaticCurvedText {...props}/>;
+}
+function StaticCurvedText({ effect, text }: {effect:MotionInstance;text:string}) {
     const id='curve-'+useId().replaceAll(':',''),host=useRef<HTMLSpanElement>(null),reduced=useReducedMotion();
     const [width,setWidth]=useState(600),[fontSize,setFontSize]=useState(16),[font,setFont]=useState('16px sans-serif');
     useEffect(()=>{

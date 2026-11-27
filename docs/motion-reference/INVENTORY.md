@@ -9,13 +9,13 @@
 | 分類 | 筆數 |
 |---|---|
 | 已有同等功能 | 58 |
-| 既有功能可擴充 | 113 |
-| 需要新增動畫 | 93 |
+| 既有功能可擴充 | 114 |
+| 需要新增動畫 | 92 |
 | 需要新增複合互動元件 | 9 |
 | 不適合目前架構或需要額外授權 | 74 |
 | 合計 | 347 |
 
-交付狀態：58 筆已有同等、74 筆排除、58 筆已驗證對應、157 筆待實作。
+交付狀態：58 筆已有同等、74 筆排除、65 筆已驗證對應、150 筆待實作。
 
 優先序用於排程。P1 與明列已驗證批次的資料有正式 Runtime；其他預計新增項目仍待實作。
 
@@ -65,15 +65,19 @@
 |---|---|---|
 | `breathing-glow` | 6 | 13 |
 | `count-up` | 8 | 5 |
+| `curved-path-text` | 16 | 19 |
 | `kinetic-text-wave` | 19 | 13 |
 | `letter-assembly` | 21 | 13 |
 | `text-morph-transition` | 28 | 15 |
 | `blur-in` | 29 | 13 |
 | `kinetic-text-wave` | 35 | 13 |
+| `elastic-word-bounce` | 42 | 19 |
+| `blur-in` | 44 | 19 |
 | `text-morph-transition` | 46 | 15 |
 | `text-morph-transition` | 47 | 15 |
 | `marquee-text` | 48 | 14 |
 | `marquee-text` | 49 | 14 |
+| `curved-path-text` | 51 | 19 |
 | `marquee-text` | 52 | 14 |
 | `marquee-text` | 53 | 14 |
 | `marquee-text` | 54 | 14 |
@@ -82,7 +86,10 @@
 | `grid-diagonal-turn` | 82 | 17 |
 | `hand-drawn-highlight` | 88 | 18 |
 | `split-line-assembly` | 126 | 17 |
+| `stagger-reveal` | 128 | 19 |
 | `image-reveal` | 131 | 17 |
+| `stagger-reveal` | 132 | 19 |
+| `svg-path-drawing` | 134 | 19 |
 | `svg-path-drawing` | 136 | 18 |
 | `marquee-text` | 159 | 18 |
 | `gooey-blob-merge` | 176 | 7 |
@@ -166,6 +173,7 @@
 | 32 | text | ['loop'] | CSS | rolling-characters | P4 | 換位排序 |
 | 35 | text | ['loop'] | CSS | kinetic-text-wave | P3 | 縱向波浪 |
 | 42 | text | ['enter'] | CSS | elastic-word-bounce | P3 | 重落節奏 |
+| 44 | text | ['enter'] | CSS | blur-in | P4 | 縱深進場和跟隨拖影 |
 | 46 | text | ['switch'] | CSS | text-morph-transition | P3 | 穿越換詞 |
 | 47 | text | ['switch'] | CSS | text-morph-transition | P3 | 擠壓換詞 |
 | 48 | bg | ['loop'] | CSS | marquee-text | P3 | 雙速巨字 |
@@ -293,7 +301,6 @@
 | 36 | text | ['enter'] | CSS | — | P3 | 墨水暈開 |
 | 38 | text | ['loop'] | CSS | type-casts | P4 | 多字型輪替（需字型授權確認） |
 | 43 | text | ['enter'] | CSS | imprint-beats | P3 | 原文後方依序落下印記 |
-| 44 | text | ['enter'] | CSS | — | P4 | 縱深飛出 |
 | 45 | text | ['enter'] | CSS | word-shelf | P3 | 詞語堆疊 |
 | 50 | bg | ['loop'] | CSS | crosswind-ribbons | P2 | 雙向裝飾字帶，保留中央原文 |
 | 57 | text | ['loop'] | CSS | — | P4 | CSS 3D 圓柱 |

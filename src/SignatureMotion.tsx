@@ -166,6 +166,10 @@ export function useSignatureMotion(node: PageNode, ref: RefObject<HTMLElement | 
                     { translate: '-32px 0', filter: `blur(${px / 3}px) drop-shadow(-21px 0 3px color-mix(in srgb, currentColor 24%, transparent))`, opacity: .38 },
                     { translate: '3px 0', filter: 'blur(0px) drop-shadow(-8px 0 1px color-mix(in srgb, currentColor 12%, transparent))', opacity: 1, offset: .73 },
                     { translate: '0px 0', filter: 'blur(0px) drop-shadow(0px 0 0px transparent)', opacity: 1 },
+                ] : blur.validatedControls.entry === 'depth-trail' ? [
+                    { transform: 'perspective(410px) translateZ(-180px)', filter: `blur(${px / 2}px) drop-shadow(0 21px 6px color-mix(in srgb, currentColor 32%, transparent))`, opacity: .23 },
+                    { transform: 'perspective(410px) translateZ(26px)', filter: 'blur(0px) drop-shadow(0 12px 3px color-mix(in srgb, currentColor 20%, transparent))', opacity: 1, offset: .74 },
+                    { transform: 'perspective(410px) translateZ(0px)', filter: 'blur(0px) drop-shadow(0 0 0 transparent)', opacity: 1 },
                 ] : [{ filter: `blur(${px}px)`, opacity: 0, transform: 'scale(1.04)' }, { filter: 'blur(0)', opacity: 1, transform: 'none' }];
                 r.animate(host, frames, { duration: n(blur, 'durationMs', 900), easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'backwards' });
             });

@@ -415,7 +415,7 @@ export function useAdvancedMotion(node: PageNode, ref: RefObject<HTMLElement | n
             svg.setAttribute('aria-hidden', 'true');
             svg.classList.add(gauge ? 'advanced-gauge' : 'advanced-path');
             const line = document.createElementNS(svgNS, 'path');
-            const paths: Record<string, string> = { curve: 'M3 28 C25 2 40 34 65 16 S100 4 117 14', arrow: 'M4 22 Q50 2 110 18 M98 6 L111 18 L96 28', check: 'M20 18 L49 30 L99 5' };
+            const paths: Record<string, string> = { curve: 'M3 28 C25 2 40 34 65 16 S100 4 117 14', arrow: 'M4 22 Q50 2 110 18 M98 6 L111 18 L96 28', check: 'M20 18 L49 30 L99 5', signature: 'M7 26 C29 34 38 4 23 7 C12 11 23 27 38 25 C53 23 48 13 55 17 L55 26 Q68 13 74 20 Q79 30 93 19 L112 14' };
             line.setAttribute('d', gauge ? 'M6 60 A54 54 0 0 1 114 60' : paths[String(e.validatedControls.shape)] ?? paths.curve);
             line.setAttribute('fill', 'none');
             line.setAttribute('stroke', gauge ? 'currentColor' : palette[String(e.validatedControls.color)] ?? 'currentColor');
@@ -427,12 +427,43 @@ export function useAdvancedMotion(node: PageNode, ref: RefObject<HTMLElement | n
             line.style.strokeDashoffset = String(100 - value * 100);
             svg.append(line);
             r.append(svg);
-            let draw: Animation | null = null, lift: Animation | null = null;
+            const signature = path?.validatedControls.shape === "signature";
+            let pen: SVGCircleElement | undefined, underline: SVGPathElement | undefined;
+            if (signature) {
+                underline = document.createElementNS(svgNS, 'path');
+                underline.setAttribute('d', 'M19 31 Q67 25 110 29');
+                underline.setAttribute('fill', 'none');
+                underline.setAttribute('stroke', line.getAttribute('stroke') ?? 'currentColor');
+                underline.setAttribute('pathLength', '100');
+                underline.style.strokeDasharray = '100';
+                underline.style.strokeDashoffset = '0';
+                svg.append(underline);
+                pen = document.createElementNS(svgNS, 'circle');
+                pen.classList.add('advanced-signature-point');
+                pen.setAttribute('r', '2.6');
+                pen.setAttribute('fill', line.getAttribute('stroke') ?? 'currentColor');
+                pen.style.opacity = '0';
+                svg.append(pen);
+            }
+            let draw: Animation | null = null, lift: Animation | null = null, finishStroke: Animation | null = null, travel: Animation | null = null;
             const drawLine = () => {
                 draw?.cancel();
                 lift?.cancel();
+                finishStroke?.cancel();
+                travel?.cancel();
                 const duration = n(e, 'durationMs', 1000);
-                draw = r.animate(line, [{ strokeDashoffset: '100' }, { strokeDashoffset: String(100 - value * 100) }], { duration, easing: 'cubic-bezier(.2,.7,.2,1)' });
+                draw = r.animate(line, [{ strokeDashoffset: '100' }, { strokeDashoffset: String(100 - value * 100) }], { duration: signature ? duration * .76 : duration, easing: signature ? 'linear' : 'cubic-bezier(.2,.7,.2,1)' });
+                if (pen && underline) {
+                    const length = line.getTotalLength();
+                    const frames = Array.from({ length: 37 }, (_, index) => {
+                        const point = line.getPointAtLength(length * index / 36);
+                        return { translate: `${point.x}px ${point.y}px`, opacity: index === 36 ? 0 : .85 };
+                    });
+                    travel = r.animate(pen, frames, { duration: duration * .76, easing: 'linear' });
+                    finishStroke = r.animate(underline, [{ strokeDashoffset: '100' }, { strokeDashoffset: '0' }], {
+                        duration: duration * .24, delay: duration * .76, fill: 'backwards', easing: 'ease-out',
+                    });
+                }
                 if (path?.validatedControls.trigger === 'redraw')
                     lift = r.animate(svg, [{ translate: '0px 0px' }, { translate: '0px -4px', offset: .4 }, { translate: '0px 0px' }], { duration });
             };

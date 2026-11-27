@@ -72,6 +72,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   layoutSection.sectionLayout = { arrangement: { mode: "masonry", columns: 2, gap: "medium", mobile: "stack" }, fullBleed: true };
   const cinematic = thirdFixture();
   cinematic.sections[0].children![0].effects[0].validatedControls.style = "portal";
+  cinematic.sections[1].children![0].effects[0].validatedControls.style = "impact";
   const story = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "pinned-story-panels")!;
   story.effects[0].validatedControls.presentation = "media";
   const gooey = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "gooey-blob-merge")!;
@@ -84,7 +85,10 @@ test("downloaded React project installs and builds independently; runtime stays 
   for (const node of advanced.sections[0].children!) {
     for (const effect of node.effects) {
       if (effect.presetId === "hand-drawn-highlight") effect.validatedControls.stroke = "circle-line";
-      if (effect.presetId === "svg-path-drawing") effect.validatedControls.trigger = "redraw";
+      if (effect.presetId === "svg-path-drawing") {
+        effect.validatedControls.trigger = "redraw";
+        effect.validatedControls.shape = "signature";
+      }
       if (effect.presetId === "split-line-assembly") effect.validatedControls.flow = "clarify";
       if (effect.presetId === "grid-diagonal-turn") effect.validatedControls.motion = "radial";
     }
@@ -110,6 +114,13 @@ test("downloaded React project installs and builds independently; runtime stays 
     id: carouselId, type: "heading", level: 2, content: "城市三行字帶", style: textSection.style,
     effects: [createMotion("marquee-text", carouselId, { layout: "scroll-counter" })],
   });
+  for (const [i, pathMode] of ["circle", "flow"].entries()) {
+    const id = marqueeId(100 + i);
+    textSection.children!.push({
+      id, type: "heading", level: 2, content: "城裡的大路", style: textSection.style,
+      effects: [createMotion("curved-path-text", id, { pathMode, cycleSeconds: 8 })],
+    });
+  }
   input.sections.push(interactiveBento, ...tabsFixture().sections, textSection);
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
@@ -271,6 +282,15 @@ z.extractall(root)
     await disclosure.getByRole('button',{name:'收合內容'}).click();await expect(disclosure.getByText('展開後閱讀完整補充說明')).toBeHidden();
     for(const node of advancedFixture().sections[0].children!){const target=standalone.locator(`[data-page-id="${node.id}"]`);await expect(target).toHaveAttribute('data-effects',node.effects[0].presetId);}
     await standalone.emulateMedia({reducedMotion:'no-preference'});
+    for (const [i, mode] of ["circle", "flow"].entries()) {
+      const travel = standalone.locator(`[data-page-id="${marqueeId(100 + i)}"] [data-curve-layout="${mode}"]`);
+      await travel.scrollIntoViewIfNeeded();
+      const moving = travel.locator(mode === "circle" ? "svg text" : "textPath");
+      const attribute = mode === "circle" ? "transform" : "startOffset";
+      const before = await moving.getAttribute(attribute);
+      await expect.poll(() => moving.getAttribute(attribute)).not.toBe(before);
+    }
+
     const scrollTracks = standalone.locator(`[data-page-id="${carouselId}"] .sig-band-runway`);
     await scrollTracks.first().scrollIntoViewIfNeeded();
     await expect(scrollTracks).toHaveCount(3);
