@@ -82,3 +82,13 @@ it("takes one to five pictures in one call and refuses six", async () => {
   expect((await post({ requestId: crypto.randomUUID(), images: [] })).status).toBe(400);
   expect(buildReferenceRequest({ requestId: crypto.randomUUID(), images: [jpeg, jpeg, jpeg] }).input[1].content).toHaveLength(3);
 });
+
+it("binds each image to its own selected purposes in the same analysis call", () => {
+  const req = buildReferenceRequest({ requestId: crypto.randomUUID(), images: [jpeg, jpeg], purposes: [["color", "spacing"], ["type"]] });
+  expect(req.input[1].content).toMatchObject([
+    { type: "input_text", text: expect.stringContaining("color, spacing") },
+    { type: "input_image", detail: "low" },
+    { type: "input_text", text: expect.stringContaining("type") },
+    { type: "input_image", detail: "low" },
+  ]);
+});

@@ -1074,10 +1074,10 @@
 .rendered-page[data-art~="diagonal-lines"] .page-main > .page-section.role-hero { background-image: repeating-linear-gradient(-62deg, color-mix(in srgb, var(--pg-hero-ink, var(--ink)) 18%, transparent) 0 2px, transparent 2px 120px); }
 .rendered-page[data-art~="fine-lines"] .page-main > .page-section + .page-section { border-top: 1px solid var(--line); }
 /* 大量留白 */
-.rendered-page[data-art~="negative-space"] { --pg-section-y: clamp(104px, 12cqi, 200px); }
-.rendered-page[data-art~="negative-space"] .page-paragraph { max-width: 48ch; }
+.rendered-page[data-art~="negative-space"] .page-section:not([data-locked~="layout"]) { --pg-section-y: clamp(104px, 12cqi, 200px); }
+.rendered-page[data-art~="negative-space"] .page-paragraph:not([data-locked~="layout"] *) { max-width: 48ch; }
 /* 主角小、空間大 */
-.rendered-page[data-art~="small-subject"] .role-hero .page-image { max-width: 72%; margin-inline: auto; }
+.rendered-page[data-art~="small-subject"] .role-hero:not([data-locked~="layout"], [data-locked~="assets"]) .page-image { max-width: 72%; margin-inline: auto; }
 /* 超大字當主角 */
 .rendered-page[data-art~="big-type"] .role-hero h1.page-heading, .rendered-page[data-art~="big-type"] .role-hero h1.page-heading.is-long { font-size: clamp(44px, 7.6cqi, 124px); letter-spacing: -0.05em; line-height: 1.02; }
 /* 品牌字小而克制 */
@@ -1094,7 +1094,7 @@
 /* 重複與編號形成節奏: the section numbers become large, part of the picture. */
 .rendered-page[data-art~="numbered-rhythm"] .page-main > .page-section:not(.role-hero):not(.role-cta) .page-container > .page-stack:first-child > h2.page-heading:first-child::before { font-size: clamp(48px, 6cqi, 96px); font-weight: 300; letter-spacing: -0.02em; line-height: 1; margin-bottom: 20px; content: counter(pg-section, decimal-leading-zero); color: color-mix(in srgb, var(--accent) 70%, transparent); }
 /* 照片滿版 */
-.rendered-page[data-art~="full-bleed-photo"] .role-hero .page-image img { border-radius: 0; aspect-ratio: 16 / 10; }
+.rendered-page[data-art~="full-bleed-photo"] .role-hero:not([data-locked~="layout"], [data-locked~="assets"]) .page-image img { border-radius: 0; aspect-ratio: 16 / 10; }
 
 /* ===== Design concept: 展覽空間 (exhibition) — docs/REFERENCE_STUDY.md =====
    Like walking into a show: one wall of photograph first, then one work at a time,

@@ -341,7 +341,7 @@ export default function App() {
               layoutConcept: control?.layoutConcept === undefined ? site.concept ?? null : control.layoutConcept,
             } : {}),
           },
-          ...(control?.style ? { theme: site.theme, concept: site.concept, brand: site.brand } : {}),
+          ...(control?.style ? { theme: site.theme, concept: site.concept, brand: site.brand, art: site.art } : {}),
           ...(control?.composition || keepGeometry ? { composition: site.composition } : {}),
         } };
       }

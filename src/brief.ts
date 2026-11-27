@@ -2,7 +2,7 @@ import type { ThemeId, SectionRole } from "./pageSpec";
 
 // The generation brief: a fill-in sentence with quick choices plus a short note.
 // Choices steer the local layout directly; the free note is only read by AI.
-export type Brief = { audience: string; purpose: string; mood: string; focus: string; note: string; details?: string; style?: import("./referenceStyle").ReferenceStyle; ask?: import("./directions").Ask };
+export type Brief = { audience: string; purpose: string; mood: string; focus: string; note: string; details?: string; style?: import("./referenceStyle").ReferenceStyle; referencePurposes?: import("./referenceStyle").ReferencePurpose[]; ask?: import("./directions").Ask };
 export const emptyBrief: Brief = { audience: "", purpose: "", mood: "", focus: "", note: "" };
 
 export const briefOptions = {

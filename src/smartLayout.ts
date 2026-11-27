@@ -1,3 +1,4 @@
+import { referenceHints } from "./referenceStyle";
 import { withSectionOrder } from "./sectionLayout";
 import type { CanvasNode, CanvasSpec } from "./spec";
 import type { LayoutItem, LayoutV2 } from "./generation";
@@ -239,6 +240,9 @@ export function smartLayout(canvas: CanvasSpec): LayoutV2 {
     sections[0] = { ...sections[0], role: "content" };
   // The brief's focus moves the matching section right after the opening one.
   const brief = canvas.metadata.brief;
+  const scoped = brief?.referencePurposes && !brief.referencePurposes.includes("overall");
+  const hints = scoped ? referenceHints(brief.style, brief.referencePurposes) : undefined;
+  const referenceGap = hints?.space === "airy" ? "large" : hints?.space === "dense" ? "small" : undefined;
   sections = withFocusFirst(sections, brief?.focus);
   if (canvas.metadata.layoutMode === "reflow")
     sections = withSectionOrder(sections, canvas.metadata.sectionOrder, plannedSourceIds);
@@ -247,7 +251,7 @@ export function smartLayout(canvas: CanvasSpec): LayoutV2 {
   // Start with a soft band so the first section separates from the hero.
   let plain = false;
   sections = sections.map((s) => {
-    let next = s;
+    let next: Section = referenceGap ? { ...s, gap: referenceGap } : s;
     // A stack-only draft keeps side media inline instead of a two-column split.
     if (forceStack) next = { ...next, layout: "stack", columns: 1, intro: [...next.intro, ...next.aside], aside: [] };
     if (forceGrid && next.layout !== "grid") next = { ...next, layout: "grid", columns: next.items.length ? columnsFor(next.items.length) : 1 };
@@ -261,7 +265,7 @@ export function smartLayout(canvas: CanvasSpec): LayoutV2 {
   if (forceGrid) sections = sections.map((s) => (s.items.length ? s : { ...s, layout: "grid", columns: 1 }));
   return {
     version: 2,
-    typography: canvas.constraints.includes("typography:serif") ? "serif" : "sans",
+    typography: canvas.constraints.includes("typography:serif") ? "serif" : canvas.constraints.includes("typography:sans") ? "sans" : hints?.typeFamily ?? "sans",
     theme: (brief && moodThemes[brief.mood]) || suggestTheme(canvas),
     nav: sections.length >= 3,
     footer: true,

@@ -1,10 +1,10 @@
 import { materialize } from "./generation";
 import { plannedSourceIds, smartLayout } from "./smartLayout";
 import SectionLayoutPicker, { SectionLayoutThumbnail } from "./SectionLayoutPicker";
-import { allSections, type PageSpec } from "./pageSpec";
+import { allSections, themeLabels, type PageSpec } from "./pageSpec";
 import { requestedSectionLayout, sectionSourceIds, type SectionLayout } from "./sectionLayout";
 import { effectLabels } from "./visualEditing";
-import { describeStyle } from "./referenceStyle";
+import { referencePurposeLabels, referenceHints } from "./referenceStyle";
 import { avoidLabels, heroLabels, lightnessLabels } from "./directions";
 import { outlineOf } from "./outline";
 import { pageDraft, type CanvasSpec } from "./spec";
@@ -29,8 +29,10 @@ export function GenerationReview({ draft, aiReady, savedSite, onDraftChange }: {
 }) {
   const brief = draft.metadata.brief;
   const automatic = aiReady && (draft.metadata.pages?.length ?? 0) < 2 ? "交由 AI 決定" : "由本機排版決定";
+  const referenceTheme = referenceHints(brief?.style, brief?.referencePurposes)?.direction;
   const style = [
-    brief?.mood, brief?.style ? describeStyle(brief.style).map(item => item.name).join("、") : undefined,
+    brief?.mood, referenceHints(brief?.style, brief?.referencePurposes)?.direction,
+    brief?.referencePurposes?.map(id => referencePurposeLabels[id]).join("、") || (brief?.style && "整體風格參考"),
     brief?.ask?.lightness?.map(id => lightnessLabels[id]).join("、"),
     draft.metadata.brand && "自訂品牌",
     draft.metadata.siteOverrides?.theme && "自訂網站主題",

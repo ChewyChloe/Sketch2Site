@@ -1,3 +1,4 @@
+import { referenceHints } from "./referenceStyle";
 import { requestedSectionLayout } from "./sectionLayout";
 import { cleanDirections, DirectionSchema } from "./directions";
 import { toJSONSchema, z } from "zod";
@@ -45,9 +46,10 @@ const preview = (s: string, n = 24) => (s.length > n ? s.slice(0, n) + "…" : s
 /** One short line of facts per planned section (no full text, no ids, no positions). */
 export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canvas)) {
   const byId = new Map(canvas.nodes.map((n) => [n.id, n]));
+  const brief = canvas.metadata.brief;
   return {
     name: preview(canvas.metadata.name, 40),
-    ...(canvas.metadata.brief ? { brief: canvas.metadata.brief } : {}),
+    ...(brief ? { brief: { ...brief, style: referenceHints(brief.style, brief.referencePurposes) } } : {}),
     constraints: canvas.constraints,
     sections: plan.sections.map((s, i) => {
       const ids = [...s.intro, ...s.items, ...s.outro, ...s.aside].map(item => item.sourceId);

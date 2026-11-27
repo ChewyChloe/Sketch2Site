@@ -2,7 +2,7 @@ import { GenerationReview } from "./GenerationReview";
 import type { CanvasSpec } from "./spec";
 import { withGenerationBrief } from "./brief";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { describeStyle, maxReferences, mergeStyles, prepareReference, type ReferenceStyle } from "./referenceStyle";
+import { describeStyle, maxReferences, mergeReferencePurposes, prepareReference, referenceHints, referencePurposeIds, referencePurposeLabels, type ReferencePurpose, type ReferenceStyle } from "./referenceStyle";
 import { requestReferenceStyle } from "./referenceRequest";
 import { useEscapeToClose } from "./useEscape";
 import { briefOptions, emptyBrief, suggestion, type Brief, type BriefField } from "./brief";
@@ -112,19 +112,20 @@ export function BriefPanel({
   useEffect(() => first.current?.focus(), []);
   // Reference pictures (up to five): read locally at once; the AI looks at them only when the
   // site is generated. They stay in this panel's memory and are never saved; only the style is.
-  const [references, setReferences] = useState<{ jpeg: string; preview: string; style: ReferenceStyle }[]>([]);
+  const [references, setReferences] = useState<{ jpeg: string; preview: string; style: ReferenceStyle; purposes: ReferencePurpose[] }[]>([]);
   const [refBusy, setRefBusy] = useState<"" | "reading" | "asking">("");
   const [refNote, setRefNote] = useState("");
   const pictureInput = useRef<HTMLInputElement>(null);
   const keepReferences = (next: typeof references) => {
     setReferences(next);
-    setBrief((b) => ({ ...b, style: mergeStyles(next.map((r) => r.style)) }));
+    setBrief(b => ({ ...b, ...mergeReferencePurposes(next) }));
   };
   const generate = async () => {
     if (references.length && aiReady) {
       setRefBusy("asking");
       try {
-        const style = await requestReferenceStyle(references.map((r) => r.jpeg));
+        const style = await requestReferenceStyle(references.map(r => r.jpeg), undefined,
+          references.every(r => r.purposes.includes("overall")) ? undefined : references.map(r => r.purposes));
         onGenerate({ ...brief, style });
         return;
       } catch {
@@ -134,6 +135,15 @@ export function BriefPanel({
       }
     }
     onGenerate(brief);
+  };
+  const scopedStyle = brief.style && {
+    ...brief.style, principles: referenceHints(brief.style, brief.referencePurposes)?.principles ?? [],
+  };
+  const setPurpose = (index: number, purpose: ReferencePurpose) => {
+    const current = references[index].purposes;
+    const selected = current.includes(purpose) ? current.filter(id => id !== purpose) : [...current.filter(id => id !== "overall"), purpose];
+    const purposes: ReferencePurpose[] = purpose === "overall" || !selected.length ? ["overall"] : selected;
+    keepReferences(references.map((reference, i) => i === index ? { ...reference, purposes } : reference));
   };
   const set = (field: keyof Brief, value: string) => setBrief((b) => ({ ...b, [field]: value }));
   const ask: Ask = brief.ask ?? {};
@@ -251,18 +261,26 @@ export function BriefPanel({
         {references.length > 0 && (
           <ul className="brief-reference-thumbs" aria-label="已選的參考圖">
             {references.map((r, i) => (
-              <li key={r.preview}>
+              <li key={i + r.preview}>
                 <img src={r.preview} alt={`參考圖片縮圖 ${i + 1}`} />
+                <details className="reference-purpose">
+                  <summary>用途：{r.purposes.map(id => referencePurposeLabels[id]).join("、")}</summary>
+                  <fieldset><legend>第 {i + 1} 張參考圖用途</legend>
+                    {referencePurposeIds.map(id => <label key={id}>
+                      <input type="checkbox" checked={r.purposes.includes(id)} onChange={() => setPurpose(i, id)} />{referencePurposeLabels[id]}
+                    </label>)}
+                  </fieldset>
+                </details>
                 <button type="button" className="brief-clear" aria-label={`移除第 ${i + 1} 張參考圖`} onClick={() => { keepReferences(references.filter((_, k) => k !== i)); setRefNote(""); }}>×</button>
               </li>
             ))}
           </ul>
         )}
-        {references.length > 0 && brief.style && (
+        {references.length > 0 && scopedStyle && (
           <div className="brief-reference-card">
-            {describeStyle(brief.style).length ? (
+            {describeStyle(scopedStyle).length ? (
               <ul className="brief-reference-principles" aria-label="看到的設計手法">
-                {describeStyle(brief.style).map((p) => (
+                {describeStyle(scopedStyle).map((p) => (
                   <li key={p.id}>
                     <strong>{p.name}</strong>
                     <span>{p.why}</span>
@@ -301,7 +319,7 @@ export function BriefPanel({
             const read = (await Promise.all(files.map((f) => prepareReference(f)))).filter((x): x is NonNullable<typeof x> => !!x);
             setRefBusy("");
             const failed = files.length - read.length;
-            keepReferences([...references, ...read].slice(0, maxReferences));
+            keepReferences([...references, ...read.map(reference => ({ ...reference, purposes: ["overall"] as ReferencePurpose[] }))].slice(0, maxReferences));
             if (failed || skipped) setRefNote([failed ? `${failed} 張讀不到，換 PNG 或 JPG 試試` : "", skipped ? `最多 ${maxReferences} 張，多的沒有加入` : ""].filter(Boolean).join("；"));
           }}
         />

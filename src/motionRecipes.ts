@@ -1,3 +1,4 @@
+import { referenceHints } from "./referenceStyle";
 import { CanvasSchema, type CanvasNode, type CanvasSpec } from "./spec";
 import { combinationReason, createMotion, numericContent, targetReason, withinMotionBudget, type MotionInstance } from "./motion";
 import { defaultControls, type MotionId } from "./motionCatalog";
@@ -14,8 +15,11 @@ export type MotionStyle = "lively" | "calm";
 type Slot = { role: SectionRole; kind: "title" | "heading" | "text" | "button" | "card" | "image" | "form"; index: number; count: number };
 
 const calmMoods = new Set(["簡約", "專業"]);
-export const motionStyleFor = (spec: CanvasSpec): MotionStyle =>
-  calmMoods.has(spec.metadata.brief?.mood ?? "") || (spec.metadata.brief?.style && spec.metadata.brief.style.motion !== "lively") ? "calm" : "lively";
+export const motionStyleFor = (spec: CanvasSpec): MotionStyle => {
+  const brief = spec.metadata.brief;
+  const hint = referenceHints(brief?.style, brief?.referencePurposes)?.motion;
+  return calmMoods.has(brief?.mood ?? "") || (hint && hint !== "lively") ? "calm" : "lively";
+};
 
 // Motion supports the content and stays quiet (docs/SITE_AESTHETICS.md): one gentle entrance per
 // element, small press feedback on buttons. "lively" adds a little more movement, never spectacle.

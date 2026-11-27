@@ -95,3 +95,26 @@ describe("several reference pictures", () => {
     expect(mergeStyles([base])).toEqual(base);
   });
 });
+
+it("uses reference scopes to separate analysis, planning and explicit layout", async () => {
+  const { mergeReferencePurposes } = await import("./referenceStyle");
+  const { outlineOf } = await import("./outline");
+  const { materialize } = await import("./generation");
+  const first = { mood: "technical", colorMode: "mono", temperature: "cool", lightness: "dark", contrast: "strong", typeFamily: "sans", typeScale: "huge", space: "dense", imagery: "full-bleed", motion: "lively", principles: ["high-contrast", "big-type"], direction: "midnight" } as const;
+  const second = { ...first, lightness: "light", typeFamily: "serif", space: "airy", principles: ["negative-space", "serif-display"] } as const;
+  const scoped = mergeReferencePurposes([
+    { style: { ...first, principles: [...first.principles] }, purposes: ["color"] },
+    { style: { ...second, principles: [...second.principles] }, purposes: ["spacing"] },
+  ]);
+  const spec: CanvasSpec = {
+    ...blank(), metadata: { ...blank().metadata, layoutMode: "reflow", brief: { ...emptyBrief, ...scoped }, siteOverrides: { theme: "forest", items: {} } },
+    nodes: createBlock(blank(), "hero")!.nodes,
+  };
+  expect(outlineOf(spec).brief?.style).toEqual({ colorMode: "mono", temperature: "cool", lightness: "dark", contrast: "strong", space: "airy", direction: "midnight", principles: ["high-contrast", "negative-space"] });
+  const plan = smartLayout(spec);
+  expect(plan.sections[0].gap).toBe("large");
+  expect(plan.typography).toBe("sans");
+  const page = materialize(spec, plan);
+  expect(page.theme).toBe("forest");
+  expect(page.art?.principles).toEqual(["negative-space"]);
+});

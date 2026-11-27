@@ -115,7 +115,7 @@ test("a back end that does not ask for the drawing never gets one", async ({ pag
 test("up to five reference pictures: thumbnails, remove one, and all five in one AI request", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/\/api\/generation\/ready$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: true }) }));
-  const sent: { images?: string[] }[] = [];
+  const sent: { images?: string[]; purposes?: string[][] }[] = [];
   await page.route(/\/api\/generation\/reference$/, async (r) => {
     const req = JSON.parse(r.request().postData() ?? "{}");
     sent.push(req);
@@ -137,10 +137,16 @@ test("up to five reference pictures: thumbnails, remove one, and all five in one
   await expect(ref.getByRole("button", { name: "＋ 再加一張（4/5）" })).toBeVisible();
   await panel.getByLabel("選參考圖").setInputFiles(photos[5]);
   await expect(ref.getByRole("list", { name: "已選的參考圖" }).getByRole("listitem")).toHaveCount(5);
+  await ref.getByText("用途：整體風格", { exact: true }).first().click();
+  const firstScope = ref.getByRole("group", { name: "第 1 張參考圖用途" });
+  await firstScope.getByRole("checkbox", { name: "配色", exact: true }).check();
+  await firstScope.getByRole("checkbox", { name: "留白與間距", exact: true }).check();
+  await expect(firstScope.getByRole("checkbox", { name: "整體風格", exact: true })).not.toBeChecked();
   await panel.getByRole("button", { name: "查看生成計畫" }).click();
   await panel.getByRole("button", { name: "確認生成" }).click();
   await expect.poll(() => sent.length).toBe(1);
   expect(sent[0].images).toHaveLength(5);
+  expect(sent[0].purposes).toEqual([["color", "spacing"], ["overall"], ["overall"], ["overall"], ["overall"]]);
   for (const image of sent[0].images!) expect(Buffer.from(image.split(",")[1], "base64").subarray(0, 2).toString("hex")).toBe("ffd8");
   expect(JSON.stringify(sent[0]).length).toBeLessThan(1200000);
 });

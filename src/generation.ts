@@ -1,3 +1,4 @@
+import { referenceHints } from "./referenceStyle";
 import { requestedSectionLayout, sectionSourceIds, sectionLayoutIssue, withSectionOrder } from "./sectionLayout";
 import { DirectionSchema } from "./directions";
 import {structuredGroupMotions} from "./motion";
@@ -400,6 +401,18 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
     if (sectionLayoutIssue(section, requested)) throw new GenerationError("INVALID_OUTPUT", "SECTION_LAYOUT");
     return { ...section, sectionLayout: requested };
   }) : sections;
+  const brief = canvas.metadata.brief;
+  const reference = referenceHints(brief?.style, brief?.referencePurposes);
+  const scoped = brief?.referencePurposes && !brief.referencePurposes.includes("overall");
+  const brand = canvas.metadata.brand;
+  const typography = scoped && reference?.typeFamily && !canvas.constraints.some(value => value.startsWith("typography:"))
+    ? reference.typeFamily : layout.typography;
+  const explicitTheme = canvas.metadata.siteOverrides?.theme ?? moodThemes[brief?.mood ?? ""];
+  const principles = (reference?.principles ?? []).filter(principle =>
+    !scoped || !(explicitTheme || brand?.primary) || !["color-field", "soft-gradient", "high-contrast"].includes(principle),
+  ).filter(principle =>
+    !(brand?.headingFont || brand?.headingFontLatin) || principle !== "serif-display",
+  ).filter(principle => !brand?.type?.h1Size || principle !== "big-type");
   const checked = PageSchema.safeParse({
     schemaVersion: 2,
     metadata: { title: canvas.metadata.name, language: "zh-Hant" },
@@ -407,15 +420,15 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
     sections: canvas.metadata.layoutMode === "reflow"
       ? withSectionOrder(finalSections, canvas.metadata.sectionOrder, section => sectionSourceIds(section, seen))
       : finalSections,
-    typography: layout.typography,
+    typography,
     ...(layout.version === 1
       ? { styles: layout.theme }
       : {
           styles: "neutral",
           // An explicit mood choice decides the theme; then a reference picture's direction; then the plan.
-          theme: moodThemes[canvas.metadata.brief?.mood ?? ""] ?? canvas.metadata.brief?.style?.direction ?? layout.theme,
+          theme: explicitTheme ?? reference?.direction ?? layout.theme,
           ...(layout.concept ? { concept: layout.concept } : {}),
-          ...(canvas.metadata.brief?.style?.principles?.length ? { art: { principles: [...canvas.metadata.brief.style.principles] } } : {}),
+          ...(principles.length ? { art: { principles } } : {}),
           // The brand kit comes from the draft only, never from the model.
           ...(canvas.metadata.brand ? { brand: canvas.metadata.brand } : {}),
           // Navigation settings come from the draft only, like the brand kit.

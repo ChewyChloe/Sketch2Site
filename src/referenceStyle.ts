@@ -172,13 +172,23 @@ export async function prepareReference(file: File): Promise<{ jpeg: string; styl
 
 /** What the browser sends: one to five small JPEGs (EXIF already dropped by the canvas). */
 export const maxReferences = 5;
+export const referencePurposeIds = ["overall", "layout", "color", "type", "spacing", "components"] as const;
+export type ReferencePurpose = (typeof referencePurposeIds)[number];
+export const referencePurposeLabels: Record<ReferencePurpose, string> = {
+  overall: "整體風格", layout: "構圖與布局", color: "配色",
+  type: "字體與文字層級", spacing: "留白與間距", components: "元件樣式",
+};
+export const ReferencePurposesSchema = z.array(z.enum(referencePurposeIds)).min(1).max(referencePurposeIds.length)
+  .refine(ids => new Set(ids).size === ids.length);
 const referenceJpeg = z.string().max(300000).regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/);
 export const ReferenceRequestSchema = z
   .object({
     requestId: z.string().uuid(),
     images: z.array(referenceJpeg).min(1).max(maxReferences),
+    purposes: z.array(ReferencePurposesSchema).min(1).max(maxReferences).optional(),
   })
   .strict()
+  .refine(r => !r.purposes || r.purposes.length === r.images.length, "每張參考圖須對應用途")
   .refine((r) => r.images.reduce((n, i) => n + i.length, 0) <= 1200000, "參考圖太大");
 export type ReferenceRequest = z.infer<typeof ReferenceRequestSchema>;
 /** What the AI may answer: the fixed choices only; the direction is worked out by trusted code. */
@@ -213,4 +223,65 @@ export function mergeStyles(styles: readonly ReferenceStyle[]): ReferenceStyle |
     imagery: vote("imagery"), motion: vote("motion"), principles,
   };
   return { ...base, direction: directionFor(base) };
+}
+
+const purposeFields = {
+  layout: ["imagery"],
+  color: ["colorMode", "temperature", "lightness", "contrast"],
+  type: ["typeFamily", "typeScale"],
+  spacing: ["space"],
+  components: [],
+} as const;
+const purposePrinciples: Record<Exclude<ReferencePurpose, "overall">, readonly PrincipleId[]> = {
+  layout: ["small-subject", "full-bleed-photo"],
+  color: ["color-field", "soft-gradient", "high-contrast"],
+  type: ["big-type", "serif-display"],
+  spacing: ["negative-space"],
+  components: ["fine-lines", "diagonal-lines", "restrained-brand", "paper-grain", "numbered-rhythm"],
+};
+
+export function referenceHints(style?: ReferenceStyle, purposes?: readonly ReferencePurpose[]): Partial<ReferenceStyle> | undefined {
+  if (!style || !purposes || purposes.includes("overall")) return style;
+  const hints = Object.fromEntries(purposes.flatMap(purpose =>
+    purpose === "overall" ? [] : purposeFields[purpose].map(key => [key, style[key]]),
+  )) as Partial<ReferenceStyle>;
+  const principles = style.principles.filter(principle => purposes.some(purpose =>
+    purpose !== "overall" && purposePrinciples[purpose].includes(principle),
+  ));
+  if (purposes.includes("layout") && hints.imagery === "full-bleed" && !principles.includes("full-bleed-photo")) principles.push("full-bleed-photo");
+  if (purposes.includes("type")) {
+    if (hints.typeFamily === "serif" && !principles.includes("serif-display")) principles.push("serif-display");
+    if (hints.typeScale === "huge" && !principles.includes("big-type")) principles.push("big-type");
+  }
+  if (principles.length) hints.principles = principles.slice(0, 5);
+  if (purposes.includes("color")) {
+    hints.direction = directionFor({
+      ...style, mood: "calm", typeFamily: "sans",
+      principles: principles.filter(id => purposePrinciples.color.includes(id)),
+    });
+  }
+  return hints;
+}
+
+/** Votes only from pictures assigned to each dimension. The stored scope gates all downstream hints. */
+export function mergeReferencePurposes(references: readonly { style: ReferenceStyle; purposes: readonly ReferencePurpose[] }[]) {
+  const style = mergeStyles(references.map(reference => reference.style));
+  if (!style || references.every(reference => reference.purposes.includes("overall")))
+    return { style, referencePurposes: undefined };
+  const referencePurposes = referencePurposeIds.filter(id => references.some(reference => reference.purposes.includes(id)));
+  const overall = mergeStyles(references.filter(reference => reference.purposes.includes("overall")).map(reference => reference.style));
+  const selected: Partial<ReferenceStyle> = {};
+  const principles = new Set<PrincipleId>();
+  for (const purpose of referencePurposeIds) {
+    if (purpose === "overall") continue;
+    const eligible = references.filter(reference => reference.purposes.includes(purpose) || reference.purposes.includes("overall"));
+    const vote = mergeStyles(eligible.map(reference => reference.style));
+    if (!vote) continue;
+    for (const key of purposeFields[purpose]) Object.assign(selected, { [key]: vote[key] });
+    vote.principles.filter(id => purposePrinciples[purpose].includes(id)).forEach(id => principles.add(id));
+  }
+  return {
+    style: { ...(overall ?? style), ...selected, principles: [...principles].slice(0, 5) },
+    referencePurposes: [...referencePurposes],
+  };
 }
