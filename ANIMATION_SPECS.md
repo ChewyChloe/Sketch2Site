@@ -1453,7 +1453,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 - 說明：局部SVG圓球透過有界黏性濾鏡融合後分離。
 - 適用：card、container、section
 - targetType：card、container、section
-- interactionType：click、keyboard
+- interactionType：click、keyboard、idle-loop、hover
 - techBase：Web Animations / CSS / Pointer Events
 - previewMapping：gooey-blob-merge
 - tags：互動、card、container、section
@@ -1462,6 +1462,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| flow | 融合模式 | select | "press" | press / drift |
 | balls | 圓球數量 | number | 3 | 2–5; step 1 |
 | durationMs | 時長（毫秒） | number | 1200 | 500–2200; step 1 |
 | radiusPx | 圓球半徑 | number | 15 | 10–24; step 1 |
@@ -1472,7 +1473,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
 
-**constraints**：2至5球，200×140局部SVG，有限次點擊播放；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+**constraints**：2至5球、200×140 SVG；漂流背景在離屏暫停，點擊模式維持有限次播放；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
 
 **reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
 

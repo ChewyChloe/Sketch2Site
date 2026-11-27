@@ -308,11 +308,33 @@ export function useCinematicMotion(node: PageNode, ref: RefObject<HTMLElement | 
             surface.append(group);
             const count = n('balls', 3);
             const circles = Array.from({ length: count }, (_, i) => { const c = svgEl('circle', { cx: String(30 + i * 140 / Math.max(1, count - 1)), cy: '70', r: String(n('radiusPx', 15)), fill: 'currentColor' }); group.append(c); return c; });
-            let busy = false;
-            button('融合圓球', () => { if (busy || reduced)
-                return; busy = true; circles.forEach((c, i) => { const dx = 100 - (30 + i * 140 / Math.max(1, count - 1)); const a = r.animate(c, [{ transform: 'translate(0,0)' }, { transform: `translate(${dx}px,${(i % 2 ? 1 : -1) * 8}px)`, offset: .5 }, { transform: 'translate(0,0)' }], { duration: n('durationMs', 1200), easing: 'ease-in-out' }); if (i === count - 1)
-                for (const ev of ['finish', 'cancel'])
-                    a?.addEventListener(ev, () => busy = false, { once: true }); }); });
+            const drifting = effect.validatedControls.flow === 'drift';
+            if (drifting) {
+                surface.classList.add('cin-gooey-drift');
+                circles.forEach((circle, i) => {
+                    const center = 30 + i * 140 / (count - 1);
+                    const carrier = svgEl('g') as SVGElement;
+                    carrier.classList.add('cin-gooey-carrier');
+                    carrier.style.setProperty('--goo-pull', `${(100 - center) * .52}px`);
+                    group.append(carrier);
+                    carrier.append(circle);
+                    const side = i % 2 === 0 ? 1 : -1;
+                    const dx = (100 - center) * .8;
+                    r.animate(circle, [
+                        { transform: 'translate(0, 0)' },
+                        { transform: `translate(${dx * .42}px, ${side * 21}px)`, offset: .25 },
+                        { transform: `translate(${dx}px, ${side * 3}px)`, offset: .5 },
+                        { transform: `translate(${dx * .48}px, ${side * -18}px)`, offset: .75 },
+                        { transform: 'translate(0, 0)' },
+                    ], { duration: n('durationMs', 1200) * 3, iterations: Infinity, easing: 'ease-in-out' });
+                });
+            } else {
+                let busy = false;
+                button('融合圓球', () => { if (busy || reduced)
+                    return; busy = true; circles.forEach((c, i) => { const dx = 100 - (30 + i * 140 / Math.max(1, count - 1)); const a = r.animate(c, [{ transform: 'translate(0,0)' }, { transform: `translate(${dx}px,${(i % 2 ? 1 : -1) * 8}px)`, offset: .5 }, { transform: 'translate(0,0)' }], { duration: n('durationMs', 1200), easing: 'ease-in-out' }); if (i === count - 1)
+                    for (const ev of ['finish', 'cancel'])
+                        a?.addEventListener(ev, () => busy = false, { once: true }); }); });
+            }
         }
         if (id === 'elastic-svg-morph') {
             const surface = svg('cin-shape'), path = svgEl('path', { fill: 'currentColor' });

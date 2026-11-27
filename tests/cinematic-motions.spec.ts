@@ -244,3 +244,39 @@ finally {
 } });
 test('desktop mobile-preview width uses the same vertical story fallback as an exported phone viewport',async({page})=>{await page.setViewportSize({width:1440,height:1000});await load(page,'pinned-story-panels');const el=target(page,'pinned-story-panels');await expect(el.locator('.story-simple')).toHaveCount(0);const menu=page.locator('.workbench-menu>summary').filter({hasText:'檢視'});if(!await page.getByRole('button',{name:'手機',exact:true}).isVisible())await menu.click();await page.getByRole('button',{name:'手機',exact:true}).click();await expect(el.locator('.story-simple')).toBeVisible();await expect(el.getByLabel('敘事捲動進度')).toHaveCount(0);});
 test('keyboard scrolling a library demo never moves the selected draft element',async({page})=>{await page.goto('/?draft');await expect(page.getByRole('status')).toContainText('草稿已就緒');await page.getByRole('button',{name:'新增文字',exact:true}).click();const node=page.getByTestId('canvas-node');const before=await node.evaluate(e=>({left:(e as HTMLElement).style.left,top:(e as HTMLElement).style.top}));await page.getByRole('button',{name:'動畫素材庫',exact:true}).click();const viewport=page.locator('.sidebar [data-effect-id=pinned-story-panels] .story-viewport');await viewport.focus();await viewport.press('ArrowDown');await viewport.press('ArrowRight');await page.getByRole('button',{name:'草稿',exact:true}).click();expect(await node.evaluate(e=>({left:(e as HTMLElement).style.left,top:(e as HTMLElement).style.top}))).toEqual(before);});
+
+test('gooey drift merges in a theme-colored background and pauses for Reduced Motion', async ({ page }) => {
+    const input = thirdFixture('gooey-blob-merge');
+    const effect = input.sections[0].children![0].effects[0];
+    effect.validatedControls.flow = 'drift';
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/?draft');
+    await openWebsiteWorkspace(page);
+    await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'gooey-drift.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(input)) });
+    const el = target(page, 'gooey-blob-merge');
+    const surface = el.locator('.cin-gooey-drift');
+    await el.scrollIntoViewIfNeeded();
+    await expect(surface.locator('circle')).toHaveCount(3);
+    await expect(surface.locator('g[filter]')).toHaveCount(1);
+    await expect.poll(() => running(el)).toBe(3);
+    const first = surface.locator('circle').first();
+    const initial = await first.evaluate(circle => getComputedStyle(circle).transform);
+    await expect.poll(() => first.evaluate(circle => getComputedStyle(circle).transform)).not.toBe(initial);
+    const carrier = surface.locator('.cin-gooey-carrier').first();
+    await el.hover();
+    await expect(carrier).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 36.4, 0)');
+    await expect(first).toHaveCSS('fill', await el.evaluate(node => getComputedStyle(node).getPropertyValue('--accent').trim()).then(async token =>
+      page.evaluate(value => {
+        const probe = document.createElement('span');
+        probe.style.color = value;
+        document.body.append(probe);
+        const color = getComputedStyle(probe).color;
+        probe.remove();
+        return color;
+      }, token)));
+    await page.setViewportSize({ width: 375, height: 840 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(surface.locator('circle')).toHaveCount(3);
+    await expect(surface.locator('g[filter]')).toHaveCount(0);
+    await expect.poll(() => running(el)).toBe(0);
+});

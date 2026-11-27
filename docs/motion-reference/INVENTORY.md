@@ -47,6 +47,7 @@
 | Registry ID | 來源編號 | 批次 |
 |---|---|---|
 | `count-up` | 8 | 5 |
+| `gooey-blob-merge` | 176 | 7 |
 
 ## 已有同等功能
 
@@ -171,7 +172,7 @@
 | 167 | layout | ['hover'] | CSS | 導覽列樣式 | P3 | 滑動底色 |
 | 170 | text | ['hover'] | CSS | elastic-word-bounce | P3 | 滑過觸發 |
 | 171 | button | ['hover'] | CSS | border-light-trace | P2 | 滑過描邊 |
-| 176 | bg | ['loop', 'hover'] | Canvas | gooey-blob-merge | P4 | 現有為手動聚合；待補自主漂移與接近融合 |
+| 176 | bg | ['loop', 'hover'] | Canvas | gooey-blob-merge | P4 | 漂流融合模式，保留舊版點擊聚合 |
 | 177 | text | ['hover', 'enter'] | Canvas | particle-constellation | P4 | 粒子組字 |
 | 179 | bg | ['hover'] | Canvas | liquid-distortion-reveal | P4 | 滑過漣漪 |
 | 181 | bg | ['hover', 'loop'] | Canvas | confetti-burst | P4 | 煙火 |

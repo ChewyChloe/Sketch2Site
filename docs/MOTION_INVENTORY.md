@@ -58,7 +58,7 @@
 | `typographic-stretch` | 字體延展回彈 / Typographic Stretch | 文字 | 滑過時 | 文字逐字 | 互動回饋 | 強烈 | maxScale, durationMs | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `cursor-trail-particles` | 游標粒子軌跡 / Cursor Trail Particles | 卡片與區塊 | 滑過時 | 線條圖形 | 互動回饋 | 強烈 | maxParticles, lifetimeMs, sizePx | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `cursor-image-follower` | 游標圖片跟隨 / Cursor Image Follower | 文字、按鈕 | 滑過時、拖曳 | 位移滑動 | 互動回饋 | 強烈 | image, widthPx, responseMs | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
-| `gooey-blob-merge` | 黏性圓球融合 / Gooey Blob Merge | 卡片與區塊 | 點擊時 | 線條圖形 | 互動回饋 | 強烈 | balls, durationMs, radiusPx | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
+| `gooey-blob-merge` | 黏性圓球融合 / Gooey Blob Merge | 卡片與區塊 | 點擊時、一直動、滑過時 | 線條圖形 | 互動回饋、營造氣氛 | 強烈 | flow, balls, durationMs, radiusPx | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `directional-hover-wipe` | 方向感應滑入 / Directional Hover Wipe | 按鈕、卡片與區塊 | 滑過時 | 遮罩揭露 | 互動回饋 | 強烈 | durationMs | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `spring-drag-snap` | 彈性拖曳吸附 / Spring Drag & Snap | 卡片與區塊 | 拖曳、點擊時 | 彈性 | 互動回饋 | 強烈 | rangePx, snap, durationMs | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `pixel-dissolve` | 像素消散 / Pixel Dissolve | 圖片 | 出現時、點擊時 | 遮罩揭露 | 互動回饋、吸引注意 | 強烈 | tiles, durationMs, mode | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |

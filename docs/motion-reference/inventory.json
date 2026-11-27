@@ -3686,13 +3686,14 @@
    "category": "既有功能可擴充",
    "sketch2site": "gooey-blob-merge",
    "priority": "P4",
-   "note": "現有為手動聚合；待補自主漂移與接近融合",
+   "note": "漂流融合模式，保留舊版點擊聚合",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedExpansionBatch": 7,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

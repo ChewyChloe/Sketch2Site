@@ -66,7 +66,10 @@ test("downloaded React project installs and builds independently; runtime stays 
   input.chrome = { nav: true, footer: false, navStyle: "top-sticky", menuMotion: "strips" };
   const layoutSection = input.sections[0];
   layoutSection.sectionLayout = { arrangement: { mode: "masonry", columns: 2, gap: "medium", mobile: "stack" }, fullBleed: true };
-  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...thirdFixture().sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
+  const cinematic = thirdFixture();
+  const gooey = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "gooey-blob-merge")!;
+  gooey.effects[0].validatedControls.flow = "drift";
+  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...cinematic.sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
   const countdown = {
     id: motionId(25), type: "paragraph" as const, content: "7",
     effects: [createMotion("count-up", motionId(25), { cadence: "impact", startValue: 10, endValue: 7, durationMs: 1200 })],
@@ -183,6 +186,9 @@ z.extractall(root)
     await expect(digit).toHaveAttribute("data-impact", "");
     await expect(digit).toHaveText("7");
     expect(await digit.evaluate(el => el.getAnimations().length)).toBe(0);
+    const gooeySurface = standalone.locator(`[data-page-id="${gooey.id}"] .cin-gooey-drift`);
+    await expect(gooeySurface.locator("circle")).toHaveCount(3);
+    await expect(gooeySurface.locator("g[filter]")).toHaveCount(0);
     const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
     await expect(exportedLayout).toHaveCSS("column-count", "2");
     await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");

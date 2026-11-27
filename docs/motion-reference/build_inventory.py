@@ -43,7 +43,7 @@ M = {
 161:("X","circular-mask-expansion","P3","捲動驅動"),162:("N","","P2","連結底線滑入"),163:("N","hollow-fill-sweep","P1","批次一完成"),164:("S","flip-card","",""),165:("N","","P3","圓形縮圖展開"),
 166:("N","","P4","圖示列放大"),167:("X","導覽列樣式","P3","滑動底色"),168:("C","accordion-gallery","P3","規劃於批次三"),169:("N","","P4","網站內容提示框"),170:("X","elastic-word-bounce","P3","滑過觸發"),
 171:("X","border-light-trace","P2","滑過描邊"),172:("N","","P4","Canvas 星際背景"),173:("N","","P4","Canvas 流場"),174:("N","","P4","花瓣飄落"),175:("N","","P4","字元雨"),
-176:("X","gooey-blob-merge","P4","現有為手動聚合；待補自主漂移與接近融合"),177:("X","particle-constellation","P4","粒子組字"),178:("N","","P4","圓點網格背景"),179:("X","liquid-distortion-reveal","P4","滑過漣漪"),180:("C","","P3","刮開揭露（Canvas）"),
+176:("X","gooey-blob-merge","P4","漂流融合模式，保留舊版點擊聚合"),177:("X","particle-constellation","P4","粒子組字"),178:("N","","P4","圓點網格背景"),179:("X","liquid-distortion-reveal","P4","滑過漣漪"),180:("C","","P3","刮開揭露（Canvas）"),
 181:("X","confetti-burst","P4","煙火"),182:("X","float-idle","P3","縮放呼吸模式"),183:("S","float-idle","",""),184:("S","cinematic-image-pan","",""),185:("X","letter-assembly","P3","翻滾進場"),
 186:("N","neon-ignite","P4","規劃於批次四"),187:("X","stagger-reveal","P3","歪斜貼上"),188:("N","","P4","上下半合成"),189:("X","blur-in","P3","字距收合"),190:("N","","P4","斜滑煞車"),
 191:("S","cinematic-image-pan","",""),192:("X","svg-path-drawing","P4","標誌組合"),193:("N","","P4","音訊波形"),194:("X","border-light-trace","P3","漸層描邊"),195:("N","","P4","圖示液面"),
@@ -84,7 +84,7 @@ names = {"S": "已有同等功能", "X": "既有功能可擴充", "N": "需要�
 HANNAH = {"name": "Hannah’s Motion Library", "url": "https://kittenjam-motion-library.vercel.app/"}
 shipped = {50: 2, 223: 2, 11: 3, 30: 3, 43: 3}
 components = {339: 4, 340: 6, 341: 4}
-expansions = {8: 5}
+expansions = {8: 5, 176: 7}
 rows = []
 for it in items:
     i = it["id"]; code, target, prio, note = M[i]
