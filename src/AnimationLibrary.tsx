@@ -7,7 +7,7 @@ import { PageRenderer, animationRegistry } from "./PageRenderer";
 import { PageSchema, type effectIds } from "./pageSpec";
 import { effectLabels } from "./visualEditing";
 import { MotionControlsFields } from "./MotionControls";
-import { facetDimensions, matchesFilter, motionFacets, searchMotions, type Dimension, type FacetFilter } from "./motionFacets";
+import { facetDimensions, matchesFilter, motionFacets, recommendMotions, searchMotions, type Dimension, type FacetFilter } from "./motionFacets";
 import type { MotionId, MotionControls } from "./motionCatalog";
 type EffectId = (typeof effectIds)[number];
 // Per-browser lists; storage may be unavailable (private mode), then nothing is remembered.
@@ -87,7 +87,6 @@ export function AnimationLibrary({
   filter = "",
   draft = false,
   onTry,
-  recommendFor,
 }: {
   selectedLabel?: string;
   compatibility(id: EffectId): string | null;
@@ -99,9 +98,10 @@ export function AnimationLibrary({
   draft?: boolean;
   /** Plays a motion on the selected element of the real site for a moment, without saving. */
   onTry?(id: EffectId, controls?: MotionControls): void;
-  /** The selected element, for 描述想要的效果 (A8). */
-  recommendFor?: { type: string; content?: string; media?: { kind?: string }; children?: unknown[] };
+
 }) {
+  const [description,setDescription]=useState("");
+  const [recommend,setRecommend]=useState(false);
   const [query,setQuery]=useState("");
   // Filters (A4): same dimension = any of (OR), different dimensions = all of (AND).
   const [facets,setFacets]=useState<FacetFilter>({});
@@ -121,7 +121,7 @@ export function AnimationLibrary({
   const toggleFavorite=(id:string)=>setFavorites(f=>{const next=f.includes(id)?f.filter(x=>x!==id):[id,...f].slice(0,40);writeList("sketch2site.motionFavorites",next);return next;});
   const toggleFacet=(dim:Dimension,value:string)=>setFacets(f=>{const cur=f[dim]??[];const next=cur.includes(value)?cur.filter(v=>v!==value):[...cur,value];const out={...f,[dim]:next};if(!next.length)delete out[dim];return out;});
   const activeCount=Object.values(facets).reduce((n,v)=>n+(v?.length??0),0)+(only&&only!=="fit"?1:0);
-  const clearAll=()=>{setFacets({});setOnly("");setQuery("");};
+  const clearAll=()=>{setFacets({});setOnly("");setQuery("");setRecommend(false);};
   const [replay,setReplay]=useState<Record<string,number>>({});
   const [active, setActive] = useState<EffectId | null>(null);
   // Entrance samples replay by themselves while they are on screen, so the library feels
@@ -150,7 +150,8 @@ export function AnimationLibrary({
     return()=>{io.disconnect();mo.disconnect();window.clearInterval(timer);};
   },[]);
   const all=Object.keys(animationRegistry) as EffectId[];
-  const searched=searchMotions(all as MotionId[],filter||query) as EffectId[];
+  const recommendations=recommend?recommendMotions(description,all.filter(id=>!compatibility(id))):[];
+  const searched=recommend?recommendations.map(item=>item.id):searchMotions(all,filter||query);
   const base=searched.filter(id=>only==="fit"?!compatibility(id):only==="favorites"?favorites.includes(id):only==="recent"?recent.includes(id):true);
   const visibleIds=base.filter(id=>matchesFilter(id as MotionId,facets));
   // Live counts: results if this value were chosen, keeping the other dimensions as they are.
@@ -180,6 +181,9 @@ export function AnimationLibrary({
       </div>
       <div className="motion-library-filters">
         {!draft && <input type="search" aria-label="搜尋動畫" placeholder="搜尋：打字、彈跳、圖片、hover…" value={query} onChange={e=>setQuery(e.target.value)}/>}
+        <label>描述想要的動畫（本機規則推薦）<input value={description} maxLength={160} onChange={event=>setDescription(event.target.value)} /></label>
+        <button type="button" disabled={!description.trim()} onClick={()=>{clearAll();setRecommend(true);setSort("default");}}>推薦動畫</button>
+        {recommend&&<button type="button" onClick={()=>setRecommend(false)}>返回全部動畫</button>}
         <div className="lib-only" role="group" aria-label="顯示範圍">
           {selectedLabel && <button type="button" aria-pressed={only==="fit"} onClick={()=>setOnly(only==="fit"?"":"fit")}>只看適合目前元件（{searched.filter(id=>!compatibility(id)).length}）</button>}
           <button type="button" aria-pressed={only==="favorites"} onClick={()=>setOnly(only==="favorites"?"":"favorites")}>★ 收藏（{favorites.length}）</button>
@@ -275,7 +279,7 @@ export function AnimationLibrary({
                 {Object.keys(motionCatalog[id].controls).length>0&&<button type="button" className="motion-tune" aria-expanded={tuning===id} aria-label={"調整"+effectLabels[id]+"參數"} onClick={()=>setTuning(tuning===id?null:id)}>調整</button>}
                 </div>
                 {tuning===id&&<div className="motion-tune-fields" role="group" aria-label={effectLabels[id]+"預覽參數"}><MotionControlsFields id={id} values={{...defaultControls(id),...tuned[id]} as never} onChange={(values:MotionControls)=>{setTuned(t=>({...t,[id]:values}));setReplay(v=>({...v,[id]:(v[id]??0)+1}));}}/><button type="button" onClick={()=>{setTuned(previous=>{const next={...previous};delete next[id];return next;});setReplay(v=>({...v,[id]:(v[id]??0)+1}));}}>恢復預設值</button></div>}
-                <small>{reason ?? descriptions[id]}</small>
+                <small>{recommendations.find(item=>item.id===id)?.reasons.join("、") ?? reason ?? descriptions[id]}</small>
                 <span className="asset-use-case">{motionCatalog[id].bestFor}</span><span className="asset-trigger">{[...new Set(motionCatalog[id].interactionType.map(t=>triggerLabels[t]??t))].join(" · ")}</span>
               </div>
             );

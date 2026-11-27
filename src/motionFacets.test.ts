@@ -32,3 +32,16 @@ describe("motion facets (one source for filters, search and recommendations)", (
     expect(searchMotions(motionIds, "沒有這種動畫xyz")).toEqual([]);
   });
 });
+
+it("local recommendations use bilingual motion traits and exclude strong effects", async () => {
+  const { recommendMotions, motionFacets } = await import("./motionFacets");
+  const { motionIds } = await import("./motionCatalog");
+  expect(recommendMotions("文字像被風吹散後重新聚集", motionIds).map(x => x.id)).toContain("letter-assembly");
+  for (const query of ["照片有立體感，但不要太浮誇", "photo with depth, not too flashy"]) {
+    const items = recommendMotions(query, motionIds);
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.length).toBeLessThanOrEqual(5);
+    expect(items.every(({ id }) => motionFacets[id].target.includes("image") && !motionFacets[id].intensity.includes("high"))).toBe(true);
+  }
+  expect(recommendMotions("適合咖啡廳的柔和進場動畫", ["fade-in"])[0]?.reasons).toHaveLength(3);
+});

@@ -71,3 +71,27 @@ export function searchMotions(ids: readonly MotionId[], query: string) {
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   return words.length ? ids.filter((id) => { const t = searchText(id); return words.every((w) => t.includes(w)); }) : [...ids];
 }
+
+const recommendationRules: { pattern: RegExp; label: string; match: (id: MotionId, f: MotionFacets) => boolean }[] = [
+  { pattern: /吹散|重聚|聚集|風吹|scatter|reassembl|gather/i, label: "分散後重新組合文字", match: id => ["letter-assembly", "split-line-assembly", "text-morph-transition"].includes(id) },
+  { pattern: /立體|景深|視差|3d|depth|parallax/i, label: "提供立體或景深感", match: (_, f) => f.expression.includes("depth") },
+  { pattern: /柔和|輕柔|溫柔|gentle|soft|subtle|calm/i, label: "動態輕柔", match: (_, f) => f.intensity.includes("low") },
+  { pattern: /進場|出現|淡入|entrance|appear|fade.in/i, label: "在元件出現時播放", match: (_, f) => f.trigger.includes("enter") },
+  { pattern: /滑過|懸停|hover/i, label: "滑過時觸發", match: (_, f) => f.trigger.includes("hover") },
+  { pattern: /捲動|滾動|scroll/i, label: "捲動時觸發", match: (id, f) => f.trigger.includes("scroll") || motionCatalog[id].interactionType.includes("scroll-enter") },
+  { pattern: /點擊|按下|click|tap/i, label: "點擊時觸發", match: (_, f) => f.trigger.includes("click") },
+  { pattern: /咖啡|coff?ee|caf[eé]/i, label: "適合安靜的咖啡廳氛圍", match: (_, f) => f.intensity.includes("low") && f.trigger.includes("enter") },
+];
+
+export function recommendMotions(query: string, ids: readonly MotionId[]) {
+  const avoidStrong = /(?:不要|別|不想|不宜|not|avoid|no)\s*(?:太|過於|too\s*)?(?:浮誇|強烈|花俏|誇張|flashy|intense|dramatic)/i.test(query);
+  const avoidLoops = /(?:不要|別|不想|not|avoid|no)\s*(?:一直動|循環|loop)/i.test(query);
+  const matches = recommendationRules.filter(rule => rule.pattern.test(query));
+  const target = /照[片相]|圖片|photo|image/i.test(query) ? "image" : /文字|標題|text|headline/i.test(query) ? "text" : undefined;
+  return ids.flatMap(id => {
+    const f = motionFacets[id];
+    if ((target && !f.target.includes(target)) || (avoidStrong && f.intensity.includes("high")) || (avoidLoops && f.trigger.includes("loop"))) return [];
+    const reasons = matches.filter(rule => rule.match(id, f)).map(rule => rule.label);
+    return reasons.length ? [{ id, reasons }] : [];
+  }).sort((a, b) => b.reasons.length - a.reasons.length).slice(0, 5);
+}

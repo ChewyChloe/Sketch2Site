@@ -404,3 +404,4 @@
 - P0 DONE：tests/motion-filters.spec.ts 瀏覽器驗證搜尋、收藏、最近使用、排序、跨欄 AND／同欄 OR 和結果數量，1 PASS。下一步 P1。
 - P1 PARTIAL：AnimationLibrary、App、Preview 共用參數；加入重設、真實元件試看與取消。Typecheck 和試看／取消／套用／Undo／Redo E2E PASS；待確認儲存重載、匯出與草稿元件試看。下一步 P2。
 - P2 PARTIAL：pageSpec、pageRuntime.css 新增 10 個可選設計概念，沿用內容／動態與匯出。siteNav 測試 PASS；每款動畫搭配、鎖定元件的視覺驗證尚待補齊。下一步 P3。
+- P3 DONE：motionFacets、AnimationLibrary 加入中英本機規則推薦、相容性、動態條件與理由，沿用原試看及套用。5 單元 PASS。下一步 P4。
