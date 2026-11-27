@@ -1,6 +1,7 @@
 import {thirdFixture} from "./fixtures/cinematicMotions";
 import {advancedFixture} from "./fixtures/advancedMotions";
 import {openWebsiteWorkspace} from "./helpers/workbench";
+import { exportSite } from "./helpers/workbench";
 import {serverMotionRegistry} from "../server/motionBriefs";
 import {extendedMotionFixture} from "./fixtures/extendedMotions";
 import {referenceFixture} from "./fixtures/referenceMotions";
@@ -77,7 +78,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   });
   await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
   const download = page.waitForEvent("download");
-  await pageAction(page, "匯出 React 專案");
+  await exportSite(page);
   const file = await download;
   const directory = await mkdtemp(join(tmpdir(), "sketch-export-")),
     archive = join(directory, "project.zip"),

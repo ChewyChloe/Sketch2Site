@@ -1,3 +1,5 @@
+import { checkRendered, checkSite, type SiteIssue } from "./siteCheck";
+import { SiteCheckPanel } from "./SiteCheckPanel";
 import {MotionControlsFields} from "./MotionControls";
 import {motionCatalog,defaultControls,type MotionControls} from "./motionCatalog";
 import {motionDuration,createMotion,numericContent,combinationReason,targetReason,type MotionId} from "./motion";
@@ -520,6 +522,33 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
     setNotice(direction === "undo" ? "已撤銷修改" : "已重做修改");
   }
 
+  const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean } | null>(null);
+  const runCheck = () => {
+    const page = current.current.history.present;
+    const rendered = frameRef.current ? checkRendered(frameRef.current) : [];
+    return [...checkSite(page), ...rendered];
+  };
+  const exportNow = async () => {
+    setExporting(true);
+    try {
+      const snapshot = current.current.history.present;
+      const { downloadProject } = await import("./exportProject");
+      await downloadProject(snapshot);
+      setPatchError(false);
+      setNotice("已匯出 React 專案");
+    } catch {
+      setPatchError(true);
+      setNotice("匯出失敗，請檢查頁面與素材後重試");
+    } finally {
+      setExporting(false);
+    }
+  };
+  const goToIssue = (issue: SiteIssue) => {
+    setCheck(null);
+    if (!issue.targetId) return;
+    setSelected(issue.targetId);
+    requestAnimationFrame(() => frameRef.current?.querySelector(`[data-page-id="${issue.targetId}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
+  };
   const pageActions = (
     <>
       {source && <span className="preview-source">{source}</span>}
@@ -564,23 +593,17 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
             pendingProperties || exporting || !ready || Boolean(loadError)
           }
           title={pendingProperties ? "請先套用或捨棄屬性修改" : undefined}
-          onClick={async () => {
-            setExporting(true);
-            try {
-              const snapshot=current.current.history.present;
-              const {downloadProject}=await import("./exportProject");
-              await downloadProject(snapshot);
-              setPatchError(false);
-              setNotice("已匯出 React 專案");
-            } catch {
-              setPatchError(true);
-              setNotice("匯出失敗，請檢查頁面與素材後重試");
-            } finally {
-              setExporting(false);
-            }
+          onClick={() => {
+            // Checked first: problems that would break the live site are shown before exporting.
+            const issues = runCheck();
+            if (issues.some((i) => i.level === "error")) setCheck({ issues, exporting: true });
+            else void exportNow();
           }}
         >
           {exporting ? "正在匯出…" : "匯出 React 專案"}
+        </button>
+        <button disabled={!ready || Boolean(loadError)} onClick={() => setCheck({ issues: runCheck(), exporting: false })}>
+          上線前檢查
         </button>
         <button
           disabled={!ready || Boolean(loadError)}
@@ -620,6 +643,15 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
   );
   return (
     <main className="preview-workspace" aria-label="網頁預覽">
+      {check && (
+        <SiteCheckPanel
+          issues={check.issues}
+          exporting={check.exporting}
+          onGo={goToIssue}
+          onClose={() => setCheck(null)}
+          onExportAnyway={() => { setCheck(null); void exportNow(); }}
+        />
+      )}
       {headerTarget ? (
         createPortal(pageActions, headerTarget)
       ) : (

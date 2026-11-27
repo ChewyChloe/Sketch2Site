@@ -1,6 +1,7 @@
 import { choose } from "./helpers/select";
 import { test, expect } from "@playwright/test";
 import { pageAction, openPanel, editSelection } from "./helpers/workbench";
+import { exportSite } from "./helpers/workbench";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { mkdtemp } from "node:fs/promises";
@@ -85,7 +86,7 @@ test("private raster import, reload, Mock generation, page edits, animation and 
   await expect(image).toHaveAttribute("data-effects", "fade-in");
   await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
   const download = page.waitForEvent("download");
-  await pageAction(page, "匯出 React 專案");
+  await exportSite(page);
   const directory = await mkdtemp(join(tmpdir(), "image-export-")),
     path = join(directory, "site.zip");
   await (await download).saveAs(path);

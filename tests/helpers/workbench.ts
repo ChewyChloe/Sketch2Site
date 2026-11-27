@@ -82,3 +82,9 @@ export async function useThisVersion(page: Page) {
   }
   await expect(candidate).toHaveCount(0);
 }
+/** Exports the site; when the pre-launch check finds problems, goes ahead anyway (仍要匯出). */
+export async function exportSite(page: Page) {
+  await pageAction(page, "匯出 React 專案");
+  const anyway = page.getByRole("dialog", { name: "上線前檢查" }).getByRole("button", { name: "仍要匯出" });
+  if (await anyway.isVisible({ timeout: 1500 }).catch(() => false)) await anyway.click();
+}
