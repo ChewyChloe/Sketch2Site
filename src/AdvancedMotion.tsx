@@ -38,15 +38,55 @@ export function resources(host: HTMLElement, reduced: boolean) {
     const remove = (el: Element) => { nodes.delete(el); el.getAnimations?.().forEach(a=>a.cancel()); el.remove(); };
     return { listen, animate, entrance, property, append, remove, isVisible:()=>visible&&!document.hidden, dispose() { disposed = true; nodes.forEach(el => el.remove()); nodes.clear(); io?.disconnect(); animations.forEach(a => a.cancel()); disposers.reverse().forEach(f => f()); } };
 }
+function LayeredWordWave({ text, effect }: { text: string; effect: MotionInstance }) {
+    const container = useRef<HTMLSpanElement>(null), reduced = useReducedMotion();
+    const phase = effect.validatedControls.form;
+    const words = text.split(/(\s+)/);
+    const letters = words.map(word => typeof Intl.Segmenter === 'function'
+        ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(word), cell => cell.segment) : Array.from(word));
+    const compact = !reduced && letters.flat().length <= 36;
+    useEffect(() => {
+        const host = container.current;
+        if (!host || !compact) return;
+        const r = resources(host, reduced), cycle = motionNumber(effect, 'durationMs', 650) * 3;
+        const amplitude = motionNumber(effect, 'amplitudePx', 8);
+        host.querySelectorAll('.advanced-wave-glyph').forEach((glyph, index) => {
+            const frames = phase === 'flag' ? [
+                { translate: '0 0', transform: 'skewY(0deg)' },
+                { translate: `0 -${amplitude}px`, transform: 'skewY(12deg)' },
+                { translate: '0 0', transform: 'skewY(0deg)' },
+                { translate: `0 ${amplitude * .5}px`, transform: 'skewY(-12deg)' },
+                { translate: '0 0', transform: 'skewY(0deg)' },
+            ] : [
+                { scale: '1 1' },
+                { scale: `1 ${1 + amplitude / 45}`, offset: .32 },
+                { scale: `1 ${1 - amplitude / 110}`, offset: .68 },
+                { scale: '1 1' },
+            ];
+            r.animate(glyph, frames, { duration: cycle, delay: -cycle + index % 16 * cycle / 17, iterations: Infinity, easing: 'ease-in-out' });
+        });
+        return () => r.dispose();
+    }, [effect, text, reduced, phase, compact]);
+    if (!compact) return <span>{text}</span>;
+    return <span ref={container} className="advanced-wave-loop">
+        <span className="motion-sr">{text}</span>
+        <span aria-hidden="true">{letters.map((word, index) => /^\s+$/u.test(words[index]) ? words[index] :
+            <span className="advanced-wave-word" key={index}>{word.map((letter, position) =>
+                <span className="advanced-wave-glyph" key={position}>{letter}</span>
+            )}</span>)}
+        </span>
+    </span>;
+}
 /** Plain text remains the only accessible/selectable source. Transient overlays are aria-hidden. */
 export function AdvancedText({ text, effect }: {
     text: string;
     effect: MotionInstance;
 }) {
+    const layered = effect.presetId === 'kinetic-text-wave' && ['flag', 'stretch-wave'].includes(String(effect.validatedControls.form));
     const ref = useRef<HTMLSpanElement>(null), reduced = useReducedMotion();
     useEffect(() => {
         const host = ref.current;
-        if (!host)
+        if (!host || layered)
             return;
         const source = host.querySelector<HTMLElement>('.advanced-text-source')!;
         const r = resources(host, reduced);
@@ -176,7 +216,8 @@ export function AdvancedText({ text, effect }: {
             restore(); });
         resize?.observe(source);
         return () => { resize?.disconnect(); restore(); r.dispose(); };
-    }, [text, effect, reduced]);
+    }, [text, effect, reduced, layered]);
+    if (layered) return <LayeredWordWave text={text} effect={effect}/>;
     return <span ref={ref} className={'advanced-text ' + (effect.presetId === 'hand-drawn-highlight' ? 'advanced-highlight' : '')}><span className="advanced-text-source">{text}</span></span>;
 }
 export function nearestScroller(host: HTMLElement) { let el: HTMLElement | null = host; while (el && !/(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY))

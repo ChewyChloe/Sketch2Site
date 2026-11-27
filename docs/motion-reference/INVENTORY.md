@@ -54,7 +54,12 @@
 
 | Registry ID | 來源編號 | 批次 |
 |---|---|---|
+| `breathing-glow` | 6 | 13 |
 | `count-up` | 8 | 5 |
+| `kinetic-text-wave` | 19 | 13 |
+| `letter-assembly` | 21 | 13 |
+| `blur-in` | 29 | 13 |
+| `kinetic-text-wave` | 35 | 13 |
 | `gooey-blob-merge` | 176 | 7 |
 | `pinned-story-panels` | 210 | 8 |
 
@@ -134,7 +139,7 @@
 | 28 | text | ['switch'] | CSS | text-morph-transition | P3 | 環形換字 |
 | 29 | text | ['enter'] | CSS | blur-in | P3 | 殘影進場 |
 | 32 | text | ['loop'] | CSS | rolling-characters | P4 | 換位排序 |
-| 35 | text | ['loop'] | CSS | typographic-stretch | P3 | 縱向波浪 |
+| 35 | text | ['loop'] | CSS | kinetic-text-wave | P3 | 縱向波浪 |
 | 42 | text | ['enter'] | CSS | elastic-word-bounce | P3 | 重落節奏 |
 | 46 | text | ['switch'] | CSS | text-morph-transition | P3 | 穿越換詞 |
 | 47 | text | ['switch'] | CSS | text-morph-transition | P3 | 擠壓換詞 |

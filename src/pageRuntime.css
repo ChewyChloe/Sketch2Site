@@ -1995,3 +1995,26 @@
 }
 
 .ref-storm-mark { position: absolute; bottom: 0; inset-inline: 15%; height: .12em; background: color-mix(in srgb, var(--accent, currentColor) 60%, transparent); pointer-events: none; opacity: 0; }
+
+.effect-breathing[data-breathing-pulse] { animation: motion-heartbeat var(--breathing-cycle) ease-out infinite; }
+.effect-breathing[data-breathing-pulse]::before { animation: motion-heartwave var(--breathing-cycle) ease-out infinite; }
+@keyframes motion-heartbeat { 0%, 24%, 40%, 100% { scale: 1; } 13% { scale: 1.055; } 31% { scale: 1.025; } }
+@keyframes motion-heartwave { 0% { opacity: .15; scale: 1; } 13% { opacity: .85; } 43%, 100% { opacity: 0; scale: 1.18; } }
+.effect-breathing[data-breathing-pulse][data-motion-paused=true],
+.effect-breathing[data-breathing-pulse][data-pause-hover=true]:hover,
+.effect-breathing[data-breathing-pulse]:focus-within { animation-play-state: paused; }
+.effect-breathing[data-breathing-pulse][aria-disabled=true],
+.effect-breathing[data-breathing-pulse]:disabled { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .effect-breathing[data-breathing-pulse], .effect-breathing[data-breathing-pulse]::before { animation: none; }
+}
+.advanced-wave-loop { white-space: pre-wrap; }
+.advanced-wave-word { overflow-wrap: anywhere; }
+.advanced-wave-glyph { display: inline-block; transform-origin: center bottom; }
+.effect-breathing[data-breathing-pulse][data-motion-paused=true]::before,
+.effect-breathing[data-breathing-pulse][data-pause-hover=true]:hover::before,
+.effect-breathing[data-breathing-pulse]:focus-within::before,
+[inert] .effect-breathing[data-breathing-pulse],
+[inert] .effect-breathing[data-breathing-pulse]::before { animation-play-state: paused; }
+.effect-breathing[data-breathing-pulse][aria-disabled=true]::before,
+.effect-breathing[data-breathing-pulse]:disabled::before { animation: none; opacity: 0; }

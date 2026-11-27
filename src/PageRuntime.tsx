@@ -518,6 +518,7 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
       data-section-mobile={arrangement && "mobile" in arrangement ? arrangement.mobile : undefined}
       data-section-bleed={node.sectionLayout?.fullBleed ? "" : undefined}
       data-text-style={node.text ? "" : undefined}
+      data-breathing-pulse={breathing?.validatedControls.pulse === "heartbeat" ? "" : undefined}
       data-pause-hover={breathing?.validatedControls.pauseOnHover===true}
       tabIndex={(lift||glow)&&node.type!=="button"?0:undefined}
       data-effects={node.effects.map((e) => e.presetId).join(" ")}

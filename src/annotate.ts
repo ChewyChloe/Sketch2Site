@@ -42,7 +42,10 @@ const motionWords: [RegExp, MotionId[]][] = [
   [/螢光|畫重點|標記|劃線/, ["hand-drawn-highlight"]],
   [/底線|描線/, ["accent-stroke"]],
   [/彈跳|跳動|彈/, ["elastic-word-bounce"]],
-  [/波浪/, ["kinetic-text-wave"]],
+  [/旗面|伸縮波浪|波浪/, ["kinetic-text-wave"]],
+  [/雙向吸附|從兩邊聚合/, ["letter-assembly"]],
+  [/拖影|殘影.*入場/, ["blur-in"]],
+  [/心跳|脈衝波紋/, ["breathing-glow"]],
   [/滾輪|滾動數字/, ["rolling-characters"]],
   [/數字|遞增|跑數字|倒數/, ["count-up"]],
   [/分行/, ["split-line-assembly"]],
@@ -113,7 +116,7 @@ function chainOf(page: PageSpec, id: string): PageNode[] | null {
 const nearest = (ctx: Ctx, type: string) => [...ctx.chain].reverse().find((n) => n.type === type);
 const firstSection = (page: PageSpec) => page.sections[0];
 
-function motionPatches(node: PageNode, wanted: MotionId[], replace: boolean, countdown: boolean): Step {
+function motionPatches(node: PageNode, wanted: MotionId[], replace: boolean, request: string): Step {
   for (const id of wanted) {
     if (node.effects.some((e) => e.presetId === id)) return { patches: [], summary: `已經有「${motionCatalog[id].nameZh}」了` };
     const reason = targetReason(node, id);
@@ -122,9 +125,14 @@ function motionPatches(node: PageNode, wanted: MotionId[], replace: boolean, cou
     let motion: MotionInstance;
     try {
       const values = id === "count-up" ? numericContent(node.content ?? "") : null;
-      const falling = countdown && values?.decimals === 0 && values.endValue < 1e9 - 3;
+      const falling = /倒數/.test(request) && values?.decimals === 0 && values.endValue < 1e9 - 3;
+      const custom: Record<string, string> = {};
+      if (id === "kinetic-text-wave" && /旗面|伸縮/.test(request)) custom.form = /旗面/.test(request) ? "flag" : "stretch-wave";
+      if (id === "letter-assembly" && /吸附|兩邊/.test(request)) custom.arrival = "magnet";
+      if (id === "blur-in" && /拖影|殘影/.test(request)) custom.entry = "trail";
+      if (id === "breathing-glow" && /心跳|脈衝/.test(request)) custom.pulse = "heartbeat";
       motion = createMotion(id, node.id, {
-        ...defaultControls(id), ...values,
+        ...defaultControls(id), ...values, ...custom,
         ...(falling && values ? { cadence: "impact", startValue: values.endValue + 3 } : {}),
       });
     } catch {
@@ -266,7 +274,7 @@ function clause(text: string, ctx: Ctx): Step {
     const named = motionIds.find((id) => t.includes(motionCatalog[id].nameZh));
     // Every matching word is a candidate; the first one that suits this element wins.
     const words = motionWords.filter(([re]) => re.test(t)).flatMap(([, ids]) => ids);
-    return motionPatches(node, named ? [named] : words.length ? words : defaultMotion[node.type] ?? ["fade-in"], replace, /倒數/.test(t));
+    return motionPatches(node, named ? [named] : words.length ? words : defaultMotion[node.type] ?? ["fade-in"], replace, t);
   }
 
   // 5. Colors / theme (page-wide, anchored on the first section like the theme menu).

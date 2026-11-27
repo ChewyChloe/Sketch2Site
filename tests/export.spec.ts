@@ -1,3 +1,4 @@
+import { textModeId, textModes, textModesSection } from "./fixtures/textModes";
 import { galleryCategorySection } from "./fixtures/galleryCategories";
 import {thirdFixture, tabsFixture} from "./fixtures/cinematicMotions";
 import {advancedFixture} from "./fixtures/advancedMotions";
@@ -86,7 +87,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   replaceImage(input.sections);
   const interactiveBento = galleryCategorySection();
   interactiveBento.sectionLayout = { arrangement: { mode: "bento", columns: 3, gap: "medium", interactive: true }, fullBleed: false };
-  input.sections.push(interactiveBento, ...tabsFixture().sections);
+  input.sections.push(interactiveBento, ...tabsFixture().sections, textModesSection());
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
   await page.getByLabel("載入頁面檔案").setInputFiles({
@@ -206,6 +207,11 @@ z.extractall(root)
     await tablist.getByRole("tab", { name: "構思" }).press("ArrowRight");
     await expect(tablist.getByRole("tab", { name: "設計" })).toBeFocused();
     await expect(standalone.getByRole("tabpanel", { name: "設計" })).toBeVisible();
+    for (const [index, mode] of textModes.entries()) {
+      const text = standalone.locator(`[data-page-id="${textModeId(index)}"]`);
+      await expect(text).toHaveAttribute("data-effects", mode.id);
+      await expect(text).toHaveAccessibleName(mode.title + "文字");
+    }
     const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
     await expect(exportedLayout).toHaveCSS("column-count", "2");
     await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");

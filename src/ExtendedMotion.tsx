@@ -178,9 +178,24 @@ export function LetterAssembly({ text, effect }: { text: string; effect: MotionI
         ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), part => part.segment)
         : null;
     const fallback = !graphemes || graphemes.length > 100;
-    useEntrance(ref, effect, reduced, element => fallback ? [] : Array.from(element.querySelectorAll<HTMLElement>('.extended-letter')).map((letter, index) => letter.animate([
-        { opacity: 0, transform: `translateY(${motionNumber(effect, 'distancePx', 12)}px)` }, { opacity: 1, transform: 'translateY(0)' },
-    ], { duration: motionNumber(effect, 'durationMs', 600), delay: Math.min(1200, index * motionNumber(effect, 'intervalMs', 35)), fill: 'backwards', easing: 'ease-out' })));
+    useEntrance(ref, effect, reduced, element => {
+        if (fallback) return [];
+        const letters = Array.from(element.querySelectorAll<HTMLElement>('.extended-letter'));
+        const space = motionNumber(effect, 'distancePx', 12);
+        const magnet = effect.validatedControls.arrival === 'magnet', center = (letters.length - 1) / 2;
+        return letters.map((letter, index) => {
+            const side = index < center ? -1 : 1;
+            const start = magnet ? `translateX(${side * space}px)` : `translateY(${space}px)`;
+            const frames = magnet ? [
+                { opacity: .45, transform: start },
+                { opacity: 1, transform: `translateX(${-side * space * .12}px)`, offset: .76 },
+                { opacity: 1, transform: 'none' },
+            ] : [{ opacity: 0, transform: start }, { opacity: 1, transform: 'translateY(0)' }];
+            const order = magnet ? Math.abs(index - center) : index;
+            return letter.animate(frames, { duration: motionNumber(effect, 'durationMs', 600),
+                delay: Math.min(1200, order * motionNumber(effect, 'intervalMs', 35)), fill: 'backwards', easing: 'ease-out' });
+        });
+    });
     return <span ref={ref} className="extended-letters">{fallback ? text : <><span className="motion-sr">{text}</span><span aria-hidden="true">{phrases(graphemes ?? []).map((phrase, p) => <span className="extended-phrase" aria-hidden="true" key={p}>{phrase.map(([letter, index]) => <span className="extended-letter" key={index}>{letter}</span>)}</span>)}</span></>}</span>;
 }
 export function AccentStroke({ text, effect }: { text: string; effect: MotionInstance }) {

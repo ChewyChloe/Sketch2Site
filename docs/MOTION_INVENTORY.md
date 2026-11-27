@@ -18,13 +18,13 @@
 | `hover-lift` | 懸停浮起 / Hover Lift | 卡片與區塊、按鈕、圖片 | 滑過時 | 位移滑動 | 互動回饋 | 輕柔 | liftPx, durationMs, shadowIntensity | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `hover-glow` | 懸停光暈 / Hover Glow | 按鈕、卡片與區塊 | 滑過時 | 光影色彩 | 吸引注意 | 輕柔 | intensity, spreadPx, durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `stagger-reveal` | 依序顯示 / Stagger Reveal | 卡片與區塊 | 出現時 | 淡入顯現 | 引導閱讀、吸引注意 | 適中 | intervalMs, childDurationMs, direction, revealStyle | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
-| `breathing-glow` | 呼吸光按鈕 / Breathing Glow Button | 按鈕 | 一直動、滑過時 | 光影色彩 | 吸引注意 | 適中 | cycleMs, intensity, spreadPx, pauseOnHover | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
+| `breathing-glow` | 呼吸光按鈕 / Breathing Glow Button | 按鈕、文字 | 一直動、滑過時 | 光影色彩 | 吸引注意 | 適中 | pulse, cycleMs, intensity, spreadPx, pauseOnHover | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `curved-path-text` | 曲線文字 / Curved Path Text | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | curvature, direction, revealDurationMs, textAlign | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `count-up` | 數字遞增 / Count Up | 文字 | 出現時 | 數字資料 | 呈現資料、吸引注意、引導閱讀 | 適中 | cadence, startValue, endValue, durationMs, decimals, locale, prefix, suffix | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `flip-card` | 雙面卡片 / Flip Card | 卡片與區塊 | 點擊時、滑過時 | 立體 | 互動回饋 | 適中 | axis, durationMs, perspectivePx, trigger, backText | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `physics-tag-field` | 物理標籤場 / Physics Tag Field | 卡片與區塊 | 一直動、拖曳 | 彈性 | 互動回饋、營造氣氛 | 強烈 | labels, gravity, friction, restitution, spawnIntervalMs, maxTags, draggable, collisionEnabled | — | PhysicsTags.tsx |
 | `fold-reveal` | 折頁揭露 / Fold Reveal | 卡片與區塊 | 拖曳、點擊時 | 立體 | 互動回饋 | 強烈 | foldCorner, revealThreshold, springResponse, foldShadow, clickToToggle, underText | 可 | FoldReveal.tsx |
-| `letter-assembly` | 逐字聚合 / Letter Assembly | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | durationMs, distancePx, intervalMs | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
+| `letter-assembly` | 逐字聚合 / Letter Assembly | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | arrival, durationMs, distancePx, intervalMs | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `accent-stroke` | 重點描線 / Accent Stroke | 文字 | 出現時 | 線條圖形 | 吸引注意、引導閱讀 | 輕柔 | durationMs, thicknessPx | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `image-reveal` | 影像展幕 / Image Reveal | 圖片 | 出現時 | 遮罩揭露 | 吸引注意 | 輕柔 | durationMs, direction | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `magnetic-control` | 磁吸按鈕 / Magnetic Control | 按鈕 | 滑過時 | 位移滑動 | 互動回饋 | 適中 | strengthPx, responseMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
@@ -36,7 +36,7 @@
 | `split-line-assembly` | 文字分行組合 / Split Line Assembly | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | durationMs, staggerMs, distancePx | — | AdvancedMotion.tsx |
 | `rolling-characters` | 滾輪文字 / Rolling Characters | 文字 | 出現時、點擊時 | 文字逐字 | 互動回饋、引導閱讀 | 適中 | durationMs, staggerMs | — | AdvancedMotion.tsx |
 | `hand-drawn-highlight` | 手繪螢光標記 / Hand-Drawn Highlight | 文字 | 出現時 | 線條圖形 | 吸引注意、引導閱讀 | 適中 | durationMs, thickness, color | — | AdvancedMotion.tsx |
-| `kinetic-text-wave` | 動態文字波浪 / Kinetic Text Wave | 文字 | 出現時、滑過時 | 文字逐字 | 互動回饋、引導閱讀 | 適中 | durationMs, amplitudePx, trigger | 可 | AdvancedMotion.tsx |
+| `kinetic-text-wave` | 動態文字波浪 / Kinetic Text Wave | 文字 | 出現時、滑過時 | 文字逐字 | 互動回饋、引導閱讀 | 適中 | form, durationMs, amplitudePx, trigger | 可 | AdvancedMotion.tsx |
 | `cursor-spotlight` | 游標聚光 / Cursor Spotlight | 按鈕 | 滑過時 | 光影色彩 | 互動回饋 | 適中 | radiusPx, durationMs | 可 | AdvancedMotion.tsx |
 | `liquid-button-fill` | 液態填充 / Liquid Button Fill | 按鈕 | 滑過時 | 光影色彩 | 互動回饋 | 適中 | durationMs, color | 可 | AdvancedMotion.tsx |
 | `radial-ink-ripple` | 墨水漣漪 / Radial Ink Ripple | 按鈕 | 點擊時 | 線條圖形 | 互動回饋 | 適中 | durationMs | 可 | AdvancedMotion.tsx |
@@ -75,7 +75,7 @@
 | `typewriter` | 打字機 / Typewriter | 文字、按鈕 | 出現時 | 文字逐字 | 引導閱讀 | 輕柔 | charsPerSecond, caret | — | SignatureMotion.tsx |
 | `marquee-text` | 跑馬燈 / Marquee Text | 文字 | 一直動 | 位移滑動 | 吸引注意 | 適中 | speedPxPerSecond, direction | — | SignatureMotion.tsx |
 | `gradient-text-flow` | 流光漸層字 / Gradient Text Flow | 文字 | 一直動 | 光影色彩 | 吸引注意 | 輕柔 | palette, cycleMs | — | SignatureMotion.tsx |
-| `blur-in` | 模糊淡入 / Blur In | 文字、圖片、卡片與區塊、按鈕 | 出現時 | 淡入顯現 | 引導閱讀 | 輕柔 | durationMs, blurPx | — | SignatureMotion.tsx |
+| `blur-in` | 模糊淡入 / Blur In | 文字、圖片、卡片與區塊、按鈕 | 出現時 | 淡入顯現 | 引導閱讀 | 輕柔 | entry, durationMs, blurPx | — | SignatureMotion.tsx |
 | `float-idle` | 輕飄浮動 / Floating Idle | 圖片、卡片與區塊、按鈕 | 一直動 | 位移滑動 | 營造氣氛 | 輕柔 | distancePx, cycleMs | — | SignatureMotion.tsx |
 | `confetti-burst` | 彩紙慶祝 / Confetti Burst | 按鈕、卡片與區塊 | 點擊時 | 線條圖形 | 吸引注意 | 強烈 | count | 可 | SignatureMotion.tsx |
 | `jelly-press` | 果凍彈跳 / Jelly Press | 按鈕、卡片與區塊、圖片 | 滑過時、點擊時 | 彈性 | 互動回饋 | 輕柔 | intensity | 可 | SignatureMotion.tsx |
