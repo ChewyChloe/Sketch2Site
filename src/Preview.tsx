@@ -1,5 +1,8 @@
 import { checkRendered, checkSite, type SiteIssue } from "./siteCheck";
 import { SiteCheckPanel } from "./SiteCheckPanel";
+import { VersionTimeline } from "./VersionTimeline";
+import { CompareView } from "./CompareView";
+import { addVersion, listVersions, sectionLabel, type SiteVersion } from "./versions";
 import {MotionControlsFields} from "./MotionControls";
 import {motionCatalog,defaultControls,type MotionControls} from "./motionCatalog";
 import {motionDuration,createMotion,numericContent,combinationReason,targetReason,type MotionId} from "./motion";
@@ -120,6 +123,7 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
         return { ok: false, error: "請先套用或捨棄屬性修改" };
       const result = await persistence.acceptGeneration(page, target);
       if (result.ok) {
+        void listVersions().then((v) => addVersion(v.length ? "AI 生成版本" : "最初版本", "generate", page)).catch(() => undefined);
         setSource("");
         setSelected(null);
         setNotice("");
@@ -523,6 +527,23 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
   }
 
   const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean } | null>(null);
+  const [timeline, setTimeline] = useState(false);
+  const [compare, setCompare] = useState<{ before: import("./pageSpec").PageSpec; after: import("./pageSpec").PageSpec; sections?: string[] } | null>(null);
+  const restoreVersion = (v: SiteVersion) => {
+    if (pendingEdits.current) { setPatchError(true); setNotice("請先套用或捨棄屬性修改"); return; }
+    const now = current.current;
+    // A restore is one more step in the site's history (撤銷修改 undoes it) and a new version;
+    // the draft is left as it is, like 換回上一版.
+    keepDraft.current = true;
+    update({ ...now, history: commitHistory(now.history, v.page), revision: now.revision + 1 });
+    keepDraft.current = false;
+    void addVersion("還原：" + v.label, "restore", v.page).catch(() => undefined);
+    setTimeline(false);
+    setSelected(null);
+    setReplay((n) => n + 1);
+    setPatchError(false);
+    setNotice(`已還原「${v.label}」，按「撤銷修改」可以回到剛才`);
+  };
   const runCheck = () => {
     const page = current.current.history.present;
     const rendered = frameRef.current ? checkRendered(frameRef.current) : [];
@@ -534,6 +555,7 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
       const snapshot = current.current.history.present;
       const { downloadProject } = await import("./exportProject");
       await downloadProject(snapshot);
+      void addVersion("正式發布版", "export", snapshot).catch(() => undefined);
       setPatchError(false);
       setNotice("已匯出 React 專案");
     } catch {
@@ -605,6 +627,9 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
         <button disabled={!ready || Boolean(loadError)} onClick={() => setCheck({ issues: runCheck(), exporting: false })}>
           上線前檢查
         </button>
+        <button disabled={!ready || Boolean(loadError)} onClick={() => setTimeline(true)}>
+          版本紀錄
+        </button>
         <button
           disabled={!ready || Boolean(loadError)}
           onClick={() => fileRef.current?.click()}
@@ -643,6 +668,17 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
   );
   return (
     <main className="preview-workspace" aria-label="網頁預覽">
+      {timeline && <VersionTimeline current={session.history.present} onRestore={restoreVersion} onClose={() => setTimeline(false)} />}
+      {compare && (
+        <CompareView
+          before={compare.before}
+          after={compare.after}
+          sections={compare.sections}
+          title="AI 改了這些地方"
+          onClose={() => setCompare(null)}
+          actions={<button type="button" onClick={() => { travel("undo"); setCompare(null); }}>不要這個修改</button>}
+        />
+      )}
       {check && (
         <SiteCheckPanel
           issues={check.issues}
@@ -982,8 +1018,16 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
             onRemove={(key) => setNotes((list) => list.filter((n) => n.key !== key))}
             onClear={() => setNotes([])}
             onApply={(patches, scope) => {
+              const before = current.current.history.present;
               const ok = Boolean(patch(patches, scope));
-              if (ok) setNotice("已套用註解的修改，按一次「撤銷修改」就能全部復原");
+              if (ok) {
+                const after = current.current.history.present;
+                setNotice("已套用註解的修改，按一次「撤銷修改」就能全部復原");
+                void addVersion(sectionLabel(before, scope), "notes", after).catch(() => undefined);
+                // What the AI changed, side by side, right away (only the sections it touched).
+                const touched = after.sections.filter((x) => scope.includes(x.id) || x.children?.some(function has(c): boolean { return scope.includes(c.id) || !!c.children?.some(has); })).map((x) => x.id);
+                if (before !== after) setCompare({ before, after, sections: touched });
+              }
               return ok;
             }}
           />

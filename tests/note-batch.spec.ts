@@ -54,10 +54,70 @@ test("batch notes: stage, send once, review, apply and undo", async ({ page }) =
   expect(sent[0].page.sections.length).toBeGreaterThan(1);
   await expect(tray.getByRole("listitem").nth(1)).toContainText("AI：");
   await tray.getByRole("button", { name: "套用 2 則" }).click();
+  // Before / after of the sections the notes touched, right away.
+  const compare = page.getByRole("dialog", { name: "AI 改了這些地方" });
+  await expect(compare.locator(".compare-before")).toContainText("今天就來坐坐");
+  await expect(compare.locator(".compare-after")).toContainText("一起來喝咖啡吧");
+  // Only the two sections the notes touched, not the whole site.
+  await expect(compare.locator(".compare-after section.page-section")).toHaveCount(2);
+  const handle = compare.getByRole("slider", { name: "比較位置" });
+  await handle.focus();
+  await page.keyboard.press("End");
+  await expect(handle).toHaveAttribute("aria-valuenow", "100");
+  await compare.screenshot({ path: "test-results/notes-compare.png" });
+  await compare.getByRole("button", { name: "關閉比較" }).click();
+  await expect(compare).toBeHidden();
   await expect(frame.getByRole("heading", { name: "一起來喝咖啡吧" })).toBeVisible();
   await expect(tray).toHaveCount(0);
   await expect(page.locator(".note-marker")).toHaveCount(0);
   // One undo takes back the whole batch.
   await page.getByRole("button", { name: "撤銷修改" }).first().click();
   await expect(frame.getByRole("heading", { name: "今天就來坐坐" })).toBeVisible();
+});
+
+test("the comparison offers 不要這個修改, which takes the batch back", async ({ page }) => {
+  test.setTimeout(90000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/\/api\/generation\/ready$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
+  await page.route(/\/api\/generation\/status$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: true, csrfToken: "a".repeat(64) }) }));
+  type Node = { id: string; content?: string; children?: Node[] };
+  await page.route(/\/api\/generation\/rewrite$/, async (r) => {
+    const req = JSON.parse(r.request().postData() ?? "{}");
+    const has = (n: Node, id: string): boolean => n.id === id || (n.children ?? []).some((c) => has(c, id));
+    const section = structuredClone(req.page.sections.find((s: Node) => has(s, req.notes[0].nodeId)));
+    const walk = (n: Node) => { if (n.id === req.notes[0].nodeId) n.content = "一起來喝咖啡吧"; n.children?.forEach(walk); };
+    walk(section);
+    return r.fulfill({ contentType: "application/json", body: JSON.stringify({ requestId: req.requestId, sections: [section], notes: [{ n: req.notes[0].n, summary: "改得更溫暖" }] }) });
+  });
+  await page.goto("/?draft");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await page.getByRole("button", { name: "Sketch2Site 首頁" }).click();
+  await Promise.all([page.waitForEvent("load"), page.getByRole("article", { name: "範本：巷口咖啡小店" }).getByRole("button", { name: /用這個範本開始/ }).click()]);
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await buildSite(page);
+  await page.getByRole("button", { name: "使用此版本" }).click();
+  const frame = page.getByTestId("preview-frame");
+  await frame.getByRole("heading", { name: "今天就來坐坐" }).click();
+  await page.getByRole("button", { name: /說說這個標題/ }).click();
+  const bubble = page.getByRole("dialog", { name: /註解：修改這個/ });
+  await bubble.getByLabel("想怎麼改這個元件").fill("寫得更溫暖一點");
+  await bubble.getByRole("button", { name: "暫存" }).click();
+  await expect(bubble.getByRole("status")).toContainText("已暫存");
+  await page.keyboard.press("Escape");
+  const tray = page.getByRole("region", { name: "待送出的修改" });
+  if (await bubble.isVisible()) await page.keyboard.press("Escape");
+  await expect(bubble).toBeHidden();
+  void tray;
+  // The tray sits over a page that is still settling; press its buttons directly.
+  await page.locator(".note-tray footer button.primary", { hasText: "送出修改" }).dispatchEvent("click");
+  await page.locator(".note-tray footer button.primary", { hasText: "套用 1 則" }).dispatchEvent("click");
+  const compare = page.getByRole("dialog", { name: "AI 改了這些地方" });
+  await expect(compare.locator(".compare-after")).toContainText("一起來喝咖啡吧");
+  await compare.getByRole("button", { name: "不要這個修改" }).click();
+  await expect(compare).toBeHidden();
+  await expect(frame.getByRole("heading", { name: "今天就來坐坐" })).toBeVisible();
+  // It is still in the version list, so it can be brought back later.
+  await page.locator(".workbench-menu > summary").filter({ hasText: "頁面" }).click();
+  await page.getByRole("button", { name: "版本紀錄", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "網站版本" })).toContainText("修改「今天就來坐坐」區塊");
 });

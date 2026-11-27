@@ -816,7 +816,7 @@ body{background:var(--neo-cream)}
 /* ---- Batch notes: numbered markers on the page, and the list to send ---- */
 .preview-body { position: relative; }
 .note-marker { position: absolute; z-index: 25; display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px; background: #0d0e11; color: #10e560; border: 2px solid #10e560; font-size: 12px; font-weight: 800; pointer-events: none; box-shadow: 0 2px 8px rgb(0 0 0 / .25); }
-.note-tray { position: absolute; left: 16px; bottom: 16px; z-index: 40; width: min(360px, calc(100% - 32px)); max-height: min(60%, 460px); display: flex; flex-direction: column; border: 2px solid #0d0e11; border-radius: 18px; background: #fff; color: #0d0e11; box-shadow: 5px 5px 0 #0d0e11; overflow: hidden; }
+.note-tray { position: absolute; left: 16px; bottom: 16px; z-index: 40; width: min(360px, calc(100% - 32px)); max-height: max(220px, min(60%, 460px)); display: flex; flex-direction: column; border: 2px solid #0d0e11; border-radius: 18px; background: #fff; color: #0d0e11; box-shadow: 5px 5px 0 #0d0e11; overflow: hidden; }
 .note-tray header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 12px 14px 8px; }
 .note-tray header strong { font-size: 15px; }
 .note-tray header small { font-size: 12px; color: #62655f; }
@@ -1005,3 +1005,49 @@ body{background:var(--neo-cream)}
 .check-panel footer{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
 .check-panel footer button{min-height:40px;padding:0 18px;border:1.5px solid #0d0e11;border-radius:999px;background:#fff;font:inherit;font-weight:800;cursor:pointer}
 .check-panel footer .primary{background:#10e560}
+/* Before / after comparison (CompareView). */
+.compare-backdrop{position:fixed;inset:0;z-index:420;display:grid;place-items:center;padding:16px;background:rgb(13 14 17 / .55)}
+.compare-panel{display:flex;flex-direction:column;width:min(1100px,100%);max-height:calc(100vh - 32px);padding:18px;border:2px solid #0d0e11;border-radius:22px;background:#fffdf7;box-shadow:6px 6px 0 #0d0e11;color:#0d0e11}
+.compare-panel header,.version-panel header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.compare-panel h2,.version-panel h2{margin:0;font-size:19px;font-weight:900}
+.compare-actions{display:flex;align-items:center;gap:8px}
+.compare-actions>button:not(.check-close),.version-actions button,.version-row-actions button,.version-save button{min-height:36px;padding:0 14px;border:1.5px solid #0d0e11;border-radius:999px;background:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.compare-actions>button:not(.check-close):hover,.version-row-actions button:hover{background:#f1efe6}
+.version-actions .primary,.version-save .primary{background:#10e560}
+.compare-hint{margin:6px 0 10px;font-size:13px;color:#55534d}
+.compare-stage{--split:50%;position:relative;flex:1;min-height:240px;overflow:auto;border:1.5px solid #0d0e11;border-radius:14px;background:#fff;touch-action:none;cursor:ew-resize}
+.compare-layer{pointer-events:none}
+.compare-before{position:absolute;inset:0;clip-path:inset(0 calc(100% - var(--split)) 0 0);background:#fff}
+.compare-tag{position:sticky;top:10px;float:left;margin:10px;padding:4px 10px;border-radius:999px;background:#0d0e11;color:#fff;font-size:12px;font-weight:800;z-index:6}
+.compare-stage>.compare-tag{position:absolute;top:10px;float:none;margin:0}
+.compare-tag.before{left:10px}
+.compare-tag.after{right:10px;background:#10e560;color:#0d0e11}
+.compare-handle{position:absolute;top:0;bottom:0;left:var(--split);z-index:7;width:4px;margin-left:-2px;background:#0d0e11;outline:none}
+.compare-handle span{position:sticky;top:45%;display:grid;place-items:center;width:40px;height:40px;margin-left:-18px;border:2px solid #0d0e11;border-radius:50%;background:#fff;font-weight:900;font-size:14px;box-shadow:2px 2px 0 #0d0e11}
+.compare-handle:focus-visible span{outline:3px solid #10e560;outline-offset:2px}
+/* Version timeline (VersionTimeline). */
+.version-panel{display:flex;flex-direction:column;width:min(760px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:22px;border:2px solid #0d0e11;border-radius:22px;background:#fffdf7;box-shadow:6px 6px 0 #0d0e11;color:#0d0e11}
+.version-save{display:flex;gap:8px;margin:14px 0 6px}
+.version-save input{flex:1;min-width:0;min-height:38px;padding:0 14px;border:1.5px solid #0d0e11;border-radius:999px;font:inherit;font-size:14px}
+.version-error,.version-empty{margin:8px 0;font-size:13px;color:#55534d}
+.version-list{display:grid;gap:10px;margin:10px 0 0;padding:0;list-style:none;border-left:3px solid #0d0e11;padding-left:16px}
+.version-list li{position:relative;display:grid;grid-template-columns:160px minmax(0,1fr);gap:14px;align-items:center;padding:10px;border:1.5px solid #0d0e11;border-radius:14px;background:#fff}
+.version-list li::before{content:"";position:absolute;left:-25px;top:50%;width:14px;height:14px;margin-top:-7px;border:3px solid #0d0e11;border-radius:50%;background:#10e560}
+.version-open{padding:0;border:0;background:none;cursor:pointer}
+.version-thumb{position:relative;width:160px;height:100px;overflow:hidden;border:1.5px solid #0d0e11;border-radius:10px;background:#fff;pointer-events:none}
+.version-thumb-page{width:1000px;transform:scale(.16);transform-origin:top left}
+.version-info strong{display:block;font-size:15px;cursor:text}
+.version-info input{width:100%;min-height:32px;padding:0 10px;border:1.5px solid #0d0e11;border-radius:8px;font:inherit}
+.version-info small{display:flex;gap:8px;align-items:center;margin-top:4px;color:#55534d;font-size:12px}
+.version-kind{padding:2px 8px;border-radius:999px;background:#f1efe6;color:#0d0e11;font-weight:800}
+.version-kind.generate{background:#e8f8ee}.version-kind.notes{background:#fff3d6}.version-kind.export{background:#e3eefe}.version-kind.restore{background:#f3e8ff}
+.version-row-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.version-row-actions button{min-height:30px;padding:0 12px;font-size:12px}
+.version-meta{margin:10px 0 6px;color:#55534d;font-size:13px}
+.version-actions{display:flex;gap:8px;margin-bottom:10px}
+.version-large{max-height:60vh;overflow:auto;border:1.5px solid #0d0e11;border-radius:14px;background:#fff}
+.version-open{display:block;min-width:0;overflow:hidden}
+@media (max-width:640px){.version-list li{grid-template-columns:minmax(0,1fr)}.version-thumb{width:100%;height:120px}.version-thumb-page{transform:scale(.3)}.version-save{flex-direction:column}}
+/* The tray keeps its header and buttons; only the list scrolls when space is short. */
+.note-tray header, .note-tray footer { flex: none; }
+.note-tray ol { flex: 1 1 auto; min-height: 0; }

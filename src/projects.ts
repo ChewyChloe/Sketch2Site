@@ -189,6 +189,8 @@ export async function deleteProject(id: string): Promise<boolean> {
       s.drafts.delete(recordKey(next.id));
       s.drafts.put(next.id, ACTIVE_KEY);
     } else s.drafts.delete(recordKey(id));
+    // The project's site versions go with it (versions.ts).
+    s.drafts.delete("versions:" + id);
     s.drafts.put(rest, INDEX_KEY);
     return id === active;
   });
