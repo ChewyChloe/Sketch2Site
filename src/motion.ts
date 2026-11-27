@@ -93,9 +93,19 @@ export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 
         return '數字遞增只適用於既有數字內容';
     return null;
 }
+export function splitStoryImage(card: unknown) {
+    const children = (card as MotionTarget | undefined)?.children;
+    if (!children?.length) return -1;
+    const kinds = children.map(child => (child as MotionTarget | undefined)?.type);
+    const first = kinds.indexOf('image');
+    return first >= 0 && kinds.lastIndexOf('image') === first &&
+        kinds.some(type => type === 'heading' || type === 'paragraph') ? first : -1;
+}
 export function compatibleMotion(target: MotionTarget, e: MotionInstance): boolean {
     if (e.targetId !== target.id || targetReason(target, e.presetId, e.presetVersion))
         return false;
+    if (e.presetId === 'pinned-story-panels' && e.validatedControls.presentation === 'media' &&
+        (!target.children || target.children.some(card => splitStoryImage(card) < 0))) return false;
     if (e.presetId === 'count-up') {
         const c = e.validatedControls, raw = target.content ?? '', prefix = String(c.prefix ?? ''), suffix = String(c.suffix ?? '');
         if (!raw.startsWith(prefix) || !raw.endsWith(suffix))

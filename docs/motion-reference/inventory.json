@@ -4346,13 +4346,14 @@
    "category": "既有功能可擴充",
    "sketch2site": "pinned-story-panels",
    "priority": "P4",
-   "note": "現有切換整張卡；待補固定影像，旁側文案自然捲動",
+   "note": "可切換為固定影像，旁側文案自然捲動",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedExpansionBatch": 8,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

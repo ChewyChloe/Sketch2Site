@@ -11,7 +11,7 @@ import {FoldReveal} from "./FoldReveal";
 import {PhysicsTags} from "./PhysicsTags";
 import {CountUp,CurvedText,FlipCard} from "./MotionRuntime";
 import {MediaView} from "./MediaRuntime";
-import { motionCatalog, motionIds, motionNumber, motionDuration } from "./motion";
+import { motionCatalog, motionIds, motionNumber, motionDuration, splitStoryImage } from "./motion";
 import {
   createContext,
   useContext,
@@ -347,6 +347,15 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
   const cinematicText=node.effects.find(e=>cinematicTextIds.includes(e.presetId)),story=node.effects.find(e=>storyGroupIds.includes(e.presetId)),shuffle=node.effects.find(e=>e.presetId==="card-stack-shuffle"),sequence=node.effects.find(e=>e.presetId==="scroll-image-sequence");
   const extras=useContext(PageExtras), thumbnail=useContext(ThumbnailRender);
   const kids=node.children?.map(child=><RenderNode key={child.id} node={child} layout={target}/>);
+  const storyMedia = story?.validatedControls.presentation === "media" ? node.children?.map(card => {
+    const imageIndex = splitStoryImage(card);
+    if (imageIndex < 0 || !card.children) return null;
+    return {
+      id: card.id,
+      image: <RenderNode node={card.children[imageIndex]} layout={target} />,
+      copy: <RenderNode node={{...card, children: card.children.filter((_, index) => index !== imageIndex)}} layout={target} />,
+    };
+  }).filter(panel => panel !== null) : undefined;
   const children=node.type==="section"&&node.role==="pricing"&&extras.pricingBuilder?<>{kids}<PricingBuilder section={node}/></>:node.type==="section"&&node.role==="gallery"&&extras.galleryViews&&!isLogoWall(node)?<GalleryViews>{kids}</GalleryViews>:kids;
   const style = {
     "--breathing-cycle":(breathing?motionNumber(breathing,"cycleMs"):3200)+"ms",
@@ -414,7 +423,7 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
     >
       {node.type==="form"?<SiteForm node={node}/>:node.type==="media"&&node.media?<MediaView media={node.media} caption={node.content??""} resolve={(r)=>motionUrls[r]||import.meta.env.BASE_URL+r.slice(1)}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
         node.look?.depth ? <Depth3D mode={node.look.depth}><FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox></Depth3D> : <FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox>
-      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.type === "paragraph" && cardLineKind(node.content) === "tags" ? node.content!.trim().split(/\s+/).map((t, i) => <span key={i} className="line-tag">{t.replace(/^#/, "")}</span>) : node.content}
+      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview} media={storyMedia?.length === node.children?.length ? storyMedia : undefined}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.type === "paragraph" && cardLineKind(node.content) === "tags" ? node.content!.trim().split(/\s+/).map((t, i) => <span key={i} className="line-tag">{t.replace(/^#/, "")}</span>) : node.content}
     </Tag>
   );
 });

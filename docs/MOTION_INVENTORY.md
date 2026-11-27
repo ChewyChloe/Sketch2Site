@@ -69,7 +69,7 @@
 | `horizontal-scroll-gallery` | 橫向捲動畫廊 / Horizontal Scroll Gallery | 卡片與區塊 | 捲動時、拖曳 | 位移滑動 | 互動回饋、吸引注意 | 強烈 | viewportHeightPx, travel | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `sticky-section-morph` | 固定區塊形態切換 / Sticky Section Morph | 卡片與區塊 | 捲動時 | 放大縮小 | 吸引注意 | 強烈 | viewportHeightPx, minScale, radiusPx | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `scroll-image-sequence` | 逐格圖片序列 / Scroll-Driven Image Sequence | 圖片 | 捲動時 | 位移滑動 | 吸引注意 | 強烈 | frames, viewportHeightPx | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
-| `pinned-story-panels` | 分鏡敘事面板 / Pinned Story Panels | 卡片與區塊 | 捲動時 | 淡入顯現 | 引導閱讀、吸引注意 | 強烈 | viewportHeightPx, transitionMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
+| `pinned-story-panels` | 分鏡敘事面板 / Pinned Story Panels | 卡片與區塊 | 捲動時 | 淡入顯現 | 引導閱讀、吸引注意 | 強烈 | presentation, viewportHeightPx, transitionMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `particle-constellation` | 粒子星座連線 / Particle Constellation | 卡片與區塊 | 一直動、滑過時 | 線條圖形 | 互動回饋、營造氣氛 | 強烈 | particles, linkDistancePx, speed | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `elastic-svg-morph` | 彈性圖形變形 / Elastic SVG Morph | 卡片與區塊 | 點擊時 | 彈性 | 互動回饋 | 強烈 | durationMs, shape | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `typewriter` | 打字機 / Typewriter | 文字、按鈕 | 出現時 | 文字逐字 | 引導閱讀 | 輕柔 | charsPerSecond, caret | — | SignatureMotion.tsx |

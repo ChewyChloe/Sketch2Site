@@ -1,6 +1,7 @@
 import { choose } from "./helpers/select";
 import { test, expect, type Page } from '@playwright/test';
 import { cinematicMotionIds, motionCatalog } from '../src/motionCatalog';
+import { PageSchema } from '../src/pageSpec';
 import { cinematicSampleControls } from '../src/cinematicSamples';
 import { thirdFixture, thirdId, thirdCanvas } from './fixtures/cinematicMotions';
 import { openWebsiteWorkspace, openPanel, editSelection } from './helpers/workbench';
@@ -279,4 +280,37 @@ test('gooey drift merges in a theme-colored background and pauses for Reduced Mo
     await expect(surface.locator('circle')).toHaveCount(3);
     await expect(surface.locator('g[filter]')).toHaveCount(0);
     await expect.poll(() => running(el)).toBe(0);
+});
+
+test('pinned image changes while story copy scrolls and falls back to readable cards', async ({ page }) => {
+    const input = thirdFixture('pinned-story-panels');
+    input.sections[0].children![0].effects[0].validatedControls.presentation = 'media';
+    const invalid = structuredClone(input);
+    const firstCard = invalid.sections[0].children![0].children![0];
+    firstCard.children = firstCard.children!.filter(child => child.type !== 'image');
+    expect(PageSchema.safeParse(invalid).success).toBe(false);
+    expect(PageSchema.safeParse(input).success).toBe(true);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/?draft');
+    await openWebsiteWorkspace(page);
+    await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'image-story.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(input)) });
+    const el = target(page, 'pinned-story-panels');
+    const pin = el.locator('.story-media-pin');
+    const active = pin.locator('[data-active="true"] img');
+    await expect(active).toHaveAttribute('alt', '構思的影像');
+    const pinY = (await pin.boundingBox())!.y;
+    const copy = el.locator('.story-media-copy').getByRole('heading', { name: '設計' });
+    const copyY = (await copy.boundingBox())!.y;
+    await el.locator('.story-viewport').evaluate(host => { host.scrollTop = host.clientHeight; });
+    await expect(active).toHaveAttribute('alt', '設計的影像');
+    expect((await pin.boundingBox())!.y).toBeCloseTo(pinY, 0);
+    expect((await copy.boundingBox())!.y).toBeLessThan(copyY);
+    await expect(el.locator('.story-media-copy').getByRole('heading')).toHaveCount(3);
+    for (const mobile of [true, false]) {
+        await page.setViewportSize({ width: mobile ? 375 : 1440, height: 900 });
+        if (!mobile) await page.emulateMedia({ reducedMotion: 'reduce' });
+        await expect(pin).toHaveCount(0);
+        await expect(el.locator('.story-vertical img')).toHaveCount(3);
+        await expect(el.locator('.story-vertical').getByRole('heading')).toHaveCount(3);
+    }
 });

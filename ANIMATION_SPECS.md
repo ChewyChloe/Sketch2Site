@@ -1786,6 +1786,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| presentation | 分鏡呈現 | select | "cards" | cards / media |
 | viewportHeightPx | 可視區高度 | number | 260 | 180–400; step 1 |
 | transitionMs | 轉場時長（毫秒） | number | 220 | 100–500; step 1 |
 
@@ -1795,7 +1796,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **compatibilityRules**：使用相容目標、strict controls及受控素材，不接受HTML／JS／SVG字串
 
-**constraints**：2至5個真實子卡分鏡，有界區塊內固定；隱藏前移出焦點，手機／Reduced Motion直排；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
+**constraints**：2至5個真實子卡分鏡；圖文模式每張卡須恰有一張直屬圖片與文字；手機／Reduced Motion直排；保留來源與操作語意；有界資源、離屏／背景停止不必要繪製、卸載完整清理
 
 **reducedMotionFallback**：靜態保留完整原文、原圖及卡片；互動仍可操作
 

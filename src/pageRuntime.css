@@ -1954,3 +1954,11 @@
     transform: translateX(var(--goo-pull));
   }
 }
+
+.story-media { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(8px, 3cqi, 28px); }
+.story-media-pin { position: sticky; top: 0; height: var(--story-media-height); display: grid; align-self: start; overflow: hidden; }
+.story-media-pin > div { grid-area: 1 / 1; min-width: 0; display: grid; align-items: center; opacity: 0; pointer-events: none; transition: opacity var(--story-transition) ease; }
+.story-media-pin > [data-active="true"] { opacity: 1; pointer-events: auto; z-index: 1; }
+.story-media-pin :is(figure, img) { width: 100%; max-height: var(--story-media-height); object-fit: contain; }
+.story-media-copy { min-width: 0; }
+.story-media-copy > div { display: grid; align-content: center; min-height: var(--story-media-height); }

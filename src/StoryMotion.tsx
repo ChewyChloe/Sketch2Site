@@ -7,16 +7,20 @@ function useSmall(ref:React.RefObject<HTMLElement|null>,demo:boolean) {
  const [small,setSmall]=useState(()=>typeof matchMedia==='function'&&matchMedia('(max-width:600px)').matches);
  useEffect(()=>{const host=ref.current,root=host?.closest('.rendered-page');const update=()=>setSmall((demo?window.innerWidth:(root?.clientWidth??window.innerWidth))<=600);const observer=typeof ResizeObserver==='undefined'?null:new ResizeObserver(update);if(root)observer?.observe(root);window.addEventListener('resize',update);update();return()=>{observer?.disconnect();window.removeEventListener('resize',update);};},[ref,demo]);return small;
 }
-export function StoryGroup({ effect, children, demo=false }: {
+export function StoryGroup({ effect, children, demo=false, media }: {
     effect: MotionInstance;
     children: ReactNode;
     demo?:boolean;
+    media?: { id: string; image: ReactNode; copy: ReactNode }[];
 }) {
     const ref = useRef<HTMLDivElement>(null), track = useRef<HTMLDivElement>(null), reduced = useReducedMotion(), small = useSmall(ref,demo), [progress, setProgress] = useState(0), [scene, setScene] = useState(0);
     const currentScene = useRef(0);
     const parts = Children.toArray(children), height = motionNumber(effect, 'viewportHeightPx', 240), simple = reduced || small;
     useEffect(() => { const host = ref.current; if (!host)
-        return; let frame = 0; const update = () => { frame = 0; const p = Math.max(0, Math.min(1, host.scrollTop / Math.max(1, host.scrollHeight - host.clientHeight))); setProgress(p); const next = Math.min(parts.length - 1, Math.floor(p * parts.length)); if (next !== currentScene.current) {
+        return; let frame = 0; const update = () => { frame = 0; const p = Math.max(0, Math.min(1, host.scrollTop / Math.max(1, host.scrollHeight - host.clientHeight))); setProgress(p); const mediaCards = media && !simple ? Array.from(host.querySelectorAll<HTMLElement>('.story-media-copy > div')) : [];
+        const viewMiddle = host.getBoundingClientRect().top + host.clientHeight / 2;
+        const visibleScene = mediaCards.reduce((last, card, index) => card.getBoundingClientRect().top <= viewMiddle ? index : last, 0);
+        const next = mediaCards.length ? Math.max(0, visibleScene) : Math.min(parts.length - 1, Math.floor(p * parts.length)); if (next !== currentScene.current) {
         const previous = track.current?.children[currentScene.current];
         if (previous?.contains(document.activeElement))
             host.focus({ preventScroll: true });
@@ -29,13 +33,16 @@ export function StoryGroup({ effect, children, demo=false }: {
         el.style.transform = `translateX(${p * 8}%) scale(${1 - (1 - motionNumber(effect, 'minScale', .76)) * p})`;
         el.style.borderRadius = `${p * motionNumber(effect, 'radiusPx', 28)}px`;
     } }; const schedule = () => { if (!frame && !document.hidden)
-        frame = requestAnimationFrame(update); }; host.addEventListener('scroll', schedule, { passive: true }); const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule); resize?.observe(host); update(); return () => { cancelAnimationFrame(frame); resize?.disconnect(); host.removeEventListener('scroll', schedule); }; }, [effect, simple, parts.length]);
+        frame = requestAnimationFrame(update); }; host.addEventListener('scroll', schedule, { passive: true }); const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule); resize?.observe(host); update(); return () => { cancelAnimationFrame(frame); resize?.disconnect(); host.removeEventListener('scroll', schedule); }; }, [effect, simple, parts.length, media]);
     const seek = (value: number) => { const host = ref.current; if (!host)
         return; host.scrollTop = value * (host.scrollHeight - host.clientHeight); };
     return <div className={'story-group ' + (simple ? 'story-simple' : '')} data-story={effect.presetId}>
   {!simple && <label className="story-progress-label">區塊進度<input aria-label="敘事捲動進度" type="range" min="0" max="100" value={Math.round(progress * 100)} onChange={e => seek(Number(e.target.value) / 100)}/></label>}
   <div ref={ref} className="story-viewport" tabIndex={0} aria-label="敘事捲動區域" style={simple ? undefined : { height }}>
-   {simple ? <div className={effect.presetId === 'horizontal-scroll-gallery' ? 'story-native-gallery' : 'story-vertical'}>{parts}</div> : <div className="story-range" style={{ height: height * Math.max(2, parts.length) * motionNumber(effect, 'travel', 1) }}><div className="story-pin" style={{ height }}><div ref={track} className={'story-track ' + (effect.presetId === 'pinned-story-panels' ? 'story-panels' : '')} style={{ '--story-transition': `${motionNumber(effect, 'transitionMs', 220)}ms` } as React.CSSProperties}>{parts.map((child, i) => <div className="story-panel" key={i} aria-hidden={effect.presetId === 'pinned-story-panels' && scene !== i ? true : undefined} inert={effect.presetId === 'pinned-story-panels' && scene !== i} data-active={scene === i}>{child}</div>)}</div></div></div>}
+   {simple ? <div className={effect.presetId === 'horizontal-scroll-gallery' ? 'story-native-gallery' : 'story-vertical'}>{parts}</div> : media ? <div className="story-media" style={{ '--story-media-height': height + 'px', '--story-transition': motionNumber(effect, 'transitionMs', 220) + 'ms' } as React.CSSProperties}>
+      <div className="story-media-pin" ref={track}>{media.map((panel, i) => <div key={panel.id} aria-hidden={scene !== i} inert={scene !== i} data-active={scene === i}>{panel.image}</div>)}</div>
+      <div className="story-media-copy">{media.map(panel => <div key={panel.id}>{panel.copy}</div>)}</div>
+    </div> : <div className="story-range" style={{ height: height * Math.max(2, parts.length) * motionNumber(effect, 'travel', 1) }}><div className="story-pin" style={{ height }}><div ref={track} className={'story-track ' + (effect.presetId === 'pinned-story-panels' ? 'story-panels' : '')} style={{ '--story-transition': `${motionNumber(effect, 'transitionMs', 220)}ms` } as React.CSSProperties}>{parts.map((child, i) => <div className="story-panel" key={i} aria-hidden={effect.presetId === 'pinned-story-panels' && scene !== i ? true : undefined} inert={effect.presetId === 'pinned-story-panels' && scene !== i} data-active={scene === i}>{child}</div>)}</div></div></div>}
   </div>
   {!simple && <small className="story-step">{effect.presetId === 'pinned-story-panels' ? `分鏡 ${scene + 1} / ${parts.length}` : '在這個區塊裡捲動'}</small>}
  </div>;

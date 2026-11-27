@@ -67,6 +67,8 @@ test("downloaded React project installs and builds independently; runtime stays 
   const layoutSection = input.sections[0];
   layoutSection.sectionLayout = { arrangement: { mode: "masonry", columns: 2, gap: "medium", mobile: "stack" }, fullBleed: true };
   const cinematic = thirdFixture();
+  const story = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "pinned-story-panels")!;
+  story.effects[0].validatedControls.presentation = "media";
   const gooey = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "gooey-blob-merge")!;
   gooey.effects[0].validatedControls.flow = "drift";
   const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...cinematic.sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
@@ -186,6 +188,8 @@ z.extractall(root)
     await expect(digit).toHaveAttribute("data-impact", "");
     await expect(digit).toHaveText("7");
     expect(await digit.evaluate(el => el.getAnimations().length)).toBe(0);
+    const exportedStory = standalone.locator(`[data-page-id="${story.id}"]`);
+    await expect(exportedStory.locator(".story-vertical img")).toHaveCount(3);
     const gooeySurface = standalone.locator(`[data-page-id="${gooey.id}"] .cin-gooey-drift`);
     await expect(gooeySurface.locator("circle")).toHaveCount(3);
     await expect(gooeySurface.locator("g[filter]")).toHaveCount(0);
@@ -223,6 +227,10 @@ z.extractall(root)
     await expect(exportedMotion(5)).toHaveAttribute("data-motion-paused","false");
     await expect.poll(()=>exportedMotion(5).evaluate(el=>el.getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect?.getComputedTiming().iterations===Infinity))).toBe(true);
     for(const section of thirdFixture().sections){const node=section.children![0];await expect(standalone.locator(`[data-page-id="${node.id}"]`)).toHaveAttribute('data-effects',node.effects[0].presetId);}
+    const storyPreview = exportedStory.locator(".story-viewport");
+    await expect(exportedStory.locator(".story-media-pin [data-active=true] img")).toHaveAttribute("alt", "構思的影像");
+    await storyPreview.evaluate(host => { host.scrollTop = host.clientHeight; });
+    await expect(exportedStory.locator(".story-media-pin [data-active=true] img")).toHaveAttribute("alt", "設計的影像");
     const thirdNodes=thirdFixture().sections.map(s=>s.children![0]);
     const morph=standalone.locator(`[data-page-id="${thirdNodes[0].id}"]`);await morph.getByRole('button',{name:'切換文字'}).click();await expect(morph.locator('.cin-text-source')).toHaveText('設計成真');
     const sequence=standalone.locator(`[data-page-id="${thirdNodes[16].id}"]`);await sequence.scrollIntoViewIfNeeded();await sequence.getByLabel('序列影格進度').fill('100');await sequence.getByLabel('序列影格進度').dispatchEvent('input');await expect(sequence.locator('img')).toHaveAttribute('src',/frame-03.svg$/);await expect.poll(()=>sequence.locator('img').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);

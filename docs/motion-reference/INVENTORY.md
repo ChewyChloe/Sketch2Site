@@ -48,6 +48,7 @@
 |---|---|---|
 | `count-up` | 8 | 5 |
 | `gooey-blob-merge` | 176 | 7 |
+| `pinned-story-panels` | 210 | 8 |
 
 ## 已有同等功能
 
@@ -185,7 +186,7 @@
 | 201 | shape | ['loop'] | CSS | liquid-distortion-reveal | P4 | 持續波動 |
 | 203 | layout | ['hover', 'switch'] | CSS | 導覽列樣式 | P3 | 選單展開 |
 | 208 | layout | ['switch'] | GSAP | 相簿版型切換 | P3 | 分類篩選 |
-| 210 | layout | ['scroll'] | GSAP | pinned-story-panels | P4 | 現有切換整張卡；待補固定影像，旁側文案自然捲動 |
+| 210 | layout | ['scroll'] | GSAP | pinned-story-panels | P4 | 可切換為固定影像，旁側文案自然捲動 |
 | 211 | layout | ['scroll', 'hover'] | GSAP | scroll-progress | P3 | 回到頂部按鈕 |
 | 212 | card | ['switch', 'loop'] | CSS | 輪播元件 | P2 | 中央放大樣式 |
 | 213 | card | ['drag', 'exit'] | GSAP | card-stack-shuffle | P3 | 拖曳甩出 |
