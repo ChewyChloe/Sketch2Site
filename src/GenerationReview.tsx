@@ -1,7 +1,9 @@
+import { createSiteCandidate } from "./siteGeneration";
+import { PlanMotionChoices } from "./PlanMotionChoices";
 import { materialize } from "./generation";
 import { plannedSourceIds, smartLayout } from "./smartLayout";
 import SectionLayoutPicker, { SectionLayoutThumbnail } from "./SectionLayoutPicker";
-import { allSections, themeLabels, type PageSpec } from "./pageSpec";
+import { allSections, themeLabels, type PageNode, type PageSpec } from "./pageSpec";
 import { requestedSectionLayout, sectionSourceIds, type SectionLayout } from "./sectionLayout";
 import { effectLabels } from "./visualEditing";
 import { referencePurposeLabels, referenceHints } from "./referenceStyle";
@@ -21,15 +23,21 @@ export function generationPages(draft: CanvasSpec) {
   }));
 }
 
-export function GenerationReview({ draft, aiReady, savedSite, onDraftChange }: {
+export function GenerationReview({ draft, aiReady, savedSite, onDraftChange, pendingReferenceAnalysis }: {
   draft: CanvasSpec;
   aiReady: boolean;
+  pendingReferenceAnalysis: boolean;
   savedSite?: PageSpec | null;
   onDraftChange: (draft: CanvasSpec) => void;
 }) {
   const brief = draft.metadata.brief;
   const automatic = aiReady && (draft.metadata.pages?.length ?? 0) < 2 ? "交由 AI 決定" : "由本機排版決定";
   const referenceTheme = referenceHints(brief?.style, brief?.referencePurposes)?.direction;
+  const pages = generationPages(draft);
+  let multiPage: PageSpec | undefined;
+  if (pages.length > 1) {
+    try { multiPage = createSiteCandidate(draft).page; } catch { /* Review incomplete drafts with the local outline. */ }
+  }
   const style = [
     brief?.mood, referenceHints(brief?.style, brief?.referencePurposes)?.direction,
     brief?.referencePurposes?.map(id => referencePurposeLabels[id]).join("、") || (brief?.style && "整體風格參考"),
@@ -45,22 +53,24 @@ export function GenerationReview({ draft, aiReady, savedSite, onDraftChange }: {
         <dt>網站目的</dt><dd>{brief?.purpose || automatic}</dd>
         <dt>目標受眾</dt><dd>{brief?.audience || automatic}</dd>
         <dt>重點與首屏</dt><dd>{[brief?.focus, brief?.ask?.hero && heroLabels[brief.ask.hero]].filter(Boolean).join("，") || automatic}</dd>
-        <dt>視覺風格</dt><dd>{style ? "已指定：" + style : automatic}</dd>
+        <dt>視覺風格</dt><dd>{style ? "已指定：" + style : automatic}{pendingReferenceAnalysis && "。確認後依指定用途分析參考圖。"}</dd>
         <dt>布局偏好</dt><dd>{draft.metadata.layoutMode === "reflow" ? "已指定：智慧排版" : "保留草稿位置"}{draft.metadata.layoutMode === "reflow" && "；未指定的區塊" + automatic}</dd>
         <dt>動畫偏好</dt><dd>{animated ? `保留 ${animated} 個元件的既有動畫` : "草稿尚未設定動畫"}</dd>
         <dt>避用項目</dt><dd>{brief?.ask?.avoid?.map(id => avoidLabels[id]).join("、") || "未指定"}</dd>
         {(brief?.note || brief?.details || brief?.ask?.refs) && <><dt>其他要求</dt><dd>{[brief.note, brief.details, brief.ask?.refs].filter(Boolean).join("；")}</dd></>}
       </dl>
-      {generationPages(draft).map(view => (
+      {pages.map(view => (
         <SectionPlan key={view.id ?? "home"} view={view} draft={draft}
-          savedSite={savedSite} automatic={automatic} onDraftChange={onDraftChange} />
+          savedSite={savedSite} automatic={automatic} onDraftChange={onDraftChange}
+          sections={view.id === multiPage?.home?.id ? multiPage?.sections : multiPage?.subpages?.find(page => page.id === view.id)?.sections} />
       ))}
     </section>
   );
 }
 
-function SectionPlan({ view, draft, savedSite, automatic, onDraftChange }: {
+function SectionPlan({ view, draft, savedSite, automatic, onDraftChange, sections }: {
   view: ReturnType<typeof generationPages>[number];
+  sections?: PageNode[];
   draft: CanvasSpec;
   savedSite?: PageSpec | null;
   automatic: string;
@@ -71,10 +81,16 @@ function SectionPlan({ view, draft, savedSite, automatic, onDraftChange }: {
   const sourceIds = new Set(view.draft.nodes.map(node => node.id));
   const locked = savedSite ? allSections(savedSite).filter(section => section.lock?.layout)
     .map(section => new Set(sectionSourceIds(section, sourceIds))) : [];
+  const protectedMotion = new Set(locked.flatMap(ids => [...ids]));
+  const retainMotion = (node: PageNode) => {
+    if (node.effects.length) protectedMotion.add(node.id);
+    node.children?.forEach(retainMotion);
+  };
+  if (savedSite) allSections(savedSite).forEach(retainMotion);
   const positionMode = draft.metadata.layoutMode !== "reflow";
-  let rendered: PageSpec | undefined;
+  let rendered = sections;
   try {
-    if (view.draft.nodes.length) rendered = materialize(view.draft, plan);
+    if (!rendered && view.draft.nodes.length) rendered = materialize(view.draft, plan).sections;
   } catch {
     // Drafts with incomplete links or incompatible prior layouts still have an editable brief.
   }
@@ -103,7 +119,7 @@ function SectionPlan({ view, draft, savedSite, automatic, onDraftChange }: {
       const planned = plan.sections[index];
       const ids = plannedSourceIds(planned);
       const selected = requestedSectionLayout(draft.metadata.siteOverrides?.items, ids);
-      const sectionNode = rendered?.sections[index];
+      const sectionNode = rendered?.[index];
       const name = section.heading || purposes[section.role];
       const locked = isLocked(index);
       const ordered = ids.some(id => draft.metadata.sectionOrder?.includes(id));
@@ -122,6 +138,10 @@ function SectionPlan({ view, draft, savedSite, automatic, onDraftChange }: {
           <button type="button" disabled={locked || index === 0 || isLocked(index - 1)} onClick={() => move(index, index - 1)}>上移</button>
           <button type="button" disabled={locked || index + 1 === anchors.length || isLocked(index + 1)} onClick={() => move(index, index + 1)}>下移</button>
         </>}
+        <PlanMotionChoices draft={draft} view={view.draft} ids={ids} name={name}
+          protectedIds={protectedMotion} onChange={onDraftChange} />
+        {!sectionNode && selected && !locked && !positionMode && <button type="button"
+          onClick={() => setLayout(ids, { arrangement: null, fullBleed: false })}>清除此區布局指定</button>}
         {sectionNode && <SectionLayoutPicker section={locked ? { ...sectionNode, lock: { layout: true } } : sectionNode}
           positionMode={positionMode} onChange={layout => setLayout(ids, layout)} />}
       </li>;

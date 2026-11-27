@@ -1,10 +1,11 @@
 import { referenceHints } from "./referenceStyle";
 import { CanvasSchema, type CanvasNode, type CanvasSpec } from "./spec";
 import { combinationReason, createMotion, numericContent, targetReason, withinMotionBudget, type MotionInstance } from "./motion";
-import { defaultControls, type MotionId } from "./motionCatalog";
+import { defaultControls, motionCatalog, motionIds, type MotionId } from "./motionCatalog";
 import { smartLayout, suggestTheme } from "./smartLayout";
 import { moodThemes } from "./brief";
-import type { SectionRole } from "./pageSpec";
+import { themeLabels, type SectionRole } from "./pageSpec";
+import { motionFacets, motionFollowsDescription, recommendMotions } from "./motionFacets";
 
 // Motion recipes: pick fitting presets from the motion library for each draft
 // element, based on the section it will become. Only elements without motion are
@@ -109,4 +110,46 @@ export function enlivenDraft(spec: CanvasSpec, style: MotionStyle = motionStyleF
 /** Removes every motion from the draft (or from `onlyIds`). */
 export function stillDraft(spec: CanvasSpec, onlyIds?: ReadonlySet<string>): CanvasSpec {
   return { ...spec, nodes: spec.nodes.map((n) => (onlyIds && !onlyIds.has(n.id) ? n : n.effects.length ? { ...n, effects: [] } : n)) };
+}
+
+export function draftMotionSuggestions(spec: CanvasSpec, nodeId: string, description: string) {
+  const node = spec.nodes.find(item => item.id === nodeId);
+  const slot = node && slots(spec).get(node.id);
+  if (!node || !slot || node.locked || node.effects.length) return [];
+  const brief = spec.metadata.brief;
+  const theme = spec.metadata.siteOverrides?.theme ?? moodThemes[brief?.mood ?? ""] ??
+    referenceHints(brief?.style, brief?.referencePurposes)?.direction ?? suggestTheme(spec);
+  const tone = brief?.mood || referenceHints(brief?.style, brief?.referencePurposes)?.motion
+    ? motionStyleFor(spec)
+    : ["forest", "mono", "classic"].includes(theme) ? "calm" : "lively";
+  const query = [description, brief?.note, brief?.details].filter(Boolean).join(" ");
+  const recipe = pick(slot, node, tone);
+  const budget = spec.nodes.flatMap(item => item.effects);
+  const available = new Map<MotionId, MotionInstance>();
+  for (const id of motionIds) {
+    if (motionCatalog[id].status !== "DONE" || !motionFollowsDescription(id, query)) continue;
+    const effect = motionFor(node, id, spec);
+    if (effect && withinMotionBudget([...budget, effect])) available.set(id, effect);
+  }
+  const language = recommendMotions(query, [...available.keys()]);
+  const reasons = new Map(language.map(item => [item.id, item.reasons]));
+  const candidates = [...new Set([...language.map(item => item.id), ...recipe])].filter(id => available.has(id));
+  return candidates.sort((a, b) => {
+    const score = (id: MotionId) => (reasons.get(id)?.length ?? 0) * 3 + Number(recipe.includes(id)) * 2 +
+      Number(tone === "calm" && motionFacets[id].intensity.includes("low"));
+    return score(b) - score(a);
+  }).slice(0, 3).map(id => ({
+    effect: available.get(id)!,
+    reasons: [themeLabels[theme] + (tone === "calm" ? "的輕柔節奏" : "的活潑節奏"),
+      motionCatalog[id].bestFor, ...(reasons.get(id) ?? [])],
+  }));
+}
+
+export function applyDraftMotionSuggestion(spec: CanvasSpec, effect: MotionInstance, protectedIds: ReadonlySet<string>): CanvasSpec | null {
+  const node = spec.nodes.find(item => item.id === effect.targetId);
+  if (!node || node.locked || node.effects.length || protectedIds.has(node.id)) return null;
+  const next = CanvasSchema.safeParse({
+    ...spec, nodes: spec.nodes.map(item => item.id === node.id ? { ...item, effects: [effect] } : item),
+  });
+  return next.success ? next.data : null;
 }

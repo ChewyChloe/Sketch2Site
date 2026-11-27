@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { blank, CanvasSchema, type CanvasSpec } from "./spec";
 import { createBlock, type BlockTemplateId } from "./blockTemplates";
-import { enlivenDraft, motionStyleFor, stillDraft } from "./motionRecipes";
+import { applyDraftMotionSuggestion, draftMotionSuggestions, enlivenDraft, motionStyleFor, stillDraft } from "./motionRecipes";
 import { createSiteCandidate } from "./siteGeneration";
 import { starterDrafts } from "./starters";
 
@@ -55,4 +55,19 @@ describe("motion recipes", () => {
       expect(() => createSiteCandidate(spec)).not.toThrow();
     }
   });
+});
+
+it("recommends fitting motions from the brief, and confirmation protects locks and existing effects", () => {
+  const spec = draft(["hero"], "專業");
+  const heading = spec.nodes.find(node => node.type === "heading")!;
+  const suggestion = draftMotionSuggestions(spec, heading.id, "輕柔淡入，不要循環")[0];
+  expect(suggestion.reasons.join(" ")).toMatch(/海洋.*輕柔/);
+  expect(suggestion.effect.targetId).toBe(heading.id);
+  expect(applyDraftMotionSuggestion(spec, suggestion.effect, new Set([heading.id]))).toBeNull();
+  const locked = { ...spec, nodes: spec.nodes.map(node => node.id === heading.id ? { ...node, locked: true as const } : node) };
+  expect(draftMotionSuggestions(locked, heading.id, "")).toEqual([]);
+  const edited = applyDraftMotionSuggestion(spec, suggestion.effect, new Set())!;
+  expect(edited.nodes.find(node => node.id === heading.id)?.effects).toEqual([suggestion.effect]);
+  expect(applyDraftMotionSuggestion(edited, suggestion.effect, new Set())).toBeNull();
+  expect(JSON.stringify(createSiteCandidate(edited).page)).toContain(suggestion.effect.presetId);
 });

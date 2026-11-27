@@ -23,3 +23,29 @@ test("editing the review writes section layout and order into actual generation"
   await expect(sections.first().locator('[data-section-arrangement="stack"]')).toBeVisible();
   await expect(sections.first()).toContainText("自家烘豆");
 });
+
+test("a local animation suggestion previews without editing, then reaches generation after confirmation", async ({ page }) => {
+  await page.route(/\/api\/generation\/(status|ready)$/, route => route.fulfill({ json: { configured: false } }));
+  await page.goto("/?draft");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await page.getByRole("button", { name: "新增標題" }).click();
+  await page.getByRole("button", { name: "描述網站" }).click();
+  const panel = page.getByRole("dialog", { name: "描述你的網站" });
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByText("動畫推薦", { exact: true }).click();
+  await panel.getByRole("textbox", { name: "想要的動畫效果（選填）" }).fill("輕柔淡入");
+  const recommendation = panel.getByRole("list", { name: /的動畫推薦/ }).getByRole("listitem").first();
+  await expect(recommendation).toContainText("動態輕柔");
+  await recommendation.getByRole("button", { name: /^試看/ }).click();
+  const trial = panel.getByRole("region", { name: "推薦動畫試看" });
+  const preview = trial.locator("[data-effects]:not([data-effects=''])").first();
+  await expect(preview).toBeVisible();
+  const id = await preview.getAttribute("data-page-id");
+  const effect = await preview.getAttribute("data-effects");
+  await expect(panel).toContainText("草稿尚未設定動畫");
+  await recommendation.getByRole("button", { name: /^套用/ }).click();
+  await expect(trial).toHaveCount(0);
+  await expect(panel).toContainText("保留 1 個元件的既有動畫");
+  await panel.getByRole("button", { name: "確認生成" }).click();
+  await expect(page.getByRole("main", { name: "生成候選預覽" }).locator(`.preview-frame [data-page-id="${id}"]`)).toHaveAttribute("data-effects", effect!);
+});

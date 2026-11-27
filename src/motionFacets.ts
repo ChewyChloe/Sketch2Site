@@ -83,14 +83,19 @@ const recommendationRules: { pattern: RegExp; label: string; match: (id: MotionI
   { pattern: /咖啡|coff?ee|caf[eé]/i, label: "適合安靜的咖啡廳氛圍", match: (_, f) => f.intensity.includes("low") && f.trigger.includes("enter") },
 ];
 
-export function recommendMotions(query: string, ids: readonly MotionId[]) {
+export function motionFollowsDescription(id: MotionId, query: string): boolean {
   const avoidStrong = /(?:不要|別|不想|不宜|not|avoid|no)\s*(?:太|過於|too\s*)?(?:浮誇|強烈|花俏|誇張|flashy|intense|dramatic)/i.test(query);
   const avoidLoops = /(?:不要|別|不想|not|avoid|no)\s*(?:一直動|循環|loop)/i.test(query);
+  const facets = motionFacets[id];
+  return !(avoidStrong && facets.intensity.includes("high")) && !(avoidLoops && facets.trigger.includes("loop"));
+}
+
+export function recommendMotions(query: string, ids: readonly MotionId[]) {
   const matches = recommendationRules.filter(rule => rule.pattern.test(query));
   const target = /照[片相]|圖片|photo|image/i.test(query) ? "image" : /文字|標題|text|headline/i.test(query) ? "text" : undefined;
   return ids.flatMap(id => {
     const f = motionFacets[id];
-    if ((target && !f.target.includes(target)) || (avoidStrong && f.intensity.includes("high")) || (avoidLoops && f.trigger.includes("loop"))) return [];
+    if ((target && !f.target.includes(target)) || !motionFollowsDescription(id, query)) return [];
     const reasons = matches.filter(rule => rule.match(id, f)).map(rule => rule.label);
     return reasons.length ? [{ id, reasons }] : [];
   }).sort((a, b) => b.reasons.length - a.reasons.length).slice(0, 5);

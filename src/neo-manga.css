@@ -1111,3 +1111,6 @@ body{background:var(--neo-cream)}
 .reference-purpose summary { cursor: pointer; }
 .reference-purpose fieldset { display: grid; gap: 4px; margin: 6px 0; padding: 6px; }
 .reference-purpose fieldset label { display: flex; align-items: center; gap: 5px; }
+.plan-motion-choices { margin-block: 8px; }
+.plan-motion-choices > summary { cursor: pointer; }
+.plan-motion-preview { max-height: min(46vh, 400px); overflow: auto; border: 1px solid var(--line, #aaa); }

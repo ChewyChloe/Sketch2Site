@@ -179,7 +179,8 @@ export function BriefPanel({
         <button type="button" className="brief-close" aria-label="關閉" onClick={() => onClose(brief)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
       </div>
       {review ? <>
-        <GenerationReview draft={withGenerationBrief(draft, brief)} aiReady={aiReady} savedSite={savedSite} onDraftChange={onDraftChange} />
+        <GenerationReview draft={withGenerationBrief(draft, brief)} aiReady={aiReady} savedSite={savedSite} onDraftChange={onDraftChange}
+          pendingReferenceAnalysis={aiReady && references.length > 0} />
         {refBusy === "asking" && <p role="status">AI 正在看參考圖…</p>}
         <div className="brief-actions">
           <button type="button" disabled={refBusy !== ""} onClick={() => setReview(false)}>返回修改</button>
