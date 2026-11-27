@@ -261,7 +261,7 @@ export function AnimationLibrary({
                       : "")
                   }
                   disabled={disabled || Boolean(reason)}
-                  onClick={() => { remember(id); onChoose(id,tuned[id]); }}
+                  onClick={() => { remember(id); if(tuned[id]) onChoose(id,tuned[id]); else onChoose(id); }}
                   title={reason ?? descriptions[id]}
                 >
                   <span className="asset-name"><strong>{effectLabels[id]}</strong><span>{motionCatalog[id].nameEn}</span></span>

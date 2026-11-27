@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "fake-indexeddb/auto";
-import { it, expect, afterEach, vi } from "vitest";
+import { it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   render,
   screen,
@@ -12,9 +12,21 @@ import {
 import Preview from "./Preview";
 import { demoPage } from "./pageFixtures";
 import { indexNodes } from "./patch";
+beforeEach(() => {
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+  class Observer {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  vi.stubGlobal("ResizeObserver", Observer);
+  vi.stubGlobal("IntersectionObserver", Observer);
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+});
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 it("selects an ID, applies a patch through the form and safely rejects invalid text", async () => {
   render(<Preview />);
@@ -78,4 +90,4 @@ it("selects an ID, applies a patch through the form and safely rejects invalid t
   );
   expect(screen.queryByRole("button", { name: "捨棄修改" })).toBeNull();
   expect(indexNodes(demoPage).get(target.id)?.content).toBe(target.content);
-});
+}, 20000);

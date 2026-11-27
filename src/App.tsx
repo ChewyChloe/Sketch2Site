@@ -6,6 +6,7 @@ import { WorkbenchIcon } from "./WorkbenchIcon";
 import { importImage, assetErrorMessage } from "./assets";
 import { isLocalAsset } from "./assetRef";
 import { useAssetUrls, useAssetRefs } from "./useAssetUrls";
+import { PageRenderer } from "./PageRenderer";
 import { AnimationLibrary } from "./AnimationLibrary";
 import { WorkbenchMenu } from "./WorkbenchMenu";
 import { enlivenDraft, stillDraft } from "./motionRecipes";
@@ -237,6 +238,7 @@ export default function App() {
   // Smart guides shown while dragging (hold Alt to move freely).
   const [guides, setGuides] = useState<Guide[]>([]);
   // Holding Alt shows the distances from the selected element to its neighbours and the canvas edges.
+  const [draftMotionTrial, setDraftMotionTrial] = useState<{page: ReturnType<typeof createSiteCandidate>["page"]; key: number} | null>(null);
   const [altHeld, setAltHeld] = useState(false);
   const [spacingTarget, setSpacingTarget] = useState<string | null>(null);
   useEffect(() => {
@@ -2517,8 +2519,22 @@ node ? (
                       })}
                     </div>
                   </>
-                ) : tab === "animations" ? (
+                ) : tab === "animations" ? (<>
+                  {draftMotionTrial && <section aria-label="草稿元件動畫試看">
+                    <button type="button" onClick={() => setDraftMotionTrial(null)}>取消試看</button>
+                    <button type="button" onClick={() => setDraftMotionTrial(trial => trial && {...trial,key:trial.key+1})}>重播試看</button>
+                    <PageRenderer key={draftMotionTrial.key} input={draftMotionTrial.page}/>
+                  </section>}
                   <AnimationLibrary
+                    onTry={node ? (id, controls) => {
+                      try {
+                        const effect = createMotion(id,node.id,controls);
+                        const trial = {...spec,nodes:spec.nodes.map(item=>item.id===node.id?{...item,effects:[...item.effects,effect]}:item)};
+                        setDraftMotionTrial({page:createSiteCandidate(trial).page,key:Date.now()});
+                      } catch {
+                        report("請先填妥動畫參數再試看",true);
+                      }
+                    } : undefined}
                     draft
                     filter={search}
                     disabled={disabled}
@@ -2532,6 +2548,7 @@ node ? (
                     }
                     onChoose={(id, controls) => {
                       const effect = id;
+                      setDraftMotionTrial(null);
                       if (node) attach(effect, node.id, controls);
                       else {
                         setPending(effect);
@@ -2553,7 +2570,7 @@ node ? (
                       );
                     }}
                   />
-                ) : null}
+                </>) : null}
               </aside>
             )}
             {panel&&<aside className="neo-inspector" data-active={tab==='properties'} aria-label="物件檢查器"><PanelResizer side="right" label="拖曳調整右側欄寬度" width={inspectorWidth} min={260} max={480} onChange={setInspectorWidth} /><div className="neo-inspector-head"><span>物件檢查器</span><span className="sheet-actions"><button type="button" className="sheet-switch" onClick={()=>setTab("library")}>元件素材</button><button type="button" className="sheet-close" aria-label="收起面板" onClick={()=>setPanel(false)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg></button></span></div><div className="neo-inspector-body">{inspectorContent}</div></aside>}

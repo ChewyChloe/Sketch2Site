@@ -7,11 +7,12 @@ export function PhysicsTags({ effect }: {
 }) {
     const ref = useRef<HTMLCanvasElement>(null), host = useRef<HTMLDivElement>(null), reduced = useReducedMotion();
     const [dragMode, setDragMode] = useState(false), [narrow, setNarrow] = useState(false);
+    const unsupported = typeof ResizeObserver === "undefined" || typeof IntersectionObserver === "undefined";
     const c = effect.validatedControls, labels = c.labels as string[], bodiesRef = useRef<Body[]>([]);
     useEffect(() => { bodiesRef.current = []; }, [effect]);
     useEffect(() => {
         const el = host.current;
-        if (!el)
+        if (!el || unsupported)
             return;
         const observer = new ResizeObserver(entries => {
             const width = entries[0].contentRect.width, measure = document.createElement('canvas').getContext('2d');
@@ -22,10 +23,10 @@ export function PhysicsTags({ effect }: {
         });
         observer.observe(el);
         return () => observer.disconnect();
-    }, [labels]);
+    }, [labels, unsupported]);
     useEffect(() => {
         const canvas = ref.current, container = host.current;
-        if (!canvas || !container || reduced || narrow)
+        if (!canvas || !container || reduced || narrow || unsupported)
             return;
         const ctx = canvas.getContext('2d');
         if (!ctx)
@@ -125,6 +126,6 @@ export function PhysicsTags({ effect }: {
         canvas.addEventListener('lostpointercapture', up);
         document.addEventListener('visibilitychange', resume);
         return () => { cancelAnimationFrame(raf); inertObserver.disconnect(); observer.disconnect(); intersection.disconnect(); document.removeEventListener('visibilitychange', resume); canvas.removeEventListener('pointerdown', down); canvas.removeEventListener('pointermove', move); canvas.removeEventListener('pointerup', up); canvas.removeEventListener('pointercancel', up); canvas.removeEventListener('lostpointercapture', up); };
-    }, [effect, c, labels, reduced, narrow, dragMode]);
-    return <div ref={host} className="motion-physics">{!reduced && !narrow && <><canvas ref={ref} aria-hidden="true" style={{ width: '100%', height: 280, touchAction: dragMode && c.draggable ? 'none' : 'pan-y', cursor: dragMode ? 'grab' : 'default' }}/>{Boolean(c.draggable) && <button type="button" className="motion-toggle" aria-pressed={dragMode} onClick={() => setDragMode(v => !v)}>{dragMode ? '退出標籤拖曳' : '拖曳標籤'}</button>}</>}<ul className={reduced || narrow ? 'motion-tag-list' : 'motion-sr'} aria-label="標籤內容">{labels.map(label => <li key={label}>{label}</li>)}</ul></div>;
+    }, [effect, c, labels, reduced, narrow, dragMode, unsupported]);
+    return <div ref={host} className="motion-physics">{!reduced && !narrow && !unsupported && <><canvas ref={ref} aria-hidden="true" style={{ width: '100%', height: 280, touchAction: dragMode && c.draggable ? 'none' : 'pan-y', cursor: dragMode ? 'grab' : 'default' }}/>{Boolean(c.draggable) && <button type="button" className="motion-toggle" aria-pressed={dragMode} onClick={() => setDragMode(v => !v)}>{dragMode ? '退出標籤拖曳' : '拖曳標籤'}</button>}</>}<ul className={reduced || narrow || unsupported ? 'motion-tag-list' : 'motion-sr'} aria-label="標籤內容">{labels.map(label => <li key={label}>{label}</li>)}</ul></div>;
 }
