@@ -524,6 +524,9 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
   const brand = <a className="page-brand" href={"#page-" + (page.home?.id ?? sections[0]?.id ?? placed?.[0]?.id)}>{page.brand?.logo && <BrandLogo src={page.brand.logo} />}<span>{page.metadata.title}</span></a>;
   const list = links.length > 0 && (
     <nav aria-label={isPages ? "網站頁面" : "頁面導覽"} id={menuId} data-menu-motion={menuMotion} data-menu-open={open ? "" : undefined}>
+      {menuMotion === "strips" && <span className="page-nav-strips" aria-hidden="true">
+        {Array.from({ length: 5 }, (_, i) => <span key={i} />)}
+      </span>}
       {links.map((l) => (
         <a key={l.key} href={"#page-" + l.target} aria-current={isPages ? (l.target === currentPage ? "page" : undefined) : l.target === active ? "location" : undefined} onClick={() => setOpen(false)}>{l.label}</a>
       ))}
@@ -531,7 +534,7 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
   );
   const menu = links.length > 0 && (
     <button ref={menuRef} type="button" className="page-nav-menu" data-menu-motion={menuMotion} aria-expanded={open} aria-controls={menuId} onClick={() => setOpen((v) => !v)}>
-      <svg viewBox="0 0 24 24" aria-hidden="true">{menuMotion && menuMotion !== "capsule" ? <>
+      <svg viewBox="0 0 24 24" aria-hidden="true">{menuMotion && menuMotion !== "capsule" && menuMotion !== "strips" ? <>
         <path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h16" />
       </> : open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</svg>
       <span>{open ? "關閉選單" : "選單"}</span>

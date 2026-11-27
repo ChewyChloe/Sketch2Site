@@ -8,8 +8,8 @@
 
 | 分類 | 筆數 |
 |---|---|
-| 已有同等功能 | 60 |
-| 既有功能可擴充 | 109 |
+| 已有同等功能 | 58 |
+| 既有功能可擴充 | 111 |
 | 需要新增動畫 | 93 |
 | 需要新增複合互動元件 | 11 |
 | 不適合目前架構或需要額外授權 | 74 |
@@ -39,6 +39,7 @@
 | 元件 | 來源編號 | 批次 |
 |---|---|---|
 | 導覽列樣式 | 339 | 4 |
+| 導覽列樣式 | 340 | 6 |
 | 導覽列樣式 | 341 | 4 |
 
 ## 已驗證的既有動畫擴充
@@ -96,12 +97,10 @@
 | 155 | card | ['scroll', 'enter'] | GSAP | count-up | — |  |
 | 158 | media | ['scroll'] | GSAP | CSS 捲動視差（既有） | — |  |
 | 164 | card | ['hover'] | CSS | flip-card | — |  |
-| 176 | bg | ['loop', 'hover'] | Canvas | gooey-blob-merge | — |  |
 | 183 | text | ['enter', 'exit'] | CSS | float-idle | — |  |
 | 184 | media | ['enter', 'exit'] | CSS | cinematic-image-pan | — |  |
 | 191 | media | ['loop'] | CSS | cinematic-image-pan | — |  |
 | 206 | layout | ['hover', 'switch'] | CSS | disclosure-panel | — |  |
-| 210 | layout | ['scroll'] | GSAP | pinned-story-panels | — |  |
 | 214 | card | ['hover'] | CSS | card-deck-fan | — |  |
 | 215 | card | ['switch'] | GSAP | 互動價目表（既有） | — |  |
 | 220 | card | ['hover'] | CSS | focus-transfer | — |  |
@@ -172,6 +171,7 @@
 | 167 | layout | ['hover'] | CSS | 導覽列樣式 | P3 | 滑動底色 |
 | 170 | text | ['hover'] | CSS | elastic-word-bounce | P3 | 滑過觸發 |
 | 171 | button | ['hover'] | CSS | border-light-trace | P2 | 滑過描邊 |
+| 176 | bg | ['loop', 'hover'] | Canvas | gooey-blob-merge | P4 | 現有為手動聚合；待補自主漂移與接近融合 |
 | 177 | text | ['hover', 'enter'] | Canvas | particle-constellation | P4 | 粒子組字 |
 | 179 | bg | ['hover'] | Canvas | liquid-distortion-reveal | P4 | 滑過漣漪 |
 | 181 | bg | ['hover', 'loop'] | Canvas | confetti-burst | P4 | 煙火 |
@@ -184,6 +184,7 @@
 | 201 | shape | ['loop'] | CSS | liquid-distortion-reveal | P4 | 持續波動 |
 | 203 | layout | ['hover', 'switch'] | CSS | 導覽列樣式 | P3 | 選單展開 |
 | 208 | layout | ['switch'] | GSAP | 相簿版型切換 | P3 | 分類篩選 |
+| 210 | layout | ['scroll'] | GSAP | pinned-story-panels | P4 | 現有切換整張卡；待補固定影像，旁側文案自然捲動 |
 | 211 | layout | ['scroll', 'hover'] | GSAP | scroll-progress | P3 | 回到頂部按鈕 |
 | 212 | card | ['switch', 'loop'] | CSS | 輪播元件 | P2 | 中央放大樣式 |
 | 213 | card | ['drag', 'exit'] | GSAP | card-stack-shuffle | P3 | 拖曳甩出 |
@@ -222,7 +223,7 @@
 | 330 | card | ['hover', 'loop'] | GSAP | fold-reveal | P4 | 撕貼紙角 |
 | 332 | card | ['hover', 'switch'] | GSAP | flip-card | P3 | 依方向翻面 |
 | 339 | button | ['switch', 'hover'] | CSS | 導覽列樣式 | P3 | 漢堡變形 |
-| 340 | layout | ['switch'] | GSAP | 導覽列樣式 | P4 | 百葉選單 |
+| 340 | layout | ['switch'] | GSAP | 導覽列樣式 | P4 | 分幕選單，支援反向收幕 |
 | 341 | layout | ['switch'] | GSAP | 導覽列樣式 | P3 | 膠囊展開 |
 | 344 | media | ['drag', 'switch'] | GSAP | photo-spotlight | P3 | 下滑關閉 |
 

@@ -9,8 +9,8 @@
  "categories": {
   "需要新增動畫": 93,
   "不適合目前架構或需要額外授權": 74,
-  "既有功能可擴充": 109,
-  "已有同等功能": 60,
+  "既有功能可擴充": 111,
+  "已有同等功能": 58,
   "需要新增複合互動元件": 11
  },
  "rows": [
@@ -3683,10 +3683,10 @@
     "hover"
    ],
    "technique": "Canvas",
-   "category": "已有同等功能",
+   "category": "既有功能可擴充",
    "sketch2site": "gooey-blob-merge",
-   "priority": null,
-   "note": null,
+   "priority": "P4",
+   "note": "現有為手動聚合；待補自主漂移與接近融合",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -4342,10 +4342,10 @@
     "scroll"
    ],
    "technique": "GSAP",
-   "category": "已有同等功能",
+   "category": "既有功能可擴充",
    "sketch2site": "pinned-story-panels",
-   "priority": null,
-   "note": null,
+   "priority": "P4",
+   "note": "現有切換整張卡；待補固定影像，旁側文案自然捲動",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -6888,13 +6888,14 @@
    "category": "既有功能可擴充",
    "sketch2site": "導覽列樣式",
    "priority": "P4",
-   "note": "百葉選單",
+   "note": "分幕選單，支援反向收幕",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedComponentBatch": 6,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

@@ -6,7 +6,7 @@ import type { CanvasSpec } from "./spec";
 // 導覽列 settings: where the site's menu sits and which headings (or pages) it lists.
 // Changes apply to the generated site, like the brand kit.
 const motionNames: Record<MenuMotion, string> = {
-  cross: "線條交會", return: "折線返回", glide: "滑移換形", line: "細線合攏", capsule: "浮窗展開",
+  cross: "線條交會", return: "折線返回", glide: "滑移換形", line: "細線合攏", capsule: "浮窗展開", strips: "分幕選單",
 };
 
 const styles: { id: NavStyle; name: string; hint: string }[] = [

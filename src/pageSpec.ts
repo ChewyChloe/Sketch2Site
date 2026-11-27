@@ -7,7 +7,7 @@ import { motionIds, MotionSchema, bindMotionInput, compatibleMotion, combination
 // order, a custom label and hiding are all optional. Without settings the site picks its own.
 export const navStyles = ["top-sticky", "top-static", "top-autohide", "side-left", "side-right", "floating", "dots", "none"] as const;
 export type NavStyle = (typeof navStyles)[number];
-export const menuMotions = ["cross", "return", "glide", "line", "capsule"] as const;
+export const menuMotions = ["cross", "return", "glide", "line", "capsule", "strips"] as const;
 export type MenuMotion = (typeof menuMotions)[number];
 export const NavItemSchema = z.object({ id: z.string().uuid(), label: z.string().trim().min(1).max(24).optional(), hidden: z.boolean().optional() }).strict();
 export const NavSettingsSchema = z.object({ style: z.enum(navStyles), menuMotion: z.enum(menuMotions).optional(), items: z.array(NavItemSchema).max(40).optional() }).strict();

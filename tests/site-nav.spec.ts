@@ -91,7 +91,7 @@ test("nav styles: floating pill, hidden menu, and the phone menu button", async 
   await expect(page.locator(".preview-frame .page-nav")).toHaveCount(0);
 });
 
-for (const mode of ["cross", "return", "glide", "line", "capsule"] as const) {
+for (const mode of ["cross", "return", "glide", "line", "capsule", "strips"] as const) {
   test("mobile menu motion " + mode, async ({ page }) => {
     await offline(page);
     await page.goto("/?draft");
@@ -112,19 +112,44 @@ for (const mode of ["cross", "return", "glide", "line", "capsule"] as const) {
     if (mode === "capsule") {
       await expect(links).toHaveCSS("animation-name", "menu-capsule-open");
       await expect(frame.locator(".page-main")).toHaveCSS("filter", "brightness(0.72)");
+    } else if (mode === "strips") {
+      const strips = links.locator(".page-nav-strips > span");
+      await expect(strips).toHaveCount(5);
+      await expect(strips.first()).toHaveCSS("transition-delay", "0s");
+      await expect(strips.last()).toHaveCSS("transition-delay", "0.128s");
+      await expect(strips.last()).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
+      await expect.poll(() => frame.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     } else {
       await expect(menu.locator("svg path").first()).toHaveCSS("transition-duration", "0.22s, 0.16s");
       await expect(menu.locator("svg path").first()).not.toHaveCSS("transform", "none");
     }
     await page.keyboard.press("Tab");
     await expect(links.getByRole("link").first()).toBeFocused();
-    await page.keyboard.press("Escape");
+    if (mode === "strips") {
+      const reverse = await links.getByRole("link").first().evaluate(link => {
+        link.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        const panel = link.closest("nav")!;
+        return new Promise<boolean>(resolve => requestAnimationFrame(() => {
+          resolve(panel.getAnimations({ subtree: true }).some(
+            animation => animation instanceof CSSTransition && animation.transitionProperty === "transform"
+          ));
+        }));
+      });
+      expect(reverse).toBe(true);
+    } else {
+      await page.keyboard.press("Escape");
+    }
     await expect(links).toBeHidden();
     await expect(menu).toBeFocused();
     await page.emulateMedia({ reducedMotion: "reduce" });
     await menu.click();
     await expect(links).toBeVisible();
-    await expect(mode === "capsule" ? links : menu.locator("svg path").first())
-      .toHaveCSS(mode === "capsule" ? "animation-name" : "transition-duration", mode === "capsule" ? "none" : "0s");
+    if (mode === "strips") {
+      await expect(links.locator(".page-nav-strips > span").last()).toHaveCSS("transition-duration", "0s");
+      await expect(links.getByRole("link").first()).toHaveCSS("clip-path", "inset(0px)");
+    } else {
+      await expect(mode === "capsule" ? links : menu.locator("svg path").first())
+        .toHaveCSS(mode === "capsule" ? "animation-name" : "transition-duration", mode === "capsule" ? "none" : "0s");
+    }
   });
 }
