@@ -104,3 +104,12 @@ export function briefSentence(b: Brief): string {
 }
 // A reference picture's style counts as a description too.
 export const hasBrief = (b?: Partial<Brief> | null) => !!b && (Boolean(b.style) || Boolean(b.ask && (b.ask.refs || b.ask.hero || b.ask.lightness?.length || b.ask.avoid)) || Object.values(b).some((v) => typeof v === "string" && v.trim()));
+
+
+export function withGenerationBrief(draft: import("./spec").CanvasSpec, brief: Brief) {
+  const clean = { ...brief, details: brief.details?.trim() || undefined };
+  const next = hasBrief(clean) ? clean : undefined;
+  if (JSON.stringify(next) === JSON.stringify(draft.metadata.brief)) return draft;
+  const { brief: _old, ...metadata } = draft.metadata;
+  return { ...draft, metadata: next ? { ...metadata, brief: next } : metadata };
+}

@@ -1,3 +1,6 @@
+import { GenerationReview } from "./GenerationReview";
+import type { CanvasSpec } from "./spec";
+import { withGenerationBrief } from "./brief";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { describeStyle, maxReferences, mergeStyles, prepareReference, type ReferenceStyle } from "./referenceStyle";
 import { requestReferenceStyle } from "./referenceRequest";
@@ -83,18 +86,21 @@ const questions: Record<BriefField, string> = { audience: "誰會看這個網站
 const order: BriefField[] = ["audience", "purpose", "mood", "focus"];
 
 export function BriefPanel({
+  draft,
   initial,
   aiReady,
   onClose,
   onGenerate,
 }: {
+  draft: CanvasSpec;
   initial?: Partial<Brief>;
   aiReady: boolean;
   onClose: (brief: Brief) => void;
   onGenerate: (brief: Brief) => void;
 }) {
   const [brief, setBrief] = useState<Brief>({ ...emptyBrief, ...initial });
-  useEscapeToClose(() => onClose(brief));
+  const [review, setReview] = useState(false);
+  useEscapeToClose(() => review ? setReview(false) : onClose(brief));
   const [active, setActive] = useState<BriefField | null>(initial?.audience ? null : "audience");
   const [custom, setCustom] = useState("");
   const [moreOpen, setMoreOpen] = useState(Boolean(initial?.details));
@@ -158,6 +164,14 @@ export function BriefPanel({
         <h2>描述你的網站</h2>
         <button type="button" className="brief-close" aria-label="關閉" onClick={() => onClose(brief)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
       </div>
+      {review ? <>
+        <GenerationReview draft={withGenerationBrief(draft, brief)} aiReady={aiReady} />
+        {refBusy === "asking" && <p role="status">AI 正在看參考圖…</p>}
+        <div className="brief-actions">
+          <button type="button" disabled={refBusy !== ""} onClick={() => setReview(false)}>返回修改</button>
+          <button type="button" className="primary" disabled={refBusy !== "" || !draft.nodes.length} onClick={() => void generate()}>確認生成</button>
+        </div>
+      </> : <>
       <div className="brief-rows">
         {order.map((field) => (
           <div key={field} className={"brief-row" + (active === field ? " is-active" : "")}>
@@ -295,8 +309,9 @@ export function BriefPanel({
       </p>
       <div className="brief-actions">
         <button type="button" className="brief-reset" onClick={() => { setBrief(emptyBrief); setReferences([]); setRefNote(""); setActive("audience"); }}>全部清除</button>
-        <button type="button" className="primary" disabled={refBusy !== ""} onClick={() => void generate()}>{refBusy === "asking" ? "AI 正在看參考圖…" : "用這個描述生成網站"}</button>
+        <button type="button" className="primary" disabled={refBusy !== ""} onClick={() => setReview(true)}>查看生成計畫</button>
       </div>
+      </>}
     </div>
   );
 }

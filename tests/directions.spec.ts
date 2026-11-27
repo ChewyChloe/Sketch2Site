@@ -28,7 +28,8 @@ test("three directions side by side, then a variant; the choice is kept", async 
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
   await club(page);
   const panel = await answer(page);
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   const cards = page.getByRole("radiogroup", { name: "三個方向" }).getByRole("radio");
   await expect(cards).toHaveCount(3);
   await expect(cards.first()).toHaveAttribute("aria-checked", "true");
@@ -58,7 +59,8 @@ test("with AI the answers reach the layout request; the directions still show", 
   page.on("request", (r) => { if (r.method() === "POST" && /\/api\/generation$/.test(r.url())) bodies.push(r.postData() ?? ""); });
   await club(page);
   const panel = await answer(page);
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   await expect.poll(() => bodies.length).toBe(1);
   const ask = JSON.parse(bodies[0]).canvasSpec.metadata.brief.ask;
   expect(ask).toMatchObject({ refs: "無印良品", lightness: ["bold"], hero: "type" });
@@ -71,7 +73,8 @@ test("我的風格: saved once, offered in another project, applied only when cl
   await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
   await club(page);
   const panel = await answer(page);
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   const cards = page.getByRole("radiogroup", { name: "三個方向" }).getByRole("radio");
   await cards.nth(2).click();
   await page.getByRole("radiogroup", { name: "同一方向的變化" }).getByRole("radio").nth(1).click();
@@ -93,7 +96,8 @@ test("我的風格: saved once, offered in another project, applied only when cl
   await expect(brief.getByLabel("喜歡哪些網站或品牌")).toHaveValue("");
   await reuse.getByRole("button", { name: "我的海報" }).click();
   await expect(brief.getByLabel("喜歡哪些網站或品牌")).toHaveValue("無印良品");
-  await brief.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await brief.getByRole("button", { name: "查看生成計畫" }).click();
+  await brief.getByRole("button", { name: "確認生成" }).click();
   const mine = page.getByRole("group", { name: "我的風格" });
   await expect(mine.getByRole("button", { name: "我的海報", exact: true })).toHaveAttribute("aria-pressed", "false");
   await mine.getByRole("button", { name: "我的海報", exact: true }).click();

@@ -1,3 +1,4 @@
+import { withGenerationBrief } from "./brief";
 import { hasImplicitLayoutLock } from "./sectionLayout";
 import {encodeNodes,decodeNodes,cloneNodes,deleteNodes,groupSelection,translateSelection,formatOf,applyFormat,type NodeFormat} from "./canvasEditing";
 import {MotionControlsFields} from "./MotionControls";
@@ -55,7 +56,7 @@ import Preview, { type PreviewHandle } from "./Preview";
 import CandidatePreview from "./CandidatePreview";
 import HomePage from "./HomePage";
 import { BriefPanel } from "./BriefPanel";
-import { briefSentence, emptyBrief, hasBrief, type Brief } from "./brief";
+import { briefSentence, emptyBrief, type Brief } from "./brief";
 import { listProjects, openProject, createProject, renameProject, duplicateProject, deleteProject, projectSwitch, type ProjectSummary } from "./projects";
 import type { PageSpec } from "./pageSpec";
 import { localAssets } from "./pageSpec";
@@ -704,12 +705,9 @@ export default function App() {
     void generate();
   }, [pendingGenerate]);
   function saveBrief(brief: Brief) {
-    const s = state.current.present;
-    const clean = { ...brief, details: brief.details?.trim() || undefined };
-    const next = hasBrief(clean) ? clean : undefined;
-    if (JSON.stringify(next) === JSON.stringify(s.metadata.brief)) return true;
-    const { brief: _old, ...metadata } = s.metadata;
-    return change({ ...s, metadata: next ? { ...metadata, brief: next } : metadata });
+    const draft = state.current.present;
+    const next = withGenerationBrief(draft, brief);
+    return next === draft || change(next);
   }
   // ---- Page management ----
   const [renamingPage, setRenamingPage] = useState<{ id: string; name: string } | null>(null);
@@ -1764,14 +1762,14 @@ node ? (
       )}
       {briefOpen && mode === "draft" && (
         <BriefPanel
+          draft={spec}
           initial={spec.metadata.brief}
           aiReady={aiReady}
           onClose={(brief) => { saveBrief(brief); setBriefOpen(false); }}
           onGenerate={(brief) => {
             setBriefOpen(false);
             if (!spec.nodes.length) { saveBrief(brief); report("先在畫布放一些內容，再生成網站", true); return; }
-            saveBrief(brief);
-            setPendingGenerate(true);
+            if (saveBrief(brief)) setPendingGenerate(true);
           }}
         />
       )}

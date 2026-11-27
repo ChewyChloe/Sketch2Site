@@ -30,7 +30,17 @@ test("describe-site panel: fill-in blanks, Tab suggestions, details, and generat
   await expect(note).toHaveValue("報名截止日期要醒目，主色");
   await panel.getByRole("button", { name: /想寫更多/ }).click();
   await panel.getByLabel("詳細說明（選填）").fill("我們是攝影社，想讓新生知道社課很輕鬆。");
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  const summary = panel.getByRole("region", { name: "生成前需求摘要" });
+  await expect(summary).toContainText("社團招生");
+  await expect(summary).toContainText("學生");
+  await expect(summary).toContainText("科技感");
+  await expect(summary).toContainText("價目");
+  await expect(page.getByRole("main", { name: "生成候選預覽" })).toHaveCount(0);
+  await panel.getByRole("button", { name: "返回修改" }).click();
+  await expect(panel.getByLabel("詳細說明（選填）")).toHaveValue("我們是攝影社，想讓新生知道社課很輕鬆。");
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   const site = page.locator(".preview-frame .rendered-page:visible").first();
   await expect(site).toHaveAttribute("data-theme", "midnight");
   await expect(site.locator(".page-main > .page-section").nth(1)).toHaveClass(/role-pricing/);

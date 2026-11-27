@@ -26,7 +26,8 @@ test("reference picture without AI: read in the browser, site follows its direct
   await expect(techniques.first()).toContainText("用在你的網站");
   await expect(ref).not.toContainText("方向");
   await page.screenshot({ path: "test-results/reference-local.png" });
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   await expect(page.locator("main[aria-label='生成候選預覽'] .rendered-page").first()).toHaveAttribute("data-art", /\S/);
   expect(posts.filter((u) => u.includes("/api/"))).toEqual([]);
 });
@@ -45,7 +46,8 @@ test("reference picture with AI: one small JPEG to the AI, only style choices in
   const panel = await openBrief(page);
   await panel.getByLabel("選參考圖").setInputFiles("public/assets/samples/cafe.jpg");
   await expect(panel.getByRole("region", { name: "參考圖片" })).toContainText("不會保存");
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   await expect.poll(() => sent.length).toBe(1);
   // A re-encoded, small JPEG: no EXIF segment, well under the size limit.
   expect(sent[0].images).toHaveLength(1);
@@ -73,7 +75,8 @@ test("AI build sends a small drawing of the draft only to a back end that asks f
   await page.getByRole("button", { name: "描述網站" }).click();
   const panel = page.getByRole("dialog", { name: "描述你的網站" });
   await expect(panel).toContainText("縮小的草稿圖");
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   await expect.poll(() => bodies.length).toBe(1);
   const snap = bodies[0].snapshot!;
   expect(snap).toMatch(/^data:image\/jpeg;base64,/);
@@ -103,7 +106,8 @@ test("a back end that does not ask for the drawing never gets one", async ({ pag
   const bodies: string[] = [];
   page.on("request", (r) => { if (r.method() === "POST" && /\/api\/generation$/.test(r.url())) bodies.push(r.postData() ?? ""); });
   const panel = await openBrief(page);
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   await expect.poll(() => bodies.length).toBe(1);
   expect(bodies[0]).not.toContain("snapshot");
 });
@@ -133,7 +137,8 @@ test("up to five reference pictures: thumbnails, remove one, and all five in one
   await expect(ref.getByRole("button", { name: "＋ 再加一張（4/5）" })).toBeVisible();
   await panel.getByLabel("選參考圖").setInputFiles(photos[5]);
   await expect(ref.getByRole("list", { name: "已選的參考圖" }).getByRole("listitem")).toHaveCount(5);
-  await panel.getByRole("button", { name: "用這個描述生成網站" }).click();
+  await panel.getByRole("button", { name: "查看生成計畫" }).click();
+  await panel.getByRole("button", { name: "確認生成" }).click();
   await expect.poll(() => sent.length).toBe(1);
   expect(sent[0].images).toHaveLength(5);
   for (const image of sent[0].images!) expect(Buffer.from(image.split(",")[1], "base64").subarray(0, 2).toString("hex")).toBe("ffd8");

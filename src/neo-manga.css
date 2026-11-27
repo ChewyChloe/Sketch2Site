@@ -1099,3 +1099,7 @@ body{background:var(--neo-cream)}
 .motion-tune[aria-expanded=true] { background: #0d0e11; color: #10e560; }
 .motion-tune-fields { display: grid; gap: 8px; margin: 8px 0; padding: 10px 12px; border: 1.5px dashed #0d0e11; border-radius: 14px; background: #fbfaf6; }
 .motion-tune-fields small { color: #55534d; }
+
+.brief-panel [aria-label="生成前需求摘要"] dl { display: grid; grid-template-columns: minmax(5em, auto) minmax(0, 1fr); gap: 8px 12px; }
+.brief-panel [aria-label="生成前需求摘要"] dt { font-weight: 700; }
+.brief-panel [aria-label="生成前需求摘要"] dd { margin: 0; overflow-wrap: anywhere; }
