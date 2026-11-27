@@ -1,3 +1,4 @@
+import SectionLayoutPicker from "./SectionLayoutPicker";
 import { checkRendered, checkSite, type SiteIssue } from "./siteCheck";
 import { SiteCheckPanel } from "./SiteCheckPanel";
 import { copyStyle, dropPlacement, movePatch, nudge, pastePatches, sameKind, type CopiedStyle } from "./siteMove";
@@ -1273,6 +1274,10 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                         setNotice(next[key] ? `這一區的${lockLabels[key]}已鎖定，AI 不會改動它` : `已解除這一區的${lockLabels[key]}鎖定`);
                     };
                     return (
+                      <>
+                      <SectionLayoutPicker key={section.id} section={section}
+                        positionMode={!!(page.sections.some(item => item.id === section.id) ? page.draftLayout : page.subpages?.find(item => item.sections.some(s => s.id === section.id))?.draftLayout)}
+                        onChange={layout => patch([{ operation: "set-section-layout", targetId: section.id, payload: layout }], section.id)} />
                       <div className="section-lock" role="group" aria-label="鎖定這一區">
                         <strong>鎖定這一區</strong>
                         <div>
@@ -1285,6 +1290,7 @@ options={[{ value: "1", label: "100%" }, { value: "0.75", label: "75%" }, { valu
                         </div>
                         <small>鎖住的部分，AI 修改和重新生成都不會動到；你自己仍然可以改</small>
                       </div>
+                      </>
                     );
                   })()}
                   <form

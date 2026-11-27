@@ -140,3 +140,15 @@ it('retains exact validated source geometry unless the author explicitly chooses
 });
 
 it('preserve layout does not promote author body text into an unexpected heading',()=>{const canvas=generationFixtures()[0],intent=prepareIntent(canvas),layout=mockLayout(intent),text=canvas.nodes.find(n=>n.type==='text')!;layout.sections.flatMap(s=>s.items).find(n=>n.sourceId===text.id)!.presentation='heading';const result=materialize(canvas,layout);expect(indexNodes(result).get(text.id)!.type).toBe('paragraph');});
+
+it("materializes an explicit section arrangement without changing source content or motion", () => {
+  const source = structuredClone(fixtures[0]);
+  source.metadata.layoutMode = "reflow";
+  const plan = mockLayout(prepareIntent(source));
+  const anchor = plan.sections[0].items[0].sourceId;
+  const sectionLayout = { arrangement: { mode: "stack", gap: "small" }, fullBleed: true } as const;
+  source.metadata.siteOverrides = { items: { ["layout:" + anchor]: { sectionLayout } } };
+  const page = materialize(source, plan);
+  expect(page.sections[0].sectionLayout).toEqual(sectionLayout);
+  expect(() => verifyPreservation(source, page)).not.toThrow();
+});

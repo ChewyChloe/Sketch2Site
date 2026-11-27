@@ -1,3 +1,4 @@
+import { requestedSectionLayout } from "./sectionLayout";
 import { cleanDirections, DirectionSchema } from "./directions";
 import { toJSONSchema, z } from "zod";
 import type { CanvasSpec } from "./spec";
@@ -49,7 +50,9 @@ export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canva
     ...(canvas.metadata.brief ? { brief: canvas.metadata.brief } : {}),
     constraints: canvas.constraints,
     sections: plan.sections.map((s, i) => {
-      const all = [...s.intro, ...s.items, ...s.outro, ...s.aside].map((it) => byId.get(it.sourceId)).filter(Boolean) as CanvasSpec["nodes"];
+      const ids = [...s.intro, ...s.items, ...s.outro, ...s.aside].map(item => item.sourceId);
+      const all = ids.map(id => byId.get(id)).filter(Boolean) as CanvasSpec["nodes"];
+      const userLayout = canvas.metadata.layoutMode === "reflow" ? requestedSectionLayout(canvas.metadata.siteOverrides?.items, ids) : undefined;
       const counts: Record<string, number> = {};
       for (const n of all) counts[n.type] = (counts[n.type] ?? 0) + 1;
       const heading = all.find((n) => n.type === "heading");
@@ -65,6 +68,7 @@ export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canva
         ...(prices ? { cardsWithNumbers: prices } : {}),
         ...(questions ? { questionCards: questions } : {}),
         layout: s.layout,
+        ...(userLayout ? { userLayout } : {}),
         columns: s.columns,
         effects: [...new Set(all.flatMap((n) => n.effects.map((e) => e.presetId)))].slice(0, 6),
       };
@@ -73,7 +77,7 @@ export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canva
 }
 
 /** Applies a checked refinement to the local plan; anything that does not fit is ignored. */
-export function applyRefine(plan: LayoutV2, refine: Refine): LayoutV2 {
+export function applyRefine(plan: LayoutV2, refine: Refine, canvas?: CanvasSpec): LayoutV2 {
   const sections = plan.sections.map((s) => ({ ...s }));
   for (const r of refine.sections) {
     const s = sections[r.i];
@@ -82,6 +86,8 @@ export function applyRefine(plan: LayoutV2, refine: Refine): LayoutV2 {
     // The footer is decided by the author's © line, never by the model.
     if (r.role !== "hero" && s.role !== "hero" && !["footer", "menu"].includes(s.role) && !["footer", "menu"].includes(r.role)) s.role = r.role;
     s.tone = s.role === "hero" ? s.tone : r.tone;
+    const ids = [...s.intro, ...s.items, ...s.outro, ...s.aside].map(item => item.sourceId);
+    if (canvas?.metadata.layoutMode === "reflow" && requestedSectionLayout(canvas.metadata.siteOverrides?.items, ids)?.arrangement) continue;
     // A grid needs repeated items; FAQs and contact forms always read as a list (paid test finding).
     if (r.layout === "grid" && s.items.length >= 2 && s.role !== "faq" && s.role !== "contact") {
       s.layout = "grid";

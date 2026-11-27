@@ -62,6 +62,8 @@ test("downloaded React project installs and builds independently; runtime stays 
   );
   await openWebsiteWorkspace(page);
   const input = structuredClone(demoPage);
+  const layoutSection = input.sections[0];
+  layoutSection.sectionLayout = { arrangement: { mode: "masonry", columns: 2, gap: "medium", mobile: "stack" }, fullBleed: true };
   const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...thirdFixture().sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
   const replaceImage = (nodes: typeof input.sections) =>
     nodes.forEach((n) => {
@@ -170,6 +172,9 @@ z.extractall(root)
       "把想法，排成一個頁面。",
     );
     expect(await standalone.title()).toBe(input.metadata.title);
+    const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
+    await expect(exportedLayout).toHaveCSS("column-count", "2");
+    await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");
     expect(
       await standalone.evaluate(() => Boolean((window as any).exportPwned)),
     ).toBe(false);
@@ -227,10 +232,11 @@ z.extractall(root)
       fullPage: true,
     });
     await standalone.setViewportSize({ width: 375, height: 1000 });
+    await expect(exportedLayout).toHaveCSS("column-count", "1");
     for (const columns of await standalone
       .locator(".page-grid")
       .evaluateAll((els) =>
-        els.map((el) => getComputedStyle(el).gridTemplateColumns),
+        els.map(el => getComputedStyle(el)).filter(css => css.display === "grid").map(css => css.gridTemplateColumns),
       ))
       expect(columns.trim().split(/\s+/)).toHaveLength(1);
     expect(

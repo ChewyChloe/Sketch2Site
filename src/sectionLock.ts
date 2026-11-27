@@ -22,11 +22,12 @@ const textOf = (n: PageNode) => {
   return words + data;
 };
 const assetsOf = (n: PageNode) => (n.type === "image" ? n.src ?? "" : n.media && "images" in n.media ? n.media.images.join("|") : "");
-/** Everything about a node except its words: type, structure, style, frame, media settings, motion. */
+/** Structural and geometric fields protected by a layout lock. */
 const shapeOf = (n: PageNode): unknown => {
-  const { content: _c, children, media, src: _s, alt: _a, lock: _l, ...rest } = n;
+  const { content: _c, children, media, src: _s, alt: _a, lock: _l, effects: _e, text: _t, style, ...rest } = n;
+  const { tone: _tone, ...geometry } = style;
   const m = media ? (media.kind === "chart" ? { kind: "chart", chart: media.chart } : media.kind === "table" ? { kind: "table", header: media.header } : "images" in media ? { ...media, images: media.images.length } : media) : undefined;
-  return { ...rest, ...(m ? { media: m } : {}), children: children?.map(shapeOf) };
+  return { ...rest, style: geometry, ...(m ? { media: m } : {}), children: children?.map(shapeOf) };
 };
 
 /** Why `after` breaks `before`'s lock, or null when it keeps every locked part. */
@@ -66,7 +67,25 @@ export function carryLocks(current: PageSpec | undefined, next: PageSpec): PageS
       const ids = new Set(walk(s).map((n) => n.id));
       const old = locked.find((o) => walk(o).some((n) => n.id !== o.id && ids.has(n.id)));
       if (!old) return s;
-      if (old.lock!.layout) return { ...old, id: s.id };
+      if (old.lock!.layout) {
+        const incoming = new Map(walk(s).map(n => [n.id, n]));
+        incoming.set(old.id, s);
+        const carryLayout = (n: PageNode): PageNode => {
+          const fresh = incoming.get(n.id);
+          const nextId = n.id === old.id ? s.id : n.id;
+          return {
+            ...n, id: nextId,
+            ...(fresh?.type === n.type ? {
+              style: { ...n.style, tone: fresh.style.tone },
+              ...(fresh.text ? { text: fresh.text } : {}),
+            } : {}),
+            effects: (fresh?.type === n.type && fresh.effects.length ? fresh.effects : n.effects)
+              .map(effect => ({ ...effect, targetId: nextId })),
+            ...(n.children ? { children: n.children.map(carryLayout) } : {}),
+          };
+        };
+        return carryLayout(old);
+      }
       const oldNodes = new Map(walk(old).map((n) => [n.id, n]));
       const copy = (n: PageNode): PageNode => {
         const o = oldNodes.get(n.id);

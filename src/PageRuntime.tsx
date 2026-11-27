@@ -1,3 +1,4 @@
+import { layoutHost, type SectionArrangement } from "./sectionLayout";
 import { Depth3D } from "./Depth3D";
 import {useCinematicMotion,cinematicTextIds} from "./CinematicMotion";
 import {CinematicText} from "./CinematicText";
@@ -310,7 +311,11 @@ export const componentRegistry: Record<PageNode["type"], RegistryEntry> = {
   form: { tag: "div", className: "page-form" },
   media: { tag: "div", className: "page-media" },
 };
-export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
+type LayoutTarget = { id: string; arrangement: SectionArrangement };
+export const RenderNode = memo(function NodeView({ node, layout }: { node: PageNode; layout?: LayoutTarget }) {
+  const sectionArrangement = node.sectionLayout?.arrangement;
+  const target = sectionArrangement ? { id: layoutHost(node).id, arrangement: sectionArrangement } : layout;
+  const arrangement = target?.id === node.id ? target.arrangement : undefined;
   const ref = useRef<HTMLElement>(null);
   useAnimations(node, ref);
   useExtendedMotion(node,ref);
@@ -340,13 +345,21 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
   const advancedText=node.effects.find(e=>advancedTextIds.includes(e.presetId));
   const cinematicText=node.effects.find(e=>cinematicTextIds.includes(e.presetId)),story=node.effects.find(e=>storyGroupIds.includes(e.presetId)),shuffle=node.effects.find(e=>e.presetId==="card-stack-shuffle"),sequence=node.effects.find(e=>e.presetId==="scroll-image-sequence");
   const extras=useContext(PageExtras), thumbnail=useContext(ThumbnailRender);
-  const kids=node.children?.map(child=><RenderNode key={child.id} node={child}/>);
+  const kids=node.children?.map(child=><RenderNode key={child.id} node={child} layout={target}/>);
   const children=node.type==="section"&&node.role==="pricing"&&extras.pricingBuilder?<>{kids}<PricingBuilder section={node}/></>:node.type==="section"&&node.role==="gallery"&&extras.galleryViews&&!isLogoWall(node)?<GalleryViews>{kids}</GalleryViews>:kids;
   const style = {
     "--breathing-cycle":(breathing?motionNumber(breathing,"cycleMs"):3200)+"ms",
     "--breathing-spread":(breathing?motionNumber(breathing,"spreadPx"):12)+"px",
     "--breathing-strength":breathing?.validatedControls.intensity==="medium"?"30%":"15%",
     "--page-columns": node.columns ?? 1,
+    ...(arrangement && {
+      "--section-gap": { small: "12px", medium: "24px", large: "40px" }[arrangement.gap],
+      "--section-columns": "columns" in arrangement ? arrangement.columns : 2,
+      ...(arrangement.mode === "bento" && { "--bento-span": arrangement.columns === 3 ? 2 : 1 }),
+      ...(arrangement.mode === "split" && {
+        "--section-split": { equal: "minmax(0, 1fr) minmax(0, 1fr)", left: "minmax(0, 2fr) minmax(0, 1fr)", right: "minmax(0, 1fr) minmax(0, 2fr)" }[arrangement.ratio],
+      }),
+    }),
     "--effect-shadow": lift?.validatedControls.shadowIntensity==="none"?"none":lift?.validatedControls.shadowIntensity==="medium"?"0 8px 18px rgb(0 0 0 / .16)":"0 4px 10px rgb(0 0 0 / .08)",
     "--glow-spread": (glow?motionNumber(glow,"spreadPx",4):4)+"px",
     "--glow-strength": glow?.validatedControls.intensity==="medium"?"35%":"18%",
@@ -361,6 +374,9 @@ export const RenderNode = memo(function NodeView({ node }: { node: PageNode }) {
       data-page-id={thumbnail ? undefined : node.id}
       data-locked={!thumbnail && node.lock ? (["text", "assets", "layout"] as const).filter((k) => node.lock![k]).join(" ") || undefined : undefined}
       data-page-type={node.type}
+      data-section-arrangement={arrangement?.mode}
+      data-section-mobile={arrangement && "mobile" in arrangement ? arrangement.mobile : undefined}
+      data-section-bleed={node.sectionLayout?.fullBleed ? "" : undefined}
       data-text-style={node.text ? "" : undefined}
       data-pause-hover={breathing?.validatedControls.pauseOnHover===true}
       tabIndex={(lift||glow)&&node.type!=="button"?0:undefined}
@@ -670,8 +686,11 @@ export function PageRuntime({
           data-theme={page.theme}
           data-art={page.art?.principles.join(" ") || undefined}
           data-concept={page.concept}
-          data-compose={page.concept ? undefined : page.composition}
-          data-parallax={page.concept && parallaxConcepts.includes(page.concept) ? "" : undefined}
+          data-layout-theme={page.designControl?.layoutTheme === undefined ? page.theme : page.designControl.layoutTheme ?? undefined}
+          data-layout-concept={page.designControl?.composition ? undefined : page.designControl?.layoutConcept === undefined ? page.concept : page.designControl.layoutConcept ?? undefined}
+          data-explicit-composition={page.designControl?.composition ? "" : undefined}
+          data-compose={page.designControl?.composition ? page.composition ?? "tidy" : (page.designControl?.layoutConcept === undefined ? page.concept : page.designControl.layoutConcept) ? undefined : page.composition}
+          data-parallax={(page.designControl?.conceptMotion ?? (page.concept && parallaxConcepts.includes(page.concept))) ? "" : undefined}
           data-branded={page.brand?.primary ? "" : undefined}
           lang={page.metadata.language}
           aria-label={page.metadata.title}

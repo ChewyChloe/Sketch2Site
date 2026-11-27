@@ -1,3 +1,4 @@
+import { sectionLayoutIssue } from "./sectionLayout";
 import { z } from "zod";
 import { createMotion, combinationReason, targetReason, type MotionId } from "./motion";
 import { imageSource } from "./assetRef";
@@ -234,6 +235,7 @@ export function fromCompact(page: PageSpec, sectionId: string, input: CompactNod
     if (c.type === "section" && (c.role ?? same?.role)) node.role = c.role ?? same?.role;
     // The lock stays exactly as the author set it; the model cannot add or remove one.
     if (top && section.lock) node.lock = section.lock;
+    if (top && section.sectionLayout) node.sectionLayout = section.sectionLayout;
     const container = ["section", "container", "card", "stack", "grid"].includes(c.type);
     if (container) node.children = (c.children ?? []).map((k) => build(k, depth + 1, false));
     if (c.type === "grid") node.columns = c.columns ?? same?.columns ?? 2;
@@ -289,6 +291,7 @@ export function fromCompact(page: PageSpec, sectionId: string, input: CompactNod
     return node as unknown as PageNode;
   };
   const built = build(input, 0, true);
+  if (section.sectionLayout && sectionLayoutIssue(built, section.sectionLayout)) fail("incompatible section layout");
   const parsed = PageNodeSchema.safeParse(built);
   if (!parsed.success) fail("schema: " + (parsed.error.issues[0]?.message ?? ""));
   const locked = lockViolation(section, parsed.data!);

@@ -1,4 +1,5 @@
 import { allSections, PageSchema, type PageNode, type PageSpec } from "./pageSpec";
+import { sectionSourceIds } from "./sectionLayout";
 import { diffPages, indexNodes } from "./patch";
 import type { MotionInstance } from "./motion";
 import type { CanvasSpec } from "./spec";
@@ -87,6 +88,14 @@ export function syncSiteChange(draft: CanvasSpec, before: PageSpec, after: PageS
       if (own) setNode(node.id, { effects: node.effects as MotionInstance[] });
       else setItem(node, { effects: node.effects as MotionInstance[] });
     } else if (c.property === "level" && node.level) setItem(node, { level: node.level as 1 | 2 | 3 });
+    else if (c.property === "sectionLayout") {
+      const anchor = sectionSourceIds(node, draftIds).next().value;
+      if (!anchor) continue;
+      const key = "layout:" + anchor;
+      if (node.sectionLayout) items[key] = { sectionLayout: node.sectionLayout };
+      else delete items[key];
+      touched = true;
+    }
     else if (c.property === "columns" && node.columns) setItem(node, { columns: node.columns as 1 | 2 | 3 });
     else if (c.property.startsWith("style.")) {
       const k = c.property.slice(6) as (typeof styleKeys)[number];

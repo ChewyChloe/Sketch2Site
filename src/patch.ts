@@ -3,6 +3,7 @@ import { imageSource } from "./assetRef";
 import { z } from "zod";
 import {
   themeIds,
+  parallaxConcepts,
   ImageLookSchema,
   TextStyleSchema,
   allSections,
@@ -16,6 +17,7 @@ import {
   type PageSpec,
   type PageNode,
 } from "./pageSpec";
+import { SectionLayoutSchema, sectionLayoutIssue } from "./sectionLayout";
 import { lockViolation, SectionLockSchema } from "./sectionLock";
 import {
   commitHistory,
@@ -51,6 +53,7 @@ const stylePatch = z
   .strict()
   .refine((v) => Object.keys(v).length > 0);
 export const PatchSchema = z.discriminatedUnion("operation", [
+  z.object({ operation: z.literal("set-section-layout"), targetId, payload: SectionLayoutSchema }).strict(),
   z
     .object({
       operation: z.literal("set-text"),
@@ -239,6 +242,7 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
       structureChanged = true;
     for (const key of [
       "lock",
+      "sectionLayout",
       "content",
       "level",
       "href",
@@ -299,6 +303,8 @@ export function diffPages(before: PageSpec, after: PageSpec): PageDiff {
   }
   if ((before.theme ?? "classic") !== (after.theme ?? "classic") && after.sections[0])
     changes.push({ targetId: after.sections[0].id, property: "theme", before: before.theme ?? "classic", after: after.theme ?? "classic" });
+  if (!equal(before.designControl, after.designControl) && after.sections[0])
+    changes.push({ targetId: after.sections[0].id, property: "designControl", before: before.designControl, after: after.designControl });
   return {
     changes,
     changedIds: [...new Set(changes.map((c) => c.targetId))],
@@ -331,10 +337,12 @@ function authorized(patch: Patch, change: Change): boolean {
     case "set-text":
       return change.property === "content";
     case "set-theme":
-      return change.property === "theme";
+      return change.property === "theme" || change.property === "designControl";
     case "replace-section":
     case "move-node":
       return false; // their changes are checked as a whole in validateScope
+    case "set-section-layout":
+      return change.property === "sectionLayout";
     case "set-lock":
       return change.property === "lock";
     case "set-property":
@@ -400,7 +408,8 @@ function sameNodesMoved(before: PageSpec, after: PageSpec, moved: Set<string>) {
   const pa = placements(before), pb = placements(after);
   for (const [id, where] of pa) if (!moved.has(id) && pb.get(id) !== where) return false;
   // The page itself (title, theme, pages) is untouched.
-  return !diffPages(before, after).pageChanged && (before.theme ?? "classic") === (after.theme ?? "classic");
+  return !diffPages(before, after).pageChanged && (before.theme ?? "classic") === (after.theme ?? "classic")
+    && JSON.stringify(before.designControl) === JSON.stringify(after.designControl);
 }
 const containerTypes = new Set(["section", "container", "stack", "grid", "card"]);
 /** Moves one node; null when the move is not allowed. */
@@ -530,6 +539,11 @@ function updateNode(node: PageNode, p: Patch): PageNode | PatchError {
           return Object.keys(value).length ? { ...node, look: value } : (({ look: _l, ...rest }) => (void _l, rest))(node);
       }
     }
+    case "set-section-layout":
+      if (node.type !== "section") return "PROPERTY_NOT_ALLOWED";
+      if (node.lock?.layout) return "LOCKED";
+      if (sectionLayoutIssue(node, p.payload)) return "INVALID_PATCH";
+      return { ...node, sectionLayout: p.payload };
     case "set-style":
       return { ...node, style: { ...node.style, ...p.payload } };
     case "attach-effect": {
@@ -596,6 +610,7 @@ export function applyPatchBatch(
       const own = pagePools(original), next = pagePools({ ...candidate, sections: [p.payload.section], subpages: undefined });
       if ([...next.pictures].some((x) => !own.pictures.has(x)) || [...next.links].some((x) => !own.links.has(x))) return fail("SCOPE_VIOLATION");
       // A rewrite may not touch what the author locked, nor change the lock itself.
+      if (JSON.stringify(target.sectionLayout) !== JSON.stringify(p.payload.section.sectionLayout)) return fail("LOCKED");
       if (JSON.stringify(target.lock ?? {}) !== JSON.stringify(p.payload.section.lock ?? {}) || lockViolation(target, p.payload.section)) return fail("LOCKED");
       const swap = (n: PageNode) => (n.id === p.targetId ? p.payload.section : n);
       candidate = { ...candidate, sections: candidate.sections.map(swap), ...(candidate.subpages ? { subpages: candidate.subpages.map((x) => ({ ...x, sections: x.sections.map(swap) })) } : {}) };
@@ -611,8 +626,18 @@ export function applyPatchBatch(
     }
     if (p.operation === "set-theme") {
       if (candidate.sections[0]?.id !== target.id) return fail("PROPERTY_NOT_ALLOWED");
-      candidate = { ...candidate, theme: p.payload.theme };
+      const { designControl, concept, theme } = candidate;
+      candidate = { ...candidate, theme: p.payload.theme, designControl: {
+        ...designControl, style: true,
+        layoutTheme: designControl?.layoutTheme === undefined ? theme ?? null : designControl.layoutTheme,
+        layoutConcept: designControl?.layoutConcept === undefined ? concept ?? null : designControl.layoutConcept,
+        conceptMotion: designControl?.conceptMotion ?? Boolean(concept && parallaxConcepts.includes(concept)),
+      } };
       continue;
+    }
+    if (p.operation === "set-section-layout") {
+      const view = [candidate, ...(candidate.subpages ?? [])].find(view => view.sections.some(section => section.id === target.id));
+      if (!view || view.draftLayout) return fail("PROPERTY_NOT_ALLOWED");
     }
     const updated = updateNode(target, p);
     if (typeof updated === "string") return fail(updated);

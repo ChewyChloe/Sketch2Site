@@ -1,6 +1,7 @@
+import { hasImplicitLayoutLock } from "./sectionLayout";
 import { useEffect, useMemo, useState } from "react";
 import { deleteHabit, readHabits, saveHabit, type Habit } from "./habits";
-import { allSections, conceptIds, conceptText, pickableThemes, themeIds, themeLabels, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
+import { allSections, conceptIds, parallaxConcepts, conceptText, pickableThemes, themeIds, themeLabels, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 import { PageRenderer } from "./PageRenderer";
 import { ThumbnailRender } from "./PageRuntime";
 import type { CandidateResult } from "./demo";
@@ -43,6 +44,9 @@ export default function CandidatePreview({
   const setMobile = (v: boolean) => (onMobile ? onMobile(v) : setMobileState(v));
   // Theme is a reviewed token set; switching it never touches content.
   const [concept, setConcept] = useState<ConceptId | undefined>(candidate.page.concept);
+  const [control, setControl] = useState(candidate.page.designControl);
+  const implicitLayoutLock = hasImplicitLayoutLock(candidate.page);
+  const preserveMotion = () => control?.conceptMotion ?? Boolean(concept && parallaxConcepts.includes(concept));
   const [extras, setExtras] = useState(candidate.page.extras ?? {});
   const [composition, setComposition] = useState(candidate.page.composition);
   // Diverge, then converge: three directions side by side, then three variants of the chosen one.
@@ -62,26 +66,54 @@ export default function CandidatePreview({
   const current = { name: "", why: "", theme: theme === "sunrise" ? ("classic" as const) : theme, concept: concept ?? ("none" as const), composition: composition === "editorial" ? ("editorial" as const) : ("tidy" as const) };
   const variants = variantsFor(current);
   const page = useMemo(() => {
-    const base = { ...candidate.page, theme, concept, composition, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) };
+    const base = { ...candidate.page, theme, concept, composition, designControl: control, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) };
     const chosen = habitVariant?.variant ?? (variant ? variants[variant] : undefined);
     return chosen ? applyDirection(base, current, chosen) : base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candidate.page, theme, concept, composition, extras, variant, habitVariant]);
+  }, [candidate.page, theme, concept, composition, control, extras, variant, habitVariant]);
   const thumbs = useMemo(() => directions.map((d) => firstTwo(applyDirection(candidate.page, d, undefined))), [directions, candidate.page]);
+  const keepLockedGeometry = () => {
+    if (implicitLayoutLock) setControl({
+      ...control,
+      layoutConcept: control?.layoutConcept === undefined ? concept ?? null : control.layoutConcept,
+      layoutTheme: control?.layoutTheme === undefined ? theme : control.layoutTheme,
+    });
+  };
   const chooseDirection = (i: number) => {
     const d = directions[i];
-    setTheme(d.theme);
-    setConcept(d.concept === "none" ? undefined : d.concept);
-    setComposition(d.composition === "editorial" ? "editorial" : undefined);
+    keepLockedGeometry();
+    if (!control?.style) {
+      setTheme(d.theme);
+      setConcept(d.concept === "none" ? undefined : d.concept);
+    }
+    if (!control?.composition && !implicitLayoutLock) setComposition(d.composition === "editorial" ? "editorial" : undefined);
     setVariant(0);
     setHabitVariant(null);
   };
   const applyHabit = (h: Habit) => {
-    setTheme(h.direction.theme);
-    setConcept(h.direction.concept === "none" ? undefined : h.direction.concept);
-    setComposition(h.direction.composition === "editorial" ? "editorial" : undefined);
+    keepLockedGeometry();
+    if (!control?.style) {
+      setTheme(h.direction.theme);
+      setConcept(h.direction.concept === "none" ? undefined : h.direction.concept);
+    }
+    if (!control?.composition && !implicitLayoutLock) setComposition(h.direction.composition === "editorial" ? "editorial" : undefined);
     setVariant(-1);
-    setHabitVariant({ id: h.id, variant: { label: h.variantLabel, brand: h.variant } });
+    setHabitVariant(control?.style ? null : { id: h.id, variant: { label: h.variantLabel, brand: h.variant } });
+  };
+  const pickComposition = (value: "editorial" | undefined) => {
+    setComposition(value);
+    setControl({ ...control, composition: true });
+  };
+  const pickStyle = (value: { theme?: ThemeId; concept?: ConceptId }) => {
+    setControl({
+      ...control, style: true, conceptMotion: preserveMotion(),
+      layoutConcept: control?.layoutConcept === undefined ? concept ?? null : control.layoutConcept,
+      layoutTheme: control?.layoutTheme === undefined ? theme : control.layoutTheme,
+    });
+    if ("theme" in value && value.theme) setTheme(value.theme);
+    if ("concept" in value) setConcept(value.concept);
+    setVariant(0);
+    setHabitVariant(null);
   };
   const currentName = directions.find((d) => sameDirection(d, theme, concept, composition))?.name ?? "我的風格";
   const keepHabit = (name: string) => {
@@ -165,14 +197,15 @@ export default function CandidatePreview({
         <summary>細調：構圖、設計概念、主題</summary>
       <div className="theme-picker concept-picker" role="radiogroup" aria-label="構圖">
         <span>構圖</span>
-        <button role="radio" aria-checked={!composition} className="concept-chip" title="每一段整齊排好" onClick={() => setComposition(undefined)}>整齊</button>
-        <button role="radio" aria-checked={composition === "editorial"} className="concept-chip" title="字壓在照片上、照片錯落、每一段排法不同" onClick={() => setComposition("editorial")}>編排</button>
+        {implicitLayoutLock && <small>已有區塊鎖定原版面，可到區塊屬性逐區調整。</small>}
+        <button role="radio" aria-checked={!composition} disabled={implicitLayoutLock} className="concept-chip" title="每一段整齊排好" onClick={() => pickComposition(undefined)}>整齊</button>
+        <button role="radio" aria-checked={composition === "editorial"} disabled={implicitLayoutLock} className="concept-chip" title="字壓在照片上、照片錯落、每一段排法不同" onClick={() => pickComposition("editorial")}>編排</button>
       </div>
       <div className="theme-picker concept-picker" role="radiogroup" aria-label="設計概念">
         <span>設計概念</span>
-        <button role="radio" aria-checked={!concept} className="concept-chip" onClick={() => setConcept(undefined)}>不用概念</button>
+        <button role="radio" aria-checked={!concept} className="concept-chip" onClick={() => pickStyle({ concept: undefined })}>不用概念</button>
         {conceptIds.map((id) => (
-          <button key={id} role="radio" aria-checked={concept === id} className="concept-chip" title={conceptText[id].idea} onClick={() => setConcept(id)}>
+          <button key={id} role="radio" aria-checked={concept === id} className="concept-chip" title={conceptText[id].idea} onClick={() => pickStyle({ concept: id })}>
             {conceptText[id].name}
           </button>
         ))}
@@ -185,13 +218,17 @@ export default function CandidatePreview({
             role="radio"
             aria-checked={theme === id}
             className={"theme-swatch theme-swatch-" + id}
-            onClick={() => setTheme(id)}
+            onClick={() => pickStyle({ theme: id })}
           >
             <i aria-hidden="true" />
             {themeLabels[id]}
           </button>
         ))}
       </div>
+      <label className="field">
+        <span><input type="checkbox" checked={preserveMotion()}
+          onChange={event => setControl({ ...control, conceptMotion: event.target.checked })} /> 捲動視差</span>
+      </label>
       </details>
       {stale && (
         <p role="alert" className="preview-error">

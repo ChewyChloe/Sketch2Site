@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { themeIds } from "./pageSpec";
+import { SectionLayoutSchema } from "./sectionLayout";
 import { MotionSchema } from "./motion";
 
 // Site overrides kept in the draft: layout tweaks made on the generated site,
@@ -25,6 +26,7 @@ export const SiteOverridesSchema = z
             level: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
             columns: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
             style: StyleOverride.optional(),
+            sectionLayout: SectionLayoutSchema.optional(),
             effects: z.array(MotionSchema).max(3).optional(),
           })
           .strict(),

@@ -389,3 +389,11 @@
 .preview-scroll > .preview-frame { margin-top: var(--s4); }
 /* The rows above the live preview keep their height; the whole area scrolls instead of squeezing them. */
 .preview-workspace:has(> .direction-compare) > * { flex-shrink: 0; }
+
+.section-layout-picker { padding: 12px; border-bottom: 1px solid var(--line); }
+.section-layout-picker > summary { cursor: pointer; font-weight: 650; }
+.section-layout-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-block: 12px; }
+.section-layout-options button { display: grid; justify-items: start; gap: 4px; text-align: start; min-width: 0; }
+.section-layout-options button[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: -2px; }
+.section-layout-options svg { width: min(100%, 74px); fill: currentColor; opacity: .65; }
+.section-layout-picker > label { display: block; margin-block: 8px; }

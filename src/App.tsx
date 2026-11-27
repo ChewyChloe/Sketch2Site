@@ -1,3 +1,4 @@
+import { hasImplicitLayoutLock } from "./sectionLayout";
 import {encodeNodes,decodeNodes,cloneNodes,deleteNodes,groupSelection,translateSelection,formatOf,applyFormat,type NodeFormat} from "./canvasEditing";
 import {MotionControlsFields} from "./MotionControls";
 import type {MotionControls} from "./motionCatalog";
@@ -328,7 +329,23 @@ export default function App() {
       result = { ...result, page: applySiteOverrides(result.page, spec) };
       // Sections the author locked keep their locked parts on the new version.
       const site = previewRef.current?.site();
+      const control = site?.designControl;
+      if (site) {
+        const keepGeometry = hasImplicitLayoutLock(site);
+        if (control || keepGeometry) result = { ...result, page: {
+          ...result.page, designControl: {
+            ...control,
+            ...(keepGeometry ? {
+              layoutTheme: control?.layoutTheme === undefined ? site.theme ?? null : control.layoutTheme,
+              layoutConcept: control?.layoutConcept === undefined ? site.concept ?? null : control.layoutConcept,
+            } : {}),
+          },
+          ...(control?.style ? { theme: site.theme, concept: site.concept, brand: site.brand } : {}),
+          ...(control?.composition || keepGeometry ? { composition: site.composition } : {}),
+        } };
+      }
       const carried = site ? PageSchema.safeParse(carryLocks(site, result.page)) : null;
+      if (carried && !carried.success) throw new Error("Locked sections could not be carried");
       if (carried?.success) result = { ...result, page: carried.data };
       const latest = previewRef.current?.target();
       if (

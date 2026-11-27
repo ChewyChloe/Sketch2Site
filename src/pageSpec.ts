@@ -1,4 +1,5 @@
 import { imageSource } from "./assetRef";
+import { SectionLayoutSchema, sectionLayoutIssue, type SectionLayout } from "./sectionLayout";
 import { SectionLockSchema, type SectionLock } from "./sectionLock";
 import { z } from "zod";
 import { motionIds, MotionSchema, bindMotionInput, compatibleMotion, combinationReason, targetReason, withinMotionBudget, type MotionInstance } from "./motion";
@@ -442,6 +443,7 @@ export type PageNode = {
   children?: PageNode[];
   /** Sections only: parts the author locked (see sectionLock.ts). */
   lock?: SectionLock;
+  sectionLayout?: SectionLayout;
 };
 export function effectCompatible(
   node: PageNode,
@@ -475,6 +477,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
         type: z.literal("section"),
         role: z.enum(sectionRoles).optional(),
         lock: SectionLockSchema.optional(),
+        sectionLayout: SectionLayoutSchema.optional(),
         children: z.array(PageNodeSchema).max(100),
       })
       .strict(),
@@ -619,6 +622,7 @@ const PageObject = z
     concept: z.enum(conceptIds).optional(),
     // Editorial composition: each section gets its own arrangement instead of the tidy stack.
     composition: z.enum(["editorial"]).optional(),
+    designControl: z.object({ composition: z.literal(true).optional(), style: z.literal(true).optional(), conceptMotion: z.boolean().optional(), layoutConcept: z.enum(conceptIds).nullable().optional(), layoutTheme: z.enum(themeIds).nullable().optional() }).strict().optional(),
     // Interactive extras the author switched on: a pricing builder and a gallery view switch.
     extras: z.object({ pricingBuilder: z.boolean().optional(), galleryViews: z.boolean().optional() }).strict().optional(),
     brand: BrandSchema.optional(),
@@ -645,6 +649,8 @@ const PageObject = z
         ctx.addIssue({ code: "custom", message: "元件 ID 重複" });
       ids.add(n.id);
       motions.push(...n.effects);
+      const layoutIssue = n.sectionLayout && sectionLayoutIssue(n, n.sectionLayout);
+      if (layoutIssue) ctx.addIssue({ code: "custom", path: ["sectionLayout"], message: layoutIssue });
       if (n.effects.some((e) => !compatibleMotion(n, e)) || combinationReason(n.effects))
         ctx.addIssue({
           code: "custom",

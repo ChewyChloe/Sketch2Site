@@ -393,3 +393,17 @@ describe("ID-scoped atomic patch engine", () => {
     expect(validateScope(original, after, [])).toBe(false);
   });
 });
+
+it("edits only section layout and enforces layout lock independently of theme", () => {
+  const state = make();
+  const section = state.history.present.sections[0];
+  const layout = { arrangement: { mode: "split", ratio: "left", gap: "large" }, fullBleed: true };
+  const setLayout = { operation: "set-section-layout", targetId: section.id, payload: layout };
+  const updated = success(state, [setLayout]).state;
+  expect(updated.history.present.sections[0]).toEqual({ ...section, sectionLayout: layout });
+  expect(travelPage(updated, "undo").history.present).toEqual(state.history.present);
+  const locked = success(updated, [{ operation: "set-lock", targetId: section.id, payload: { lock: { layout: true } } }]).state;
+  expect(applyPatchBatch(locked, batch(locked, [{ ...setLayout, payload: { ...layout, fullBleed: false } }]))).toMatchObject({ ok: false, code: "LOCKED" });
+  const restyled = success(locked, [{ operation: "set-theme", targetId: section.id, payload: { theme: "ocean" } }]).state;
+  expect(restyled.history.present.sections[0]).toEqual(locked.history.present.sections[0]);
+});

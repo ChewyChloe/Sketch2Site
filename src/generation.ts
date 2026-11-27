@@ -1,3 +1,4 @@
+import { requestedSectionLayout, sectionSourceIds, sectionLayoutIssue } from "./sectionLayout";
 import { DirectionSchema } from "./directions";
 import {structuredGroupMotions} from "./motion";
 import { moodThemes, withFocusFirst } from "./brief";
@@ -57,7 +58,7 @@ export const generationMessages: Record<GenerationCode, string> = {
 };
 export class GenerationError extends Error {
   code: GenerationCode;
-  constructor(code: GenerationCode, reason?: "BUTTON_LINK" | "GROUP_EFFECT" | "FORM_ENDPOINT" | "VIDEO_LINK") {
+  constructor(code: GenerationCode, reason?: "BUTTON_LINK" | "GROUP_EFFECT" | "FORM_ENDPOINT" | "VIDEO_LINK" | "SECTION_LAYOUT") {
     super(
       reason === "BUTTON_LINK"
         ? "請先設定每個按鈕的有效連結"
@@ -65,6 +66,8 @@ export class GenerationError extends Error {
         ? "請先幫表單填收件網址（例如 Formspree 的 https 網址）"
         : reason === "VIDEO_LINK"
         ? "請先幫影片貼上 YouTube 或 Vimeo 網址"
+        : reason === "SECTION_LAYOUT"
+        ? "新生成的區塊和原布局或動畫不相容，原版本已保留"
         : reason === "GROUP_EFFECT"
           ? "依序顯示只能用在卡片上"
           : generationMessages[code],
@@ -388,11 +391,20 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
     )
   )
     throw new GenerationError("INVALID_OUTPUT");
+  const layoutOverrides = canvas.metadata.siteOverrides?.items;
+  const finalSections = canvas.metadata.layoutMode === "reflow" && layoutOverrides ? sections.map(section => {
+    const anchors = [...sectionSourceIds(section, seen)].filter(id => layoutOverrides["layout:" + id]?.sectionLayout);
+    if (anchors.length > 1) throw new GenerationError("INVALID_OUTPUT", "SECTION_LAYOUT");
+    const requested = requestedSectionLayout(layoutOverrides, anchors);
+    if (!requested) return section;
+    if (sectionLayoutIssue(section, requested)) throw new GenerationError("INVALID_OUTPUT", "SECTION_LAYOUT");
+    return { ...section, sectionLayout: requested };
+  }) : sections;
   const checked = PageSchema.safeParse({
     schemaVersion: 2,
     metadata: { title: canvas.metadata.name, language: "zh-Hant" },
     ...(canvas.metadata.layoutMode!=='reflow'?{draftLayout:{width:1440,height:canvas.metadata.height,items:canvas.nodes.map(({id,x,y,width,height,zIndex})=>({id,x,y,width,height,zIndex}))}}:{}),
-    sections,
+    sections: finalSections,
     typography: layout.typography,
     ...(layout.version === 1
       ? { styles: layout.theme }

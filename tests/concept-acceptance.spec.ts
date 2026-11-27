@@ -72,7 +72,7 @@ test("all added concepts preserve motion rules, component compatibility and expo
       profiles.add(await frame.evaluate(root => JSON.stringify([
         ...Array.from(root.querySelectorAll(".page-heading,.page-image img,.page-section,.page-grid,.page-button,.page-card"), node => {
           const css = getComputedStyle(node);
-          return [css.fontFamily, css.paddingBlock, css.aspectRatio, css.borderRadius, css.gridTemplateColumns, css.borderStyle, css.boxShadow];
+          return [css.fontFamily, css.paddingBlock, css.aspectRatio, css.borderRadius, css.gridTemplateColumns, css.borderStyle, css.borderBlockStartWidth, css.borderBlockEndWidth, css.fontWeight, css.letterSpacing, css.backgroundColor, css.color, css.boxShadow];
         }),
       ])));
       expect(await source()).toEqual(baseline);

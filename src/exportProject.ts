@@ -8,6 +8,7 @@ import advancedMotionSource from "./AdvancedMotion.tsx?raw";
 import signatureMotionSource from "./SignatureMotion.tsx?raw";
 import referenceMotionSource from "./ReferenceMotion.tsx?raw";
 import referenceMetaSource from "./referenceMotions.ts?raw";
+import sectionLayoutSource from "./sectionLayout.ts?raw";
 import sectionLockSource from "./sectionLock.ts?raw";
 import assetSchema from "./assetRef.ts?raw";
 import { builtInAssets, motionAssetRefs, isLocalAsset } from "./assetRef";
@@ -90,6 +91,7 @@ export async function exportProjectFiles(
     },
     { path: "src/PageRuntime.tsx", content: runtime },
     { path: "src/pageSpec.ts", content: schema },
+    { path: "src/sectionLayout.ts", content: sectionLayoutSource },
     { path: "src/sectionLock.ts", content: sectionLockSource },
     { path: "src/motion.ts", content: motionSource },
     { path: "src/ExtendedMotion.tsx", content: extendedMotionSource },
