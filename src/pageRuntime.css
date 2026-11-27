@@ -1550,33 +1550,33 @@
   --concept-heading: system-ui, sans-serif;
 }
 .rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-main > .page-section:not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { padding-block: var(--concept-row); }
-.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-heading { font-family: var(--concept-heading); }
-.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-paragraph { max-inline-size: var(--concept-copy, none); }
-.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-image:not([data-locked~="assets"]):not([data-locked~="layout"]) img { aspect-ratio: var(--concept-ratio, auto); border-radius: var(--concept-radius); }
+.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-heading:not([data-locked~="layout"] *) { font-family: var(--concept-heading); }
+.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-paragraph:not([data-locked~="layout"] *) { max-inline-size: var(--concept-copy, none); }
+.rendered-page:is([data-concept="swiss"],[data-concept="japanese-minimal"],[data-concept="nordic"],[data-concept="editorial-magazine"],[data-concept="retro-digital"],[data-concept="y2k"],[data-concept="neo-brutalist"],[data-concept="organic"],[data-concept="storybook"],[data-concept="architectural"]) .page-image:not([data-locked~="assets"] *):not([data-locked~="layout"] *):not([data-locked~="assets"]):not([data-locked~="layout"]) img { aspect-ratio: var(--concept-ratio, auto); border-radius: var(--concept-radius); }
 .rendered-page[data-concept="swiss"] { --concept-copy: 48ch; --concept-ratio: 1; }
-.rendered-page[data-concept="swiss"] .page-section { border-block-end: 1px solid currentColor; }
+.rendered-page[data-concept="swiss"] .page-section:not([data-locked~="layout"]) { border-block-end: 1px solid currentColor; }
 .rendered-page[data-concept="japanese-minimal"] { --concept-row: clamp(4rem,10cqi,10rem); --concept-copy: 38ch; --concept-heading: Georgia, serif; --concept-ratio: 3 / 2; }
-.rendered-page[data-concept="japanese-minimal"] .page-image:not([data-locked~="layout"]) { max-inline-size: 68%; margin-inline: auto; }
+.rendered-page[data-concept="japanese-minimal"] .page-image:not([data-locked~="layout"] *):not([data-locked~="layout"]) { max-inline-size: 68%; margin-inline: auto; }
 .rendered-page[data-concept="nordic"] { --concept-radius: 1rem; --concept-row: clamp(3rem,8cqi,8rem); }
-.rendered-page[data-concept="nordic"] .page-card { box-shadow: 0 .5rem 2rem #39312016; }
+.rendered-page[data-concept="nordic"] .page-card:not([data-locked~="layout"] *) { box-shadow: 0 .5rem 2rem #39312016; }
 .rendered-page[data-concept="editorial-magazine"] { --concept-heading: Georgia, serif; --concept-copy: 44ch; --concept-ratio: 3 / 4; }
-.rendered-page[data-concept="editorial-magazine"] .page-heading { font-weight: 400; letter-spacing: -.05em; }
+.rendered-page[data-concept="editorial-magazine"] .page-heading:not([data-locked~="layout"] *) { font-weight: 400; letter-spacing: -.05em; }
 .rendered-page[data-concept="retro-digital"] { --concept-heading: ui-monospace, monospace; --concept-row: clamp(2rem,4cqi,4rem); --concept-ratio: 1; }
-.rendered-page[data-concept="retro-digital"] :is(.page-card,.page-button) { border: 1px dashed currentColor; border-radius: 0; }
+.rendered-page[data-concept="retro-digital"] :is(.page-card,.page-button):not([data-locked~="layout"] *) { border: 1px dashed currentColor; border-radius: 0; }
 .rendered-page[data-concept="y2k"] { --concept-radius: 50%; --concept-ratio: 1; --concept-copy: 46ch; }
-.rendered-page[data-concept="y2k"] .page-button { border-radius: 99rem; box-shadow: inset 0 2px 3px #ffffffa0; }
+.rendered-page[data-concept="y2k"] .page-button:not([data-locked~="layout"] *) { border-radius: 99rem; box-shadow: inset 0 2px 3px #ffffffa0; }
 .rendered-page[data-concept="neo-brutalist"] { --concept-heading: Impact, system-ui, sans-serif; --concept-ratio: 5 / 4; }
-.rendered-page[data-concept="neo-brutalist"] :is(.page-card,.page-button) { border: 3px solid currentColor; box-shadow: 5px 5px currentColor; border-radius: 0; }
+.rendered-page[data-concept="neo-brutalist"] :is(.page-card,.page-button):not([data-locked~="layout"] *) { border: 3px solid currentColor; box-shadow: 5px 5px currentColor; border-radius: 0; }
 .rendered-page[data-concept="organic"] { --concept-radius: 38% 62% 54% 46% / 53% 38% 62% 47%; --concept-copy: 50ch; --concept-heading: Georgia, serif; }
-.rendered-page[data-concept="organic"] .page-button { border-radius: 2rem .85rem 2rem .85rem; }
+.rendered-page[data-concept="organic"] .page-button:not([data-locked~="layout"] *) { border-radius: 2rem .85rem 2rem .85rem; }
 .rendered-page[data-concept="storybook"] { --concept-radius: 1.5rem; --concept-heading: ui-rounded, system-ui, sans-serif; --concept-copy: 44ch; }
-.rendered-page[data-concept="storybook"] .page-card { border-radius: 1.5rem; border: 2px dotted currentColor; }
+.rendered-page[data-concept="storybook"] .page-card:not([data-locked~="layout"] *) { border-radius: 1.5rem; border: 2px dotted currentColor; }
 .rendered-page[data-concept="architectural"] { --concept-ratio: 21 / 9; --concept-copy: 37ch; --concept-row: clamp(2rem, 5cqi, 5rem); }
-.rendered-page[data-concept="architectural"] .page-section { border-block-start: 1px solid currentColor; }
+.rendered-page[data-concept="architectural"] .page-section:not([data-locked~="layout"]) { border-block-start: 1px solid currentColor; }
 @container (min-width: 720px) {
-  .rendered-page[data-concept="swiss"] .role-hero .page-grid:not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0,3fr) minmax(0,2fr); }
-  .rendered-page[data-concept="editorial-magazine"] .role-hero .page-grid:not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0,2fr) minmax(0,3fr); }
-  .rendered-page[data-concept="architectural"] .role-hero .page-grid:not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0, 1fr); }
+  .rendered-page[data-concept="swiss"] .role-hero .page-grid:not([data-locked~="layout"] *):not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0,3fr) minmax(0,2fr); }
+  .rendered-page[data-concept="editorial-magazine"] .role-hero .page-grid:not([data-locked~="layout"] *):not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0,2fr) minmax(0,3fr); }
+  .rendered-page[data-concept="architectural"] .role-hero .page-grid:not([data-locked~="layout"] *):not([data-locked~="layout"]):not(:has([data-locked~="layout"])) { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Leave authored effects alone. These are small affordances on otherwise static buttons. */
