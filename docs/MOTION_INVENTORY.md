@@ -35,7 +35,7 @@
 | `character-decode` | 字元解碼 / Character Decode | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | decodeSpeedMs, characterDelayMs | — | AdvancedMotion.tsx |
 | `split-line-assembly` | 文字分行組合 / Split Line Assembly | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | flow, durationMs, staggerMs, distancePx | — | AdvancedMotion.tsx |
 | `rolling-characters` | 滾輪文字 / Rolling Characters | 文字 | 出現時、點擊時 | 文字逐字 | 互動回饋、引導閱讀 | 適中 | durationMs, staggerMs | — | AdvancedMotion.tsx |
-| `hand-drawn-highlight` | 手繪螢光標記 / Hand-Drawn Highlight | 文字 | 出現時 | 線條圖形 | 吸引注意、引導閱讀 | 適中 | durationMs, thickness, color | — | AdvancedMotion.tsx |
+| `hand-drawn-highlight` | 手繪螢光標記 / Hand-Drawn Highlight | 文字 | 出現時 | 線條圖形 | 吸引注意、引導閱讀 | 適中 | stroke, durationMs, thickness, color | — | AdvancedMotion.tsx |
 | `kinetic-text-wave` | 動態文字波浪 / Kinetic Text Wave | 文字 | 出現時、滑過時 | 文字逐字 | 互動回饋、引導閱讀 | 適中 | form, durationMs, amplitudePx, trigger | 可 | AdvancedMotion.tsx |
 | `cursor-spotlight` | 游標聚光 / Cursor Spotlight | 按鈕 | 滑過時 | 光影色彩 | 互動回饋 | 適中 | radiusPx, durationMs | 可 | AdvancedMotion.tsx |
 | `liquid-button-fill` | 液態填充 / Liquid Button Fill | 按鈕 | 滑過時 | 光影色彩 | 互動回饋 | 適中 | durationMs, color | 可 | AdvancedMotion.tsx |
@@ -49,7 +49,7 @@
 | `card-deck-fan` | 卡片扇形展開 / Card Deck Fan | 卡片與區塊 | 滑過時 | 位移滑動 | 互動回饋 | 適中 | angle, distancePx, durationMs | 可 | AdvancedMotion.tsx |
 | `layered-parallax` | 分層視差 / Layered Parallax | 卡片與區塊 | 捲動時 | 立體 | 吸引注意 | 適中 | distancePx | — | AdvancedMotion.tsx |
 | `grid-diagonal-turn` | 網格對角翻入 / Grid Diagonal Turn | 卡片與區塊 | 出現時 | 立體 | 吸引注意 | 適中 | motion, durationMs, staggerMs, order | — | AdvancedMotion.tsx |
-| `svg-path-drawing` | 路徑描繪 / SVG Path Drawing | 卡片與區塊 | 出現時 | 線條圖形 | 吸引注意 | 適中 | durationMs, thicknessPx, color, shape | — | AdvancedMotion.tsx |
+| `svg-path-drawing` | 路徑描繪 / SVG Path Drawing | 卡片與區塊 | 出現時、滑過時 | 線條圖形 | 互動回饋、吸引注意 | 適中 | trigger, durationMs, thicknessPx, color, shape | 可 | AdvancedMotion.tsx |
 | `numeric-gauge-sweep` | 數值儀表掃描 / Numeric Gauge Sweep | 文字 | 出現時 | 數字資料 | 呈現資料、引導閱讀 | 適中 | durationMs | — | AdvancedMotion.tsx |
 | `scroll-milestones` | 區塊閱讀里程碑 / Scroll Milestones | 卡片與區塊 | 捲動時 | 數字資料 | 呈現資料 | 適中 | steps, orientation | — | AdvancedMotion.tsx |
 | `text-morph-transition` | 文字形態轉換 / Text Morph Transition | 文字 | 點擊時、出現時 | 文字逐字 | 互動回饋、引導閱讀 | 強烈 | style, toText, durationMs, trigger | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
@@ -63,7 +63,7 @@
 | `spring-drag-snap` | 彈性拖曳吸附 / Spring Drag & Snap | 卡片與區塊 | 拖曳、點擊時 | 彈性 | 互動回饋 | 強烈 | rangePx, snap, durationMs | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `pixel-dissolve` | 像素消散 / Pixel Dissolve | 圖片 | 出現時、點擊時 | 遮罩揭露 | 互動回饋、吸引注意 | 強烈 | tiles, durationMs, mode | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `shutter-lens-transition` | 鏡頭快門 / Shutter Lens Transition | 圖片 | 出現時 | 遮罩揭露 | 吸引注意 | 強烈 | blades, durationMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
-| `glitch-slice-reveal` | 切片故障顯影 / Glitch Slice Reveal | 圖片 | 出現時 | 遮罩揭露 | 吸引注意 | 強烈 | slices, distancePx, durationMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
+| `glitch-slice-reveal` | 切片故障顯影 / Glitch Slice Reveal | 圖片、文字 | 出現時 | 遮罩揭露 | 引導閱讀 | 強烈 | slices, distancePx, durationMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `liquid-distortion-reveal` | 液態扭曲顯影 / Liquid Distortion Reveal | 圖片、卡片與區塊 | 出現時 | 遮罩揭露 | 吸引注意 | 強烈 | intensity, durationMs | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `card-stack-shuffle` | 卡片堆疊洗牌 / Card Stack Shuffle | 卡片與區塊 | 點擊時 | 位移滑動 | 互動回饋 | 強烈 | durationMs, distancePx | 可 | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
 | `horizontal-scroll-gallery` | 橫向捲動畫廊 / Horizontal Scroll Gallery | 卡片與區塊 | 捲動時、拖曳 | 位移滑動 | 互動回饋、吸引注意 | 強烈 | viewportHeightPx, travel | — | CinematicMotion.tsx / CinematicText.tsx / StoryMotion.tsx |
@@ -84,7 +84,7 @@
 | `color-wake` | 褪色回彩 / Color Wake | 圖片 | 滑過時、捲動時 | 光影色彩 | 互動回饋、吸引注意 | 輕柔 | muted, durationMs | 可 | ReferenceMotion.tsx |
 | `scroll-ink-words` | 逐字上墨 / Ink as You Read | 文字 | 捲動時 | 文字逐字 | 引導閱讀 | 輕柔 | dim, range | — | ReferenceMotion.tsx |
 | `hollow-fill-sweep` | 空心填色 / Hollow to Solid | 文字 | 滑過時、出現時 | 光影色彩 | 吸引注意、引導閱讀 | 輕柔 | trigger, strokePx, durationMs | 可 | ReferenceMotion.tsx |
-| `letter-windows` | 字窗風景 / Letter Windows | 文字 | 一直動 | 光影色彩 | 吸引注意 | 適中 | image, cycleSeconds, outline | — | ReferenceMotion.tsx |
+| `letter-windows` | 字窗風景 / Letter Windows | 文字 | 一直動 | 光影色彩 | 吸引注意 | 適中 | fill, image, cycleSeconds, outline | — | ReferenceMotion.tsx |
 | `bold-relay` | 粗體接力 / Bold Relay | 文字 | 一直動 | 文字逐字 | 營造氣氛 | 適中 | peakWeight, cycleMs, stepMs | — | ReferenceMotion.tsx |
 | `chart-build` | 圖表長出來 / Chart Build-Up | 圖表與媒體 | 出現時 | 數字資料 | 呈現資料 | 適中 | durationMs, stepMs | — | ReferenceMotion.tsx |
 | `crosswind-ribbons` | 交風字帶 / Crosswind Ribbons | 文字 | 一直動 | 文字逐字 | 營造氣氛 | 適中 | cycleMs, angleDeg, wash | — | ReferenceMotion.tsx |

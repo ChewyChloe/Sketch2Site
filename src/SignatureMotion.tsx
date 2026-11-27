@@ -2,7 +2,7 @@ import { useEffect, type RefObject } from 'react';
 import type { PageNode } from './pageSpec';
 import { motionNumber, type MotionInstance } from './motion';
 import { useReducedMotion } from './MotionRuntime';
-import { resources } from './AdvancedMotion';
+import { nearestScroller, resources } from './AdvancedMotion';
 
 // Signature presets (2026-11-25): lively, everyday effects people expect from a
 // modern site builder. Same rules as the other presets: the user's text stays the
@@ -80,7 +80,7 @@ export function useSignatureMotion(node: PageNode, ref: RefObject<HTMLElement | 
                 r.animate(track, [{ transform: `translateX(${dir < 0 ? 0 : -width}px)` }, { transform: `translateX(${dir < 0 ? -width : 0}px)` }], { duration: (width / speed) * 1000, iterations: Infinity, easing: 'linear' });
             } else {
                 const vertical = layout === 'counter-columns' || layout === 'vertical-stack';
-                const count = layout === 'layered-rush' || layout === 'vertical-stack' ? 3 : 2;
+                const count = layout === 'layered-rush' || layout === 'vertical-stack' || layout === 'scroll-counter' ? 3 : 2;
                 const box = deco('sig-multiband');
                 box.dataset.layout = layout;
                 r.property(host, 'isolation', 'isolate');
@@ -110,6 +110,7 @@ export function useSignatureMotion(node: PageNode, ref: RefObject<HTMLElement | 
                         while (runway.children.length < repeats) runway.append(item());
                         while (runway.children.length > repeats) runway.lastElementChild?.remove();
                         if (span === distance) return;
+                        if (layout === 'scroll-counter') { distance = span; return; }
                         distance = span;
                         animation?.cancel();
                         animation = r.animate(runway, [
@@ -122,6 +123,23 @@ export function useSignatureMotion(node: PageNode, ref: RefObject<HTMLElement | 
                     resize?.observe(unit);
                     resize?.observe(box);
                     cleanups.push(() => resize?.disconnect());
+                    if (layout === 'scroll-counter') {
+                        const scrollRoot = nearestScroller(host);
+                        let frame = 0;
+                        const paint = () => {
+                            frame = 0;
+                            if (!r.isVisible()) return;
+                            const viewport = scrollRoot?.getBoundingClientRect(), bounds = host.getBoundingClientRect();
+                            const progress = (viewport?.bottom ?? window.innerHeight) - bounds.top;
+                            const phase = ((progress * speed / 100) % distance + distance) % distance;
+                            const direction = index === 1 ? -dir : dir;
+                            runway.style.translate = (direction < 0 ? -phase : phase - distance) + "px 0";
+                        };
+                        const schedule = () => { if (!frame && r.isVisible()) frame = requestAnimationFrame(paint); };
+                        r.listen(scrollRoot ?? window, 'scroll', schedule);
+                        r.entrance(paint);
+                        cleanups.push(() => cancelAnimationFrame(frame));
+                    }
                 }
             }
         }

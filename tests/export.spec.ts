@@ -76,9 +76,15 @@ test("downloaded React project installs and builds independently; runtime stays 
   story.effects[0].validatedControls.presentation = "media";
   const gooey = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "gooey-blob-merge")!;
   gooey.effects[0].validatedControls.flow = "drift";
+  const glitchSection = cinematic.sections.find(section => section.children?.[0].effects[0].presetId === "glitch-slice-reveal")!;
+  const glitch = glitchSection.children![0];
+  const { src: _glitchSrc, alt: _glitchAlt, ...glitchText } = glitch;
+  glitchSection.children = [{ ...glitchText, type: "heading", level: 2, content: "城市春日設計展" }];
   const advanced = advancedFixture();
   for (const node of advanced.sections[0].children!) {
     for (const effect of node.effects) {
+      if (effect.presetId === "hand-drawn-highlight") effect.validatedControls.stroke = "circle-line";
+      if (effect.presetId === "svg-path-drawing") effect.validatedControls.trigger = "redraw";
       if (effect.presetId === "split-line-assembly") effect.validatedControls.flow = "clarify";
       if (effect.presetId === "grid-diagonal-turn") effect.validatedControls.motion = "radial";
     }
@@ -99,6 +105,11 @@ test("downloaded React project installs and builds independently; runtime stays 
   interactiveBento.sectionLayout = { arrangement: { mode: "bento", columns: 3, gap: "medium", interactive: true }, fullBleed: false };
   const textSection = textModesSection();
   textSection.children!.push(...marqueeModesSection().children!);
+  const carouselId = marqueeId(80);
+  textSection.children!.push({
+    id: carouselId, type: "heading", level: 2, content: "城市三行字帶", style: textSection.style,
+    effects: [createMotion("marquee-text", carouselId, { layout: "scroll-counter" })],
+  });
   input.sections.push(interactiveBento, ...tabsFixture().sections, textSection);
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
@@ -233,6 +244,8 @@ z.extractall(root)
     await expect(compactNav).toHaveAttribute("data-nav-style", "top-compact");
     await standalone.evaluate(() => window.scrollTo(0, 190));
     await expect(compactNav).toHaveClass(/is-compact/);
+    await expect(standalone.locator(`[data-page-id="${glitch.id}"]`)).toHaveText("城市春日設計展");
+    await expect(standalone.locator(`[data-page-id="${carouselId}"]`)).toHaveText("城市三行字帶");
     const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
     await expect(exportedLayout).toHaveCSS("column-count", "2");
     await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");
@@ -258,6 +271,10 @@ z.extractall(root)
     await disclosure.getByRole('button',{name:'收合內容'}).click();await expect(disclosure.getByText('展開後閱讀完整補充說明')).toBeHidden();
     for(const node of advancedFixture().sections[0].children!){const target=standalone.locator(`[data-page-id="${node.id}"]`);await expect(target).toHaveAttribute('data-effects',node.effects[0].presetId);}
     await standalone.emulateMedia({reducedMotion:'no-preference'});
+    const scrollTracks = standalone.locator(`[data-page-id="${carouselId}"] .sig-band-runway`);
+    await scrollTracks.first().scrollIntoViewIfNeeded();
+    await expect(scrollTracks).toHaveCount(3);
+
     const exportedRibbons = standalone.locator('.sig-multiband[data-layout="ribbon-cross"]');
     await exportedRibbons.scrollIntoViewIfNeeded();
     await expect(exportedRibbons.locator(".sig-band")).toHaveCount(2);

@@ -127,9 +127,19 @@ export function useReferenceMotion(node: PageNode, ref: RefObject<HTMLElement | 
         // Letter windows: the letters are filled with a photo that drifts slowly.
         const windows = find('letter-windows');
         if (windows) {
+            const stripes = windows.validatedControls.fill === "stripes";
+            if (stripes) {
+                addClass("ref-windows");
+                r.property(host, "background-image", "repeating-linear-gradient(122deg, var(--ink, currentColor) 0 13px, var(--accent, currentColor) 13px 22px, var(--ink, currentColor) 22px 38px)");
+                r.property(host, "background-size", "200% 180%");
+                if (windows.validatedControls.outline !== false) r.property(host, "-webkit-text-stroke", `max(.5px, .012em) ${style.color}`);
+                r.animate(host, [{ backgroundPosition: "0 30%" }, { backgroundPosition: "100% 70%" }], {
+                    duration: n(windows, "cycleSeconds", 16) * 1000, iterations: Infinity, direction: "alternate", easing: "linear",
+                });
+            }
             const src = String(windows.validatedControls.image ?? '');
             const url = urls[src] || (src.startsWith('/assets/samples/') || src.startsWith('/assets/sequence/') ? import.meta.env.BASE_URL + src.slice(1) : '');
-            if (url) {
+            if (url && !stripes) {
                 addClass('ref-windows');
                 // The solid layer under the photo keeps the words visible if the photo fails to load.
                 r.property(host, 'background-image', `url("${url.replace(/["\\\n]/g, '')}"), linear-gradient(${style.color}, ${style.color})`);

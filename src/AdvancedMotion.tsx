@@ -94,6 +94,31 @@ export function AdvancedText({ text, effect }: {
         const restore = () => { cancelAnimationFrame(frame); frame = 0; overlay?.getAnimations?.({subtree:true}).forEach(a=>a.cancel()); overlay?.remove(); overlay = null; source.style.removeProperty('opacity'); finished = true; };
         const graphemes = typeof Intl.Segmenter === 'function' ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), s => s.segment) : [];
         const highlight = effect.presetId === 'hand-drawn-highlight';
+        if (highlight && effect.validatedControls.stroke === "circle-line") {
+            if (reduced) return;
+            const namespace = 'http://www.w3.org/2000/svg';
+            const diagram = document.createElementNS(namespace, 'svg');
+            diagram.classList.add("advanced-circle-line");
+            diagram.setAttribute('viewBox', '0 0 160 56');
+            diagram.setAttribute('preserveAspectRatio', 'none');
+            diagram.setAttribute('aria-hidden', 'true');
+            const duration = motionNumber(effect, 'durationMs', 700);
+            const paths = ['M15 41 C-12 19 24 3 85 6 C151 7 170 28 139 43 C114 57 53 54 20 45',
+                'M12 48 C55 43 98 51 151 45'];
+            paths.forEach((d, i) => {
+                const path = document.createElementNS(namespace, 'path');
+                path.setAttribute('d', d);
+                path.setAttribute('pathLength', '100');
+                path.setAttribute('vector-effect', 'non-scaling-stroke');
+                path.style.strokeDasharray = '100';
+                diagram.append(path);
+                r.entrance(() => r.animate(path, [{ strokeDashoffset: '100' }, { strokeDashoffset: '0' }], {
+                    duration: duration * (i ? .35 : .78), delay: i * duration * .72, fill: 'backwards', easing: 'ease-out',
+                }));
+            });
+            r.append(diagram);
+            return () => r.dispose();
+        }
         if (highlight) {
             r.property(host, '--advanced-highlight', palette[String(effect.validatedControls.color)] ?? palette.lime);
             r.property(host, '--advanced-highlight-size', `${motionNumber(effect, 'thickness', 55)}%`);
@@ -228,7 +253,7 @@ export function AdvancedText({ text, effect }: {
         return () => { resize?.disconnect(); restore(); r.dispose(); };
     }, [text, effect, reduced, layered]);
     if (layered) return <LayeredWordWave text={text} effect={effect}/>;
-    return <span ref={ref} className={'advanced-text ' + (effect.presetId === 'hand-drawn-highlight' ? 'advanced-highlight' : '')}><span className="advanced-text-source">{text}</span></span>;
+    return <span ref={ref} className={'advanced-text ' + (effect.presetId === 'hand-drawn-highlight' && effect.validatedControls.stroke !== 'circle-line' ? 'advanced-highlight' : '')}><span className="advanced-text-source">{text}</span></span>;
 }
 export function nearestScroller(host: HTMLElement) { let el: HTMLElement | null = host; while (el && !/(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY))
     el = el.parentElement; return el; }
@@ -402,7 +427,20 @@ export function useAdvancedMotion(node: PageNode, ref: RefObject<HTMLElement | n
             line.style.strokeDashoffset = String(100 - value * 100);
             svg.append(line);
             r.append(svg);
-            r.entrance(() => { r.animate(line, [{ strokeDashoffset: '100' }, { strokeDashoffset: String(100 - value * 100) }], { duration: n(e, 'durationMs', 1000), easing: 'cubic-bezier(.2,.7,.2,1)' }); });
+            let draw: Animation | null = null, lift: Animation | null = null;
+            const drawLine = () => {
+                draw?.cancel();
+                lift?.cancel();
+                const duration = n(e, 'durationMs', 1000);
+                draw = r.animate(line, [{ strokeDashoffset: '100' }, { strokeDashoffset: String(100 - value * 100) }], { duration, easing: 'cubic-bezier(.2,.7,.2,1)' });
+                if (path?.validatedControls.trigger === 'redraw')
+                    lift = r.animate(svg, [{ translate: '0px 0px' }, { translate: '0px -4px', offset: .4 }, { translate: '0px 0px' }], { duration });
+            };
+            if (path?.validatedControls.trigger === 'redraw' && !reduced) {
+                focusable();
+                hover(drawLine, () => {});
+                r.listen(host, 'pointerup', event => { if ((event as PointerEvent).pointerType === 'touch') drawLine(); });
+            } else r.entrance(drawLine);
         }
         const parallax = find('layered-parallax'), milestones = find('scroll-milestones');
         if (parallax || milestones) {

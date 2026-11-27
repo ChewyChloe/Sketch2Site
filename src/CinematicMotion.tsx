@@ -275,6 +275,36 @@ export function useCinematicMotion(node: PageNode, ref: RefObject<HTMLElement | 
                 cleanup.push(() => { image.style.opacity = ''; });
             }
         }
+        if (id === 'glitch-slice-reveal' && node.type !== 'image' && !reduced && node.content?.trim()) {
+            const text = node.content;
+            r.entrance(() => {
+                const layer = document.createElement('span');
+                layer.className = 'cin-text-cuts';
+                layer.setAttribute('aria-hidden', 'true');
+                const oldColor = host.style.color, originalColor = getComputedStyle(host).color;
+                layer.style.color = originalColor;
+                host.style.color = 'transparent';
+                r.append(layer);
+                const count = n('slices', 5), duration = n('durationMs', 550), distance = n('distancePx', 8);
+                for (let index = 0; index < count; index++) {
+                    const strip = document.createElement('span');
+                    strip.textContent = text;
+                    strip.style.clipPath = `inset(${index * 100 / count}% 0 ${(count - index - 1) * 100 / count}% 0)`;
+                    layer.append(strip);
+                    const offset = distance * (index % 2 ? -1 : 1);
+                    r.animate(strip, [
+                        { translate: `${offset}px 0`, opacity: .58 },
+                        { translate: `${offset * -.66}px 0`, opacity: .9, offset: .39 },
+                        { translate: `${offset * .22}px 0`, opacity: 1, offset: .7 },
+                        { translate: "0px 0", opacity: 1 },
+                    ], { duration, easing: "ease-out" });
+                }
+                const finish = () => { host.style.color = oldColor; r.remove(layer); };
+                const clock = r.animate(layer, [{ opacity: 1 }, { opacity: 1 }], { duration });
+                clock?.addEventListener('finish', finish, { once: true });
+                cleanup.push(finish);
+            });
+        }
         if (id === 'shutter-lens-transition' && !reduced) {
             r.property(host, 'overflow', 'hidden');
             const overlay = svg('cin-shutter');

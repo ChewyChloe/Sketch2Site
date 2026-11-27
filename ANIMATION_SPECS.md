@@ -79,6 +79,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | type-casts | 字型留光 | DONE | 內容 | medium |
 | word-shelf | 疊句收集 | DONE | 進場 | medium |
 | reading-hop | 讀字跳點 | DONE | 進場 | medium |
+| letter-windows | 字窗風景 | DONE | 內容 | medium |
 
 ## 淡入 / Fade In
 
@@ -789,7 +790,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `hand-drawn-highlight` / version 1
 - 狀態：DONE
-- 說明：帶有輕微不規則邊緣的底色逐行劃過文字後方。
+- 說明：帶有輕微不規則邊緣的底色逐行劃過文字後方
 - 適用：文字、標題與段落
 - targetType：text、heading、paragraph
 - interactionType：scroll-enter
@@ -801,6 +802,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| stroke | 標記形態 | select | "fill" | fill / circle-line |
 | durationMs | 時長（毫秒） | number | 700 | 200–1400; step 1 |
 | thickness | 標記厚度（百分比） | number | 55 | 20–85; step 1 |
 | color | 標記底色 | select | "lime" | lime / amber / sky |
@@ -1201,10 +1203,10 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `svg-path-drawing` / version 1
 - 狀態：DONE
-- 說明：安全的內建裝飾路徑以描線方式成形，不接受外部SVG。
+- 說明：安全的內建裝飾路徑以描線方式成形，不接受外部SVG
 - 適用：卡片與內容群組
 - targetType：card、container、section、stack、grid
-- interactionType：scroll-enter
+- interactionType：scroll-enter、hover、focus
 - techBase：Web Animations / CSS / Pointer Events
 - previewMapping：svg-path-drawing
 - tags：內容、卡片與內容群組
@@ -1213,6 +1215,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| trigger | 描線時機 | select | "in-view" | in-view / redraw |
 | durationMs | 時長（毫秒） | number | 1000 | 300–1800; step 1 |
 | thicknessPx | 線寬（像素） | number | 2 | 1–5; step 1 |
 | color | 線條顏色 | select | "theme" | theme / lime / amber / sky |
@@ -1618,13 +1621,13 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `glitch-slice-reveal` / version 1
 - 狀態：DONE
-- 說明：有限水平切片短距離錯位後回復，不閃爍或持續故障。
-- 適用：image
-- targetType：image
+- 說明：有限水平切片短距離錯位後回復，不閃爍或持續故障
+- 適用：圖片與短字標
+- targetType：image、text、heading、paragraph
 - interactionType：scroll-enter
 - techBase：Web Animations / CSS / Pointer Events
 - previewMapping：glitch-slice-reveal
-- tags：進場、image
+- tags：進場、圖片與短字標
 - rendererMapping：glitch-slice-reveal
 - exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
 
@@ -2071,7 +2074,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
-| layout | 跑馬燈版型 | select | "single" | single / dual-speed / counter-columns / layered-rush / vertical-stack / ribbon-cross |
+| layout | 跑馬燈版型 | select | "single" | single / dual-speed / counter-columns / layered-rush / vertical-stack / ribbon-cross / scroll-counter |
 | speedPxPerSecond | 速度（像素／秒） | number | 60 | 20–160; step 1 |
 | direction | 方向 | select | "left" | left / right |
 
@@ -2227,3 +2230,34 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 **constraints**：保留作者原文；離屏暫停且有資源上限
 
 **reducedMotionFallback**：靜態原文
+
+## 字窗風景 / Letter Windows
+
+- Preset: `letter-windows` / version 1
+- 狀態：DONE
+- 說明：每個字都是一扇窗，窗外的照片緩緩移動
+- 適用：封面大標與品牌名稱
+- targetType：text、heading、paragraph
+- interactionType：autoplay
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：letter-windows
+- tags：內容、封面大標與品牌名稱
+- rendererMapping：letter-windows
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| fill | 字窗內容 | select | "photo" | photo / stripes |
+| image | 字裡的照片 | asset | "/assets/samples/coffee-pourover.jpg" | – |
+| cycleSeconds | 一輪秒數 | number | 16 | 8–30; step 1 |
+| outline | 細描邊 | boolean | true | – |
+
+**designIntent**：照片填進粗大標題中緩慢移動，適合封面品牌名。生成只規劃來源布局。
+
+**implementationBrief**：映射受控letter-windows Runtime；照片只用內建或已匯入素材。
+
+**compatibilityRules**：適用大標題；細字看不出照片
+
+**constraints**：照片載入失敗時顯示原文字色；只適合粗的大字
+
+**reducedMotionFallback**：照片靜止填色

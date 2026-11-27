@@ -2066,3 +2066,12 @@
 @media (prefers-reduced-motion: reduce) {
   .page-nav.nav-top-compact, .page-nav.nav-top-compact .page-brand { transition: none; }
 }
+
+.cin-text-cuts { position: absolute; inset: 0; pointer-events: none; display: block; }
+.cin-text-cuts > span { position: absolute; inset: 0; white-space: inherit; }
+.advanced-circle-line { position: absolute; inset: -8% -3%; width: 106%; height: 116%; pointer-events: none; fill: none; stroke: var(--accent, currentColor); stroke-width: 1.4; stroke-linecap: round; }
+.sig-multiband[data-layout="scroll-counter"] > .sig-band { inset-inline: 0; font-size: 1.45em; line-height: .9; }
+.sig-multiband[data-layout="scroll-counter"] > .sig-band:nth-child(1) { top: 2%; }
+.sig-multiband[data-layout="scroll-counter"] > .sig-band:nth-child(2) { top: 36%; }
+.sig-multiband[data-layout="scroll-counter"] > .sig-band:nth-child(2) .sig-band-runway > span { -webkit-text-stroke: 1px color-mix(in srgb, var(--accent, currentColor) 50%, transparent); color: transparent; }
+.sig-multiband[data-layout="scroll-counter"] > .sig-band:nth-child(3) { bottom: 2%; }

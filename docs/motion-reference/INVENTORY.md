@@ -15,7 +15,7 @@
 | 不適合目前架構或需要額外授權 | 74 |
 | 合計 | 347 |
 
-交付狀態：58 筆已有同等、74 筆排除、53 筆已驗證對應、162 筆待實作。
+交付狀態：58 筆已有同等、74 筆排除、58 筆已驗證對應、157 筆待實作。
 
 優先序用於排程。P1 與明列已驗證批次的資料有正式 Runtime；其他預計新增項目仍待實作。
 
@@ -77,9 +77,14 @@
 | `marquee-text` | 52 | 14 |
 | `marquee-text` | 53 | 14 |
 | `marquee-text` | 54 | 14 |
+| `glitch-slice-reveal` | 70 | 18 |
+| `letter-windows` | 71 | 18 |
 | `grid-diagonal-turn` | 82 | 17 |
+| `hand-drawn-highlight` | 88 | 18 |
 | `split-line-assembly` | 126 | 17 |
 | `image-reveal` | 131 | 17 |
+| `svg-path-drawing` | 136 | 18 |
+| `marquee-text` | 159 | 18 |
 | `gooey-blob-merge` | 176 | 7 |
 | `pinned-story-panels` | 210 | 8 |
 
