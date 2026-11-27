@@ -16,8 +16,8 @@
  "delivery": {
   "duplicate": 58,
   "excluded": 74,
-  "verifiedMappings": 48,
-  "pending": 167
+  "verifiedMappings": 53,
+  "pending": 162
  },
  "rows": [
   {
@@ -1906,6 +1906,7 @@
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedExpansionBatch": 17,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -2582,6 +2583,7 @@
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedComponentBatch": 17,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -2756,6 +2758,7 @@
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedExpansionBatch": 17,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -2852,6 +2855,7 @@
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedExpansionBatch": 17,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -3336,6 +3340,7 @@
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedComponentBatch": 17,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

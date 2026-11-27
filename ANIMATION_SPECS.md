@@ -526,7 +526,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `image-reveal` / version 1
 - 狀態：DONE
-- 說明：以單向展開的裁切範圍揭露完整圖片。
+- 說明：以單向展開的裁切範圍揭露完整圖片
 - 適用：作品與介紹圖片
 - targetType：image
 - interactionType：scroll-enter
@@ -539,6 +539,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
 | durationMs | 時長（毫秒） | number | 700 | 200–1400; step 1 |
+| edge | 遮罩邊緣 | select | "sharp" | sharp / soft |
 | direction | 展開方向 | select | "horizontal" | horizontal / vertical |
 
 **designIntent**：讓影像像展幕一樣逐步顯露，終點呈現完整原圖。
@@ -728,7 +729,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `split-line-assembly` / version 1
 - 狀態：DONE
-- 說明：依實際換行量測，以交替方向與逐行遮罩組合原文。
+- 說明：依實際換行量測，以交替方向與逐行遮罩組合原文
 - 適用：文字、標題與段落
 - targetType：text、heading、paragraph
 - interactionType：scroll-enter
@@ -740,6 +741,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| flow | 入場方式 | select | "slide" | slide / clarify |
 | durationMs | 時長（毫秒） | number | 650 | 200–1200; step 1 |
 | staggerMs | 行間隔（毫秒） | number | 100 | 30–180; step 1 |
 | distancePx | 位移（像素） | number | 22 | 4–40; step 1 |
@@ -1168,7 +1170,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 - Preset: `grid-diagonal-turn` / version 1
 - 狀態：DONE
-- 說明：原有網格子項沿行列對角線依序作輕微透視翻入。
+- 說明：原有網格子項沿行列對角線依序作輕微透視翻入
 - 適用：卡片與內容群組
 - targetType：card、container、section、stack、grid
 - interactionType：scroll-enter
@@ -1180,6 +1182,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| motion | 展開形態 | select | "flip" | flip / radial |
 | durationMs | 時長（毫秒） | number | 600 | 250–1000; step 1 |
 | staggerMs | 對角間隔（毫秒） | number | 80 | 30–150; step 1 |
 | order | 展開順序 | select | "row" | row / column / center |

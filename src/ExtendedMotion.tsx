@@ -46,7 +46,13 @@ export function useExtendedMotion(node: PageNode, ref: RefObject<HTMLElement | n
             let animation: Animation | undefined;
             cleanups.push(onceVisible(host, () => {
                 revealed.current = true;
-                animation = host.animate([{ clipPath: image.validatedControls.direction === 'vertical' ? 'inset(0 0 100% 0)' : 'inset(0 100% 0 0)', opacity: 0 }, { clipPath: 'inset(0 0% 0 0)', opacity: 1 }], { duration: motionNumber(image, 'durationMs', 600), easing: 'ease-out' });
+                const vertical = image.validatedControls.direction === 'vertical';
+                const soft = image.validatedControls.edge === 'soft';
+                const frames = soft ? [
+                    { maskImage: `linear-gradient(to ${vertical ? 'bottom' : 'right'}, black 35%, transparent 60%)`, maskSize: vertical ? '100% 300%' : '300% 100%', maskRepeat: 'no-repeat', maskPosition: vertical ? '0 100%' : '100% 0' },
+                    { maskImage: `linear-gradient(to ${vertical ? 'bottom' : 'right'}, black 35%, transparent 60%)`, maskSize: vertical ? '100% 300%' : '300% 100%', maskRepeat: 'no-repeat', maskPosition: '0 0' },
+                ] : [{ clipPath: vertical ? 'inset(0 0 100% 0)' : 'inset(0 100% 0 0)', opacity: 0 }, { clipPath: 'inset(0 0% 0 0)', opacity: 1 }];
+                animation = host.animate(frames, { duration: motionNumber(image, 'durationMs', 600), easing: 'ease-out' });
             }), () => animation?.cancel());
         }
         const magnet = find('magnetic-control');

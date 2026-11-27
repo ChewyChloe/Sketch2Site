@@ -135,7 +135,17 @@ export function AdvancedText({ text, effect }: {
                     restore();
                     return;
                 }
-                lines.forEach((line, i) => { const left = Math.min(...line.cells.map(c => c.left)), right = Math.max(...line.cells.map(c => c.left + c.width)), height = Math.max(...line.cells.map(c => c.height)); const mask = make('advanced-line-mask', '', left, line.top, right - left + 1, height + 3); const inner = document.createElement('span'); inner.textContent = line.cells.map(c => c.letter).join(''); mask.append(inner); r.animate(inner, [{ opacity: 0, transform: `translateX(${(i % 2 ? -1 : 1) * motionNumber(effect, 'distancePx', 22)}px)`, filter: 'blur(3px)' }, { opacity: 1, transform: 'translateX(0)', filter: 'blur(0px)' }], { duration, delay: Math.min(900, i * stagger), fill: 'backwards', easing: 'cubic-bezier(.16,1,.3,1)' }); });
+                lines.forEach((line, i) => {
+                    const left = Math.min(...line.cells.map(c => c.left)), right = Math.max(...line.cells.map(c => c.left + c.width)), height = Math.max(...line.cells.map(c => c.height));
+                    const mask = make('advanced-line-mask', '', left, line.top, right - left + 1, height + 3);
+                    const inner = document.createElement('span'); inner.textContent = line.cells.map(c => c.letter).join(''); mask.append(inner);
+                    const flow = effect.validatedControls.flow;
+                    const begin = flow === 'clarify' ? { opacity: .15, filter: 'blur(5px)' } :
+                        { opacity: 0, transform: `translateX(${(i % 2 ? -1 : 1) * motionNumber(effect, 'distancePx', 22)}px)`, filter: 'blur(3px)' };
+                    r.animate(inner, [begin, { opacity: 1, transform: 'none', filter: 'blur(0px)' }], {
+                        duration, delay: Math.min(900, i * stagger), fill: 'backwards', easing: 'cubic-bezier(.16,1,.3,1)'
+                    });
+                });
                 total = duration + Math.min(900, (lines.length - 1) * stagger);
             }
             else if (effect.presetId === 'character-decode') {
@@ -354,8 +364,24 @@ export function useAdvancedMotion(node: PageNode, ref: RefObject<HTMLElement | n
                 return; children.forEach((el, i) => { const signed = (i - (children.length - 1) / 2) / Math.max(1, (children.length - 1) / 2); el.style.transform = `translateX(${signed * n(fan, 'distancePx', 8)}px) rotate(${signed * n(fan, 'angle', 4)}deg)`; }); }, () => children.forEach((el, i) => el.style.transform = originals[i]));
         }
         const diagonal = find('grid-diagonal-turn');
-        if (diagonal)
-            r.entrance(() => { const children = direct().slice(0, 24), boxes = children.map(el => el.getBoundingClientRect()), xs = [...new Set(boxes.map(b => Math.round(b.left)))].sort((a, b) => a - b), ys = [...new Set(boxes.map(b => Math.round(b.top)))].sort((a, b) => a - b); children.forEach((el, i) => { const col = xs.indexOf(Math.round(boxes[i].left)), row = ys.indexOf(Math.round(boxes[i].top)); const order = diagonal.validatedControls.order === 'center' ? Math.abs(col - (xs.length - 1) / 2) + Math.abs(row - (ys.length - 1) / 2) : diagonal.validatedControls.order === 'column' ? col * ys.length + row : row * xs.length + col; const diagonalDelay = (row + col) * n(diagonal, 'staggerMs', 80), delay = Math.min(1000, (diagonal.validatedControls.order === 'center' ? order : order * .3) * n(diagonal, 'staggerMs', 80) + diagonalDelay); r.animate(el, [{ opacity: 0, transform: 'perspective(800px) rotateX(-35deg) translateY(8px)' }, { opacity: 1, transform: 'perspective(800px) rotateX(0) translateY(0)' }], { duration: n(diagonal, 'durationMs', 600), delay, fill: 'backwards', easing: 'cubic-bezier(.16,1,.3,1)' }); }); });
+        if (diagonal) r.entrance(() => {
+            const children = direct().slice(0, 24);
+            const boxes = children.map(el => el.getBoundingClientRect());
+            const xs = [...new Set(boxes.map(b => Math.round(b.left)))].sort((a, b) => a - b);
+            const ys = [...new Set(boxes.map(b => Math.round(b.top)))].sort((a, b) => a - b);
+            const interval = n(diagonal, 'staggerMs', 80), order = diagonal.validatedControls.order;
+            children.forEach((el, i) => {
+                const col = xs.indexOf(Math.round(boxes[i].left)), row = ys.indexOf(Math.round(boxes[i].top));
+                const fromCenter = Math.hypot(col - (xs.length - 1) / 2, row - (ys.length - 1) / 2);
+                const rank = order === 'center' ? Math.abs(col - (xs.length - 1) / 2) + Math.abs(row - (ys.length - 1) / 2) : order === 'column' ? col * ys.length + row : row * xs.length + col;
+                const radial = diagonal.validatedControls.motion === 'radial';
+                const delay = Math.min(1000, (radial ? fromCenter : (order === 'center' ? rank : rank * .3) + row + col) * interval);
+                const frames = radial ? [
+                    { scale: '.74', opacity: .32 }, { scale: '1.065', opacity: 1, offset: .66 }, { scale: '1', opacity: 1 },
+                ] : [{ opacity: 0, transform: 'perspective(800px) rotateX(-35deg) translateY(8px)' }, { opacity: 1, transform: 'perspective(800px) rotateX(0) translateY(0)' }];
+                r.animate(el, frames, { duration: n(diagonal, 'durationMs', 600), delay, fill: 'backwards', easing: 'cubic-bezier(.16,1,.3,1)' });
+            });
+        });
         const path = find('svg-path-drawing'), gauge = find('numeric-gauge-sweep');
         if (path || gauge) {
             const e = (path ?? gauge)!;

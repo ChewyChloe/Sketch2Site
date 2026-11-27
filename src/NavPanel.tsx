@@ -12,6 +12,7 @@ const motionNames: Record<MenuMotion, string> = {
 const styles: { id: NavStyle; name: string; hint: string }[] = [
   { id: "top-sticky", name: "頂部固定", hint: "捲動時一直在最上面" },
   { id: "top-static", name: "頂部不固定", hint: "跟著頁面一起捲走" },
+  { id: "top-compact", name: "捲動縮緊", hint: "下捲時縮小標誌並換成半透明底" },
   { id: "top-autohide", name: "往下捲時藏起", hint: "往上捲就出現" },
   { id: "side-left", name: "左側目錄", hint: "像論文目錄，可收起" },
   { id: "side-right", name: "右側目錄", hint: "像論文目錄，可收起" },

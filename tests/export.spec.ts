@@ -67,7 +67,7 @@ test("downloaded React project installs and builds independently; runtime stays 
   );
   await openWebsiteWorkspace(page);
   const input = structuredClone(demoPage);
-  input.chrome = { nav: true, footer: false, navStyle: "top-sticky", menuMotion: "strips" };
+  input.chrome = { nav: true, footer: false, navStyle: "top-compact", menuMotion: "strips" };
   const layoutSection = input.sections[0];
   layoutSection.sectionLayout = { arrangement: { mode: "masonry", columns: 2, gap: "medium", mobile: "stack" }, fullBleed: true };
   const cinematic = thirdFixture();
@@ -76,7 +76,14 @@ test("downloaded React project installs and builds independently; runtime stays 
   story.effects[0].validatedControls.presentation = "media";
   const gooey = cinematic.sections.map(section => section.children![0]).find(node => node.effects[0].presetId === "gooey-blob-merge")!;
   gooey.effects[0].validatedControls.flow = "drift";
-  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advancedFixture().sections,...cinematic.sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
+  const advanced = advancedFixture();
+  for (const node of advanced.sections[0].children!) {
+    for (const effect of node.effects) {
+      if (effect.presetId === "split-line-assembly") effect.validatedControls.flow = "clarify";
+      if (effect.presetId === "grid-diagonal-turn") effect.validatedControls.motion = "radial";
+    }
+  }
+  const motions=motionFixture();motions.sections[0].children![0].level=2;const extended=extendedMotionFixture();extended.sections[0].children![0].level=2;input.sections.push(...motions.sections,...extended.sections,...advanced.sections,...cinematic.sections,...[(()=>{const r=referenceFixture(true).sections;return {...r[0],children:r.flatMap(x=>x.children)};})()] as typeof input.sections);
   const countdown = {
     id: motionId(25), type: "paragraph" as const, content: "7",
     effects: [createMotion("count-up", motionId(25), { cadence: "impact", startValue: 10, endValue: 7, durationMs: 1200 })],
@@ -222,6 +229,10 @@ z.extractall(root)
       await expect(text).toHaveAttribute("data-effects", "marquee-text");
       await expect(text).toHaveAccessibleName("城市聲音與日常風景");
     }
+    const compactNav = standalone.locator(".page-nav");
+    await expect(compactNav).toHaveAttribute("data-nav-style", "top-compact");
+    await standalone.evaluate(() => window.scrollTo(0, 190));
+    await expect(compactNav).toHaveClass(/is-compact/);
     const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
     await expect(exportedLayout).toHaveCSS("column-count", "2");
     await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");

@@ -636,6 +636,7 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
     document.addEventListener("keydown", onKeyDown, true);
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [open]);
+  const [compact, setCompact] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [active, setActive] = useState<string | null>(null);
@@ -643,13 +644,22 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
   const side = style === "side-left" || style === "side-right";
   // Hide-on-scroll for the top bar, and "you are here" for the side list.
   useEffect(() => {
-    if (style !== "top-autohide" && !side && style !== "dots") return;
+    if (style !== "top-autohide" && style !== "top-compact" && !side && style !== "dots") return;
     const root = scrollRoot(ref.current);
     const top = () => (root instanceof Window ? root.scrollY : root.scrollTop);
     let last = top();
     const onScroll = () => {
       const y = top();
-      if (style === "top-autohide") { if (Math.abs(y - last) > 6) { setHidden(y > last && y > 80); last = y; } return; }
+      if (style === "top-compact") {
+        setCompact(current => current ? y > 54 : y > 78);
+        return;
+      }
+      if (style === "top-autohide") {
+        if (y < last || y <= 80) setHidden(false);
+        else if (y > last) setHidden(true);
+        last = y;
+        return;
+      }
       if (isPages) return;
       const rootTop = root instanceof Window ? 0 : root.getBoundingClientRect().top;
       let current: string | null = null;
@@ -728,7 +738,7 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
       </div>
     );
   return (
-    <header ref={ref} className={"page-nav nav-" + style + (hidden && !open ? " is-hidden" : "") + (open ? " is-open" : "")} data-nav-style={style}>
+    <header ref={ref} className={"page-nav nav-" + style + (style === "top-autohide" && hidden && !open ? " is-hidden" : "") + (style === "top-compact" && compact ? " is-compact" : "") + (open ? " is-open" : "")} data-nav-style={style}>
       {brand}
       {menu}
       {list}

@@ -2058,3 +2058,11 @@
 .ref-reading-dot, .ref-reading-mark { position: absolute; inset: 0 auto auto 0; background: currentColor; opacity: 0; }
 .ref-reading-dot { width: 5px; height: 5px; border-radius: 50%; margin: -3px 0 0 -2px; }
 .ref-reading-mark { height: 2px; border-radius: 1px; }
+
+.page-nav.nav-top-compact, .page-nav.nav-top-compact .page-brand { transition: padding 220ms ease, scale 220ms ease, background-color 220ms ease; }
+.page-nav.nav-top-compact.is-compact { padding-block: 5px; background-color: color-mix(in srgb, var(--pg-page, #fff) 83%, transparent); backdrop-filter: blur(12px); }
+.page-nav.nav-top-compact.is-compact .page-brand { scale: .86; transform-origin: left center; }
+.page-nav.nav-top-autohide.is-hidden:focus-within { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .page-nav.nav-top-compact, .page-nav.nav-top-compact .page-brand { transition: none; }
+}

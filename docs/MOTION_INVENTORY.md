@@ -26,14 +26,14 @@
 | `fold-reveal` | 折頁揭露 / Fold Reveal | 卡片與區塊 | 拖曳、點擊時 | 立體 | 互動回饋 | 強烈 | foldCorner, revealThreshold, springResponse, foldShadow, clickToToggle, underText | 可 | FoldReveal.tsx |
 | `letter-assembly` | 逐字聚合 / Letter Assembly | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | arrival, durationMs, distancePx, intervalMs | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `accent-stroke` | 重點描線 / Accent Stroke | 文字 | 出現時 | 線條圖形 | 吸引注意、引導閱讀 | 輕柔 | durationMs, thicknessPx | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
-| `image-reveal` | 影像展幕 / Image Reveal | 圖片 | 出現時 | 遮罩揭露 | 吸引注意 | 輕柔 | durationMs, direction | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
+| `image-reveal` | 影像展幕 / Image Reveal | 圖片 | 出現時 | 遮罩揭露 | 吸引注意 | 輕柔 | durationMs, edge, direction | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `magnetic-control` | 磁吸按鈕 / Magnetic Control | 按鈕 | 滑過時 | 位移滑動 | 互動回饋 | 適中 | strengthPx, responseMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `press-feedback` | 按壓回饋 / Press Feedback | 按鈕、卡片與區塊 | 點擊時 | 彈性 | 互動回饋 | 輕柔 | scale, durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `focus-transfer` | 群組焦點轉移 / Focus Transfer | 卡片與區塊 | 滑過時 | 放大縮小 | 互動回饋 | 適中 | inactiveOpacity, durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `scroll-progress` | 區塊閱讀進度 / Scroll Progress | 卡片與區塊 | 捲動時 | 數字資料 | 呈現資料 | 適中 | thicknessPx | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `disclosure-panel` | 詳情收合 / Disclosure Panel | 卡片與區塊 | 點擊時 | 遮罩揭露 | 互動回饋 | 適中 | presentation, durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `character-decode` | 字元解碼 / Character Decode | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | decodeSpeedMs, characterDelayMs | — | AdvancedMotion.tsx |
-| `split-line-assembly` | 文字分行組合 / Split Line Assembly | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | durationMs, staggerMs, distancePx | — | AdvancedMotion.tsx |
+| `split-line-assembly` | 文字分行組合 / Split Line Assembly | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | flow, durationMs, staggerMs, distancePx | — | AdvancedMotion.tsx |
 | `rolling-characters` | 滾輪文字 / Rolling Characters | 文字 | 出現時、點擊時 | 文字逐字 | 互動回饋、引導閱讀 | 適中 | durationMs, staggerMs | — | AdvancedMotion.tsx |
 | `hand-drawn-highlight` | 手繪螢光標記 / Hand-Drawn Highlight | 文字 | 出現時 | 線條圖形 | 吸引注意、引導閱讀 | 適中 | durationMs, thickness, color | — | AdvancedMotion.tsx |
 | `kinetic-text-wave` | 動態文字波浪 / Kinetic Text Wave | 文字 | 出現時、滑過時 | 文字逐字 | 互動回饋、引導閱讀 | 適中 | form, durationMs, amplitudePx, trigger | 可 | AdvancedMotion.tsx |
@@ -48,7 +48,7 @@
 | `cinematic-image-pan` | 電影式鏡頭移動 / Cinematic Image Pan | 圖片 | 出現時 | 位移滑動 | 吸引注意 | 適中 | durationMs, iterations, direction | — | AdvancedMotion.tsx |
 | `card-deck-fan` | 卡片扇形展開 / Card Deck Fan | 卡片與區塊 | 滑過時 | 位移滑動 | 互動回饋 | 適中 | angle, distancePx, durationMs | 可 | AdvancedMotion.tsx |
 | `layered-parallax` | 分層視差 / Layered Parallax | 卡片與區塊 | 捲動時 | 立體 | 吸引注意 | 適中 | distancePx | — | AdvancedMotion.tsx |
-| `grid-diagonal-turn` | 網格對角翻入 / Grid Diagonal Turn | 卡片與區塊 | 出現時 | 立體 | 吸引注意 | 適中 | durationMs, staggerMs, order | — | AdvancedMotion.tsx |
+| `grid-diagonal-turn` | 網格對角翻入 / Grid Diagonal Turn | 卡片與區塊 | 出現時 | 立體 | 吸引注意 | 適中 | motion, durationMs, staggerMs, order | — | AdvancedMotion.tsx |
 | `svg-path-drawing` | 路徑描繪 / SVG Path Drawing | 卡片與區塊 | 出現時 | 線條圖形 | 吸引注意 | 適中 | durationMs, thicknessPx, color, shape | — | AdvancedMotion.tsx |
 | `numeric-gauge-sweep` | 數值儀表掃描 / Numeric Gauge Sweep | 文字 | 出現時 | 數字資料 | 呈現資料、引導閱讀 | 適中 | durationMs | — | AdvancedMotion.tsx |
 | `scroll-milestones` | 區塊閱讀里程碑 / Scroll Milestones | 卡片與區塊 | 捲動時 | 數字資料 | 呈現資料 | 適中 | steps, orientation | — | AdvancedMotion.tsx |

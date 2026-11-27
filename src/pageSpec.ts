@@ -5,7 +5,7 @@ import { z } from "zod";
 import { motionIds, MotionSchema, bindMotionInput, compatibleMotion, combinationReason, targetReason, withinMotionBudget, type MotionInstance } from "./motion";
 // Site navigation set in the draft (導覽列). Items are keyed by the heading or page they link to;
 // order, a custom label and hiding are all optional. Without settings the site picks its own.
-export const navStyles = ["top-sticky", "top-static", "top-autohide", "side-left", "side-right", "floating", "dots", "none"] as const;
+export const navStyles = ["top-sticky", "top-compact", "top-static", "top-autohide", "side-left", "side-right", "floating", "dots", "none"] as const;
 export type NavStyle = (typeof navStyles)[number];
 export const menuMotions = ["cross", "return", "glide", "line", "capsule", "strips"] as const;
 export type MenuMotion = (typeof menuMotions)[number];
