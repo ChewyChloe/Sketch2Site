@@ -668,6 +668,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 | 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
 | --- | --- | --- | --- | --- |
+| presentation | 內容切換 | select | "disclosure" | disclosure / tabs |
 | durationMs | 時長（毫秒） | number | 240 | 100–600; step 1 |
 
 **designIntent**：讓卡片先呈現摘要，再由使用者選擇查看原有補充內容。
@@ -676,7 +677,7 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 
 **compatibilityRules**：僅卡片；使用既有子元素，不要求額外內容字串
 
-**constraints**：首個子項始終顯示；執行時展開或收合第一項之後的實際子元素；使用aria-expanded與aria-controls；收合前移回內部焦點，隱藏內容不可操作；無後續子項時靜態顯示
+**constraints**：分頁模式需要 2 至 5 張附標題的子卡片；收合模式首個子項始終顯示；執行時展開或收合第一項之後的實際子元素；使用aria-expanded與aria-controls；收合前移回內部焦點，隱藏內容不可操作；無後續子項時靜態顯示
 
 **reducedMotionFallback**：立即切換展開與收合，不播放過渡
 

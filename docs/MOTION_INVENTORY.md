@@ -31,7 +31,7 @@
 | `press-feedback` | 按壓回饋 / Press Feedback | 按鈕、卡片與區塊 | 點擊時 | 彈性 | 互動回饋 | 輕柔 | scale, durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `focus-transfer` | 群組焦點轉移 / Focus Transfer | 卡片與區塊 | 滑過時 | 放大縮小 | 互動回饋 | 適中 | inactiveOpacity, durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `scroll-progress` | 區塊閱讀進度 / Scroll Progress | 卡片與區塊 | 捲動時 | 數字資料 | 呈現資料 | 適中 | thicknessPx | — | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
-| `disclosure-panel` | 詳情收合 / Disclosure Panel | 卡片與區塊 | 點擊時 | 遮罩揭露 | 互動回饋 | 適中 | durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
+| `disclosure-panel` | 詳情收合 / Disclosure Panel | 卡片與區塊 | 點擊時 | 遮罩揭露 | 互動回饋 | 適中 | presentation, durationMs | 可 | MotionRuntime.tsx / ExtendedMotion.tsx / PageRuntime.tsx |
 | `character-decode` | 字元解碼 / Character Decode | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | decodeSpeedMs, characterDelayMs | — | AdvancedMotion.tsx |
 | `split-line-assembly` | 文字分行組合 / Split Line Assembly | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | durationMs, staggerMs, distancePx | — | AdvancedMotion.tsx |
 | `rolling-characters` | 滾輪文字 / Rolling Characters | 文字 | 出現時、點擊時 | 文字逐字 | 互動回饋、引導閱讀 | 適中 | durationMs, staggerMs | — | AdvancedMotion.tsx |

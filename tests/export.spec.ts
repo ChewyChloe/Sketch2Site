@@ -1,5 +1,5 @@
 import { galleryCategorySection } from "./fixtures/galleryCategories";
-import {thirdFixture} from "./fixtures/cinematicMotions";
+import {thirdFixture, tabsFixture} from "./fixtures/cinematicMotions";
 import {advancedFixture} from "./fixtures/advancedMotions";
 import {openWebsiteWorkspace} from "./helpers/workbench";
 import { exportSite } from "./helpers/workbench";
@@ -84,7 +84,7 @@ test("downloaded React project installs and builds independently; runtime stays 
       if (n.children) replaceImage(n.children);
     });
   replaceImage(input.sections);
-  input.sections.push(galleryCategorySection());
+  input.sections.push(galleryCategorySection(), ...tabsFixture().sections);
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
   await page.getByLabel("載入頁面檔案").setInputFiles({
@@ -200,6 +200,10 @@ z.extractall(root)
     await gallery.getByRole("button", { name: "靜物" }).click();
     await expect(gallery.getByRole("img")).toHaveCount(1);
     await expect(gallery.getByRole("img")).toHaveAttribute("alt", "第二張");
+    const tablist = standalone.getByRole("tablist", { name: "內容分頁" });
+    await tablist.getByRole("tab", { name: "構思" }).press("ArrowRight");
+    await expect(tablist.getByRole("tab", { name: "設計" })).toBeFocused();
+    await expect(standalone.getByRole("tabpanel", { name: "設計" })).toBeVisible();
     const exportedLayout = standalone.locator('[data-section-arrangement="masonry"]');
     await expect(exportedLayout).toHaveCSS("column-count", "2");
     await expect(standalone.locator(`[data-page-id="${layoutSection.id}"]`)).toHaveAttribute("data-section-bleed", "");

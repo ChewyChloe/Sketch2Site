@@ -7,12 +7,12 @@ import {StoryGroup,CardShuffle,FrameSequence,storyGroupIds} from "./StoryMotion"
 import {useAdvancedMotion,AdvancedText,advancedTextIds} from "./AdvancedMotion";
 import {useSignatureMotion} from "./SignatureMotion";
 import {useReferenceMotion} from "./ReferenceMotion";
-import {useExtendedMotion,LetterAssembly,AccentStroke,DisclosurePanel} from "./ExtendedMotion";
+import {useExtendedMotion,LetterAssembly,AccentStroke,DisclosurePanel,TabbedPanels} from "./ExtendedMotion";
 import {FoldReveal} from "./FoldReveal";
 import {PhysicsTags} from "./PhysicsTags";
 import {CountUp,CurvedText,FlipCard,useReducedMotion} from "./MotionRuntime";
 import {MediaView} from "./MediaRuntime";
-import { motionCatalog, motionIds, motionNumber, motionDuration, splitStoryImage } from "./motion";
+import { motionCatalog, motionIds, motionNumber, motionDuration, splitStoryImage, tabPanelName } from "./motion";
 import {
   createContext,
   useContext,
@@ -480,7 +480,7 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
     >
       {node.type==="form"?<SiteForm node={node}/>:node.type==="media"&&node.media?<MediaView media={node.media} caption={node.content??""} resolve={(r)=>motionUrls[r]||import.meta.env.BASE_URL+r.slice(1)}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
         node.look?.depth ? <Depth3D mode={node.look.depth}><FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox></Depth3D> : <FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox>
-      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview} media={storyMedia?.length === node.children?.length ? storyMedia : undefined}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.type === "paragraph" && cardLineKind(node.content) === "tags" ? node.content!.trim().split(/\s+/).map((t, i) => <span key={i} className="line-tag">{t.replace(/^#/, "")}</span>) : node.content}
+      ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview} media={storyMedia?.length === node.children?.length ? storyMedia : undefined}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure?.validatedControls.presentation === "tabs" ? <TabbedPanels effect={disclosure} labels={node.children?.map(tabPanelName) ?? []}>{children}</TabbedPanels> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.type === "paragraph" && cardLineKind(node.content) === "tags" ? node.content!.trim().split(/\s+/).map((t, i) => <span key={i} className="line-tag">{t.replace(/^#/, "")}</span>) : node.content}
     </Tag>
   );
 });

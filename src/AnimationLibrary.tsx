@@ -48,7 +48,7 @@ function sampleMotion(id: EffectId, target: string, tuned: Record<string, unknow
 }
 function EffectSample({ id, active, text, controls: tuned }: { id: EffectId; active: boolean; text?: string; controls?: Record<string, unknown> }) {
   const [ids] = useState(() =>
-    Array.from({ length: 5 }, () => crypto.randomUUID()),
+    Array.from({ length: 11 }, () => crypto.randomUUID()),
   );
   const page = useMemo(() => {
     const paragraph=(index:number,content:string)=>({id:ids[index],type:"paragraph",content,style:{padding:"none",gap:"none"}});
@@ -66,13 +66,21 @@ function EffectSample({ id, active, text, controls: tuned }: { id: EffectId; act
     const controls=id==="count-up"?{endValue:128,durationMs:1200}:id==="curved-path-text"?{curvature:"medium"}:id==="flip-card"?{backText:"把細節，說清楚"}:id==="fold-reveal"?{underText:"下一層，藏著新想法"}:id==="physics-tag-field"?{labels:["設計","工程","研究"]}:{};
     const button=["confetti-burst","jelly-press","shine-sweep","cursor-spotlight","liquid-button-fill","radial-ink-ripple","orbiting-icon","border-light-trace","hover-glow","breathing-glow","magnetic-control","press-feedback"].includes(id);
     const leaf=["typewriter","marquee-text","gradient-text-flow","character-decode","split-line-assembly","rolling-characters","hand-drawn-highlight","kinetic-text-wave","numeric-gauge-sweep","count-up","curved-path-text","letter-assembly","accent-stroke"].includes(id);
+    const sampleTabs = id === "disclosure-panel" && tuned?.presentation === "tabs"
+      ? ["概覽", "細節", "安排"].map((label, i) => ({
+          id: ids[2 + i * 3], type: "card", children: [
+            { id: ids[3 + i * 3], type: "heading", level: 3, content: label },
+            paragraph(4 + i * 3, ["先看整體方向", "閱讀作品細節", "確認下一步"][i]),
+          ],
+        }))
+      : undefined;
     const content:Record<string,string>={"fade-in":"讓內容自然出現","slide-up":"向上，回到原位","scale-in":"讓重點被看見","hover-lift":"移入，輕輕浮起","flip-card":"從想法到作品","fold-reveal":"把這一頁揭開"};
     return PageSchema.parse({schemaVersion:2,metadata:{title:"動畫素材示意",language:"zh-Hant"},typography:"sans",styles:"neutral",responsive:{mobileColumns:1,desktopColumns:1},sections:[{
       id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:[{
         id:ids[1],type:["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?"image":button?"button":leaf?"paragraph":id==="physics-tag-field"?"container":"card",
         style:{padding:button?"small":leaf||id==="physics-tag-field"?"none":"small",gap:"small",tone:button?"accent":"plain"},
         effects:active||persistent?[sampleMotion(id,ids[1],tuned,controls)]:[],
-        ...(["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?{src:["blur-in","float-idle","cinematic-image-pan"].includes(id)?"/assets/samples/cafe.jpg":"/assets/samples/camera.jpg",alt:"圖片動畫示意"}:button?{content:id==="confetti-burst"?"報名成功！":id==="jelly-press"?"點我試試":id==="shine-sweep"?"立即購買":"看看作品",href:"#"+ids[1]}:leaf?{content:text&&!["numeric-gauge-sweep","count-up","rolling-characters"].includes(id)?text:id==="numeric-gauge-sweep"?"75%":id==="character-decode"?"Decode 想像 2026":id==="split-line-assembly"?"每一行靈感\n組成完整作品":id==="rolling-characters"?"2026 創作":id==="kinetic-text-wave"?"讓文字起舞":id==="hand-drawn-highlight"?"標記真正重要的事":id==="count-up"?"128":id==="letter-assembly"?"把靈感，拼成作品":id==="accent-stroke"?"讓重點被記住":id==="typewriter"?"你好，歡迎光臨！":id==="marquee-text"?"本週新品上市 · 第二杯半價 · 歡迎預約":id==="gradient-text-flow"?"把想法變成網站":"讓想法流動"}:{children:id==="physics-tag-field"?[]:["stagger-reveal","focus-transfer","disclosure-panel","scroll-progress","card-deck-fan","layered-parallax","grid-diagonal-turn","svg-path-drawing","scroll-milestones"].includes(id)?[paragraph(2,"構思"),paragraph(3,"設計"),paragraph(4,"實作")]:[paragraph(2,content[id]??"內容示意")]}),
+        ...(["image-reveal","venetian-reveal","circular-mask-expansion","cinematic-image-pan","blur-in","float-idle"].includes(id)?{src:["blur-in","float-idle","cinematic-image-pan"].includes(id)?"/assets/samples/cafe.jpg":"/assets/samples/camera.jpg",alt:"圖片動畫示意"}:button?{content:id==="confetti-burst"?"報名成功！":id==="jelly-press"?"點我試試":id==="shine-sweep"?"立即購買":"看看作品",href:"#"+ids[1]}:leaf?{content:text&&!["numeric-gauge-sweep","count-up","rolling-characters"].includes(id)?text:id==="numeric-gauge-sweep"?"75%":id==="character-decode"?"Decode 想像 2026":id==="split-line-assembly"?"每一行靈感\n組成完整作品":id==="rolling-characters"?"2026 創作":id==="kinetic-text-wave"?"讓文字起舞":id==="hand-drawn-highlight"?"標記真正重要的事":id==="count-up"?"128":id==="letter-assembly"?"把靈感，拼成作品":id==="accent-stroke"?"讓重點被記住":id==="typewriter"?"你好，歡迎光臨！":id==="marquee-text"?"本週新品上市 · 第二杯半價 · 歡迎預約":id==="gradient-text-flow"?"把想法變成網站":"讓想法流動"}:{children:sampleTabs ?? (id==="physics-tag-field"?[]:["stagger-reveal","focus-transfer","disclosure-panel","scroll-progress","card-deck-fan","layered-parallax","grid-diagonal-turn","svg-path-drawing","scroll-milestones"].includes(id)?[paragraph(2,"構思"),paragraph(3,"設計"),paragraph(4,"實作")]:[paragraph(2,content[id]??"內容示意")])}),
       }],
     }]});
   },[id,active,ids,text,tuned]);
@@ -271,6 +279,9 @@ export function AnimationLibrary({
                 <button type="button" className="motion-replay" aria-label={(["hover-lift","hover-glow"].includes(id)?"體驗":"重播")+effectLabels[id]+"示意"} onClick={(e)=>{
                   const asset=e.currentTarget.closest(".animation-asset");
                   setActive(id);setReplay(values=>({...values,[id]:(values[id]??0)+1}));
+                  if (id === "disclosure-panel" && tuned[id]?.presentation === "tabs") requestAnimationFrame(() => {
+                    asset?.querySelectorAll<HTMLButtonElement>(".asset-preview [role=tab]")[1]?.click();
+                  });
                   if(["hover-lift","hover-glow"].includes(id))requestAnimationFrame(()=>{
                     if(asset?.isConnected)asset.querySelector<HTMLElement>(".effect-lift,.effect-glow")?.focus({preventScroll:true});
                   });

@@ -9,9 +9,9 @@
  "categories": {
   "需要新增動畫": 93,
   "不適合目前架構或需要額外授權": 74,
-  "既有功能可擴充": 111,
+  "既有功能可擴充": 112,
   "已有同等功能": 58,
-  "需要新增複合互動元件": 11
+  "需要新增複合互動元件": 10
  },
  "rows": [
   {
@@ -4286,16 +4286,17 @@
     "switch"
    ],
    "technique": "GSAP",
-   "category": "需要新增複合互動元件",
-   "sketch2site": null,
+   "category": "既有功能可擴充",
+   "sketch2site": "disclosure-panel",
    "priority": "P3",
-   "note": "分頁內容切換",
+   "note": "底線指示與方向轉場的分頁模式",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedComponentBatch": 10,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {

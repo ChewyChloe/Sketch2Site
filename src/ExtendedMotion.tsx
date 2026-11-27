@@ -206,3 +206,76 @@ export function DisclosurePanel({ effect, children }: { effect: MotionInstance; 
         animation.current?.cancel(); setOpen(value => !value);
     }}>{open ? '收合內容' : '展開內容'}</button><div ref={ref} id={id} className="extended-disclosure-content" hidden={!open} inert={!open}>{parts.slice(1)}</div></>}</div>;
 }
+
+export function TabbedPanels({ effect, labels, children }: { effect: MotionInstance; labels: string[]; children: ReactNode }) {
+    const id = useId(), reduced = useReducedMotion(), duration = motionNumber(effect, 'durationMs', 240);
+    const parts = Children.toArray(children);
+    const [selection, setSelection] = useState({ current: 0, outgoing: -1 });
+    const current = Math.min(selection.current, parts.length - 1);
+    const tablist = useRef<HTMLDivElement>(null), bar = useRef<HTMLSpanElement>(null);
+    const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+    const panels = useRef<(HTMLDivElement | null)[]>([]);
+    useEffect(() => {
+        const tab = tabs.current[current], marker = bar.current;
+        if (!tab || !marker) return;
+        const placeMarker = () => {
+            marker.style.translate = tab.offsetLeft + 'px';
+            marker.style.width = tab.offsetWidth + 'px';
+        };
+        placeMarker();
+        const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(placeMarker);
+        if (tablist.current) observer?.observe(tablist.current);
+        observer?.observe(tab);
+        return () => observer?.disconnect();
+    }, [current]);
+    useEffect(() => {
+        const next = panels.current[current], previous = panels.current[selection.outgoing];
+        if (selection.outgoing < 0) return;
+        if (!next || !previous || reduced || !next.animate) {
+            setSelection(value => ({ ...value, outgoing: -1 }));
+            return;
+        }
+        const direction = selection.outgoing < current ? 1 : -1;
+        const incoming = next.animate([{ translate: direction * 28 + 'px', opacity: 0 }, { translate: '0px', opacity: 1 }], { duration, easing: 'ease-out' });
+        const outgoing = previous.animate([{ translate: '0px', opacity: 1 }, { translate: direction * -28 + 'px', opacity: 0 }], { duration, easing: 'ease-in' });
+        outgoing.onfinish = () => setSelection(value => ({ ...value, outgoing: -1 }));
+        return () => { outgoing.onfinish = null; incoming.cancel(); outgoing.cancel(); };
+    }, [current, selection.outgoing, duration, reduced]);
+
+    if (parts.length !== labels.length || !labels.every(Boolean)) return children;
+    const choose = (index: number) => {
+        if (index === current) return;
+        setSelection({ current: index, outgoing: reduced || !panels.current[index]?.animate ? -1 : current });
+    };
+    return <div className="extended-tabs" style={{ '--tab-duration': duration + 'ms' } as React.CSSProperties}>
+        <div className="extended-tabs-rail">
+            <div className="extended-tabs-list" ref={tablist} role="tablist" aria-label="內容分頁">
+                {labels.map((label, i) => <button key={i} ref={node => { tabs.current[i] = node; }} type="button"
+                    id={id + '-tab-' + i} role="tab" aria-controls={id + '-panel-' + i} aria-selected={current === i}
+                    tabIndex={current === i ? 0 : -1} onClick={() => choose(i)} onKeyDown={event => {
+                        let index: number;
+                        switch (event.key) {
+                            case 'ArrowRight': index = (i + 1) % labels.length; break;
+                            case 'ArrowLeft': index = (i + labels.length - 1) % labels.length; break;
+                            case 'Home': index = 0; break;
+                            case 'End': index = labels.length - 1; break;
+                            default: return;
+                        }
+                        event.preventDefault();
+                        tabs.current[index]?.focus();
+                        choose(index);
+                    }}>{label}</button>)}
+                <span ref={bar} className="extended-tabs-marker" aria-hidden="true" />
+            </div>
+        </div>
+        <div className="extended-tabs-panels">
+            {parts.map((part, i) => {
+                const active = i === current, outgoing = !reduced && i === selection.outgoing;
+                return <div key={i} ref={node => { panels.current[i] = node; }} id={id + '-panel-' + i}
+                    role="tabpanel" aria-labelledby={id + '-tab-' + i} tabIndex={active ? 0 : -1}
+                    hidden={!active && !outgoing} inert={!active} aria-hidden={!active}
+                    data-outgoing={outgoing ? '' : undefined}>{part}</div>;
+            })}
+        </div>
+    </div>;
+}

@@ -101,11 +101,20 @@ export function splitStoryImage(card: unknown) {
     return first >= 0 && kinds.lastIndexOf('image') === first &&
         kinds.some(type => type === 'heading' || type === 'paragraph') ? first : -1;
 }
+export function tabPanelName(card: unknown): string {
+    const node = card as MotionTarget | undefined;
+    if (node?.type !== "card") return "";
+    const heading = node.children?.find(child => (child as MotionTarget | undefined)?.type === "heading") as MotionTarget | undefined;
+    return heading?.content?.trim() ?? "";
+}
 export function compatibleMotion(target: MotionTarget, e: MotionInstance): boolean {
     if (e.targetId !== target.id || targetReason(target, e.presetId, e.presetVersion))
         return false;
     if (e.presetId === 'pinned-story-panels' && e.validatedControls.presentation === 'media' &&
         (!target.children || target.children.some(card => splitStoryImage(card) < 0))) return false;
+    if (e.presetId === 'disclosure-panel' && e.validatedControls.presentation === 'tabs' &&
+        (!target.children || target.children.length < 2 || target.children.length > 5 ||
+         target.children.some(card => !tabPanelName(card)))) return false;
     if (e.presetId === 'count-up') {
         const c = e.validatedControls, raw = target.content ?? '', prefix = String(c.prefix ?? ''), suffix = String(c.suffix ?? '');
         if (!raw.startsWith(prefix) || !raw.endsWith(suffix))

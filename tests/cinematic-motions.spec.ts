@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { cinematicMotionIds, motionCatalog } from '../src/motionCatalog';
 import { PageSchema } from '../src/pageSpec';
 import { cinematicSampleControls } from '../src/cinematicSamples';
-import { thirdFixture, thirdId, thirdCanvas } from './fixtures/cinematicMotions';
+import { thirdFixture, thirdId, thirdCanvas, tabsFixture } from './fixtures/cinematicMotions';
 import { openWebsiteWorkspace, openPanel, editSelection } from './helpers/workbench';
 async function load(page: Page, id?: string, bare = false) { const errors: string[] = [], paid: string[] = []; page.on('pageerror', e => errors.push(e.message)); page.on('request', r => { if (r.method() === 'POST' && new URL(r.url()).pathname === '/api/generation')
     paid.push(r.url()); }); await page.goto('/?draft'); await expect(page.getByRole('status')).toContainText('草稿已就緒'); await openWebsiteWorkspace(page); await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'cinematic.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(thirdFixture(id, bare))) }); await expect(page.getByTestId('page-save-status')).toHaveText('已儲存'); return () => { expect(errors).toEqual([]); expect(paid).toEqual([]); }; }
@@ -313,4 +313,48 @@ test('pinned image changes while story copy scrolls and falls back to readable c
         await expect(el.locator('.story-vertical img')).toHaveCount(3);
         await expect(el.locator('.story-vertical').getByRole('heading')).toHaveCount(3);
     }
+});
+
+test('disclosure tabs support a sliding marker, directional panels and keyboard navigation', async ({ page }) => {
+    const input = tabsFixture();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/?draft');
+    await openWebsiteWorkspace(page);
+    await page.getByLabel('載入頁面檔案').setInputFiles({ name: 'tabs.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(input)) });
+    const pane = page.locator('.preview-frame .extended-tabs');
+    const tabs = pane.getByRole('tablist');
+    const first = tabs.getByRole('tab', { name: '構思' });
+    const second = tabs.getByRole('tab', { name: '設計' });
+    const marker = pane.locator('.extended-tabs-marker');
+    await expect(first).toHaveAttribute('aria-selected', 'true');
+    await expect(marker).toHaveCSS('translate', '0px');
+    await first.press('ArrowRight');
+    await expect(second).toBeFocused();
+    await expect(second).toHaveAttribute('aria-selected', 'true');
+    await expect(pane.getByRole('tabpanel', { name: '設計' })).toHaveCount(1);
+    await expect.poll(() => pane.evaluate(el => el.getAnimations({ subtree: true }).filter(animation => animation instanceof Animation && !(animation instanceof CSSTransition)).length)).toBeGreaterThan(0);
+    await expect(marker).not.toHaveCSS('translate', '0px');
+    await expect(pane.locator('[data-outgoing]')).toHaveCount(0);
+    await page.setViewportSize({ width: 375, height: 860 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await second.press('End');
+    await expect(tabs.getByRole('tab', { name: '實作' })).toBeFocused();
+    await expect(pane.getByRole('tabpanel', { name: '實作' })).toBeVisible();
+    await expect(pane.getByRole('tabpanel')).toHaveCount(1);
+    expect(await pane.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0);
+    expect(await pane.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+});
+
+test('the animation library previews and replays tuned disclosure tabs', async ({ page }) => {
+    await page.goto('/?draft');
+    await page.getByRole('button', { name: '動畫素材庫', exact: true }).click();
+    await page.getByRole('searchbox', { name: '搜尋元件與動畫' }).fill('disclosure-panel');
+    const asset = page.locator('.sidebar [data-effect-id="disclosure-panel"]');
+    await asset.getByRole('button', { name: '調整詳情收合參數' }).click();
+    await choose(asset.getByRole('combobox', { name: '內容切換' }), 'tabs');
+    const tablist = asset.getByRole('tablist', { name: '內容分頁' });
+    await expect(tablist.getByRole('tab', { name: '概覽' })).toHaveAttribute('aria-selected', 'true');
+    await asset.getByRole('button', { name: '重播詳情收合示意' }).click();
+    await expect(tablist.getByRole('tab', { name: '細節' })).toHaveAttribute('aria-selected', 'true');
+    await expect(asset.getByRole('tabpanel', { name: '細節' })).toContainText('閱讀作品細節');
 });

@@ -1966,3 +1966,16 @@
 .gallery-categories { flex-wrap: wrap; justify-content: flex-start; }
 .gallery-categories button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--pg-page, #fff); }
 .gallery-views [data-gallery-filtered] { display: none !important; }
+
+.extended-tabs { min-width: 0; }
+.extended-tabs-rail { overflow-x: auto; border-bottom: 1px solid var(--line); }
+.extended-tabs-list { position: relative; display: flex; width: max-content; min-width: 100%; }
+.extended-tabs-list [role="tab"] { background: transparent; border: 0; color: var(--ink); font: inherit; padding: 12px 14px; cursor: pointer; }
+.extended-tabs-list [role="tab"][aria-selected="true"] { font-weight: 650; }
+.extended-tabs-list [role="tab"]:focus-visible { outline-offset: -3px; }
+.extended-tabs-marker { position: absolute; pointer-events: none; inset-inline-start: 0; bottom: 0; height: 3px; background: var(--accent, currentColor); transition: translate var(--tab-duration) ease, width var(--tab-duration) ease; }
+.extended-tabs-panels { position: relative; overflow: hidden; padding: 8px; }
+.extended-tabs-panels > [data-outgoing] { position: absolute; inset: 8px; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .extended-tabs-marker { transition: none; }
+}
