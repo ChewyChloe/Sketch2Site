@@ -69,10 +69,10 @@ describe("media on the generated site", () => {
   });
   it("builds a page that has only media (no heading or text)", () => {
     for (const layoutMode of ["preserve", "reflow"] as const) {
-      const nodes = mediaKinds.map((k, i) => createMediaNode(k, 80, 80 + i * 300, 1800));
+      const nodes = mediaKinds.map((k, i) => createMediaNode(k, 80, 80 + i * 250, 1800));
       nodes[0] = { ...nodes[0], media: { kind: "video", provider: "youtube", videoId: "dQw4w9WgXcQ", autoplay: false, loop: false } };
       const c = CanvasSchema.parse({ ...blank(), metadata: { ...blank().metadata, height: 1800, layoutMode }, nodes });
-      expect(mediaNodes(createSiteCandidate(c).page.sections)).toHaveLength(5);
+      expect(mediaNodes(createSiteCandidate(c).page.sections)).toHaveLength(mediaKinds.length);
     }
   });
   it("is not built while a video has no link", () => {
@@ -99,5 +99,18 @@ describe("reading order of a hand-placed draft", () => {
     const card = (x: number, y: number, content: string) => ({ ...createNode("card", x, y, 1800), content });
     const a = card(90, 630, "認識學長姐"), b = card(470, 660, "破冰遊戲"), c = card(860, 640, "抽獎時間"), below = card(90, 900, "下一排");
     expect(readingOrder([c, below, b, a]).map((n) => n.content)).toEqual(["認識學長姐", "破冰遊戲", "抽獎時間", "下一排"]);
+  });
+});
+
+describe("charts and tables", () => {
+  it("keep the author's own words and numbers and refuse markup or bad shapes", () => {
+    const chart = defaultMedia("chart"), table = defaultMedia("table");
+    expect(MediaSchema.safeParse(chart).success).toBe(true);
+    expect(MediaSchema.safeParse(table).success).toBe(true);
+    expect(MediaSchema.safeParse({ ...chart, points: [{ label: "一", value: 1 }] }).success).toBe(false);
+    expect(MediaSchema.safeParse({ ...chart, points: [{ label: "<b>x</b>", value: 1 }, { label: "y", value: 2 }] }).success).toBe(false);
+    expect(MediaSchema.safeParse({ kind: "chart", chart: "pie", unit: "", points: [{ label: "a", value: -1 }, { label: "b", value: 2 }] }).success).toBe(false);
+    expect(MediaSchema.safeParse({ ...table, rows: [["a", "b"], ["c"]] }).success).toBe(false);
+    expect(MediaSchema.safeParse({ ...table, rows: [["https://evil.example"]] }).success).toBe(false);
   });
 });

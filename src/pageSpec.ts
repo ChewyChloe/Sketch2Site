@@ -179,6 +179,10 @@ const hex = z.string().regex(/^#[0-9a-f]{6}$/i);
 export const characterIds = ["sprout", "cat", "bird", "robot", "ghost", "star"] as const;
 export const characterActions = ["wave", "bounce", "float", "blink", "spin"] as const;
 export const object3dShapes = ["cube", "coin", "ring"] as const;
+export const chartTypes = ["bar", "line", "pie"] as const;
+export const chartTypeLabels: Record<(typeof chartTypes)[number], string> = { bar: "長條圖", line: "折線圖", pie: "圓餅圖" };
+// Labels and cells are plain words: no markup, links or control characters.
+const dataText = (max: number) => z.string().max(max).refine((v) => !/<\s*\/?[a-z!]|https?:|javascript:|[\u0000-\u0008\u000b-\u001f\u007f]/i.test(v), "只接受純文字");
 export const MediaSchema = z.discriminatedUnion("kind", [
   // A new video has no link yet (videoId absent); the site cannot be built until one is pasted.
   z.object({ kind: z.literal("video"), provider: z.enum(["youtube", "vimeo"]), videoId: z.string().regex(/^[A-Za-z0-9_-]{6,20}$/).optional(), autoplay: z.boolean(), loop: z.boolean() }).strict()
@@ -187,6 +191,12 @@ export const MediaSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("flipbook"), images: z.array(imageSource).min(2).max(24) }).strict(),
   z.object({ kind: z.literal("character"), character: z.enum(characterIds), action: z.enum(characterActions), color: hex }).strict(),
   z.object({ kind: z.literal("object3d"), shape: z.enum(object3dShapes), images: z.array(imageSource).min(1).max(8), spin: z.boolean() }).strict(),
+  // A chart drawn from the author's own numbers (bar, line or pie); no outside data.
+  z.object({ kind: z.literal("chart"), chart: z.enum(chartTypes), points: z.array(z.object({ label: dataText(16).min(1), value: z.number().finite().min(-1e9).max(1e9) }).strict()).min(2).max(12), unit: dataText(6) }).strict()
+    .refine((c) => c.chart !== "pie" || (c.points.every((p) => p.value >= 0) && c.points.some((p) => p.value > 0)), "圓餅圖的數字要大於 0"),
+  // A table of plain text cells; the first row can be the header.
+  z.object({ kind: z.literal("table"), rows: z.array(z.array(dataText(60)).min(1).max(6)).min(1).max(20), header: z.boolean() }).strict()
+    .refine((t) => t.rows.every((r) => r.length === t.rows[0].length), "每一列的欄數要一樣"),
 ]);
 export type Media = z.infer<typeof MediaSchema>;
 /** YouTube (watch, youtu.be, shorts, embed) or Vimeo link → provider and id; anything else is refused. */
@@ -209,9 +219,9 @@ export function videoEmbedUrl(m: { provider: "youtube" | "vimeo"; videoId?: stri
     ? `https://www.youtube-nocookie.com/embed/${m.videoId}?rel=0&playsinline=1${play ? "&autoplay=1" : ""}${muted ? "&mute=1" : ""}${m.loop ? `&loop=1&playlist=${m.videoId}` : ""}`
     : `https://player.vimeo.com/video/${m.videoId}?dnt=1${play ? "&autoplay=1" : ""}${muted ? "&muted=1" : ""}${m.loop ? "&loop=1" : ""}`;
 }
-export const mediaKinds = ["video", "carousel", "flipbook", "character", "object3d"] as const;
+export const mediaKinds = ["video", "carousel", "flipbook", "chart", "table", "character", "object3d"] as const;
 export type MediaKind = (typeof mediaKinds)[number];
-export const mediaKindLabels: Record<MediaKind, string> = { video: "影片", carousel: "輪播圖片", flipbook: "翻頁書", character: "動畫角色", object3d: "3D 物件" };
+export const mediaKindLabels: Record<MediaKind, string> = { video: "影片", carousel: "輪播圖片", flipbook: "翻頁書", character: "動畫角色", object3d: "3D 物件", chart: "圖表", table: "表格" };
 const samplePictures = ["/assets/samples/cafe.jpg", "/assets/samples/camera.jpg", "/assets/workspace.svg"] as const;
 /** A new media element of this kind, with sample pictures so it shows something right away. */
 export function defaultMedia(kind: MediaKind): Media {
@@ -221,6 +231,8 @@ export function defaultMedia(kind: MediaKind): Media {
     case "flipbook": return { kind, images: [...samplePictures] };
     case "character": return { kind, character: "sprout", action: "float", color: "#9be7b0" };
     case "object3d": return { kind, shape: "cube", images: [...samplePictures], spin: true };
+    case "chart": return { kind, chart: "bar", points: [{ label: "一月", value: 120 }, { label: "二月", value: 180 }, { label: "三月", value: 150 }, { label: "四月", value: 220 }], unit: "" };
+    case "table": return { kind, header: true, rows: [["項目", "價格", "說明"], ["經典美式", "70", "淺焙或深焙"], ["拿鐵", "90", "可換燕麥奶"]] };
   }
 }
 export function mediaAssetRefs(m: Media | undefined): string[] {
@@ -388,7 +400,7 @@ export function brandCss(b: Brand | undefined) {
     ...(b.type?.bodyWeight ? { "--brand-body-w": String(b.type.bodyWeight) } : {}),
   };
 }
-export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta"] as const;
+export const sectionRoles = ["hero", "features", "content", "gallery", "pricing", "faq", "contact", "cta", "footer"] as const;
 export type SectionRole = (typeof sectionRoles)[number];
 export type PageNode = {
   id: string;

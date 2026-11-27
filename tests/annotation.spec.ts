@@ -32,7 +32,7 @@ test("annotation bubble changes the clicked element and can be undone", async ({
   // Esc folds the box back into the small button; text inside a card offers card changes.
   await page.keyboard.press("Escape");
   await expect(bubble).toBeHidden();
-  await frame.getByText("自家烘豆").click();
+  await frame.getByText("自家烘豆", { exact: true }).click();
   await page.getByRole("button", { name: "註解：說說這個文字要怎麼改" }).click();
   const cardBubble = page.getByRole("dialog", { name: "註解：修改這個文字" });
   await cardBubble.getByRole("button", { name: "卡片放大" }).click();

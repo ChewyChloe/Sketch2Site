@@ -2473,7 +2473,7 @@ node ? (
                           <span className="glyph" aria-hidden="true"><WorkbenchIcon name={k} /></span>
                           <span>
                             <strong>{mediaKindLabels[k]}</strong>
-                            <small>{{ video: "貼上 YouTube／Vimeo 網址", carousel: "多張照片左右滑動", flipbook: "照片當書頁，點一下翻頁", character: "會動的小角色", object3d: "可拖曳轉動的立體相簿" }[k]}</small>
+                            <small>{{ video: "貼上 YouTube／Vimeo 網址", carousel: "多張照片左右滑動", flipbook: "照片當書頁，點一下翻頁", character: "會動的小角色", object3d: "可拖曳轉動的立體相簿", chart: "長條、折線或圓餅圖", table: "幾列幾欄的資料" }[k]}</small>
                           </span>
                           {soon ? <span className="coming-badge" aria-hidden="true">開發中</span> : <WorkbenchIcon name="grip" />}
                         </button>

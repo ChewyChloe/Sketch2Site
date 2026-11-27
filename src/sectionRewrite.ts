@@ -40,7 +40,7 @@ export type CompactNode = {
   image?: string;
   alt?: string;
   look?: z.infer<typeof ImageLookSchema>;
-  media?: { kind: "carousel" | "flipbook" | "object3d" | "character" | "video"; images?: string[]; autoplay?: boolean; seconds?: number; arrows?: boolean; dots?: boolean; shape?: "cube" | "coin" | "ring"; spin?: boolean };
+  media?: { kind: "carousel" | "flipbook" | "object3d" | "character" | "video" | "chart" | "table"; images?: string[]; autoplay?: boolean; seconds?: number; arrows?: boolean; dots?: boolean; shape?: "cube" | "coin" | "ring"; spin?: boolean; chart?: "bar" | "line" | "pie"; points?: { label: string; value: number }[]; unit?: string; rows?: string[][]; header?: boolean };
   text?: z.infer<typeof TextStyleSchema>;
   columns?: 1 | 2 | 3;
   style?: Partial<z.infer<typeof styleSchema>>;
@@ -61,7 +61,7 @@ const CompactNodeSchema: z.ZodType<CompactNode> = z.lazy(() =>
       look: ImageLookSchema.optional(),
       media: z
         .object({
-          kind: z.enum(["carousel", "flipbook", "object3d", "character", "video"]),
+          kind: z.enum(["carousel", "flipbook", "object3d", "character", "video", "chart", "table"]),
           images: z.array(z.string().regex(/^P\d{1,3}$/)).max(12).optional(),
           autoplay: z.boolean().optional(),
           seconds: z.number().int().min(2).max(10).optional(),
@@ -69,6 +69,11 @@ const CompactNodeSchema: z.ZodType<CompactNode> = z.lazy(() =>
           dots: z.boolean().optional(),
           shape: z.enum(["cube", "coin", "ring"]).optional(),
           spin: z.boolean().optional(),
+          chart: z.enum(["bar", "line", "pie"]).optional(),
+          points: z.array(z.object({ label: text(16), value: z.number().finite() }).strict()).max(12).optional(),
+          unit: text(6).optional(),
+          rows: z.array(z.array(text(60)).max(6)).max(20).optional(),
+          header: z.boolean().optional(),
         })
         .strict()
         .optional(),
@@ -151,7 +156,7 @@ export function compactSite(page: PageSpec) {
     if (n.look) c.look = n.look;
     if (n.media) {
       const m = n.media;
-      c.media = m.kind === "video" ? { kind: "video" } : m.kind === "character" ? { kind: "character" } : { kind: m.kind, images: m.images.map((s) => "P" + (pictures.indexOf(s) + 1)), ...(m.kind === "carousel" ? { autoplay: m.autoplay, seconds: m.seconds, arrows: m.arrows, dots: m.dots } : {}), ...(m.kind === "object3d" ? { shape: m.shape, spin: m.spin } : {}) };
+      c.media = m.kind === "video" ? { kind: "video" } : m.kind === "character" ? { kind: "character" } : m.kind === "chart" ? { kind: "chart", chart: m.chart, points: m.points, unit: m.unit } : m.kind === "table" ? { kind: "table", rows: m.rows, header: m.header } : { kind: m.kind, images: m.images.map((s) => "P" + (pictures.indexOf(s) + 1)), ...(m.kind === "carousel" ? { autoplay: m.autoplay, seconds: m.seconds, arrows: m.arrows, dots: m.dots } : {}), ...(m.kind === "object3d" ? { shape: m.shape, spin: m.spin } : {}) };
     }
     if (n.text) c.text = n.text;
     if (n.columns) c.columns = n.columns;
@@ -253,6 +258,11 @@ export function fromCompact(page: PageSpec, sectionId: string, input: CompactNod
         // No new videos or characters: only an existing one can be kept.
         if (!same?.media || same.media.kind !== m.kind) fail("cannot create " + m.kind);
         media = same!.media!;
+      } else if (m.kind === "chart") {
+        // Charts and tables hold the author's own words and numbers, rearranged or as the note asks.
+        media = { kind: "chart", chart: m.chart ?? "bar", points: m.points ?? [], unit: m.unit ?? "" };
+      } else if (m.kind === "table") {
+        media = { kind: "table", rows: m.rows ?? [], header: m.header ?? true };
       } else {
         const images = (m.images ?? []).map(pic);
         media =

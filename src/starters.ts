@@ -14,13 +14,14 @@ const starters: Starter[] = [
     name: "巷口咖啡小店",
     heroImage: "/assets/samples/coffee-flatwhite.jpg",
     galleryImages: ["/assets/samples/coffee-pourover.jpg", "/assets/samples/coffee-tonic.jpg", "/assets/samples/coffee-coldbrew.jpg"],
-    blocks: ["hero", "features", "gallery", "pricing", "cta"],
+    blocks: ["hero", "features", "gallery", "pricing", "cta", "footer"],
     copy: [
       ["每天一杯，剛剛好的手沖咖啡", "學校後門走路三分鐘，週一到週六早上八點開門。", "看今日菜單", "店內照片"],
       ["我們的堅持", "自家烘豆\n每週烘焙，豆子不放超過兩週。", "安靜座位\n插座與長桌，適合讀書。", "學生優惠\n出示學生證，飲品九折。"],
       ["店裡的飲品", "季節手沖", "咖啡通寧", "氮氣冷萃"],
       ["飲品價目", "經典美式\nNT$ 70 / 杯\n淺焙或深焙可選。", "拿鐵\nNT$ 90 / 杯\n可換燕麥奶。", "季節手沖\nNT$ 120 / 杯\n每月更換產區。"],
       ["今天就來坐坐", "地址與營業時間都在菜單頁。", "查看位置"],
+      ["巷口咖啡小店", "學校後門走路三分鐘，自家烘豆，安靜好讀書。", "我們的堅持\n店裡的飲品\n飲品價目", "地址：學校後門巷口 12 號\n營業時間：週一至週六 08:00–18:00", "© 2026 巷口咖啡小店"],
     ],
   },
   {

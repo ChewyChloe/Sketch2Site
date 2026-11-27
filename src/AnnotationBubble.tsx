@@ -123,19 +123,24 @@ export function AnnotationBubble({
         }
       }}
     >
+      <div className="note-head">
+        <span className="note-target">{typeNames[node.type] ?? "元件"}</span>
+        <button type="button" className="note-close" aria-label="關閉註解" onClick={() => setOpen(false)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+      </div>
+      {/* One rounded field: type, then the round arrow changes it now; 暫存 keeps it for later. */}
       <form
+        className="note-pill"
         onSubmit={(e) => {
           e.preventDefault();
           submit(text);
         }}
       >
-        <span className="note-target">{typeNames[node.type] ?? "元件"}</span>
         <input
           ref={input}
           value={text}
           maxLength={300}
           aria-label="想怎麼改這個元件"
-          placeholder="想怎麼改？例如：大一點、換成藍色"
+          placeholder="說說想怎麼改…"
           onChange={(e) => setText(e.target.value)}
         />
         {onStage && (
@@ -153,8 +158,9 @@ export function AnnotationBubble({
             暫存
           </button>
         )}
-        <button type="submit" className="primary" disabled={!text.trim()}>改</button>
-        <button type="button" className="note-close" aria-label="關閉註解" onClick={() => setOpen(false)}><svg className="x-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+        <button type="submit" className="note-send" aria-label="改" title="馬上改" disabled={!text.trim()}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+        </button>
       </form>
       <div className="note-chips" role="group" aria-label="常用修改">
         {suggestionsFor(page, node.id).map((s) => (
@@ -162,7 +168,7 @@ export function AnnotationBubble({
         ))}
       </div>
       <p className={"note-status" + (status && !status.ok ? " bad" : "")} role="status" aria-live="polite">
-        {status ? status.message + (status.ok && !status.message.startsWith("已暫存") ? " 可按「撤銷修改」復原" : "") : onStage ? "「改」馬上改；「暫存」先記下，看不懂的會交給 AI" : "要改文字請用引號：改成「新的標題」"}
+        {status ? status.message + (status.ok && !status.message.startsWith("已暫存") ? " 可按「撤銷修改」復原" : "") : onStage ? "箭頭馬上改；「暫存」先記下，看不懂的會交給 AI" : "要改文字請用引號：改成「新的標題」"}
       </p>
     </div>
   );

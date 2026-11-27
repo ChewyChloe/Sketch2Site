@@ -22,8 +22,8 @@ const roles = (sections: PageNode[]) => sections.map((s) => s.role);
 describe("block templates", () => {
   it("adds valid grouped nodes below existing content and grows the canvas", () => {
     const spec = templatedDraft("咖啡小店", blockTemplateIds);
-    expect(spec.nodes).toHaveLength(39);
-    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(10);
+    expect(spec.nodes).toHaveLength(44);
+    expect(new Set(spec.nodes.map((n) => n.groupId)).size).toBe(11);
     expect(spec.metadata.height).toBeGreaterThan(1200);
     expect(spec.metadata.height % 600).toBe(0);
     expect(spec.nodes.every((n) => n.type !== "button" || n.href?.startsWith("#"))).toBe(true);
@@ -173,5 +173,25 @@ describe("page theme patch", () => {
     const page = materialize(spec, smartLayout(spec));
     expect(PageSchema.safeParse({ ...page, theme: "hacker" }).success).toBe(false);
     expect(PageSchema.safeParse({ ...page, chrome: { nav: true, footer: true, html: "<b>" } }).success).toBe(false);
+  });
+});
+
+describe("footer information", () => {
+  it("the last part with a © line becomes the footer: name and intro, columns, © below", () => {
+    const spec = templatedDraft("咖啡小店", ["hero", "features", "footer"]);
+    const layout = smartLayout(spec);
+    const footer = layout.sections.at(-1)!;
+    expect(footer.role).toBe("footer");
+    const text = (id: string) => spec.nodes.find((n) => n.id === id)!.content;
+    expect(footer.intro.map((i) => text(i.sourceId))).toEqual(["你的店名", "一句話介紹你的店，例如：學校後門的小店，自家烘豆。"]);
+    expect(footer.items).toHaveLength(2);
+    expect(text(footer.outro[0].sourceId)).toMatch(/^©/);
+    // The page-level footer is not shown twice.
+    const page = materialize(spec, layout);
+    expect(page.sections.at(-1)!.role).toBe("footer");
+  });
+  it("a © line elsewhere does not turn a middle section into a footer", () => {
+    const spec = templatedDraft("咖啡小店", ["hero", "footer", "features"]);
+    expect(smartLayout(spec).sections.map((s) => s.role)).not.toContain("footer");
   });
 });

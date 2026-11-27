@@ -937,3 +937,26 @@ body{background:var(--neo-cream)}
 .neo-workspace .canvas-tools .tools-history { display: inline-grid; place-items: center; width: 34px; height: 34px; padding: 0 !important; }
 .neo-workspace .canvas-tools .tools-history svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .neo-workspace .canvas-tools .tools-history:disabled { opacity: .4; }
+/* Home: the section menu sits in the top bar's row (S2 left, menu centre, 登入 right). */
+@media (min-width: 900px) {
+  .home-nav { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 130; height: var(--home-topbar-h, 62px); margin: 0; padding: 0 8px; align-items: center; background: transparent; backdrop-filter: none; border-bottom: 0; width: max-content; max-width: calc(100vw - 320px); }
+}
+@media (min-width: 900px) { .home-hero { margin-top: 28px; } }
+/* Phones: 登入 stays at the right end of the home top bar. */
+.topbar.home .account { justify-self: end; margin-left: auto; }
+/* ---- Note box: a rounded field with a round send arrow ---- */
+.note-bubble { width: min(400px, calc(100% - 16px)); padding: 12px; border: 2px solid #0d0e11; border-radius: 22px; box-shadow: 5px 5px 0 #0d0e11; background: #fff; }
+.note-bubble .note-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.note-bubble .note-target { background: #0d0e11; color: var(--neo-green, #10e560); padding: 3px 10px; }
+.note-bubble .note-close { min-width: 30px; min-height: 30px; padding: 0; border-radius: 50%; display: inline-grid; place-items: center; }
+.note-bubble .note-close:hover { background: #f1f1ec; }
+.note-bubble form.note-pill { display: flex; align-items: center; gap: 4px; min-height: 50px; padding: 5px 5px 5px 18px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #f7f6f2; }
+.note-bubble form.note-pill:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--neo-green, #10e560) 45%, transparent); }
+.note-bubble .note-pill input { flex: 1; min-width: 0; min-height: 38px; padding: 0; border: 0; background: transparent; font: inherit; font-size: 15px; }
+.note-bubble .note-pill input:focus-visible { outline: none; }
+.note-bubble .note-pill .note-stage { min-height: 32px; padding: 0 12px; border: 0; background: transparent; font-size: 13px; font-weight: 800; color: #0d0e11; }
+.note-bubble .note-pill .note-stage:hover:not(:disabled) { background: #e9e8e2; }
+.note-bubble .note-send { flex: none; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: #0d0e11; color: var(--neo-green, #10e560); display: inline-grid; place-items: center; cursor: pointer; }
+.note-bubble .note-send svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.note-bubble .note-send:disabled { background: #c9c8c1; color: #fff; cursor: default; }
+.note-bubble .note-chips { margin-top: 10px; }

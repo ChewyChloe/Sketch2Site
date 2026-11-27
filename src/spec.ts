@@ -204,8 +204,8 @@ export const blank = (): CanvasSpec => ({
   nodes: [],
   constraints: [],
 });
-const mediaSizes: Record<MediaKind, [number, number]> = { video: [480, 270], carousel: [480, 300], flipbook: [300, 400], character: [180, 180], object3d: [280, 280] };
-/** A media element (video, carousel, flipbook, character, 3D object) at x, y. */
+const mediaSizes: Record<MediaKind, [number, number]> = { video: [480, 270], carousel: [480, 300], flipbook: [300, 400], character: [180, 180], object3d: [280, 280], chart: [480, 300], table: [520, 220] };
+/** A media element (video, carousel, flipbook, chart, table, character, 3D object) at x, y. */
 export function createMediaNode(kind: MediaKind, x: number, y: number, canvasHeight = 1200): CanvasNode {
   const [width, height] = mediaSizes[kind];
   return {

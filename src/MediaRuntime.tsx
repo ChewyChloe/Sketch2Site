@@ -13,7 +13,99 @@ export function MediaView({ media, caption, resolve, still = false }: { media: M
     case "flipbook": return <Flipbook m={media} caption={caption} resolve={resolve} />;
     case "character": return <Character m={media} caption={caption} still={still} />;
     case "object3d": return <Object3D m={media} caption={caption} resolve={resolve} still={still} />;
+    case "chart": return <ChartView m={media} caption={caption} />;
+    case "table": return <TableView m={media} caption={caption} />;
   }
+}
+
+/* ---------- Chart: the author's numbers as bars, a line or a pie (SVG, theme colours) ---------- */
+const fmt = (v: number) => (Math.abs(v) >= 1000 ? v.toLocaleString("zh-Hant") : String(Math.round(v * 100) / 100));
+function ChartView({ m, caption }: { m: Extract<Media, { kind: "chart" }>; caption: string }) {
+  const W = 600, H = 320, pad = { l: 16, r: 16, t: 28, b: 44 };
+  const values = m.points.map((p) => p.value);
+  const max = Math.max(...values, 0), min = Math.min(...values, 0);
+  const span = max - min || 1;
+  const y = (v: number) => pad.t + (H - pad.t - pad.b) * (1 - (v - min) / span);
+  const step = (W - pad.l - pad.r) / m.points.length;
+  const label = (caption || "圖表") + "：" + m.points.map((p) => `${p.label} ${fmt(p.value)}${m.unit}`).join("，");
+  let body;
+  if (m.chart === "pie") {
+    const total = values.reduce((a, b) => a + Math.max(0, b), 0) || 1;
+    let a0 = -Math.PI / 2;
+    const cx = 170, cy = H / 2, r = 120;
+    body = (
+      <>
+        {m.points.map((p, i) => {
+          const a1 = a0 + (Math.max(0, p.value) / total) * Math.PI * 2;
+          const large = a1 - a0 > Math.PI ? 1 : 0;
+          const d = a1 - a0 >= Math.PI * 2 - 1e-6
+            ? `M${cx - r},${cy}a${r},${r} 0 1,0 ${r * 2},0a${r},${r} 0 1,0 ${-r * 2},0`
+            : `M${cx},${cy}L${cx + r * Math.cos(a0)},${cy + r * Math.sin(a0)}A${r},${r} 0 ${large} 1 ${cx + r * Math.cos(a1)},${cy + r * Math.sin(a1)}Z`;
+          a0 = a1;
+          return <path key={i} d={d} className={"chart-slice s" + (i % 6)} />;
+        })}
+        {m.points.map((p, i) => (
+          <g key={"l" + i} transform={`translate(330 ${50 + i * Math.min(24, 240 / m.points.length)})`}>
+            <rect width="14" height="14" rx="3" className={"chart-slice s" + (i % 6)} />
+            <text x="22" y="12" className="chart-label">{p.label}　{Math.round((Math.max(0, p.value) / total) * 100)}%</text>
+          </g>
+        ))}
+      </>
+    );
+  } else if (m.chart === "line") {
+    const pts = m.points.map((p, i) => [pad.l + step * (i + 0.5), y(p.value)] as const);
+    body = (
+      <>
+        <line x1={pad.l} x2={W - pad.r} y1={y(0)} y2={y(0)} className="chart-axis" />
+        <polyline points={pts.map(([a, b]) => a + "," + b).join(" ")} className="chart-line" />
+        {pts.map(([a, b], i) => (
+          <g key={i}>
+            <circle cx={a} cy={b} r="5" className="chart-dot" />
+            <text x={a} y={b - 12} textAnchor="middle" className="chart-value">{fmt(m.points[i].value)}{m.unit}</text>
+            <text x={a} y={H - 16} textAnchor="middle" className="chart-label">{m.points[i].label}</text>
+          </g>
+        ))}
+      </>
+    );
+  } else {
+    const bw = Math.min(64, step * 0.6);
+    body = (
+      <>
+        <line x1={pad.l} x2={W - pad.r} y1={y(0)} y2={y(0)} className="chart-axis" />
+        {m.points.map((p, i) => {
+          const x = pad.l + step * (i + 0.5);
+          const top = Math.min(y(p.value), y(0)), h = Math.abs(y(p.value) - y(0));
+          return (
+            <g key={i}>
+              <rect x={x - bw / 2} y={top} width={bw} height={Math.max(1, h)} rx="4" className={"chart-bar" + (p.value === max ? " top" : "")} />
+              <text x={x} y={top - 8} textAnchor="middle" className="chart-value">{fmt(p.value)}{m.unit}</text>
+              <text x={x} y={H - 16} textAnchor="middle" className="chart-label">{p.label}</text>
+            </g>
+          );
+        })}
+      </>
+    );
+  }
+  return (
+    <figure className={"media-chart chart-" + m.chart}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>{body}</svg>
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  );
+}
+
+/* ---------- Table: plain text cells; scrolls sideways on narrow screens ---------- */
+function TableView({ m, caption }: { m: Extract<Media, { kind: "table" }>; caption: string }) {
+  const [head, ...rest] = m.header ? m.rows : [undefined, ...m.rows];
+  return (
+    <div className="media-table" role="region" aria-label={caption || "表格"} tabIndex={0}>
+      <table>
+        {caption && <caption>{caption}</caption>}
+        {head && <thead><tr>{head.map((c, i) => <th key={i} scope="col">{c}</th>)}</tr></thead>}
+        <tbody>{rest.map((r, i) => r && <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody>
+      </table>
+    </div>
+  );
 }
 
 /* ---------- Video: a cover with a play button; the player loads only when pressed (or on autoplay) ---------- */

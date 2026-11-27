@@ -3,7 +3,7 @@ import type { FrameId } from "./pageSpec";
 
 // Starter sections for the draft canvas. They are ordinary, editable canvas
 // nodes (placeholder copy the user replaces), grouped so they move together.
-export type BlockTemplateId = "hero" | "features" | "gallery" | "collage" | "pricing" | "faq" | "contact" | "cta" | "stats" | "logos";
+export type BlockTemplateId = "hero" | "features" | "gallery" | "collage" | "pricing" | "faq" | "contact" | "cta" | "stats" | "logos" | "footer";
 
 // Optional 7th value: the frame shape for image parts (empty frames to drop photos into).
 type Part = [CanvasNode["type"], string, number, number, number, number, FrameId?];
@@ -116,6 +116,20 @@ const templates: Record<BlockTemplateId, { label: string; hint: string; height: 
       ["heading", "最後，請訪客做一件事", 80, 0, 560, 80],
       ["text", "例如報名、預約或寄信。按鈕上直接寫要做的動作。", 80, 88, 560, 64],
       ["button", "立即報名", 80, 156, 200, 64],
+    ],
+  },
+  // Footer information: name and a line about it, a column of links, address and hours, copyright.
+  // The © line is what tells the layout this is the footer.
+  footer: {
+    label: "頁尾資訊",
+    hint: "店名、介紹、連結、地址與營業時間",
+    height: 248,
+    parts: [
+      ["heading", "你的店名", 80, 0, 400, 64],
+      ["text", "一句話介紹你的店，例如：學校後門的小店，自家烘豆。", 80, 72, 400, 96],
+      ["text", "關於我們\n今日菜單\n活動消息", 560, 0, 240, 132],
+      ["text", "地址：寫下店的地址\n營業時間：週一至週六 08:00–18:00", 880, 0, 480, 132],
+      ["text", "© 2026 你的店名", 80, 196, 600, 52],
     ],
   },
 };

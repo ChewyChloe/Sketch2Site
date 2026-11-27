@@ -1475,3 +1475,37 @@
 }
 /* A screenshot (chart, dashboard, slide) is shown whole in every composition: cropping cuts off its edges. */
 .rendered-page .page-image[data-kind="screen"]:not([data-frame]) img { object-fit: contain !important; height: auto !important; aspect-ratio: auto !important; }
+/* ---- Charts and tables (media elements) ---- */
+.media-chart { margin: 0; width: 100%; }
+.media-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.media-chart figcaption { margin-top: 8px; color: var(--muted); font-size: .9em; }
+.media-chart .chart-axis { stroke: var(--line, #ddd); stroke-width: 1.5; }
+.media-chart .chart-bar { fill: color-mix(in srgb, var(--accent, #1f7a52) 55%, var(--pg-page, #fff)); }
+.media-chart .chart-bar.top { fill: var(--accent, #1f7a52); }
+.media-chart .chart-line { fill: none; stroke: var(--accent, #1f7a52); stroke-width: 3.5; stroke-linejoin: round; stroke-linecap: round; }
+.media-chart .chart-dot { fill: var(--pg-page, #fff); stroke: var(--accent, #1f7a52); stroke-width: 3; }
+.media-chart .chart-value { fill: var(--ink, #222); font-size: 15px; font-weight: 700; }
+.media-chart .chart-label { fill: var(--muted, #666); font-size: 14px; }
+.media-chart .chart-slice.s0 { fill: var(--accent, #1f7a52); }
+.media-chart .chart-slice.s1 { fill: color-mix(in srgb, var(--accent, #1f7a52) 65%, var(--pg-page, #fff)); }
+.media-chart .chart-slice.s2 { fill: color-mix(in srgb, var(--accent, #1f7a52) 40%, var(--pg-page, #fff)); }
+.media-chart .chart-slice.s3 { fill: color-mix(in srgb, var(--ink, #222) 70%, var(--pg-page, #fff)); }
+.media-chart .chart-slice.s4 { fill: color-mix(in srgb, var(--ink, #222) 40%, var(--pg-page, #fff)); }
+.media-chart .chart-slice.s5 { fill: color-mix(in srgb, var(--ink, #222) 20%, var(--pg-page, #fff)); }
+.media-chart path.chart-slice { stroke: var(--pg-page, #fff); stroke-width: 2; }
+.media-table { width: 100%; overflow-x: auto; }
+.media-table:focus-visible { outline: 2px solid var(--accent, #1f7a52); outline-offset: 2px; }
+.media-table table { width: 100%; border-collapse: collapse; font-size: .95em; }
+.media-table caption { caption-side: top; text-align: start; padding-bottom: 8px; color: var(--muted); font-size: .9em; }
+.media-table th, .media-table td { padding: 10px 14px; text-align: start; border-bottom: 1px solid var(--line, #ddd); white-space: nowrap; }
+.media-table thead th { border-bottom: 2px solid var(--ink, #222); font-weight: 800; }
+.media-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--ink, #222) 4%, transparent); }
+/* ---- Footer information section: name and intro left, link and address columns right, © below ---- */
+.rendered-page .role-footer { background: var(--pg-soft, #f4f4f2); font-size: .95em; }
+.rendered-page .role-footer > .page-container { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px 48px; align-items: start; }
+.rendered-page .role-footer > .page-container > .page-stack:last-child:not(:first-child) { grid-column: 1 / -1; padding-top: 18px; border-top: 1px solid var(--line, #ddd); color: var(--muted); font-size: .85em; }
+.rendered-page .role-footer h2.page-heading { font-size: clamp(22px, 2.2vw, 30px) !important; }
+.rendered-page .role-footer .page-paragraph { color: var(--muted); white-space: pre-line; line-height: 1.8; }
+@container (max-width: 720px) { .rendered-page .role-footer > .page-container { grid-template-columns: minmax(0, 1fr); } }
+.rendered-page[data-theme] .page-main > .page-section.role-footer .page-container > .page-stack:first-child > h2.page-heading:first-child::before { content: none !important; display: none !important; }
+.rendered-page .page-section.role-footer > .page-container > .page-stack:last-child:not(:first-child) { grid-column: 1 / -1 !important; }

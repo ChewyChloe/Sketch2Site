@@ -25,7 +25,8 @@ function pick(slot: Slot, node: CanvasNode, style: MotionStyle): MotionId[] {
   if (kind === "title") return [lively ? "split-line-assembly" : "slide-up"];
   if (kind === "heading") return [lively && role !== "cta" ? "slide-up" : "fade-in"];
   if (kind === "text") {
-    if (numericContent(node.content)) return ["count-up"];
+    // A © year is not a statistic to count up.
+    if (numericContent(node.content) && !/^\s*(©|Copyright|版權)/i.test(node.content)) return ["count-up"];
     return ["fade-in"];
   }
   if (kind === "button") return ["press-feedback"];

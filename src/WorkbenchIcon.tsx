@@ -21,6 +21,8 @@ export function WorkbenchIcon({
     | "flipbook"
     | "character"
     | "object3d"
+    | "chart"
+    | "table"
     | "check"
     | "search";
 }) {
@@ -86,6 +88,13 @@ export function WorkbenchIcon({
       <>
         <path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z" />
         <path d="M4 7.5 12 12l8-4.5M12 12v9" />
+      </>
+    ),
+    chart: <path d="M4 20h16M7 20v-6M12 20V8M17 20v-9" />,
+    table: (
+      <>
+        <rect x="3.5" y="5" width="17" height="14" rx="1.5" />
+        <path d="M3.5 10h17M3.5 14.5h17M9.5 5v14" />
       </>
     ),
     check: <path d="m5 12 4 4L19 6" />,

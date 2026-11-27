@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { builtInAssets } from "./assetRef";
 import { CharacterArt, actionLabels, characterLabels } from "./MediaRuntime";
 import { Select } from "./Select";
-import { characterActions, characterIds, object3dShapes, parseVideoUrl, type Media } from "./pageSpec";
+import { characterActions, characterIds, chartTypeLabels, chartTypes, MediaSchema, object3dShapes, parseVideoUrl, type Media } from "./pageSpec";
 
 // Inspector settings for media elements. Pictures are chosen from the built-in samples and
 // the user's own imported photos (or a new upload), never typed in as addresses.
@@ -18,6 +18,22 @@ function Switch({ label, on, onChange }: { label: string; on: boolean; onChange:
     </button>
   );
 }
+
+/** Text that is parsed when the field loses focus; a bad value shows why and changes nothing. */
+function DataField({ label, hint, value, parse, rows = 5 }: { label: string; hint: string; value: string; parse: (text: string) => string | null; rows?: number }) {
+  const [text, setText] = useState(value);
+  const [error, setError] = useState("");
+  useEffect(() => setText(value), [value]);
+  const apply = () => { if (text !== value) setError(parse(text) ?? ""); };
+  return (
+    <label className="field">
+      {label}
+      <textarea aria-label={label} rows={rows} value={text} aria-invalid={!!error} onChange={(e) => { setText(e.target.value); setError(""); }} onBlur={apply} />
+      {error ? <span className="field-error" role="alert">{error}</span> : <small className="media-note">{hint}</small>}
+    </label>
+  );
+}
+const splitCells = (line: string) => line.split(/\s*[|｜\t]\s*/).map((c) => c.trim());
 
 function Pictures({ images, min, max, urlFor, library, onImport, onChange, noun }: {
   images: string[]; min: number; max: number; urlFor: (ref: string) => string; library: string[];
@@ -148,6 +164,51 @@ export function MediaControls({ media, onChange, urlFor, library, onImport }: {
           </div>
         </div>
       );
+    case "chart": {
+      const lines = media.points.map((p) => `${p.label} ${p.value}`).join("\n");
+      const parse = (text: string) => {
+        const points = text.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
+          const m = l.match(/^(.+?)[\s,，:：]+(-?[\d.,]+)\s*$/);
+          return m ? { label: m[1].trim().slice(0, 16), value: Number(m[2].replace(/,/g, "")) } : null;
+        });
+        if (points.some((p) => !p || !Number.isFinite(p.value))) return "每一行寫「名稱 數字」，例如：拿鐵 90";
+        const next = { ...media, points: points as { label: string; value: number }[] };
+        const ok = MediaSchema.safeParse(next);
+        if (!ok.success) return points.length < 2 ? "至少要兩筆資料" : points.length > 12 ? "最多 12 筆資料" : ok.error.issues[0]?.message ?? "資料不正確";
+        onChange(ok.data);
+        return null;
+      };
+      return (
+        <div className="media-controls">
+          <div className="media-chips" role="radiogroup" aria-label="圖表樣式">
+            {chartTypes.map((t) => <button type="button" role="radio" key={t} aria-checked={media.chart === t} onClick={() => { const ok = MediaSchema.safeParse({ ...media, chart: t }); if (ok.success) onChange(ok.data); }}>{chartTypeLabels[t]}</button>)}
+          </div>
+          <DataField label="資料" hint="每一行寫「名稱 數字」，2 到 12 筆" value={lines} parse={parse} />
+          <label className="field media-inline">
+            單位
+            <input aria-label="單位" maxLength={6} placeholder="例如：元、人、%" value={media.unit} onChange={(e) => onChange({ ...media, unit: e.target.value.slice(0, 6) })} />
+          </label>
+        </div>
+      );
+    }
+    case "table": {
+      const lines = media.rows.map((r) => r.join(" | ")).join("\n");
+      const parse = (text: string) => {
+        const rows = text.split("\n").map((l) => l.trim()).filter(Boolean).map(splitCells);
+        const width = Math.max(...rows.map((r) => r.length));
+        const next = { ...media, rows: rows.map((r) => [...r, ...Array(width - r.length).fill("")]) };
+        const ok = MediaSchema.safeParse(next);
+        if (!ok.success) return rows.length > 20 ? "最多 20 列" : width > 6 ? "最多 6 欄" : "表格內容不正確，只能放文字";
+        onChange(ok.data);
+        return null;
+      };
+      return (
+        <div className="media-controls">
+          <DataField label="內容" hint="每一行是一列，欄位之間用 | 分開" value={lines} parse={parse} rows={6} />
+          <Switch label="第一列當標題" on={media.header} onChange={(header) => onChange({ ...media, header })} />
+        </div>
+      );
+    }
     case "object3d":
       return (
         <div className="media-controls">

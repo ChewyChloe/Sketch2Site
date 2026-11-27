@@ -121,6 +121,22 @@ function planSegment(segment: CanvasNode[], index: number, isLast: boolean, titl
   const images = segment.filter((n) => n.type === "image");
   const intro = (n: CanvasNode, align: LayoutItem["align"]) => (n === heading ? head(n, 2, align) : item(n, { align }));
 
+  // Footer: the last part, with a © line. Name and intro on the left, the other lines as columns, © below.
+  const copyright = segment.find((n) => n.type === "text" && /^\s*(©|Copyright|版權)/i.test(n.content));
+  if (isLast && index > 0 && copyright && !cards.length && !segment.some((n) => n.type === "form")) {
+    const s = base("footer");
+    s.layout = "grid";
+    const texts = segment.filter((n) => n !== copyright && n.type !== "heading" && n.type !== "image" && n !== segment.find((x) => x.type === "text" && x !== copyright));
+    const lead = segment.find((x) => x.type === "text" && x !== copyright);
+    for (const n of segment) {
+      if (n === copyright) s.outro.push(item(n));
+      else if (n.type === "heading" || n === lead || n.type === "image") s.intro.push(n.type === "heading" ? head(n, 2) : item(n));
+      else if (texts.includes(n)) s.items.push(item(n));
+      else s.intro.push(item(n));
+    }
+    s.columns = columnsFor(Math.max(1, s.items.length));
+    return [s];
+  }
   const forms = segment.filter((n) => n.type === "form");
   if (forms.length) {
     // Contact: heading and copy beside the form; any other media follows.
