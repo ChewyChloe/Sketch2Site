@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { openPanel, openWebsiteWorkspace } from "./helpers/workbench";
+import { openPanel, openWebsiteWorkspace, useTemplate } from "./helpers/workbench";
 import { motionFixture } from "./fixtures/motions";
 import { motionFacets } from "../src/motionFacets";
 import { motionIds } from "../src/motionCatalog";
@@ -78,4 +78,28 @@ test("tuned animation is temporary until applied and survives undo and redo", as
   await expect(target).toHaveAttribute("data-effects", /fade-in/);
   await openPanel(page, "屬性");
   await expect(page.getByLabel("動畫時長（毫秒）")).toHaveValue("700");
+  await expect(page.getByTestId("page-save-status")).toHaveText("已儲存");
+  await page.reload();
+  await openWebsiteWorkspace(page);
+  await target.click();
+  await openPanel(page, "屬性");
+  await expect(page.getByLabel("動畫時長（毫秒）")).toHaveValue("700");
+});
+
+test("draft trial renders the selected content without attaching an effect", async ({ page }) => {
+  await page.goto("/?draft");
+  await useTemplate(page, "巷口咖啡小店");
+  const heading = page.getByTestId("canvas-node").filter({ hasText: "巷口咖啡小店" }).first();
+  await heading.click();
+  const before = await heading.locator(".effect-tags").textContent();
+  await page.getByRole("button", { name: "動畫素材庫", exact: true }).click();
+  const card = page.getByRole("region", { name: "草稿動畫素材" }).locator('[data-effect-id="typewriter"]');
+  await card.getByRole("button", { name: /在元件上試看/ }).click();
+  const trial = page.getByRole("region", { name: "草稿元件動畫試看" });
+  await expect(trial.locator('[data-effects~="typewriter"]')).toContainText("巷口咖啡小店");
+  await trial.getByRole("button", { name: "重播試看" }).click();
+  await expect(trial.locator('[data-effects~="typewriter"]')).toContainText("巷口咖啡小店");
+  await trial.getByRole("button", { name: "取消試看" }).click();
+  await expect(trial).toHaveCount(0);
+  await expect(heading.locator(".effect-tags")).toHaveText(before ?? "");
 });

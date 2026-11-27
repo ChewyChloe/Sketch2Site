@@ -78,6 +78,9 @@ test("private raster import, reload, Mock generation, page edits, animation and 
   await page.getByLabel("圖片說明").blur();
   await expect(image.locator("img")).toHaveAttribute("alt", "我的本機圖片");
   await openPanel(page, "動畫");
+  const fade = page.locator('.animation-library [data-effect-id="fade-in"]');
+  await fade.getByRole("button", { name: /調整.*參數/ }).click();
+  await fade.getByLabel("動畫時長（毫秒）").fill("700");
   await page.getByRole("button", { name: "淡入", exact: true }).click();
   await expect(image).toHaveAttribute("data-effects", "fade-in");
   await page.getByRole("button", { name: "撤銷修改" }).click();
@@ -95,6 +98,12 @@ test("private raster import, reload, Mock generation, page edits, animation and 
     `import zipfile,sys,json
 z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None
 page=json.loads(z.read('src/page.json')); paths=[n for n in z.namelist() if n.startswith('public/assets/local/')]; assert len(paths)==1
+def nodes(items):
+    for n in items:
+        yield n
+        yield from nodes(n.get('children', []))
+image=next(n for n in nodes(page['sections']) if n.get('alt')=='我的本機圖片')
+assert [(e['presetId'],e['validatedControls']['durationMs']) for e in image['effects']]==[('fade-in',700)]
 assert z.read(paths[0]).startswith(bytes([137,80,78,71,13,10,26,10]))
 assert 'private-name-not-stored' not in ''.join(n for n in z.namelist())+z.read('src/page.json').decode()
 print('PASS')`,
