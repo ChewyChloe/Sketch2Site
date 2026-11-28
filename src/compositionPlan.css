@@ -1,0 +1,184 @@
+/* Composition plans (compositionPlan.ts): each candidate's own geometry for the opening, the
+   gallery and the feature list. Desktop only; on a phone everything is one column in reading
+   order (the DOM order is never changed). Sections whose layout is locked keep their own. */
+
+@container (min-width: 801px) {
+  /* ---------- Opening section ---------- */
+  .rendered-page[data-plan] .role-hero:not([data-locked~="layout"]) > .page-container {
+    max-width: none !important;
+  }
+
+  /* 主圖焦點: text narrow on the left (5 of 12), a large picture on the right (7 of 12). */
+  .rendered-page[data-plan="focus"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr) !important;
+    gap: clamp(24px, 4cqi, 72px) !important;
+    align-items: center !important;
+  }
+  .rendered-page[data-plan="focus"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child .page-image img {
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    max-height: min(78svh, 760px);
+    object-fit: cover;
+  }
+  .rendered-page[data-plan="focus"] .role-hero:not([data-locked~="layout"]) .page-heading {
+    font-size: clamp(32px, 4.6cqi, 68px) !important;
+    line-height: 1.12 !important;
+    max-width: 14ch;
+  }
+
+  /* 大字導讀: one column; the headline spans the page, the picture runs full width below it. */
+  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: clamp(24px, 4cqi, 64px) !important;
+  }
+  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) .page-heading {
+    font-size: clamp(40px, 8.4cqi, 128px) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.02em;
+    max-width: 16ch;
+  }
+  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) .page-paragraph {
+    max-width: 38ic;
+    font-size: clamp(16px, 1.5cqi, 21px) !important;
+  }
+  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child .page-image img {
+    aspect-ratio: 21 / 9;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  /* 窄文接寬圖: a narrow reading column; the picture starts beside it and steps down past it. */
+  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    align-items: start !important;
+  }
+  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :first-child {
+    grid-column: 1 / 6;
+    grid-row: 1;
+    position: relative;
+    z-index: 1;
+    padding: clamp(16px, 2.4cqi, 36px) clamp(16px, 2.4cqi, 36px) clamp(16px, 2.4cqi, 36px) 0;
+    background: var(--pg-page, var(--surface, #fff));
+    align-self: start;
+  }
+  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child {
+    grid-column: 5 / 13;
+    grid-row: 1;
+    margin-top: clamp(48px, 9cqi, 160px);
+  }
+  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) .page-heading {
+    font-size: clamp(28px, 3.6cqi, 52px) !important;
+    line-height: 1.18 !important;
+  }
+  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) .page-paragraph {
+    max-width: 24ic;
+  }
+  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child .page-image img {
+    aspect-ratio: 3 / 2;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  /* ---------- Gallery ---------- */
+  /* 主圖焦點: one lead picture, the rest smaller beside it (lead first, then compare). */
+  .rendered-page[data-plan="focus"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-auto-rows: minmax(0, auto);
+    gap: clamp(12px, 1.6cqi, 24px) !important;
+  }
+  .rendered-page[data-plan="focus"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .rendered-page[data-plan="focus"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* 大字導讀: one even strip of tall pictures with a shared baseline. */
+  .rendered-page[data-plan="headline"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
+    display: grid !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-template-columns: none !important;
+    gap: clamp(8px, 1cqi, 16px) !important;
+    align-items: end;
+  }
+  .rendered-page[data-plan="headline"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
+    aspect-ratio: 3 / 4;
+    width: 100%;
+    object-fit: cover;
+  }
+  .rendered-page[data-plan="headline"] .role-gallery:not([data-locked~="layout"]) .page-heading,
+  .rendered-page[data-plan="headline"] .role-features:not([data-locked~="layout"]) .page-heading {
+    font-size: clamp(30px, 4.4cqi, 64px) !important;
+    line-height: 1.08 !important;
+  }
+
+  /* 窄文接寬圖: wide and narrow pictures alternate, so the eye moves across and down. */
+  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: clamp(12px, 1.6cqi, 24px) !important;
+  }
+  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 1),
+  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 4) {
+    grid-column: span 4;
+  }
+  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 2),
+  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 3) {
+    grid-column: span 2;
+  }
+  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child:nth-child(odd) {
+    grid-column: span 6;
+  }
+  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
+    width: 100%;
+    height: 100%;
+    max-height: 520px;
+    object-fit: cover;
+  }
+
+  /* ---------- Feature list ---------- */
+  /* 大字導讀: rows with a rule between them, read like a numbered list. */
+  .rendered-page[data-plan="headline"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+  }
+  .rendered-page[data-plan="headline"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > .page-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(12px, 2cqi, 32px);
+    padding: clamp(16px, 2cqi, 28px) 0 !important;
+    border: 0 !important;
+    border-top: 1px solid currentColor !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+  /* 窄文接寬圖: cards step down one after another. */
+  .rendered-page[data-plan="column"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(3n + 2) {
+    margin-top: clamp(24px, 4cqi, 64px);
+  }
+  .rendered-page[data-plan="column"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(3n + 3) {
+    margin-top: clamp(48px, 8cqi, 128px);
+  }
+}
+
+/* Phones: the headline plan keeps a large headline; every plan stays one readable column. */
+@container (max-width: 800px) {
+  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) .page-heading {
+    font-size: clamp(32px, 11cqi, 56px) !important;
+    line-height: 1.06 !important;
+  }
+  .rendered-page[data-plan] .role-hero:not([data-locked~="layout"]) .page-paragraph {
+    max-width: none;
+  }
+}

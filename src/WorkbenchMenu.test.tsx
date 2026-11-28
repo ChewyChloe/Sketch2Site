@@ -53,7 +53,7 @@ it("shows all registered assets, exposes compatibility and passes only a preset 
       onDragStart={drag}
     />,
   );
-  expect(container.querySelectorAll("[data-effect-id]")).toHaveLength(75);
+  expect(container.querySelectorAll("[data-effect-id]")).toHaveLength(100);
   expect(
     (screen.getByRole("button", { name: "依序顯示" }) as HTMLButtonElement)
       .disabled,

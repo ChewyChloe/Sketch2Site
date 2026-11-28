@@ -22,6 +22,7 @@ it('rejects conflicting text/image/child transforms and excessive advanced resou
 const advancedIdForBudget = '60000000-0000-4000-8000-000000000001';
 it('keeps previously valid legacy interaction combinations readable',()=>{expect(combinationReason([{presetId:'stagger-reveal'},{presetId:'flip-card'}])).toBeNull();expect(combinationReason([{presetId:'stagger-reveal'},{presetId:'focus-transfer'}])).toBeNull();});
 import {buildLunaRequest} from '../server/provider';
+import {LUNA_MAX_REQUEST_BYTES} from '../server/lunaPolicy';
 it.each(advancedMotionIds)('offline real-provider request for %s preserves the pinned model, no tools and existing input cap',id=>{const canvas=advancedCanvas();canvas.nodes=canvas.nodes.filter(n=>n.effects[0].presetId===id);const request=buildLunaRequest(prepareIntent(canvas));expect(request.model).toBe('gpt-6-luna');expect(request.service_tier).toBe('default');expect(request.max_output_tokens).toBe(4096);expect(request.tools).toEqual([]);expect(Buffer.byteLength(JSON.stringify(request))).toBeLessThanOrEqual(16384);});
 // Only an outline is sent, so even a large twenty-effect draft stays far under the unchanged 16 KB guard.
-it('sends a large twenty-effect draft as a small outline under the unchanged size guard',()=>{const r=buildLunaRequest(prepareIntent(advancedCanvas()));expect(Buffer.byteLength(JSON.stringify(r))).toBeLessThanOrEqual(8192);expect(JSON.stringify(r)).not.toContain('"box"');});
+it('sends a large twenty-effect draft as a small outline under the unchanged size guard',()=>{const r=buildLunaRequest(prepareIntent(advancedCanvas()));expect(Buffer.byteLength(JSON.stringify(r))).toBeLessThanOrEqual(LUNA_MAX_REQUEST_BYTES);expect(JSON.stringify(r)).not.toContain('"box"');});

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { assignPlans, planIds, planText, type PlanId } from "./compositionPlan";
 import { allSections, conceptIds, conceptText, pickableThemes, themeLabels, type Brand, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 
 // Diverge, then converge (docs/WORKFLOW_STUDY.md): ask a few questions, show three clearly
@@ -43,6 +44,8 @@ export const DirectionSchema = z
     concept: z.enum([...conceptIds, "none"]),
     theme: z.enum(pickableThemes),
     composition: z.enum(compositionIds),
+    // Its own geometry (compositionPlan.ts); filled in by trusted code when missing.
+    plan: z.enum(planIds).nullable().optional(),
   })
   .strict();
 export type Direction = z.infer<typeof DirectionSchema>;
@@ -56,7 +59,7 @@ export function cleanDirections(input: unknown): Direction[] | null {
   parsed.data = parsed.data.map((d) => (d.concept !== "none" ? { ...d, composition: "tidy" as const } : d));
   const keys = new Set(parsed.data.map((d) => d.concept + d.theme + d.composition));
   if (keys.size !== 3 || parsed.data.some((d) => !plain(d.name) || !plain(d.why))) return null;
-  return parsed.data;
+  return withPlans(parsed.data, 1);
 }
 
 type Combo = { concept: ConceptId | "none"; theme: (typeof pickableThemes)[number]; composition: "tidy" | "editorial"; light: Lightness; photos?: number; hero?: HeroPref; moods: string[]; name: string };
@@ -75,6 +78,13 @@ const combos: Combo[] = [
 ];
 const whyFor = (c: Combo) =>
   (c.concept !== "none" ? conceptText[c.concept].idea : c.composition === "editorial" ? "每一段排法不同，大字和照片互相壓疊" : "整齊清楚，一眼看懂") + "，" + themeLabels[c.theme] + "色調";
+
+/** Gives every direction its own composition plan: three different geometries, never one shared. */
+export function withPlans(ds: Direction[], pictures: number): Direction[] {
+  const plans = assignPlans(ds.map((d) => d.plan ?? undefined), pictures);
+  return ds.map((d, i) => ({ ...d, plan: plans[i] }));
+}
+const imagesIn = (page: PageSpec) => allSections(page).reduce((n, s) => n + JSON.stringify(s).split('"type":"image"').length - 1, 0);
 
 /** Three different directions worked out on this device from the answers and the page content. */
 export function localDirections(page: PageSpec, brief?: { mood?: string; ask?: Ask } | null): Direction[] {
@@ -99,7 +109,7 @@ export function localDirections(page: PageSpec, brief?: { mood?: string; ask?: A
     picks.push(c);
   }
   for (const { c } of scored) if (picks.length < 3 && !picks.includes(c)) picks.push(c);
-  return picks.map((c) => ({ name: c.name, why: whyFor(c), concept: c.concept, theme: c.theme, composition: c.composition }));
+  return withPlans(picks.map((c) => ({ name: c.name, why: whyFor(c), concept: c.concept, theme: c.theme, composition: c.composition })), images);
 }
 
 /** Three variants of one direction: the direction as is, then two type pairings and accents. */
@@ -121,12 +131,13 @@ export function applyDirection(page: PageSpec, d: Direction, v: Variant | undefi
   const own = page.brand ?? { colors: [] };
   const extra = Object.fromEntries(Object.entries(v?.brand ?? {}).filter(([k]) => own[k as keyof Brand] === undefined));
   const brand = Object.keys(extra).length ? { ...own, ...extra } : page.brand;
-  const { concept: _c, composition: _m, ...rest } = page;
+  const { concept: _c, composition: _m, plan: _p, ...rest } = page;
   return {
     ...rest,
     theme: d.theme,
     ...(d.concept !== "none" ? { concept: d.concept } : {}),
     ...(d.composition === "editorial" ? { composition: "editorial" as const } : {}),
+    ...(d.plan ? { plan: d.plan } : {}),
     ...(brand ? { brand } : {}),
   };
 }
@@ -158,7 +169,10 @@ export function directionsFor(page: PageSpec, brief?: { mood?: string; ask?: Ask
     picks.push(d);
   }
   for (const d of others) if (picks.length < 3 && !picks.some((p) => p.concept === d.concept && p.theme === d.theme && p.composition === d.composition)) picks.push(d);
-  return picks;
+  // The page as built keeps its plan (if it has one); the others get the two remaining geometries.
+  return withPlans(picks.map((d, i) => ({ ...d, plan: i === 0 ? page.plan : undefined })), imagesIn(page));
 }
-export const sameDirection = (d: Direction, theme: ThemeId | undefined, concept: string | undefined, composition: string | undefined) =>
-  d.theme === theme && (d.concept === "none" ? !concept : d.concept === concept) && (d.composition === "editorial") === (composition === "editorial");
+export const sameDirection = (d: Direction, theme: ThemeId | undefined, concept: string | undefined, composition: string | undefined, plan?: PlanId) =>
+  (!d.plan || !plan || d.plan === plan) && d.theme === theme && (d.concept === "none" ? !concept : d.concept === concept) && (d.composition === "editorial") === (composition === "editorial");
+
+export { planText };

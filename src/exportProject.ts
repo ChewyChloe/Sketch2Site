@@ -1,4 +1,6 @@
 import artPlanCss from "./artPlan.css?raw";
+import compositionPlanCss from "./compositionPlan.css?raw";
+import compositionPlanSource from "./compositionPlan.ts?raw";
 import referenceHundredSource from "./ReferenceHundred.ts?raw";
 import cinematicMotionSource from "./CinematicMotion.tsx?raw";
 import mediaRuntimeSource from "./MediaRuntime.tsx?raw";
@@ -96,6 +98,8 @@ export async function exportProjectFiles(
     { path: "src/PageRuntime.tsx", content: runtime },
     { path: "src/pageSpec.ts", content: schema },
     { path: "src/artPlan.css", content: artPlanCss },
+    { path: "src/compositionPlan.css", content: compositionPlanCss },
+    { path: "src/compositionPlan.ts", content: compositionPlanSource },
     { path: "src/artPlan.ts", content: artPlanSource },
     { path: "src/sectionLayout.ts", content: sectionLayoutSource },
     { path: "src/sectionLock.ts", content: sectionLockSource },

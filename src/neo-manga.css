@@ -1149,3 +1149,4 @@ body{background:var(--neo-cream)}
   scrollbar-color: #708577 transparent;
 }
 .preview-inspector .inspector-content { scrollbar-width: thin; scrollbar-color: #708577 transparent; }
+.direction-card .direction-plan { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: #0d0e11; color: #10e560; font-weight: 800; }

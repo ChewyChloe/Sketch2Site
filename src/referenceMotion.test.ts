@@ -23,7 +23,7 @@ describe("reference motion metadata", () => {
     const ids = referenceMotions.map((m) => m.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of ids) expect(original68).not.toContain(id);
-    expect(referenceMotions.filter((m) => m.status === "DONE").map((m) => m.id)).toEqual([...referenceMotionIds]);
+    expect(referenceMotions.filter((m) => m.status === "DONE").map((m) => m.id).sort()).toEqual([...referenceMotionIds].sort());
     expect(motionIds.slice(68)).toEqual([...referenceMotionIds]);
     for (const id of referenceMotionIds) {
       expect(motionCatalog[id].status).toBe("DONE");

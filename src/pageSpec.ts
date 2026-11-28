@@ -1,4 +1,5 @@
 import { ArtPlanSchema, type ArtPlan } from "./artPlan";
+import { planIds } from "./compositionPlan";
 import { imageSource } from "./assetRef";
 import { SectionLayoutSchema, sectionLayoutIssue, type SectionLayout } from "./sectionLayout";
 import { SectionLockSchema, type SectionLock } from "./sectionLock";
@@ -631,6 +632,8 @@ const PageObject = z
     concept: z.enum(conceptIds).optional(),
     // Editorial composition: each section gets its own arrangement instead of the tidy stack.
     composition: z.enum(["editorial"]).optional(),
+    // The chosen candidate's geometry (compositionPlan.ts): hero arrangement, picture scale, reading axis.
+    plan: z.enum(planIds).optional(),
     designControl: z.object({ composition: z.literal(true).optional(), style: z.literal(true).optional(), conceptMotion: z.boolean().optional(), layoutConcept: z.enum(conceptIds).nullable().optional(), layoutTheme: z.enum(themeIds).nullable().optional() }).strict().optional(),
     // Interactive extras the author switched on: a pricing builder and a gallery view switch.
     extras: z.object({ pricingBuilder: z.boolean().optional(), galleryViews: z.boolean().optional() }).strict().optional(),

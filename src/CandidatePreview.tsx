@@ -6,6 +6,7 @@ import { PageRenderer } from "./PageRenderer";
 import { ThumbnailRender } from "./PageRuntime";
 import type { CandidateResult } from "./demo";
 import { DeviceToggle } from "./DeviceToggle";
+import { planText, type PlanId } from "./compositionPlan";
 import { applyDirection, directionsFor, firstTwo, sameDirection, variantAccent, variantsFor, type Ask, type Variant } from "./directions";
 export default function CandidatePreview({
   candidate,
@@ -49,6 +50,8 @@ export default function CandidatePreview({
   const preserveMotion = () => control?.conceptMotion ?? Boolean(concept && parallaxConcepts.includes(concept));
   const [extras, setExtras] = useState(candidate.page.extras ?? {});
   const [composition, setComposition] = useState(candidate.page.composition);
+  // The candidate's own geometry (compositionPlan.ts); a layout lock keeps the page's geometry.
+  const [plan, setPlan] = useState<PlanId | undefined>(() => candidate.page.plan ?? (hasImplicitLayoutLock(candidate.page) ? undefined : (candidate.directions ?? directionsFor(candidate.page, brief))[0]?.plan ?? undefined));
   // Diverge, then converge: three directions side by side, then three variants of the chosen one.
   const directions = useMemo(() => candidate.directions ?? directionsFor(candidate.page, brief), [candidate, brief]);
   const [variant, setVariant] = useState(0);
@@ -66,11 +69,11 @@ export default function CandidatePreview({
   const current = { name: "", why: "", theme: theme === "sunrise" ? ("classic" as const) : theme, concept: concept ?? ("none" as const), composition: composition === "editorial" ? ("editorial" as const) : ("tidy" as const) };
   const variants = variantsFor(current);
   const page = useMemo(() => {
-    const base = { ...candidate.page, theme, concept, composition, designControl: control, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) };
+    const base = { ...candidate.page, theme, concept, composition, plan, designControl: control, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) };
     const chosen = habitVariant?.variant ?? (variant ? variants[variant] : undefined);
-    return chosen ? applyDirection(base, current, chosen) : base;
+    return chosen ? applyDirection(base, { ...current, plan }, chosen) : base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candidate.page, theme, concept, composition, control, extras, variant, habitVariant]);
+  }, [candidate.page, theme, concept, composition, plan, control, extras, variant, habitVariant]);
   const thumbs = useMemo(() => directions.map((d) => firstTwo(applyDirection(candidate.page, d, undefined))), [directions, candidate.page]);
   const keepLockedGeometry = () => {
     if (implicitLayoutLock) setControl({
@@ -87,6 +90,7 @@ export default function CandidatePreview({
       setConcept(d.concept === "none" ? undefined : d.concept);
     }
     if (!control?.composition && !implicitLayoutLock) setComposition(d.composition === "editorial" ? "editorial" : undefined);
+    if (!implicitLayoutLock) setPlan(d.plan ?? undefined);
     setVariant(0);
     setHabitVariant(null);
   };
@@ -115,7 +119,7 @@ export default function CandidatePreview({
     setVariant(0);
     setHabitVariant(null);
   };
-  const currentName = directions.find((d) => sameDirection(d, theme, concept, composition))?.name ?? "我的風格";
+  const currentName = directions.find((d) => sameDirection(d, theme, concept, composition, plan))?.name ?? "我的風格";
   const keepHabit = (name: string) => {
     const v = habitVariant?.variant ?? variants[Math.max(variant, 0)];
     const saved = saveHabit({ name, direction: { ...current, name: currentName, why: "我存下來的風格" }, variant: v.brand, variantLabel: v.label, ...(brief?.ask ? { ask: brief.ask } : {}) });
@@ -248,10 +252,11 @@ export default function CandidatePreview({
         </div>
         {compareOpen && <div className="direction-cards" role="radiogroup" aria-label="三個方向">
           {directions.map((d, i) => (
-            <button key={d.name + i} type="button" role="radio" aria-label={d.name + "：" + d.why} aria-checked={sameDirection(d, theme, concept, composition)} className="direction-card" onClick={() => chooseDirection(i)}>
+            <button key={d.name + i} type="button" role="radio" aria-label={d.name + "：" + d.why} aria-checked={sameDirection(d, theme, concept, composition, plan)} className="direction-card" onClick={() => chooseDirection(i)}>
               <span className="direction-thumb" aria-hidden="true" inert><span className="direction-thumb-page"><ThumbnailRender.Provider value={true}><PageRenderer input={thumbs[i]} /></ThumbnailRender.Provider></span></span>
               <strong>{d.name}</strong>
               <small>{d.why}</small>
+              {d.plan && <small className="direction-plan">構圖：{planText[d.plan].name}</small>}
             </button>
           ))}
         </div>}

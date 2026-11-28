@@ -44,6 +44,7 @@ export const RefineSchema = z
 export type Refine = z.infer<typeof RefineSchema>;
 export const refineJSONSchema = toJSONSchema(RefineSchema.extend({
   sections: RefineSchema.shape.sections.element.required().array().max(20),
+  directions: DirectionSchema.required().array().length(3),
 }), { target: "draft-7" });
 
 const preview = (s: string, n = 24) => (s.length > n ? s.slice(0, n) + "…" : s);
@@ -63,7 +64,7 @@ export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canva
       avoid: Object.keys(brief?.caseFeedback ?? {}).filter(id => brief?.caseFeedback?.[id] === "avoid"),
       images: canvas.nodes.filter(node => node.type === "image").length,
       hasVideo: canvas.nodes.some(node => node.type === "media"),
-    }).map(({ id, guidance }) => ({ id, guidance })),
+    }).map(({ id, guidance }) => ({ case: id, guidance })),
     sections: plan.sections.map((s, i) => {
       const ids = [...s.intro, ...s.items, ...s.outro, ...s.aside].map(item => item.sourceId);
       const all = ids.map(id => byId.get(id)).filter(Boolean) as CanvasSpec["nodes"];
