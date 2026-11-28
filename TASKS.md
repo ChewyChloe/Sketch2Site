@@ -469,3 +469,5 @@
 - DONE：Pages 驗證簽章登入、擁有者與明確信箱名單。所有人共用既有固定單次 slot。免費精確 preflight 需要有效審批及可用額度，付費請求仍由 D1 原子保留。
 - PASS：77 項相關後端測試，包含六條未登入路由、授權撤回、跨使用者 CSRF、並行與重複扣款保護。付費 OpenAI 呼叫 0。
 - BLOCKED：Cloudflare Token 可管理 Pages，無 D1 與 Zero Trust 讀取權。須由擁有者依 `docs/CLOUDFLARE_PAGES_AI_SETUP.md` 設定登入、Secrets 並綁定保留原額度的 `DB`。
+
+- DONE：移除登入視窗指定文案。登入 E2E 2 項 PASS。

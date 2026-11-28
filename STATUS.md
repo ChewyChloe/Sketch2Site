@@ -945,3 +945,5 @@ Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38�
 - 啟用另需 `SKETCH_SITE_ORIGIN`、`SKETCH_AI_OWNER_EMAIL`、`SESSION_SECRET` 與已設定的 Google 或 GitHub 登入、含既有額度紀錄的 `DB` D1 綁定，以及既有模型／定價／計費／草稿／期限審批。離線排版可在 AI 未開通時使用。
 
 - 2026-11-28：Pages Production 已設定同源及安全關閉旗標，保留單次、US$0.01。簽章登入、擁有者／委託者授權與共用單次額度已通過 Mock。正式登入、D1、Secret 和 Zero Trust Access 尚待 Dashboard 完成。操作見 [Cloudflare Pages AI 開通](docs/CLOUDFLARE_PAGES_AI_SETUP.md)。
+
+- 登入文案已精簡，已配置及未配置登入的 Chromium 測試均 PASS。

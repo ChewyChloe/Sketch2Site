@@ -126,7 +126,7 @@ export function AccountButton() {
           ) : (
             <>
               <h2>登入</h2>
-              <p className="account-help">{soon ? "登入功能即將開放，現在不用登入也能使用全部功能" : "只會拿到你的名字和 Email"}</p>
+              {soon && <p className="account-help">登入功能即將開放，現在不用登入也能使用全部功能</p>}
               {soon && (
                 <div className="account-soon">
                   <button type="button" disabled>用 Google 登入（即將開放）</button>
