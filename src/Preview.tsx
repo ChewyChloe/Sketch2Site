@@ -1,6 +1,7 @@
 import SectionLayoutPicker from "./SectionLayoutPicker";
 import { checkRendered, checkSite, type SiteIssue } from "./siteCheck";
 import { SiteCheckPanel } from "./SiteCheckPanel";
+import { critique, type CriticResult } from "./visualCritic";
 import { copyStyle, dropPlacement, movePatch, nudge, pastePatches, sameKind, type CopiedStyle } from "./siteMove";
 import { VersionTimeline } from "./VersionTimeline";
 import { CompareView } from "./CompareView";
@@ -539,7 +540,8 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
     setNotice(direction === "undo" ? "已撤銷修改" : "已重做修改");
   }
 
-  const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean } | null>(null);
+  const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean; critic?: CriticResult; applied?: boolean } | null>(null);
+  const runCritic = () => (frameRef.current ? critique(frameRef.current, current.current.history.present) : undefined);
   const [timeline, setTimeline] = useState(false);
   // Trying a motion on the real element before applying it (A7): shown, never saved.
   const [trial, setTrial] = useState<{ nodeId: string; effectId: string; controls?: Record<string,unknown>; key: number } | null>(null);
@@ -696,7 +698,7 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
         >
           {exporting ? "正在匯出…" : "匯出 React 專案"}
         </button>
-        <button disabled={!ready || Boolean(loadError)} onClick={() => setCheck({ issues: runCheck(), exporting: false })}>
+        <button disabled={!ready || Boolean(loadError)} onClick={() => setCheck({ issues: runCheck(), exporting: false, critic: runCritic() })}>
           上線前檢查
         </button>
         <button disabled={!ready || Boolean(loadError)} onClick={() => setTimeline(true)}>
@@ -758,6 +760,14 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
           onGo={goToIssue}
           onClose={() => setCheck(null)}
           onExportAnyway={() => { setCheck(null); void exportNow(); }}
+          critic={check.critic}
+          criticApplied={check.applied}
+          onFixCritic={() => {
+            const c = check.critic;
+            if (!c?.patches.length || check.applied) return;
+            // One batch, one undo step; applied once per check.
+            if (patch(c.patches, c.patches.map((x) => x.targetId))) { setCheck({ ...check, applied: true }); setNotice(`已依畫面建議修正 ${c.patches.length} 處，按「撤銷修改」可以復原`); }
+          }}
         />
       )}
       {headerTarget ? (

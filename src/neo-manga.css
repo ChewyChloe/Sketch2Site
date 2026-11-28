@@ -1150,3 +1150,8 @@ body{background:var(--neo-cream)}
 }
 .preview-inspector .inspector-content { scrollbar-width: thin; scrollbar-color: #708577 transparent; }
 .direction-card .direction-plan { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: #0d0e11; color: #10e560; font-weight: 800; }
+.check-group.critic li { border-left: 6px solid #10e560; }
+.check-group.critic h3 span { background: #0b6b35; }
+.critic-auto { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 999px; background: #e8f8ee; color: #0b6b35; font-size: 12px; font-weight: 800; }
+.critic-fix { margin-top: 10px; min-height: 40px; padding: 0 18px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #10e560; font: inherit; font-weight: 800; cursor: pointer; }
+.critic-fix:disabled { background: #e8f8ee; cursor: default; }
