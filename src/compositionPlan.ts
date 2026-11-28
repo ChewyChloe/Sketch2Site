@@ -39,8 +39,9 @@ export function distinctEnough(plans: readonly PlanId[]) {
  * when it can be; the rest are filled in the order that suits the material: with pictures the
  * picture-led plan comes first, without them the type-led one.
  */
-export function assignPlans(wanted: readonly (PlanId | undefined)[], pictures: number): PlanId[] {
-  const order: PlanId[] = pictures > 0 ? ["focus", "headline", "column"] : ["headline", "column", "focus"];
+export function assignPlans(wanted: readonly (PlanId | undefined)[], pictures: number, reorder: (order: PlanId[]) => PlanId[] = (o) => o): PlanId[] {
+  // Learned taste (preferences.ts) may move a plan forward; what was asked for always stays.
+  const order: PlanId[] = reorder(pictures > 0 ? ["focus", "headline", "column"] : ["headline", "column", "focus"]);
   const chosen: (PlanId | undefined)[] = [];
   for (const w of wanted) chosen.push(w && !chosen.includes(w) ? w : undefined);
   const used = new Set(chosen.filter((p): p is PlanId => !!p));

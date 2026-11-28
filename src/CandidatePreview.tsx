@@ -7,6 +7,7 @@ import { ThumbnailRender } from "./PageRuntime";
 import type { CandidateResult } from "./demo";
 import { DeviceToggle } from "./DeviceToggle";
 import { planText, type PlanId } from "./compositionPlan";
+import { describeTaste, preferredPlans, recordTaste, resetTaste } from "./preferences";
 import { applyDirection, directionsFor, firstTwo, sameDirection, variantAccent, variantsFor, type Ask, type Variant } from "./directions";
 export default function CandidatePreview({
   candidate,
@@ -51,13 +52,25 @@ export default function CandidatePreview({
   const [extras, setExtras] = useState(candidate.page.extras ?? {});
   const [composition, setComposition] = useState(candidate.page.composition);
   // The candidate's own geometry (compositionPlan.ts); a layout lock keeps the page's geometry.
-  const [plan, setPlan] = useState<PlanId | undefined>(() => candidate.page.plan ?? (hasImplicitLayoutLock(candidate.page) ? undefined : (candidate.directions ?? directionsFor(candidate.page, brief))[0]?.plan ?? undefined));
+  const [plan, setPlan] = useState<PlanId | undefined>(candidate.page.plan);
   // Diverge, then converge: three directions side by side, then three variants of the chosen one.
-  const directions = useMemo(() => candidate.directions ?? directionsFor(candidate.page, brief), [candidate, brief]);
+  const directions = useMemo(() => {
+    const ds = candidate.directions ?? directionsFor(candidate.page, brief);
+    // Learned taste (this device only) puts the most chosen geometry on the first direction;
+    // the three stay different. Without any taste the AI's or the material's order stands.
+    const learned = describeTaste().length > 0;
+    const plans = ds.map((d) => d.plan).filter((p): p is PlanId => !!p);
+    if (!learned || plans.length !== 3) return ds;
+    const order = preferredPlans(plans);
+    return ds.map((d, i) => ({ ...d, plan: order[i] }));
+  }, [candidate, brief]);
+  useEffect(() => { if (!candidate.page.plan && !hasImplicitLayoutLock(candidate.page)) setPlan(directions[0]?.plan ?? undefined); }, [directions, candidate.page]);
   const [variant, setVariant] = useState(0);
   const [compareOpen, setCompareOpen] = useState(true);
   // 我的風格: saved looks offered again, never applied on their own.
   const [habits, setHabits] = useState<Habit[]>(readHabits);
+  // What was learned from earlier choices (preferences.ts), shown so it can be reset.
+  const [taste, setTaste] = useState<string[]>(() => describeTaste());
   useEffect(() => {
     const changed = () => setHabits(readHabits());
     window.addEventListener("sketch-habits-changed", changed);
@@ -152,6 +165,7 @@ export default function CandidatePreview({
                 if (replacing) { setConfirming((v) => !v); return; }
                 setSaving(true);
                 try {
+                  if (page.plan) recordTaste(`plan:${page.plan}`, 3, "direction");
                   await onAccept(page);
                 } finally {
                   setSaving(false);
@@ -172,7 +186,8 @@ export default function CandidatePreview({
                     onClick={async () => {
                       setSaving(true);
                       try {
-                        await onAccept(page);
+                        if (page.plan) recordTaste(`plan:${page.plan}`, 3, "direction");
+                  await onAccept(page);
                       } finally {
                         setSaving(false);
                         setConfirming(false);
@@ -260,6 +275,12 @@ export default function CandidatePreview({
             </button>
           ))}
         </div>}
+        {compareOpen && taste.length > 0 && (
+          <p className="taste-note" role="note">
+            依你過去的選擇排序：{taste.join("；")}
+            <button type="button" onClick={() => { resetTaste(); setTaste([]); }}>重設偏好</button>
+          </p>
+        )}
         <div className="theme-picker variant-picker" role="radiogroup" aria-label="同一方向的變化">
           <span>再挑一種變化</span>
           {variants.map((v, i) => (

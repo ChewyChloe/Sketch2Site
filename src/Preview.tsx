@@ -2,6 +2,7 @@ import SectionLayoutPicker from "./SectionLayoutPicker";
 import { checkRendered, checkSite, type SiteIssue } from "./siteCheck";
 import { SiteCheckPanel } from "./SiteCheckPanel";
 import { critique, type CriticResult } from "./visualCritic";
+import { recordTaste } from "./preferences";
 import { copyStyle, dropPlacement, movePatch, nudge, pastePatches, sameKind, type CopiedStyle } from "./siteMove";
 import { VersionTimeline } from "./VersionTimeline";
 import { CompareView } from "./CompareView";
@@ -766,7 +767,10 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
             const c = check.critic;
             if (!c?.patches.length || check.applied) return;
             // One batch, one undo step; applied once per check.
-            if (patch(c.patches, c.patches.map((x) => x.targetId))) { setCheck({ ...check, applied: true }); setNotice(`已依畫面建議修正 ${c.patches.length} 處，按「撤銷修改」可以復原`); }
+            if (patch(c.patches, c.patches.map((x) => x.targetId))) {
+              // Keeping the critic's fixes is a weak taste signal (preferences.ts).
+              for (const f of c.findings.filter((x) => x.fixed)) recordTaste(f.id.startsWith("measure") ? "measure" : f.id.startsWith("rhythm") ? "rhythm" : "space", 1, "critic");
+              setCheck({ ...check, applied: true }); setNotice(`已依畫面建議修正 ${c.patches.length} 處，按「撤銷修改」可以復原`); }
           }}
         />
       )}

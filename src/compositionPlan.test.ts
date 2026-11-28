@@ -35,3 +35,24 @@ describe("independent composition for each candidate", () => {
     expect(out[0].plan).toBe("focus");
   });
 });
+
+import { preferredPlans, recordTaste, resetTaste, tasteScores, describeTaste, forgetTaste } from "./preferences";
+describe("learned taste", () => {
+  it("an explicit choice moves that composition first; undo and reset take it back; scores are capped", () => {
+    const store: Record<string, string> = {};
+    Object.defineProperty(globalThis, "localStorage", { configurable: true, value: { getItem: (k: string) => store[k] ?? null, setItem: (k: string, v: string) => { store[k] = v; } } });
+    resetTaste();
+    expect(preferredPlans(["focus", "headline", "column"])).toEqual(["focus", "headline", "column"]);
+    const id = recordTaste("plan:column", 3, "direction");
+    expect(preferredPlans(["focus", "headline", "column"])).toEqual(["column", "focus", "headline"]);
+    expect(describeTaste()[0]).toContain("窄文接寬圖");
+    // The three candidates stay different with taste applied.
+    expect(distinctEnough(assignPlans([undefined, undefined, undefined], 2, (o) => preferredPlans(o)))).toBe(true);
+    forgetTaste(id);
+    expect(preferredPlans(["focus", "headline", "column"])[0]).toBe("focus");
+    for (let i = 0; i < 10; i++) recordTaste("plan:headline", 3, "direction");
+    expect(tasteScores()["plan:headline"]).toBe(9);
+    resetTaste();
+    expect(describeTaste()).toEqual([]);
+  });
+});

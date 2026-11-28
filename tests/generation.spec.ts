@@ -173,7 +173,7 @@ test("key 缺失、生成失敗與返回草稿都保留原內容", async ({ page
     }),
   );
   await page.getByRole("button", { name: "生成網站", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("沒有生成成功");
+  await expect(page.getByRole("alert")).toContainText("已保留原本的版本");
   expect(await savedPage(page)).toBeUndefined();
   await page.unroute("**/api/generation");
   await page.getByRole("button", { name: "生成網站", exact: true }).click();

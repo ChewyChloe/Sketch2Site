@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { assignPlans, planIds, planText, type PlanId } from "./compositionPlan";
+import { preferredPlans } from "./preferences";
 import { allSections, conceptIds, conceptText, pickableThemes, themeLabels, type Brand, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 
 // Diverge, then converge (docs/WORKFLOW_STUDY.md): ask a few questions, show three clearly
@@ -81,7 +82,7 @@ const whyFor = (c: Combo) =>
 
 /** Gives every direction its own composition plan: three different geometries, never one shared. */
 export function withPlans(ds: Direction[], pictures: number): Direction[] {
-  const plans = assignPlans(ds.map((d) => d.plan ?? undefined), pictures);
+  const plans = assignPlans(ds.map((d) => d.plan ?? undefined), pictures, (o) => preferredPlans(o));
   return ds.map((d, i) => ({ ...d, plan: plans[i] }));
 }
 const imagesIn = (page: PageSpec) => allSections(page).reduce((n, s) => n + JSON.stringify(s).split('"type":"image"').length - 1, 0);
