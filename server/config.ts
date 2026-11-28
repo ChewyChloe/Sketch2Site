@@ -1,7 +1,10 @@
 // Fixed model for this single-test backend; no alternate model or fallback.
 export const defaultModel = "gpt-6-luna";
 export const candidateModels = [defaultModel] as const;
-export function configFromEnv(env: NodeJS.ProcessEnv) {
+export const pagesMaxCalls = 20;
+export const pagesMaxBudgetUsd = 1;
+
+export function configFromEnv(env: NodeJS.ProcessEnv, { pages = false } = {}) {
   const inputRate = Number(env.SKETCH_AI_INPUT_USD_PER_MILLION),
     outputRate = Number(env.SKETCH_AI_OUTPUT_USD_PER_MILLION);
   const model = env.SKETCH_AI_MODEL ?? defaultModel;
@@ -35,9 +38,9 @@ export function configFromEnv(env: NodeJS.ProcessEnv) {
       env.SKETCH_AI_MODEL_REVIEWED === "true" &&
       Number.isInteger(maxCalls) &&
       maxCalls >= 1 &&
-      maxCalls <= 5 &&
+      maxCalls <= (pages ? pagesMaxCalls : 5) &&
       budgetUsd > 0 &&
-      budgetUsd <= 0.25 &&
+      budgetUsd <= (pages ? pagesMaxBudgetUsd : 0.25) &&
       candidateModels.some((candidate) => candidate === model),
   };
 }

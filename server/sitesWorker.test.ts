@@ -369,6 +369,67 @@ describe('Cloudflare Pages runtime bindings', () => {
   expect((await send('/status', delegate)).status).toBe(403);
  });
 
+ it.each(['0', '1.5', '21'])('rejects invalid Pages call cap %s', async maxCalls => {
+  const s = await setup();
+  const api = createSitesAPI(s.factory, undefined, { pages: true });
+  s.env.SKETCH_AI_MAX_CALLS = maxCalls;
+  expect(await (await api(s.req('/api/generation/ready'), s.env)).json()).toEqual({ configured: false });
+  expect(s.factory).not.toHaveBeenCalled();
+ });
+
+ it.each(['0.002047', '1.000001', '0.0050001', 'Infinity'])('rejects invalid Pages budget %s', async budget => {
+  const s = await setup();
+  const api = createSitesAPI(s.factory, undefined, { pages: true });
+  s.env.SKETCH_AI_BUDGET_USD = budget;
+  expect(await (await api(s.req('/api/generation/ready'), s.env)).json()).toEqual({ configured: false });
+  expect(s.factory).not.toHaveBeenCalled();
+ });
+
+ it('keeps the legacy slot and applies the new count cap across redeploys', async () => {
+  const s = await setup();
+  s.env.SKETCH_AI_MAX_CALLS = '8';
+  s.env.SKETCH_AI_BUDGET_USD = '0.05';
+  const api = createSitesAPI(s.factory, undefined, { pages: true });
+  const status = async (handler = api) => (await handler(s.req('/api/generation/status'), s.env)).json();
+  const token = (await status()).csrfToken;
+  const send = (requestId = crypto.randomUUID()) => api(s.req('/api/generation', {
+   method: 'POST', headers: { origin, 'content-type': 'application/json', 'x-sketch-csrf': token },
+   body: JSON.stringify({ requestId, canvasSpec: s.canvas }),
+  }), s.env);
+  expect(await status()).toMatchObject({ configured: true, remainingCalls: 8 });
+  const requestId = crypto.randomUUID();
+  expect((await send(requestId)).status).toBe(200);
+  expect((await send(requestId)).status).toBe(409);
+  expect((await send()).status).toBe(200);
+  const cold = createSitesAPI(s.factory, undefined, { pages: true });
+  expect(await status(cold)).toMatchObject({ configured: true, remainingCalls: 6 });
+  s.env.SKETCH_AI_MAX_CALLS = '1';
+  expect(await status(cold)).toMatchObject({ configured: false, remainingCalls: 0 });
+  s.env.SKETCH_AI_MAX_CALLS = '8';
+  expect(await status(cold)).toMatchObject({ configured: true, remainingCalls: 6 });
+  expect(await s.env.DB!.prepare('SELECT reserved_micros FROM sketch_ai_single_test WHERE id = ?')
+   .bind('sites-ai-single-test-v1').first()).toEqual({ reserved_micros: 2298 });
+ });
+
+ it('uses cumulative reservations in both preflight and the atomic Pages insert', async () => {
+  const s = await setup();
+  s.env.SKETCH_AI_MAX_CALLS = '20';
+  s.env.SKETCH_AI_BUDGET_USD = '0.0045';
+  const api = createSitesAPI(s.factory, undefined, { pages: true });
+  const token = (await (await api(s.req('/api/generation/status'), s.env)).json()).csrfToken;
+  const send = (path: string) => api(s.req('/api/generation' + path, {
+   method: 'POST', headers: { origin, 'content-type': 'application/json', 'x-sketch-csrf': token },
+   body: JSON.stringify({ requestId: crypto.randomUUID(), canvasSpec: s.canvas }),
+  }), s.env);
+  s.generate.mockRejectedValueOnce(new Error('mock failure'));
+  expect((await send('')).status).toBe(502);
+  expect((await send('/check')).status).toBe(429);
+  expect((await send('')).status).toBe(429);
+  expect(s.generate).toHaveBeenCalledTimes(1);
+  const sum = await s.env.DB!.prepare('SELECT COUNT(*) AS calls, SUM(reserved_micros) AS micros FROM sketch_ai_single_test').bind().first();
+  expect(sum).toEqual({ calls: 1, micros: 2298 });
+ });
+
  it.each([
   ['GET', 'ready'], ['GET', 'status'], ['GET', 'check'], ['GET', 'approved-draft'],
   ['POST', 'check'], ['POST', ''],

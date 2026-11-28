@@ -471,3 +471,5 @@
 - BLOCKED：Cloudflare Token 可管理 Pages，無 D1 與 Zero Trust 讀取權。須由擁有者依 `docs/CLOUDFLARE_PAGES_AI_SETUP.md` 設定登入、Secrets 並綁定保留原額度的 `DB`。
 
 - DONE：移除登入視窗指定文案。登入 E2E 2 項 PASS。
+
+- DONE：Cloudflare Pages AI 支援 1–20 次與累計 US$0.002048–1.00。沿用 D1 歷史、原子寫入及原草稿和時限；86 項相關測試 PASS，付費呼叫 0。

@@ -947,3 +947,5 @@ Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38�
 - 2026-11-28：Pages Production 已設定同源及安全關閉旗標，保留單次、US$0.01。簽章登入、擁有者／委託者授權與共用單次額度已通過 Mock。正式登入、D1、Secret 和 Zero Trust Access 尚待 Dashboard 完成。操作見 [Cloudflare Pages AI 開通](docs/CLOUDFLARE_PAGES_AI_SETUP.md)。
 
 - 登入文案已精簡，已配置及未配置登入的 Chromium 測試均 PASS。
+
+- Pages AI 額度支援可設定上限。新增次數與累計預扣檢查沿用原 D1 表，無遷移。舊部署設定未變更；更新步驟見 [Cloudflare Pages AI 開通](docs/CLOUDFLARE_PAGES_AI_SETUP.md)。

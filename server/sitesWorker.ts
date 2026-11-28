@@ -1,11 +1,11 @@
 import {generationProtocol} from '../src/generationProtocol';
-import {approvedDraft,approvalBase,paidSlot,paidSlots,motionApproved,ownerDraftApproved} from './sitesDraftPolicy';
+import {approvedDraft,approvalBase,paidSlots,motionApproved,ownerDraftApproved} from './sitesDraftPolicy';
 import { z } from 'zod';
 import { CanvasSchema } from '../src/spec';
 import { GenerationError, prepareIntent, materialize, type GenerationCode } from '../src/generation';
-import { configFromEnv } from './config';
+import { configFromEnv, pagesMaxCalls } from './config';
 import { openAIProvider, validUsage, type LayoutProvider } from './provider';
-import {LUNA_MODEL,LUNA_RATES,LUNA_MAX_OUTPUT_TOKENS,lunaUsageUsd} from './lunaPolicy';
+import {LUNA_MODEL,LUNA_RATES,LUNA_MAX_OUTPUT_TOKENS,lunaUsageUsd,reserveLunaMicros} from './lunaPolicy';
 import {authenticatedOwner,type SitesEnv} from './sitesIdentity';
 import {exactInputProof} from './sitesPreflight';
 import {authConfigFrom,handleAuth} from './auth';
@@ -30,24 +30,48 @@ async function validDraftApproval(token:string|undefined,key:string,user:string,
  const expiry=Number(token.split('.')[0]),now=Date.now();if(expiry<=now||expiry-now>600000)return false;
  const expected=await draftApproval(key,user,origin,hash,expiry);let delta=0;for(let i=0;i<expected.length;i++)delta|=expected.charCodeAt(i)^token.charCodeAt(i);return delta===0;
 }
-async function quotaState(env:SitesEnv){
- const slots=paidSlots(env),rows=await Promise.all(slots.map(id=>env.DB!.prepare('SELECT id,outcome FROM sketch_ai_single_test WHERE id = ?').bind(id).first<{id:string;outcome:string}>()));
- return {slots,remaining:rows.filter(r=>!r).length,active:rows.some(r=>r?.outcome==='RESERVED'),available:slots.find((_,i)=>!rows[i])};
+// The first ID is the existing production slot. Always count the entire pool, even
+// when the configured cap is reduced, so lowering then raising it cannot restore quota.
+const pagesSlots = Array.from({ length: pagesMaxCalls }, (_, index) =>
+  index === 0 ? 'sites-ai-single-test-v1' : `sites-ai-single-test-v1-${index + 1}`,
+);
+const minimumReserveMicros = reserveLunaMicros(1);
+
+async function quotaState(env: SitesEnv, slots: string[], maxCalls: number, budgetMicros: number, pages: boolean) {
+ const pool = slots.map(() => '?').join(',');
+ const summary = await env.DB!.prepare(`
+  SELECT COUNT(*) AS used, COALESCE(SUM(reserved_micros), 0) AS spentMicros,
+    COUNT(CASE WHEN outcome = 'RESERVED' THEN 1 END) AS active,
+    GROUP_CONCAT(id) AS ids
+  FROM sketch_ai_single_test WHERE id IN (${pool})
+ `).bind(...slots).first<{ used: number; spentMicros: number; active: number; ids: string | null }>();
+ if (!summary) throw new Error('Quota unavailable');
+ const budgetRemaining = Math.max(0, budgetMicros - (pages ? summary.spentMicros : 0));
+ const remaining = Math.max(0, Math.min(maxCalls - summary.used,
+  pages ? Math.floor(budgetRemaining / minimumReserveMicros) : maxCalls));
+ const usedIds = new Set(summary.ids?.split(','));
+ return {
+  remaining, budgetRemaining, active: summary.active > 0,
+  available: remaining > 0 ? slots.find(id => !usedIds.has(id)) : undefined,
+ };
 }
-function config(env: SitesEnv, now: number) {
+
+function config(env: SitesEnv, now: number, pages: boolean) {
   const strings:NodeJS.ProcessEnv={};
   for(const [key,value] of Object.entries(env))if(typeof value==='string')strings[key]=value;
   delete strings.SKETCH_AI_API_KEY; // Sites uses only the configured OPENAI_API_KEY runtime Secret.
-  const c = configFromEnv(strings);
+  const c = configFromEnv(strings, { pages });
+  const validPagesBudget = /^(?:\d+(?:\.\d{0,6})?|\.\d{1,6})$/.test(strings.SKETCH_AI_BUDGET_USD?.trim() ?? '');
+  const budgetMicros = pages ? Math.round(c.budgetUsd * 1e6) : Math.floor(c.budgetUsd * 1e6);
   const expires = Date.parse(String(env.SKETCH_AI_TEST_EXPIRES_AT ?? ''));
-  const ready = c.enabled && c.model===LUNA_MODEL && c.maxCalls === paidSlots(env).length && c.budgetUsd >= .002048 && c.budgetUsd <= .01 && !!env.DB &&
+  const ready = c.enabled && c.model===LUNA_MODEL && (pages ? validPagesBudget : c.maxCalls === paidSlots(env).length && c.budgetUsd <= .01) && c.budgetUsd >= .002048 && !!env.DB &&
     c.inputRate===LUNA_RATES.input && c.outputRate===LUNA_RATES.output && c.cachedInputRate===LUNA_RATES.cachedInput &&
     Number(env.SKETCH_AI_CACHE_WRITE_USD_PER_MILLION)===LUNA_RATES.cacheWrite30m &&
     env.SKETCH_AI_BILLING_CONFIRMED === 'true' &&
     env.SKETCH_AI_TEST_APPROVED === 'true' &&
     /^[a-f0-9]{64}$/.test(String(env.SKETCH_AI_TEST_CANVAS_SHA256 ?? '')) &&
     Number.isFinite(expires) && expires > now && expires - now <= 3600000;
-  return { ...c, ready };
+  return { ...c, budgetMicros, ready };
 }
 async function readBody(request: Request) {
   if (request.headers.get('content-type') !== 'application/json' || Number(request.headers.get('content-length') ?? 0) > 32768) throw new GenerationError('INVALID_INPUT');
@@ -81,16 +105,18 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     if (!user) return fail('OWNER_REQUIRED');
     if (url.origin !== env.SKETCH_SITE_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site') return fail('ORIGIN_INVALID');
     if (request.headers.has('origin') && request.headers.get('origin') !== url.origin) return fail('ORIGIN_INVALID');
-    // Pages uses the existing one-call slot. A draft policy cannot select a fresh ledger.
+    // A draft policy cannot select a fresh Pages ledger.
     if (pages && env.SKETCH_AI_DRAFT_POLICY) return fail('NOT_CONFIGURED', 503);
-    const c = config(env, now);
-    let slot=paidSlot(env);
+    const c = config(env, now, pages);
+    const slots = pages ? pagesSlots : paidSlots(env);
+    const readQuota = () => quotaState(env, slots, c.maxCalls, c.budgetMicros, pages);
+    let slot: string;
     const day = Math.floor(now / 86400000);
     const readinessOnly = url.pathname === '/api/generation/ready';
     if (request.method === 'GET' && (readinessOnly || url.pathname === '/api/generation/status')) {
       if (!c.ready) return json({ configured: false });
       try {
-        const q=await quotaState(env);const available=!!q.available&&!q.active;
+        const q=await readQuota();const available=!!q.available&&!q.active;
         if (readinessOnly) return json({ configured: available });
         return json({configured:available,remainingCalls:q.remaining,busy:q.active,csrfToken:available?await csrf(c.apiKey!,user,url.origin,day):undefined});
       } catch { return fail('NOT_CONFIGURED', 503); }
@@ -125,13 +151,13 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     if(checkOnly) {
       if(pages || motionApproved(env)) {
         try {
-          if (pages) {
-            const q = await quotaState(env);
+          const q = pages ? await readQuota() : null;
+          if (q) {
             if (q.active) return fail('BUSY', 429);
             if (!q.available) return fail('LIMIT', 429);
           }
           const proof=await exactInputProof(providerFactory(c.apiKey!,LUNA_MODEL),prepareIntent(payload.canvasSpec));
-          if(!Number.isFinite(c.budgetUsd)||c.budgetUsd<=0||c.budgetUsd>.01||proof.reservedMicros>Math.floor(c.budgetUsd*1e6))return fail('LIMIT',429);
+          if(!Number.isFinite(c.budgetMicros)||c.budgetMicros<=0||(!pages && c.budgetUsd>.01)||proof.reservedMicros>(q?.budgetRemaining ?? c.budgetMicros))return fail('LIMIT',429);
           await env.DB!.prepare('INSERT INTO sketch_ai_preflight (id,outcome,input_tokens,reserved_micros,checked_at) VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET outcome=excluded.outcome,input_tokens=excluded.input_tokens,reserved_micros=excluded.reserved_micros,checked_at=excluded.checked_at').bind(proof.requestHash,'READY',proof.inputTokens,proof.reservedMicros,Date.now()).run();
         }catch{return fail('NOT_CONFIGURED',503);}
       }
@@ -141,20 +167,32 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     let provider:LayoutProvider, inputBound:number, reservedMicros:number;
     try {
       // Reject exact replays before even the free count request.
-      const q=await quotaState(env);if(q.active)return fail('BUSY',429);if(!q.available)return fail('LIMIT',429);slot=q.available;
+      const q=await readQuota();if(q.active)return fail('BUSY',429);if(!q.available)return fail('LIMIT',429);slot=q.available;
       if(await env.DB!.prepare('SELECT id FROM sketch_ai_single_test WHERE request_id = ?').bind(payload.requestId).first())return fail('DUPLICATE',409);
       provider=providerFactory(c.apiKey!,LUNA_MODEL);
       const proof=await exactInputProof(provider,intent);
       inputBound=proof.inputTokens;reservedMicros=proof.reservedMicros;
       const checked=await env.DB!.prepare('SELECT outcome,input_tokens,reserved_micros FROM sketch_ai_preflight WHERE id = ?').bind(proof.requestHash).first<{outcome:string;input_tokens:number;reserved_micros:number}>();
       if(!checked||checked.outcome!=='READY'||checked.input_tokens!==inputBound||checked.reserved_micros!==reservedMicros)return fail('NOT_CONFIGURED',503);
-      if(!config(env,Date.now()).ready)return fail('NOT_CONFIGURED',503);
+      if(!config(env,Date.now(),pages).ready)return fail('NOT_CONFIGURED',503);
     }catch{return fail('LIMIT',429);}
-    if(reservedMicros>Math.floor(c.budgetUsd*1e6))return fail('LIMIT',429);
+    if(reservedMicros>c.budgetMicros)return fail('LIMIT',429);
     try {
-      const slots=paidSlots(env);
-      const claimed = await env.DB!.prepare(`INSERT INTO sketch_ai_single_test (id, request_id, user_id, canvas_hash, reserved_micros, started_at, outcome) SELECT ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM sketch_ai_single_test WHERE request_id = ?) AND NOT EXISTS (SELECT 1 FROM sketch_ai_single_test WHERE id IN (${slots.map(()=>'?').join(',')}) AND outcome = 'RESERVED') ON CONFLICT(id) DO NOTHING`)
-        .bind(slot,payload.requestId,user,hash,reservedMicros,now,'RESERVED',payload.requestId,...slots).run();
+      // Check the count, dollar cap and active reservation within the same atomic
+      // statement as the INSERT. Readiness and preflight checks are advisory.
+      const pool = slots.map(() => '?').join(',');
+      const budgetGuard = pages ? ' AND COALESCE(SUM(reserved_micros), 0) <= ?' : '';
+      const limits = pages ? [c.maxCalls, c.budgetMicros - reservedMicros] : [c.maxCalls];
+      const claimed = await env.DB!.prepare(`
+        INSERT INTO sketch_ai_single_test (id, request_id, user_id, canvas_hash, reserved_micros, started_at, outcome)
+        SELECT ?, ?, ?, ?, ?, ?, ?
+        WHERE NOT EXISTS (SELECT 1 FROM sketch_ai_single_test WHERE request_id = ?)
+          AND EXISTS (
+            SELECT COUNT(*) FROM sketch_ai_single_test WHERE id IN (${pool})
+            HAVING COUNT(*) < ? AND COUNT(CASE WHEN outcome = 'RESERVED' THEN 1 END) = 0${budgetGuard}
+          )
+        ON CONFLICT(id) DO NOTHING
+      `).bind(slot,payload.requestId,user,hash,reservedMicros,now,'RESERVED',payload.requestId,...slots,...limits).run();
       if (claimed.meta.changes !== 1) return fail('LIMIT', 429);
     } catch { return fail('UNAVAILABLE', 503); } // Uncertain reservation never calls Provider.
     const controller = new AbortController();
