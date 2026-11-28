@@ -1,3 +1,4 @@
+import artPlanCss from "./artPlan.css?raw";
 import referenceHundredSource from "./ReferenceHundred.ts?raw";
 import cinematicMotionSource from "./CinematicMotion.tsx?raw";
 import mediaRuntimeSource from "./MediaRuntime.tsx?raw";
@@ -10,6 +11,7 @@ import signatureMotionSource from "./SignatureMotion.tsx?raw";
 import referenceTypographySource from "./ReferenceTypography.ts?raw";
 import referenceMotionSource from "./ReferenceMotion.tsx?raw";
 import referenceMetaSource from "./referenceMotions.ts?raw";
+import artPlanSource from "./artPlan.ts?raw";
 import sectionLayoutSource from "./sectionLayout.ts?raw";
 import sectionLockSource from "./sectionLock.ts?raw";
 import assetSchema from "./assetRef.ts?raw";
@@ -93,6 +95,8 @@ export async function exportProjectFiles(
     },
     { path: "src/PageRuntime.tsx", content: runtime },
     { path: "src/pageSpec.ts", content: schema },
+    { path: "src/artPlan.css", content: artPlanCss },
+    { path: "src/artPlan.ts", content: artPlanSource },
     { path: "src/sectionLayout.ts", content: sectionLayoutSource },
     { path: "src/sectionLock.ts", content: sectionLockSource },
     { path: "src/motion.ts", content: motionSource },

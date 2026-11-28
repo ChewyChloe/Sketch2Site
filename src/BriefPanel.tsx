@@ -1,3 +1,5 @@
+import { designCases } from "./designCases";
+import { retrieveDesignCases } from "./designRetrieval";
 import { GenerationReview } from "./GenerationReview";
 import type { CanvasSpec } from "./spec";
 import { withGenerationBrief } from "./brief";
@@ -103,6 +105,13 @@ export function BriefPanel({
   onGenerate: (brief: Brief) => void;
 }) {
   const [brief, setBrief] = useState<Brief>({ ...emptyBrief, ...initial });
+  const inspiration = retrieveDesignCases({
+    purpose: brief.purpose,
+    images: draft.nodes.filter(node => node.type === "image").length,
+    hasVideo: draft.nodes.some(node => node.type === "media"),
+    prefer: Object.keys(brief.caseFeedback ?? {}).filter(id => brief.caseFeedback?.[id] === "prefer"),
+    avoid: Object.keys(brief.caseFeedback ?? {}).filter(id => brief.caseFeedback?.[id] === "avoid"),
+  });
   const [review, setReview] = useState(false);
   useEscapeToClose(() => review ? setReview(false) : onClose(brief));
   const [active, setActive] = useState<BriefField | null>(initial?.audience ? null : "audience");
@@ -322,6 +331,29 @@ export function BriefPanel({
           }}
         />
       </section>
+      <details className="brief-reference">
+        <summary>設計靈感與參考來源</summary>
+        {inspiration.length === 0 && <p>目前沒有符合條件的案例。</p>}
+        {[...inspiration, ...designCases.filter(item => brief.caseFeedback?.[item.id] === "avoid")].map(item => (
+          <article key={item.id} className="brief-reference-card">
+            <a href={item.url} target="_blank" rel="noreferrer">{item.name}</a>
+            <p>{item.guidance}</p>
+            <div className="brief-ask-chips" role="group" aria-label={item.name}>
+              {(["prefer", "avoid"] as const).map(choice => (
+                <button key={choice} type="button" aria-pressed={brief.caseFeedback?.[item.id] === choice}
+                  onClick={() => setBrief(current => {
+                    const caseFeedback = { ...current.caseFeedback };
+                    if (caseFeedback[item.id] === choice) delete caseFeedback[item.id];
+                    else caseFeedback[item.id] = choice;
+                    return { ...current, caseFeedback };
+                  })}>
+                  {choice === "prefer" ? "偏好這個做法" : "避開這個做法"}
+                </button>
+              ))}
+            </div>
+          </article>
+        ))}
+      </details>
       {!aiReady && <p className="brief-note">選的感覺會換成搭配的顏色，想被注意的區塊會放前面</p>}
       <div className="brief-actions">
         <button type="button" className="brief-reset" onClick={() => { setBrief(emptyBrief); setReferences([]); setRefNote(""); setActive("audience"); }}>全部清除</button>

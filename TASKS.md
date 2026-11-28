@@ -477,3 +477,10 @@
 - DONE：登入後帳號按鈕改為淺色方形頭像與清楚的選單提示。登入 E2E 2 項 PASS。
 
 - DONE：移除需求面板三段指定文案。需求與參考圖 Chromium 測試 6 項 PASS。
+
+## 生成設計垂直切片（2026-11-28）
+- PARTIAL：ArtPlan 已從生成摘要、Prompt 和 Zod 串到共用 PageSpec、Renderer 與 React Export。已有比例、文字欄寬、留白、標題尺度、單圖並排／交疊及焦點。候選獨立構圖、完整逐圖分析、圖說及跨區節奏仍待補。
+- PARTIAL：32 案例已轉資料並按素材與簡報目的檢索，生成與 Brief 面板共用結果。案例偏好與排除以草稿 Brief 保存。尚缺修改行為學習、完整 Moodboard 及使用者網址流程。
+- NOT STARTED：Visual Critic 的實際截圖來源、一次性受驗證 patch 與現有 D1 預扣整合。
+- PASS：177 項 ArtPlan、生成、Brief、Pages Worker 相關單元測試。
+- NOT TESTED：桌面／手機實際畫面、獨立匯出、真實 A/B。Production 目前 source 為 8a117b6，匿名 readiness 回 OWNER_REQUIRED。待完整功能及登入後 preflight 驗證再部署並進行核准的真實呼叫。

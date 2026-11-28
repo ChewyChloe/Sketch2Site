@@ -1,3 +1,4 @@
+import { ArtPlanSchema } from "./artPlan";
 import { referenceHints } from "./referenceStyle";
 import { requestedSectionLayout, sectionSourceIds, sectionLayoutIssue, withSectionOrder } from "./sectionLayout";
 import { DirectionSchema } from "./directions";
@@ -210,6 +211,7 @@ export const LayoutV2Schema = z
             layout: z.enum(["stack", "grid"]),
             columns: z.union([z.literal(1), z.literal(2), z.literal(3)]),
             gap: z.enum(["small", "medium", "large"]),
+            artPlan: ArtPlanSchema.optional(),
             intro: z.array(ItemSchema).max(12),
             items: z.array(ItemSchema).max(40),
             outro: z.array(ItemSchema).max(12),
@@ -374,10 +376,22 @@ export function materialize(canvasInput: unknown, output: unknown): PageSpec {
         const body = aside.length
           ? [make("grid", { columns: 2, style: stackStyle("large"), children: [make("stack", { style: stackStyle("large"), children: main }), make("stack", { style: stackStyle("medium"), children: aside })] })]
           : main;
+        const ids = [...all, ...section.aside].map(item => item.sourceId);
+        const specified = requestedSectionLayout(canvas.metadata.siteOverrides?.items, ids);
+        const art = canvas.metadata.layoutMode === "reflow"
+          && !specified && !ids.some(id => byId.get(id)?.locked)
+          && !canvas.constraints.some(value => value.startsWith("layout:"))
+          && aside.length <= 1 && aside.every(node => node.type === "image") && intro.length && intro.every(node => ["heading", "paragraph", "button"].includes(node.type))
+          && (!items.length || items.every(node => node.type === "image"))
+          ? section.artPlan : undefined;
+        const artPlan = art && {
+          ...art,
+          imagePosition: items.length + aside.length === 1 ? art.imagePosition : "below" as const,
+        };
         return make("section", {
           role: section.role,
           style: { ...defaultStyle, padding: "large", gap: section.gap, tone: section.tone },
-          children: [make("container", { style: stackStyle("large"), children: body })],
+          children: [make("container", { style: stackStyle("large"), children: artPlan && aside.length ? [main[0], aside[0], ...main.slice(1)] : body, ...(artPlan ? { artPlan } : {}) })],
         });
       });
   if (seen.size !== canvas.nodes.length)

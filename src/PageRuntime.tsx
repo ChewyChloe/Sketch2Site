@@ -42,6 +42,7 @@ import {
   cardLineKind,
 } from "./pageSpec";
 import "./pageRuntime.css";
+import "./artPlan.css";
 type Effect = PageNode["effects"][number];
 export const animationRegistry = Object.fromEntries(motionIds.filter(id=>motionCatalog[id].status==="DONE").map(id=>[id,{entrance:["fade-in","slide-up","scale-in"].includes(id),hover:["hover-lift","hover-glow"].includes(id),stagger:id==="stagger-reveal"}])) as Record<typeof motionIds[number],{entrance?:boolean;hover?:boolean;stagger?:boolean}>;
 const easingValues:Record<string,string>={smooth:"cubic-bezier(.2,.7,.3,1)",linear:"linear","ease-out":"ease-out"};
@@ -529,6 +530,13 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
     "--glow-strength": glow?.validatedControls.intensity==="medium"?"35%":"18%",
     "--effect-lift": (lift ? motionNumber(lift,lift.presetVersion===0?"distancePx":"liftPx",5) : 0) + "px",
     "--hover-duration": (lift ? motionDuration(lift) : glow ? motionDuration(glow) : 250) + "ms",
+    ...(node.artPlan && {
+      "--art-copy": node.artPlan.textSpan + "fr",
+      "--art-media": 12 - node.artPlan.textSpan + "fr",
+      "--art-measure": node.artPlan.measure + "ic",
+      "--art-focus": node.artPlan.imageFocusX + "% " + node.artPlan.imageFocusY + "%",
+      "--art-fit": node.artPlan.imageFit,
+    }),
     ...textCss(node.text),
   } as CSSProperties;
   return (
@@ -540,6 +548,9 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
       data-gallery-filtered={category !== undefined && gallery?.selected && category !== gallery.selected ? "" : undefined}
       data-locked={!thumbnail && node.lock ? (["text", "assets", "layout", "motion"] as const).filter((k) => node.lock![k]).join(" ") || undefined : undefined}
       data-page-type={node.type}
+      data-art-position={node.artPlan?.imagePosition}
+      data-art-rhythm={node.artPlan?.rhythm}
+      data-art-headline={node.artPlan?.headline}
       data-section-arrangement={arrangement?.mode}
       data-section-mobile={arrangement && "mobile" in arrangement ? arrangement.mobile : undefined}
       data-section-bleed={node.sectionLayout?.fullBleed ? "" : undefined}

@@ -72,6 +72,7 @@ export const CanvasSchema = z
           details: z.string().trim().max(600).optional(),
           // What a reference picture taught (fixed choices only; the picture is never stored).
           style: ReferenceStyleSchema.optional(),
+          caseFeedback: z.record(z.string().regex(/^case-(0[1-9]|[12][0-9]|3[0-2])$/), z.enum(["prefer", "avoid"])).optional(),
           referencePurposes: ReferencePurposesSchema.optional(),
           // Answers asked before generating: references, what to avoid, lightness, the opening.
           ask: AskSchema.optional(),

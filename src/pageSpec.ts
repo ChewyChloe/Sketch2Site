@@ -1,3 +1,4 @@
+import { ArtPlanSchema, type ArtPlan } from "./artPlan";
 import { imageSource } from "./assetRef";
 import { SectionLayoutSchema, sectionLayoutIssue, type SectionLayout } from "./sectionLayout";
 import { SectionLockSchema, type SectionLock } from "./sectionLock";
@@ -446,6 +447,7 @@ export type PageNode = {
   children?: PageNode[];
   /** Sections only: parts the author locked (see sectionLock.ts). */
   lock?: SectionLock;
+  artPlan?: ArtPlan;
   sectionLayout?: SectionLayout;
 };
 export function effectCompatible(
@@ -489,6 +491,7 @@ export const PageNodeSchema: z.ZodType<PageNode> = z.lazy(() =>
       .object({
         ...common,
         type: z.literal("container"),
+        artPlan: ArtPlanSchema.optional(),
         children: z.array(PageNodeSchema).max(100),
       })
       .strict(),

@@ -953,3 +953,6 @@ Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38�
 - 已檢查桌面與 375px 手機的登入後帳號按鈕畫面，登入與登出測試 PASS。
 
 - 需求面板的參考圖與 AI 生成說明已精簡。參考圖、草稿縮圖與生成流程的 Chromium 驗證 PASS。
+
+## 生成設計切片（2026-11-28）
+- PARTIAL：本機包含 ArtPlan 到共用 Runtime 的最小流程與 32 案例檢索。待補候選差異、預覽驗證及 Visual Critic。接續順序與 Production 驗證狀態見 TASKS.md。

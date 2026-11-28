@@ -1,0 +1,49 @@
+[data-art-position] > :first-child {
+  inline-size: min(100%, var(--art-measure));
+  min-inline-size: 0;
+}
+
+[data-art-rhythm="open"] {
+  row-gap: clamp(1.5rem, 5cqi, 4.5rem);
+}
+
+[data-art-rhythm="compact"] {
+  row-gap: 1rem;
+}
+
+[data-art-headline="display"] > :first-child h1,
+[data-art-headline="display"] > :first-child h2 {
+  font-size: clamp(1.8rem, 5cqi, 4.5rem);
+  overflow-wrap: anywhere;
+  line-height: 1.12;
+}
+
+.rendered-page [data-art-position] > :nth-child(2) img {
+  object-fit: var(--art-fit);
+  object-position: var(--art-focus);
+  max-inline-size: 100%;
+  aspect-ratio: 4 / 3;
+}
+
+@container (min-width: 801px) {
+  [data-art-position="beside"], [data-art-position="overlap"] {
+    display: grid;
+    grid-template-columns: minmax(0, var(--art-copy)) minmax(0, var(--art-media));
+    align-items: center;
+  }
+
+  [data-art-position="beside"] > :nth-child(n+3),
+  [data-art-position="overlap"] > :nth-child(n+3) {
+    grid-column: 1 / -1;
+  }
+
+  [data-art-position="overlap"] > :first-child {
+    position: relative;
+    z-index: 1;
+    background: var(--pg-page, var(--surface));
+  }
+
+  [data-art-position="overlap"] > :nth-child(2) {
+    margin-inline-start: clamp(-2.5rem, -3cqi, -1rem);
+  }
+}

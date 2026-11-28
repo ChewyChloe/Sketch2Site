@@ -1,3 +1,5 @@
+import { retrieveDesignCases } from "./designRetrieval";
+import { ArtPlanSchema } from "./artPlan";
 import { referenceHints } from "./referenceStyle";
 import { requestedSectionLayout } from "./sectionLayout";
 import { cleanDirections, DirectionSchema } from "./directions";
@@ -27,6 +29,7 @@ export const RefineSchema = z
       .array(
         z
           .object({
+            artPlan: ArtPlanSchema.nullable().optional(),
             i: z.number().int().min(0).max(19),
             role: z.enum(sectionRoles),
             layout: z.enum(["stack", "grid"]),
@@ -39,7 +42,9 @@ export const RefineSchema = z
   })
   .strict();
 export type Refine = z.infer<typeof RefineSchema>;
-export const refineJSONSchema = toJSONSchema(RefineSchema, { target: "draft-7" });
+export const refineJSONSchema = toJSONSchema(RefineSchema.extend({
+  sections: RefineSchema.shape.sections.element.required().array().max(20),
+}), { target: "draft-7" });
 
 const preview = (s: string, n = 24) => (s.length > n ? s.slice(0, n) + "…" : s);
 
@@ -51,6 +56,14 @@ export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canva
     name: preview(canvas.metadata.name, 40),
     ...(brief ? { brief: { ...brief, style: referenceHints(brief.style, brief.referencePurposes) } } : {}),
     constraints: canvas.constraints,
+    reflow: canvas.metadata.layoutMode === "reflow",
+    designEvidence: retrieveDesignCases({
+      purpose: brief?.purpose,
+      prefer: Object.keys(brief?.caseFeedback ?? {}).filter(id => brief?.caseFeedback?.[id] === "prefer"),
+      avoid: Object.keys(brief?.caseFeedback ?? {}).filter(id => brief?.caseFeedback?.[id] === "avoid"),
+      images: canvas.nodes.filter(node => node.type === "image").length,
+      hasVideo: canvas.nodes.some(node => node.type === "media"),
+    }).map(({ id, guidance }) => ({ id, guidance })),
     sections: plan.sections.map((s, i) => {
       const ids = [...s.intro, ...s.items, ...s.outro, ...s.aside].map(item => item.sourceId);
       const all = ids.map(id => byId.get(id)).filter(Boolean) as CanvasSpec["nodes"];
@@ -67,6 +80,11 @@ export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canva
         // First line of up to three cards, so the model knows what the section is about.
         ...(all.some((n) => n.type === "card") ? { cards: all.filter((n) => n.type === "card").slice(0, 3).map((n) => preview(n.content.split("\n")[0], 12)) } : {}),
         counts,
+        introTypes: s.intro.map(item => item.presentation),
+        media: all.filter(n => n.type === "image").map(n => ({ draftWidth: n.width, draftHeight: n.height })),
+        textLength: all.filter(n => n.type === "text" || n.type === "heading").reduce((sum, n) => sum + n.content.length, 0),
+        geometryLocked: all.some(n => n.locked),
+
         ...(prices ? { cardsWithNumbers: prices } : {}),
         ...(questions ? { questionCards: questions } : {}),
         layout: s.layout,
@@ -90,6 +108,7 @@ export function applyRefine(plan: LayoutV2, refine: Refine, canvas?: CanvasSpec)
     s.tone = s.role === "hero" ? s.tone : r.tone;
     const ids = [...s.intro, ...s.items, ...s.outro, ...s.aside].map(item => item.sourceId);
     if (canvas?.metadata.layoutMode === "reflow" && requestedSectionLayout(canvas.metadata.siteOverrides?.items, ids)?.arrangement) continue;
+    if (r.artPlan) s.artPlan = r.artPlan;
     // A grid needs repeated items; FAQs and contact forms always read as a list (paid test finding).
     if (r.layout === "grid" && s.items.length >= 2 && s.role !== "faq" && s.role !== "contact") {
       s.layout = "grid";
