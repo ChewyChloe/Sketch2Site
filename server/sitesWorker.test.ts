@@ -309,8 +309,8 @@ describe('Google sign-in on Sites', () => {
 describe('Cloudflare Pages runtime bindings', () => {
  const secret = 'test-only-signing-key-with-32-characters';
  const email = 'owner@sites.test';
- async function signedSession(email: string, expires: number) {
-  const body = Buffer.from(JSON.stringify({ sub: 'github:123', email, name: 'Owner', exp: expires })).toString('base64url');
+ async function signedSession(email: string, expires: number, sub = 'github:123') {
+  const body = Buffer.from(JSON.stringify({ sub, email, name: 'Owner', exp: expires })).toString('base64url');
   const { createHmac } = await import('node:crypto');
   const signature = createHmac('sha256', secret).update('session:' + body).digest('base64url');
   return 's2_session=' + body + '.' + signature;
@@ -318,7 +318,7 @@ describe('Cloudflare Pages runtime bindings', () => {
  it('requires a signed owner session and reads the real runtime flag and key without leaking them', async () => {
   const { onRequest } = await import('../functions/api/[[path]]');
   const s = await setup();
-  const env = { ...s.env, DB: db(), SESSION_SECRET: secret, GOOGLE_CLIENT_ID: '123-example.apps.googleusercontent.com' };
+  const env: SitesEnv = { ...s.env, DB: db(), SESSION_SECRET: secret, GOOGLE_CLIENT_ID: '123-example.apps.googleusercontent.com' };
   const expiry = Math.floor(Date.now() / 1000) + 60;
   const cookie = await signedSession(email, expiry);
   const request = (headers: HeadersInit = {}, path = '/api/generation/ready', bindings = env) =>
@@ -336,4 +336,48 @@ describe('Cloudflare Pages runtime bindings', () => {
   expect(data).toEqual({ configured: true, remainingCalls: 1, busy: false, csrfToken: expect.stringMatching(/^[a-f0-9]{64}$/) });
   expect(status.headers.get('cache-control')).toBe('no-store');
  });
+ it('shares one quota across the signed owner and delegates, and preserves it across requests', async () => {
+  const { authenticatePagesOwner } = await import('../functions/api/[[path]]');
+  const s = await setup();
+  const env: SitesEnv = { ...s.env, DB: db(), SESSION_SECRET: secret, GOOGLE_CLIENT_ID: '123-example.apps.googleusercontent.com', SKETCH_AI_AUTHORIZED_EMAILS: ' Delegate@sites.test ' };
+  const api = createSitesAPI(s.factory, undefined, { authenticate: authenticatePagesOwner, pages: true });
+  const expiry = Math.floor(Date.now() / 1000) + 60;
+  const owner = await signedSession(email, expiry);
+  const delegate = await signedSession('delegate@sites.test', expiry, 'github:456');
+  const send = (path: string, cookie: string, token?: string, requestId = crypto.randomUUID()) =>
+   api(new Request(origin + '/api/generation' + path, {
+    method: token ? 'POST' : 'GET',
+    headers: { cookie, origin, 'content-type': 'application/json', ...(token ? { 'x-sketch-csrf': token } : {}) },
+    body: token ? JSON.stringify({ requestId, canvasSpec: s.canvas }) : undefined,
+   }), env);
+  expect((await send('/status', delegate)).status).toBe(403);
+  const ownerToken = (await (await send('/status', owner)).json()).csrfToken;
+  const delegateToken = (await (await send('/status', delegate)).json()).csrfToken;
+  expect(delegateToken).not.toEqual(ownerToken);
+  expect((await send('/check', delegate, ownerToken)).status).toBe(403);
+  expect((await send('', delegate, delegateToken)).status).toBe(503); // No matching preflight proof.
+  expect((await send('/check', delegate, delegateToken)).status).toBe(200);
+  const requestId = crypto.randomUUID();
+  const answers = await Promise.all([send('', owner, ownerToken, requestId), send('', delegate, delegateToken, requestId)]);
+  expect(answers.filter(answer => answer.ok)).toHaveLength(1);
+  expect((await send('', delegate, delegateToken, requestId)).status).toBe(429);
+  const counted = s.factory.mock.calls.length;
+  expect((await send('/check', delegate, delegateToken)).status).toBe(429);
+  expect(s.factory).toHaveBeenCalledTimes(counted);
+  expect(s.generate).toHaveBeenCalledTimes(1);
+  env.SKETCH_AI_AUTHORIZED_EMAILS = '';
+  expect((await send('/status', delegate)).status).toBe(403);
+ });
+
+ it.each([
+  ['GET', 'ready'], ['GET', 'status'], ['GET', 'check'], ['GET', 'approved-draft'],
+  ['POST', 'check'], ['POST', ''],
+ ])('rejects anonymous %s generation/%s before reaching the provider', async (method, route) => {
+  const { onRequest } = await import('../functions/api/[[path]]');
+  const path = '/api/generation' + (route ? '/' + route : '');
+  const response = await onRequest({ request: new Request(origin + path, { method, headers: { origin } }), env: {} });
+  expect(response.status).toBe(403);
+  expect(await response.json()).toEqual({ code: 'OWNER_REQUIRED' });
+ });
+
 });

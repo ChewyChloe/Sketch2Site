@@ -943,3 +943,5 @@ Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38�
 ## Cloudflare Pages 生成 API（2026-11-28）
 - Pages Functions 使用 `context.env` 的 `OPENAI_API_KEY`（Secret）和 `SKETCH_AI_ENABLED`（字串 `true`）。前端只讀同源 `/api/generation/ready` 的布林狀態，生成另走 `status`、`check` 及 `POST /api/generation`。
 - 啟用另需 `SKETCH_SITE_ORIGIN`、`SKETCH_AI_OWNER_EMAIL`、`SESSION_SECRET` 與已設定的 Google 或 GitHub 登入、含既有額度紀錄的 `DB` D1 綁定，以及既有模型／定價／計費／草稿／期限審批。離線排版可在 AI 未開通時使用。
+
+- 2026-11-28：Pages Production 已設定同源及安全關閉旗標，保留單次、US$0.01。簽章登入、擁有者／委託者授權與共用單次額度已通過 Mock。正式登入、D1、Secret 和 Zero Trust Access 尚待 Dashboard 完成。操作見 [Cloudflare Pages AI 開通](docs/CLOUDFLARE_PAGES_AI_SETUP.md)。

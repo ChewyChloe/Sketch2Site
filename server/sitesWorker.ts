@@ -68,7 +68,7 @@ async function readBody(request: Request) {
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
   return schema.parse(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)));
 }
-export function createSitesAPI(providerFactory: (key: string, model: string) => LayoutProvider = openAIProvider, timeoutMs = 30000, authenticate = authenticatedOwner) {
+export function createSitesAPI(providerFactory: (key: string, model: string) => LayoutProvider = openAIProvider, timeoutMs = 30000, { authenticate = authenticatedOwner, pages = false } = {}) {
   return async function handle(request: Request, env: SitesEnv): Promise<Response> {
     const url = new URL(request.url), now = Date.now();
     // Google sign-in is open to every visitor (not only the owner); POSTs must come from this site.
@@ -81,6 +81,8 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     if (!user) return fail('OWNER_REQUIRED');
     if (url.origin !== env.SKETCH_SITE_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site') return fail('ORIGIN_INVALID');
     if (request.headers.has('origin') && request.headers.get('origin') !== url.origin) return fail('ORIGIN_INVALID');
+    // Pages uses the existing one-call slot. A draft policy cannot select a fresh ledger.
+    if (pages && env.SKETCH_AI_DRAFT_POLICY) return fail('NOT_CONFIGURED', 503);
     const c = config(env, now);
     let slot=paidSlot(env);
     const day = Math.floor(now / 86400000);
@@ -105,7 +107,7 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     const checkOnly=url.pathname === '/api/generation/check';
     if (request.method !== 'POST' || (!checkOnly && url.pathname !== '/api/generation')) return fail('UNAVAILABLE', 404);
     if (request.headers.get('origin') !== url.origin) return fail('ORIGIN_INVALID');
-    if ((!checkOnly && !c.ready) || !c.apiKey) return fail('NOT_CONFIGURED', 503);
+    if (((pages || !checkOnly) && !c.ready) || !c.apiKey) return fail('NOT_CONFIGURED', 503);
     const token = request.headers.get('x-sketch-csrf') ?? '';
     if (!/^[a-f0-9]{64}$/.test(token)) return fail('CSRF_INVALID');
     const matches = await Promise.all([day, day - 1].map(async d => {
@@ -121,8 +123,13 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
     if (!ownerDraftApproved(env)&&await canvasHash(approvalBase(payload.canvasSpec,env)) !== env.SKETCH_AI_TEST_CANVAS_SHA256) return fail('DRAFT_HASH_MISMATCH');
     if(ownerDraftApproved(env)&&!checkOnly&&!await validDraftApproval(payload.draftApproval,c.apiKey!,user,url.origin,hash))return fail('DRAFT_APPROVAL_INVALID');
     if(checkOnly) {
-      if(motionApproved(env)) {
+      if(pages || motionApproved(env)) {
         try {
+          if (pages) {
+            const q = await quotaState(env);
+            if (q.active) return fail('BUSY', 429);
+            if (!q.available) return fail('LIMIT', 429);
+          }
           const proof=await exactInputProof(providerFactory(c.apiKey!,LUNA_MODEL),prepareIntent(payload.canvasSpec));
           if(!Number.isFinite(c.budgetUsd)||c.budgetUsd<=0||c.budgetUsd>.01||proof.reservedMicros>Math.floor(c.budgetUsd*1e6))return fail('LIMIT',429);
           await env.DB!.prepare('INSERT INTO sketch_ai_preflight (id,outcome,input_tokens,reserved_micros,checked_at) VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET outcome=excluded.outcome,input_tokens=excluded.input_tokens,reserved_micros=excluded.reserved_micros,checked_at=excluded.checked_at').bind(proof.requestHash,'READY',proof.inputTokens,proof.reservedMicros,Date.now()).run();
