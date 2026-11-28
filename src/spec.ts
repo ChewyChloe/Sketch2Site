@@ -73,6 +73,13 @@ export const CanvasSchema = z
           // What a reference picture taught (fixed choices only; the picture is never stored).
           style: ReferenceStyleSchema.optional(),
           caseFeedback: z.record(z.string().regex(/^case-(0[1-9]|[12][0-9]|3[0-2])$/), z.enum(["prefer", "avoid"])).optional(),
+          // The author's own inspiration links (moodboard). Stored only, never fetched; the AI
+          // gets the author's note and what they like about it, not the address.
+          moodLinks: z.array(z.object({
+            url: z.string().max(300).url().refine((u) => /^https:\/\//.test(u), "只接受 https 網址"),
+            note: z.string().trim().max(40),
+            likes: z.array(z.enum(["layout", "type", "color", "space", "photo", "motion"])).max(6),
+          }).strict()).max(8).optional(),
           referencePurposes: ReferencePurposesSchema.optional(),
           // Answers asked before generating: references, what to avoid, lightness, the opening.
           ask: AskSchema.optional(),

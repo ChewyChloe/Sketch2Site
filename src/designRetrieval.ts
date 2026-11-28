@@ -35,3 +35,9 @@ export function retrieveDesignCases(query: DesignQuery) {
     .slice(0, 4)
     .map(({ record }) => record);
 }
+
+/** Free-text search across all cases (name, what was observed, the guidance), for the moodboard. */
+export function searchDesignCases(query: string, material?: "image" | "text" | "video") {
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  return designCases.filter((c) => (!material || c.material === material) && words.every((w) => (c.name + c.observation + c.guidance).toLowerCase().includes(w)));
+}

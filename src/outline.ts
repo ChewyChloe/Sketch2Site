@@ -55,7 +55,7 @@ export function outlineOf(canvas: CanvasSpec, plan: LayoutV2 = smartLayout(canva
   const brief = canvas.metadata.brief;
   return {
     name: preview(canvas.metadata.name, 40),
-    ...(brief ? { brief: { ...brief, style: referenceHints(brief.style, brief.referencePurposes) } } : {}),
+    ...(brief ? { brief: { ...brief, style: referenceHints(brief.style, brief.referencePurposes), moodLinks: brief.moodLinks?.map(({ note, likes }) => ({ note, likes })) } } : {}),
     constraints: canvas.constraints,
     reflow: canvas.metadata.layoutMode === "reflow",
     designEvidence: retrieveDesignCases({

@@ -1,5 +1,6 @@
 import { designCases } from "./designCases";
-import { retrieveDesignCases } from "./designRetrieval";
+const likeLabels = { layout: "構圖", type: "字體", color: "配色", space: "留白", photo: "照片處理", motion: "動態" } as const;
+import { retrieveDesignCases, searchDesignCases } from "./designRetrieval";
 import { GenerationReview } from "./GenerationReview";
 import type { CanvasSpec } from "./spec";
 import { withGenerationBrief } from "./brief";
@@ -105,6 +106,12 @@ export function BriefPanel({
   onGenerate: (brief: Brief) => void;
 }) {
   const [brief, setBrief] = useState<Brief>({ ...emptyBrief, ...initial });
+  // Moodboard: search all cases, the author's own links, and what was picked.
+  const [moodOpen, setMoodOpen] = useState(false);
+  const [moodQuery, setMoodQuery] = useState("");
+  const [moodMaterial, setMoodMaterial] = useState<"" | "image" | "text">("");
+  const [linkDraft, setLinkDraft] = useState<{ url: string; note: string; likes: (keyof typeof likeLabels)[] }>({ url: "", note: "", likes: [] });
+  const [linkNote, setLinkNote] = useState("");
   const inspiration = retrieveDesignCases({
     purpose: brief.purpose,
     images: draft.nodes.filter(node => node.type === "image").length,
@@ -112,6 +119,10 @@ export function BriefPanel({
     prefer: Object.keys(brief.caseFeedback ?? {}).filter(id => brief.caseFeedback?.[id] === "prefer"),
     avoid: Object.keys(brief.caseFeedback ?? {}).filter(id => brief.caseFeedback?.[id] === "avoid"),
   });
+  const picked = Object.keys(brief.caseFeedback ?? {});
+  const board = moodQuery || moodMaterial
+    ? searchDesignCases(moodQuery, moodMaterial || undefined)
+    : [...inspiration, ...designCases.filter((item) => brief.caseFeedback?.[item.id] && !inspiration.some((x) => x.id === item.id))];
   const [review, setReview] = useState(false);
   useEscapeToClose(() => review ? setReview(false) : onClose(brief));
   const [active, setActive] = useState<BriefField | null>(initial?.audience ? null : "audience");
@@ -331,28 +342,73 @@ export function BriefPanel({
           }}
         />
       </section>
-      <details className="brief-reference">
-        <summary>設計靈感與參考來源</summary>
-        {inspiration.length === 0 && <p>目前沒有符合條件的案例。</p>}
-        {[...inspiration, ...designCases.filter(item => brief.caseFeedback?.[item.id] === "avoid")].map(item => (
-          <article key={item.id} className="brief-reference-card">
-            <a href={item.url} target="_blank" rel="noreferrer">{item.name}</a>
-            <p>{item.guidance}</p>
-            <div className="brief-ask-chips" role="group" aria-label={item.name}>
-              {(["prefer", "avoid"] as const).map(choice => (
-                <button key={choice} type="button" aria-pressed={brief.caseFeedback?.[item.id] === choice}
-                  onClick={() => setBrief(current => {
-                    const caseFeedback = { ...current.caseFeedback };
-                    if (caseFeedback[item.id] === choice) delete caseFeedback[item.id];
-                    else caseFeedback[item.id] = choice;
-                    return { ...current, caseFeedback };
-                  })}>
-                  {choice === "prefer" ? "偏好這個做法" : "避開這個做法"}
-                </button>
-              ))}
-            </div>
-          </article>
-        ))}
+      <details className="brief-reference moodboard" open={moodOpen} onToggle={(e) => setMoodOpen((e.currentTarget as HTMLDetailsElement).open)}>
+        <summary>靈感板（Moodboard）{picked.length + (brief.moodLinks?.length ?? 0) > 0 ? `・已選 ${picked.length + (brief.moodLinks?.length ?? 0)}` : ""}</summary>
+        <div className="mood-search">
+          <input type="search" aria-label="搜尋靈感" placeholder="搜尋：留白、大字、作品、人像…" value={moodQuery} onChange={(e) => setMoodQuery(e.target.value)} />
+          <div className="brief-ask-chips" role="group" aria-label="素材">
+            {([["", "全部"], ["image", "有照片"], ["text", "以文字為主"]] as const).map(([v, label]) => (
+              <button key={v || "all"} type="button" aria-pressed={moodMaterial === v} onClick={() => setMoodMaterial(v)}>{label}</button>
+            ))}
+          </div>
+        </div>
+        <p className="mood-hint">{moodQuery || moodMaterial ? `找到 ${board.length} 個做法` : "依你的素材與用途先挑出最適合的做法；按「偏好」的會優先參考，「避開」的不會用"}</p>
+        <div className="mood-grid" role="list" aria-label="靈感做法">
+          {board.length === 0 && <p>沒有符合的做法，換個關鍵字試試</p>}
+          {board.map(item => (
+            <article key={item.id} role="listitem" className={"mood-card" + (brief.caseFeedback?.[item.id] ? " is-" + brief.caseFeedback[item.id] : "")}>
+              <a href={item.url} target="_blank" rel="noreferrer noopener">{item.name}</a>
+              <p className="mood-observe">{item.observation}</p>
+              <p>{item.guidance}</p>
+              <div className="brief-ask-chips" role="group" aria-label={item.name}>
+                {(["prefer", "avoid"] as const).map(choice => (
+                  <button key={choice} type="button" aria-pressed={brief.caseFeedback?.[item.id] === choice}
+                    onClick={() => setBrief(current => {
+                      const caseFeedback = { ...current.caseFeedback };
+                      if (caseFeedback[item.id] === choice) delete caseFeedback[item.id];
+                      else caseFeedback[item.id] = choice;
+                      return { ...current, caseFeedback };
+                    })}>
+                    {choice === "prefer" ? "偏好這個做法" : "避開這個做法"}
+                  </button>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+        <section className="mood-links" aria-label="我的靈感網址">
+          <strong>我的靈感網址</strong>
+          <small>貼上喜歡的網站，說說喜歡哪裡。只存網址和你的說明，不會去抓那個網站；AI 只看到你的說明</small>
+          <ul>
+            {(brief.moodLinks ?? []).map((l, i) => (
+              <li key={l.url + i}>
+                <a href={l.url} target="_blank" rel="noreferrer noopener">{(() => { try { return new URL(l.url).hostname; } catch { return l.url; } })()}</a>
+                <span>{[l.note, ...l.likes.map((k) => likeLabels[k])].filter(Boolean).join("・")}</span>
+                <button type="button" aria-label={"移除 " + l.url} onClick={() => setBrief((c) => ({ ...c, moodLinks: (c.moodLinks ?? []).filter((_, k) => k !== i) }))}>×</button>
+              </li>
+            ))}
+          </ul>
+          {(brief.moodLinks?.length ?? 0) < 8 && (
+            <form className="mood-link-form" onSubmit={(e) => {
+              e.preventDefault();
+              const url = linkDraft.url.trim();
+              if (!/^https:\/\/[^\s/$.?#][^\s]*$/i.test(url)) { setLinkNote("請貼上 https:// 開頭的網址"); return; }
+              setBrief((c) => ({ ...c, moodLinks: [...(c.moodLinks ?? []), { url, note: linkDraft.note.trim().slice(0, 40), likes: linkDraft.likes }] }));
+              setLinkDraft({ url: "", note: "", likes: [] });
+              setLinkNote("");
+            }}>
+              <input type="url" aria-label="靈感網址" placeholder="https://" value={linkDraft.url} onChange={(e) => setLinkDraft({ ...linkDraft, url: e.target.value })} />
+              <input type="text" aria-label="喜歡的地方" placeholder="喜歡的地方，例如：首屏大字" maxLength={40} value={linkDraft.note} onChange={(e) => setLinkDraft({ ...linkDraft, note: e.target.value })} />
+              <div className="brief-ask-chips" role="group" aria-label="喜歡它的">
+                {(Object.keys(likeLabels) as (keyof typeof likeLabels)[]).map((k) => (
+                  <button key={k} type="button" aria-pressed={linkDraft.likes.includes(k)} onClick={() => setLinkDraft({ ...linkDraft, likes: linkDraft.likes.includes(k) ? linkDraft.likes.filter((x) => x !== k) : [...linkDraft.likes, k] })}>{likeLabels[k]}</button>
+                ))}
+              </div>
+              <button type="submit">加入靈感板</button>
+              {linkNote && <p role="status">{linkNote}</p>}
+            </form>
+          )}
+        </section>
       </details>
       {!aiReady && <p className="brief-note">選的感覺會換成搭配的顏色，想被注意的區塊會放前面</p>}
       <div className="brief-actions">

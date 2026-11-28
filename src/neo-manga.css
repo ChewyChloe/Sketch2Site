@@ -1157,3 +1157,24 @@ body{background:var(--neo-cream)}
 .critic-fix:disabled { background: #e8f8ee; cursor: default; }
 .taste-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; font-size: 13px; font-weight: 700; color: #33322e; }
 .taste-note button { min-height: 30px; padding: 0 12px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+/* Moodboard (BriefPanel): searchable design cases, prefer/avoid, the author's own links. */
+.moodboard > summary { font-weight: 900; cursor: pointer; }
+.mood-search { display: grid; gap: 8px; margin: 10px 0 6px; }
+.mood-search input { min-height: 38px; padding: 0 14px; border: 1.5px solid #0d0e11; border-radius: 999px; font: inherit; }
+.mood-hint { margin: 4px 0 10px; font-size: 13px; color: #55534d; }
+.mood-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.mood-card { display: grid; gap: 6px; align-content: start; padding: 12px; border: 1.5px solid #0d0e11; border-radius: 14px; background: #fff; }
+.mood-card a { font-weight: 900; color: #0d0e11; }
+.mood-card p { margin: 0; font-size: 13px; line-height: 1.55; }
+.mood-card .mood-observe { color: #55534d; }
+.mood-card.is-prefer { background: #f0fff5; border-color: #0b6b35; }
+.mood-card.is-avoid { opacity: .6; border-style: dashed; }
+.mood-links { display: grid; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1.5px dashed #c9c7bd; }
+.mood-links small { color: #55534d; }
+.mood-links ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.mood-links li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1.5px solid #0d0e11; border-radius: 12px; background: #fff; font-size: 13px; }
+.mood-links li span { flex: 1; min-width: 0; color: #33322e; }
+.mood-links li button { width: 28px; height: 28px; border: 1.5px solid #0d0e11; border-radius: 50%; background: #fff; cursor: pointer; }
+.mood-link-form { display: grid; gap: 8px; }
+.mood-link-form input { min-height: 36px; padding: 0 12px; border: 1.5px solid #0d0e11; border-radius: 999px; font: inherit; font-size: 13px; }
+.mood-link-form > button[type=submit] { justify-self: start; min-height: 36px; padding: 0 16px; border: 1.5px solid #0d0e11; border-radius: 999px; background: #10e560; font: inherit; font-weight: 800; cursor: pointer; }

@@ -50,3 +50,33 @@ test("describe-site panel: fill-in blanks, Tab suggestions, details, and generat
   await page.getByRole("button", { name: "描述網站 ✓" }).click();
   await expect(panel.getByLabel("詳細說明（選填）")).toHaveValue("我們是攝影社，想讓新生知道社課很輕鬆。");
 });
+
+test("moodboard: search all cases, prefer one, add an own link that is stored but never fetched", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const outside: string[] = [];
+  page.on("request", (r) => { if (r.url().includes("example-studio.tw")) outside.push(r.url()); });
+  await page.goto("/?draft");
+  await expect(page.getByRole("status")).toContainText("草稿已就緒");
+  await page.getByRole("button", { name: "描述網站" }).click();
+  const panel = page.getByRole("dialog", { name: "描述你的網站" });
+  await panel.getByText(/^靈感板/).click();
+  const grid = panel.getByRole("list", { name: "靈感做法" });
+  await panel.getByLabel("搜尋靈感").fill("留白");
+  await expect(panel.getByText(/找到 \d+ 個做法/)).toBeVisible();
+  expect(await grid.getByRole("listitem").count()).toBeGreaterThan(0);
+  const first = grid.getByRole("listitem").first();
+  await first.getByRole("button", { name: "偏好這個做法" }).click();
+  await expect(first).toHaveClass(/is-prefer/);
+  await panel.getByLabel("靈感網址", { exact: true }).fill("http://not-secure.example");
+  await panel.getByRole("button", { name: "加入靈感板" }).click();
+  await expect(panel.getByRole("status").filter({ hasText: "https://" })).toBeVisible();
+  await panel.getByLabel("靈感網址", { exact: true }).fill("https://example-studio.tw/work");
+  await panel.getByLabel("喜歡的地方").fill("首屏大字很有力");
+  await panel.getByRole("group", { name: "喜歡它的" }).getByRole("button", { name: "字體" }).click();
+  await panel.getByRole("button", { name: "加入靈感板" }).click();
+  const links = panel.getByRole("region", { name: "我的靈感網址" });
+  await expect(links).toContainText("example-studio.tw");
+  await expect(links).toContainText("首屏大字很有力・字體");
+  await panel.locator(".moodboard").screenshot({ path: "test-results/moodboard.png" });
+  expect(outside).toEqual([]);
+});
