@@ -35,6 +35,15 @@ test("sign in card offers Google and GitHub; signed-in menu logs out", async ({ 
   user = { name: "八爪小孩", email: "octo@example.com", provider: "github" };
   await page.reload();
   const account = page.getByRole("button", { name: "帳號：八爪小孩" });
+  const avatar = account.locator(".account-avatar");
+  await expect(avatar).toHaveCSS("border-top-width", "0px");
+  await expect(account.locator(".account-name")).toBeVisible();
+  await expect(account.locator(".account-chevron")).toBeVisible();
+  await account.screenshot({ path: "test-results/account-desktop.png" });
+  await page.setViewportSize({ width: 375, height: 800 });
+  await expect(account.locator(".account-name")).toBeHidden();
+  await expect(avatar).toBeVisible();
+  await account.screenshot({ path: "test-results/account-mobile.png" });
   await account.click();
   const menu = page.getByRole("dialog", { name: "帳號" });
   await expect(menu).toContainText("octo@example.com");

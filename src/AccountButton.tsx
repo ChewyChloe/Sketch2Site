@@ -113,7 +113,15 @@ export function AccountButton() {
   return (
     <div className="account" ref={wrap}>
       <button type="button" className={"account-button" + (user ? " is-signed-in" : "")} aria-expanded={open} aria-haspopup="dialog" aria-label={user ? `帳號：${user.name}` : "登入"} onClick={() => setOpen((v) => !v)}>
-        {user ? <><span className="account-avatar" aria-hidden="true">{Array.from(user.name || user.email || "?")[0]?.toUpperCase()}</span><span className="account-name">{user.name}</span></> : "登入"}
+        {user ? (
+          <>
+            <span className="account-avatar" aria-hidden="true">{Array.from(user.name || user.email || "?")[0]?.toUpperCase()}</span>
+            <span className="account-name">{user.name}</span>
+            <svg className="account-chevron" aria-hidden="true" viewBox="0 0 16 16">
+              <path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </>
+        ) : "登入"}
       </button>
       {open && (
         <div className="account-card" role="dialog" aria-label={user ? "帳號" : "登入"}>
