@@ -6,7 +6,9 @@ import { PageRenderer } from "./PageRenderer";
 import { ThumbnailRender } from "./PageRuntime";
 import type { CandidateResult } from "./demo";
 import { DeviceToggle } from "./DeviceToggle";
-import { planText, type PlanId } from "./compositionPlan";
+import { composeLabels, planText, type PlanId } from "./compositionPlan";
+import { applyArt, describeArt } from "./artDirection";
+import type { Direction } from "./directions";
 import { describeTaste, preferredPlans, recordTaste, resetTaste } from "./preferences";
 import { applyDirection, directionsFor, firstTwo, sameDirection, variantAccent, variantsFor, type Ask, type Variant } from "./directions";
 export default function CandidatePreview({
@@ -53,6 +55,8 @@ export default function CandidatePreview({
   const [composition, setComposition] = useState(candidate.page.composition);
   // The candidate's own geometry (compositionPlan.ts); a layout lock keeps the page's geometry.
   const [plan, setPlan] = useState<PlanId | undefined>(candidate.page.plan);
+  // The chosen direction's own composition per area and its art direction (AI-decided).
+  const [chosen, setChosen] = useState<Direction | null>(null);
   // Diverge, then converge: three directions side by side, then three variants of the chosen one.
   const directions = useMemo(() => {
     const ds = candidate.directions ?? directionsFor(candidate.page, brief);
@@ -82,11 +86,12 @@ export default function CandidatePreview({
   const current = { name: "", why: "", theme: theme === "sunrise" ? ("classic" as const) : theme, concept: concept ?? ("none" as const), composition: composition === "editorial" ? ("editorial" as const) : ("tidy" as const) };
   const variants = variantsFor(current);
   const page = useMemo(() => {
-    const base = { ...candidate.page, theme, concept, composition, plan, designControl: control, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) };
-    const chosen = habitVariant?.variant ?? (variant ? variants[variant] : undefined);
-    return chosen ? applyDirection(base, { ...current, plan }, chosen) : base;
+    const dir = hasImplicitLayoutLock(candidate.page) ? null : chosen ?? directions[0] ?? null;
+    const base = applyArt({ ...candidate.page, theme, concept, composition, plan, ...(dir?.compose ? { compose: dir.compose } : {}), designControl: control, ...(extras.pricingBuilder || extras.galleryViews ? { extras } : {}) }, dir?.art ?? undefined);
+    const picked = habitVariant?.variant ?? (variant ? variants[variant] : undefined);
+    return picked ? applyDirection(base, { ...current, plan, compose: dir?.compose, art: dir?.art }, picked) : base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candidate.page, theme, concept, composition, plan, control, extras, variant, habitVariant]);
+  }, [candidate.page, theme, concept, composition, plan, chosen, directions, control, extras, variant, habitVariant]);
   const thumbs = useMemo(() => directions.map((d) => firstTwo(applyDirection(candidate.page, d, undefined))), [directions, candidate.page]);
   const keepLockedGeometry = () => {
     if (implicitLayoutLock) setControl({
@@ -103,7 +108,7 @@ export default function CandidatePreview({
       setConcept(d.concept === "none" ? undefined : d.concept);
     }
     if (!control?.composition && !implicitLayoutLock) setComposition(d.composition === "editorial" ? "editorial" : undefined);
-    if (!implicitLayoutLock) setPlan(d.plan ?? undefined);
+    if (!implicitLayoutLock) { setPlan(d.plan ?? undefined); setChosen(d); }
     setVariant(0);
     setHabitVariant(null);
   };
@@ -271,7 +276,8 @@ export default function CandidatePreview({
               <span className="direction-thumb" aria-hidden="true" inert><span className="direction-thumb-page"><ThumbnailRender.Provider value={true}><PageRenderer input={thumbs[i]} /></ThumbnailRender.Provider></span></span>
               <strong>{d.name}</strong>
               <small>{d.why}</small>
-              {d.plan && <small className="direction-plan">構圖：{planText[d.plan].name}</small>}
+              {d.compose ? <small className="direction-plan">構圖：{composeLabels.hero[d.compose.hero]}・{composeLabels.gallery[d.compose.gallery]}</small> : d.plan && <small className="direction-plan">構圖：{planText[d.plan].name}</small>}
+              {d.art && <small className="direction-art">{describeArt(d.art).join("・")}</small>}
             </button>
           ))}
         </div>}

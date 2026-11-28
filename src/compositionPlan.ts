@@ -1,3 +1,4 @@
+import { z } from "zod";
 // Independent composition for each candidate direction. Colour and concept alone made the three
 // candidates look like one layout in three paints; each direction now also carries a geometric
 // plan: where the eye lands first, how large the main picture is, and the reading axis. The plan
@@ -51,4 +52,48 @@ export function assignPlans(wanted: readonly (PlanId | undefined)[], pictures: n
     used.add(next);
     return next;
   });
+}
+
+// ---------------------------------------------------------------------------------------------
+// Composable composition. The three plans above stay as presets and the fallback; the AI may
+// instead combine parts per area of the page (opening, gallery, feature list), so the three
+// candidates are not limited to three fixed skeletons.
+export const heroLayouts = ["focus", "headline", "column", "split-left", "stack-center"] as const;
+export const galleryLayouts = ["lead", "strip", "mosaic", "grid"] as const;
+export const featureLayouts = ["cards", "rows", "stagger"] as const;
+export const ComposeSchema = z.object({
+  hero: z.enum(heroLayouts),
+  gallery: z.enum(galleryLayouts),
+  features: z.enum(featureLayouts),
+}).strict();
+export type Compose = z.infer<typeof ComposeSchema>;
+export const planPresets: Record<PlanId, Compose> = {
+  focus: { hero: "focus", gallery: "lead", features: "cards" },
+  headline: { hero: "headline", gallery: "strip", features: "rows" },
+  column: { hero: "column", gallery: "mosaic", features: "stagger" },
+};
+export const heroGeometry: Record<Compose["hero"], Geometry | { focus: "left"; imageScale: number; axis: "right" } | { focus: "below"; imageScale: number; axis: "center" }> = {
+  focus: planGeometry.focus,
+  headline: planGeometry.headline,
+  column: planGeometry.column,
+  "split-left": { focus: "left", imageScale: 7 / 12, axis: "right" },
+  "stack-center": { focus: "below", imageScale: 0.8, axis: "center" },
+};
+export const composeLabels = {
+  hero: { focus: "主圖在右", headline: "大字在上、圖拉滿", column: "窄文接寬圖", "split-left": "主圖在左", "stack-center": "置中堆疊" },
+  gallery: { lead: "一大帶小", strip: "等高長條", mosaic: "寬窄交錯", grid: "整齊方格" },
+  features: { cards: "卡片", rows: "條列", stagger: "階梯" },
+} as const;
+/** The composition in effect: an explicit compose wins, else the plan's preset, else none. */
+export const composeOf = (page: { compose?: Compose; plan?: PlanId }): Compose | undefined => page.compose ?? (page.plan ? planPresets[page.plan] : undefined);
+/** Two compositions differ in at least two of: opening focus, opening picture scale, reading axis, gallery arrangement. */
+export function composeDistance(a: Compose, b: Compose) {
+  const x = heroGeometry[a.hero], y = heroGeometry[b.hero];
+  return (x.focus !== y.focus ? 1 : 0) + (Math.abs(x.imageScale - y.imageScale) >= 0.08 ? 1 : 0) + (x.axis !== y.axis ? 1 : 0) + (a.gallery !== b.gallery ? 1 : 0);
+}
+/** Keeps the AI's compositions when every pair differs enough; otherwise falls back to the presets. */
+export function distinctCompositions(cs: readonly (Compose | undefined)[], plans: readonly PlanId[]): Compose[] {
+  const filled = cs.map((c, i) => c ?? planPresets[plans[i]]);
+  for (let i = 0; i < filled.length; i++) for (let j = i + 1; j < filled.length; j++) if (composeDistance(filled[i], filled[j]) < 2) return plans.map((p) => planPresets[p]);
+  return filled;
 }

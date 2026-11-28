@@ -1,0 +1,46 @@
+/* Art direction tokens (artDirection.ts): the AI decides them per candidate before layout.
+   Small, safe rules on top of the theme; locked sections keep their look. */
+
+/* Space */
+.rendered-page[data-ad-space="tight"] .page-section:not([data-locked]) { padding-block: clamp(32px, 5cqi, 72px) !important; }
+.rendered-page[data-ad-space="generous"] .page-section:not([data-locked]) { padding-block: clamp(72px, 12cqi, 200px) !important; }
+.rendered-page[data-ad-space="generous"] .page-paragraph { line-height: 1.85; }
+
+/* Picture treatment */
+.rendered-page[data-ad-imagery="full-bleed"] .page-image img { border-radius: 0 !important; }
+.rendered-page[data-ad-imagery="rounded"] .page-image img { border-radius: clamp(12px, 1.6cqi, 24px) !important; }
+.rendered-page[data-ad-imagery="framed"] .page-image { padding: clamp(6px, 0.8cqi, 12px); background: var(--pg-surface, rgb(0 0 0 / .04)); outline: 1px solid color-mix(in srgb, currentColor 18%, transparent); }
+.rendered-page[data-ad-imagery="framed"] .page-image img { border-radius: 0 !important; }
+/* The opening picture is a photograph, never letterboxed. */
+.rendered-page[data-ad-imagery="contained"] .page-section:not(.role-hero) .page-image img { object-fit: contain !important; background: var(--pg-surface, transparent); }
+
+/* Signature devices: one per site */
+.rendered-page[data-ad-signature="rule-lines"] .page-section + .page-section:not([data-locked]) { border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+.rendered-page[data-ad-signature="oversized-numbers"] { counter-reset: ad-section; }
+.rendered-page[data-ad-signature="oversized-numbers"] .page-section:not(.role-hero):not(.role-footer) > .page-container > :first-child .page-heading::before {
+  counter-increment: ad-section;
+  content: counter(ad-section, decimal-leading-zero);
+  display: block;
+  margin-bottom: 0.2em;
+  font-size: clamp(40px, 7cqi, 112px);
+  line-height: 1;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  opacity: 0.22;
+}
+.rendered-page[data-ad-signature="edge-type"] .role-hero:not([data-locked]) .page-heading { letter-spacing: -0.035em; line-height: 0.98 !important; }
+@container (min-width: 801px) {
+  .rendered-page[data-ad-signature="edge-type"] .role-hero:not([data-locked]) .page-heading { font-size: clamp(48px, 9cqi, 150px) !important; }
+}
+.rendered-page[data-ad-signature="offset-captions"] .page-image[data-caption]::after {
+  content: attr(data-caption);
+  display: block;
+  margin: 0.6em 0 0 12%;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  opacity: 0.72;
+}
+
+/* Accent discipline: monochrome lets the theme's text colour carry the actions. */
+.rendered-page[data-ad-accent="monochrome"] .page-button.tone-accent,
+.rendered-page[data-ad-accent="monochrome"] .page-button { filter: grayscale(1); }

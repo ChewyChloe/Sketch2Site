@@ -12,6 +12,9 @@ import { CanvasSchema } from "../src/spec";
 import { CopyRequestSchema, cleanOptions, type CopyRequest } from "../src/copySuggest.ts";
 import { compactSite, fromCompact, RewriteError, RewriteOutputSchema, RewriteRequestSchema, sectionOf, type RewriteRequest } from "../src/sectionRewrite";
 import { PageSchema, type PageNode, type PageSpec } from "../src/pageSpec";
+import { CriticAnswerSchema, CriticRequestSchema, criticResultFrom } from "../src/visualCriticAi";
+import { InspirationAnalyseRequestSchema, InspirationCaptureRequestSchema, InspirationSearchRequestSchema, type InspirationQuery } from "../src/inspiration";
+import type { Capture } from "./inspirationCapture";
 import { snapshotLimits, SnapshotSchemaPattern } from "../src/draftSnapshotRules";
 import { ReferenceRequestSchema, styleFromAnswer, type ReferenceRequest } from "../src/referenceStyle";
 import {
@@ -47,6 +50,10 @@ type Options = {
   testMode?: boolean;
   auth?: AuthConfig | null;
   onUsage?: (usage: Record<string, number | string | null>) => void;
+  /** Fee per web_search tool call in USD (OpenAI pricing page); added to the estimate. */
+  searchCallUsd?: number;
+  /** Screenshot of one public page for web inspiration (local: Playwright). */
+  capture?: (url: string) => Promise<Capture>;
 };
 export function createGenerationServer(options: Options = {}) {
   const sessions = new Map<string, { csrf: string; expires: number }>(),
@@ -135,7 +142,8 @@ export function createGenerationServer(options: Options = {}) {
         snapshot: true,
       });
     }
-    if ((req.url !== "/api/generation" && req.url !== "/api/generation/check" && req.url !== "/api/generation/copy" && req.url !== "/api/generation/rewrite" && req.url !== "/api/generation/reference") || req.method !== "POST")
+    const extra = ["/api/generation/critic", "/api/generation/inspiration/search", "/api/generation/inspiration/capture", "/api/generation/inspiration/analyse"];
+    if ((req.url !== "/api/generation" && req.url !== "/api/generation/check" && req.url !== "/api/generation/copy" && req.url !== "/api/generation/rewrite" && req.url !== "/api/generation/reference" && !extra.includes(req.url ?? "")) || req.method !== "POST")
       return json(res, 404, { code: "UNAVAILABLE" });
     const id = req.headers.cookie?.match(
       /(?:^|; )sketch_generation_session=([a-f0-9]{64})(?:;|$)/,
@@ -152,7 +160,7 @@ export function createGenerationServer(options: Options = {}) {
     )
       return failure(res, 403, "FORBIDDEN");
     // A reference picture is a small JPEG; every other request is short text.
-    const maxBody = req.url === "/api/generation/reference" ? 1250000 : req.url === "/api/generation/rewrite" ? 300000 : req.url === "/api/generation" ? 32768 + snapshotLimits.maxChars + 1024 : 32768;
+    const maxBody = req.url === "/api/generation/reference" || req.url === "/api/generation/critic" ? 1250000 : req.url === "/api/generation/inspiration/analyse" ? 2500000 : req.url === "/api/generation/rewrite" ? 300000 : req.url === "/api/generation" ? 32768 + snapshotLimits.maxChars + 1024 : 32768;
     if (
       req.headers["content-type"] !== "application/json" ||
       Number(req.headers["content-length"] ?? 0) > maxBody
@@ -174,6 +182,92 @@ export function createGenerationServer(options: Options = {}) {
       body = Buffer.concat(chunks).toString("utf8");
     } catch {
       return failure(res, 400, "INVALID_INPUT");
+    }
+    // One paid call under the shared limits (calls, per minute, budget, one at a time); never retried.
+    const paid = async (kind: string, requestId: string, reserve: number, run: (signal: AbortSignal) => Promise<ProviderUsage & Record<string, unknown>>, answer: (r: ProviderUsage & Record<string, unknown>) => unknown) => {
+      if (used.has(requestId)) return failure(res, 409, "DUPLICATE");
+      if (active >= 1) return failure(res, 429, "BUSY");
+      const now = Date.now();
+      while (arrivals[0] && arrivals[0] < now - 60000) arrivals.shift();
+      if (arrivals.length >= (options.maxPerMinute ?? 3) || calls >= (options.maxCalls ?? 5) || reserved + reserve > (options.budgetUsd ?? 0.25)) return failure(res, 429, "LIMIT");
+      arrivals.push(now); calls++; reserved += reserve; used.add(requestId); active++;
+      const started = Date.now(), controller = new AbortController();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        const result = await Promise.race([
+          run(controller.signal),
+          new Promise<never>((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new GenerationError("TIMEOUT")); }, options.timeoutMs ?? 60000); }),
+        ]);
+        if (!validUsage(result) || result.outputTokens > 2000) throw new GenerationError("INVALID_OUTPUT");
+        const body = answer(result);
+        if (!body) throw new GenerationError("INVALID_OUTPUT");
+        const cached = result.cachedInputTokens ?? 0;
+        // web_search tool calls are billed per call on top of tokens (rate in options.searchCallUsd).
+        const searchFee = typeof result.searchCalls === "number" ? result.searchCalls * (options.searchCallUsd ?? 0.01) : 0;
+        const usage = {
+          inputTokens: result.inputTokens, outputTokens: result.outputTokens,
+          cachedInputTokens: result.cachedInputTokens ?? null, reasoningTokens: result.reasoningTokens ?? null,
+          estimatedCostUsd: ((result.inputTokens - cached) * (options.inputRate ?? 2) + cached * (options.cachedInputRate ?? options.inputRate ?? 2) + result.outputTokens * (options.outputRate ?? 8)) / 1e6 + searchFee,
+          latencyMs: Date.now() - started,
+        };
+        options.onUsage?.({ requestId, kind, outcome: "PASS", ...usage });
+        json(res, 200, { requestId, ...(body as object), usage });
+      } catch (error) {
+        const code = error instanceof GenerationError ? error.code : error instanceof ProviderFailure ? error.code : "UNAVAILABLE";
+        options.onUsage?.({ requestId, kind, outcome: code, reservedUsd: reserve, latencyMs: Date.now() - started });
+        failure(res, code === "TIMEOUT" ? 504 : 502, code);
+      } finally {
+        active--;
+        if (timer) clearTimeout(timer);
+      }
+    };
+    const rate = (inTok: number, outTok: number) => (inTok * (options.inputRate ?? 2)) / 1e6 + (outTok * (options.outputRate ?? 8)) / 1e6;
+    // Visual Critic, AI pass: a picture of the page as drawn; fixed choices become set-style patches.
+    if (req.url === "/api/generation/critic") {
+      let input: z.infer<typeof CriticRequestSchema>, page: PageSpec;
+      try {
+        input = CriticRequestSchema.parse(JSON.parse(body));
+        page = PageSchema.parse(input.page);
+        if (!isJpeg(input.image)) throw new Error("not a jpeg");
+      } catch { return failure(res, 400, "INVALID_INPUT"); }
+      const provider = options.provider;
+      if (!provider?.critique) return failure(res, 503, "NOT_CONFIGURED");
+      return paid("critic", input.requestId, rate(6000, 1500), (signal) => provider.critique!(input.image, page, signal), (r) => {
+        const answer = CriticAnswerSchema.safeParse(r.answer);
+        return answer.success ? { overall: answer.data.overall, critic: criticResultFrom(page, answer.data) } : null;
+      });
+    }
+    // Web inspiration, step 1: real web search; only addresses the search tool cited are kept.
+    if (req.url === "/api/generation/inspiration/search") {
+      let input: { requestId: string; query: InspirationQuery; seen: string[] };
+      try { input = InspirationSearchRequestSchema.parse(JSON.parse(body)); } catch { return failure(res, 400, "INVALID_INPUT"); }
+      const provider = options.provider;
+      if (!provider?.searchInspiration) return failure(res, 503, "NOT_CONFIGURED");
+      return paid("inspiration-search", input.requestId, rate(30000, 2000) + 0.03, (signal) => provider.searchInspiration!(input.query, input.seen, signal), (r) => ({ keywords: r.keywords, cases: r.cases, searchCalls: r.searchCalls }));
+    }
+    // Step 2 (free): screenshots of the found pages, robots.txt respected, nothing stored.
+    if (req.url === "/api/generation/inspiration/capture") {
+      let urls: string[];
+      try { urls = InspirationCaptureRequestSchema.parse(JSON.parse(body)).urls; } catch { return failure(res, 400, "INVALID_INPUT"); }
+      if (!options.capture) return failure(res, 503, "NOT_CONFIGURED");
+      if (active >= 1) return failure(res, 429, "BUSY");
+      active++;
+      try {
+        const shots = [];
+        for (const url of urls) shots.push(await options.capture(url).catch(() => ({ url, skipped: "unreachable" as const })));
+        return json(res, 200, { shots });
+      } finally { active--; }
+    }
+    // Step 3: the model looks at the screenshots and answers fixed choices per case.
+    if (req.url === "/api/generation/inspiration/analyse") {
+      let input: z.infer<typeof InspirationAnalyseRequestSchema>;
+      try {
+        input = InspirationAnalyseRequestSchema.parse(JSON.parse(body));
+        if (!input.images.every((i) => isJpeg(i.jpeg))) throw new Error("not a jpeg");
+      } catch { return failure(res, 400, "INVALID_INPUT"); }
+      const provider = options.provider;
+      if (!provider?.analyseInspiration) return failure(res, 503, "NOT_CONFIGURED");
+      return paid("inspiration-analyse", input.requestId, rate(3000 + 1000 * input.images.length, 2000), (signal) => provider.analyseInspiration!(input.images, input.owner, signal), (r) => ({ cases: r.cases }));
     }
     // Reference picture: the AI answers only fixed style choices; the picture is not stored or logged.
     if (req.url === "/api/generation/reference") {

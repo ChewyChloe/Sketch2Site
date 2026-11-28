@@ -3,16 +3,22 @@
 - DONE：逐圖參考分析：每張圖照用途列出教了什麼，標可信度，逐張送 AI
 - DONE：完整靈感板：搜尋 32 案例、偏好與避開、自訂靈感網址（只存不抓，AI 只看說明）
 - DONE：個人審美偏好學習：只存在本機；選過的構圖排前面；可以看到並重設
-- PARTIAL：Visual Critic：
-  - 已完成：本機量測畫面，提出建議並一次修正，可撤銷
-  - 尚未完成：用 AI 看截圖的版本（需付費呼叫，並要接 D1 預扣）
+- DONE：Visual Critic 本機量測版：提出建議並一次修正，可撤銷
+- PARTIAL：Visual Critic AI 版：
+  - 功能、端點、單元測試完成
+  - 真實付費驗收的回答遺失（腳本錯誤），重跑需使用者同意
+  - Pages 端點尚未接 D1 預扣
+- DONE：美術方向（7 項）與可組合構圖，AI 在版面前決定
+- DONE：網路靈感（真實搜尋、robots.txt、截圖分析、靈感板、喜歡／排除／面向），本機端點
+- NOT STARTED：BriefPanel「上網找靈感」畫面、Pages 正式站靈感端點（Browser Rendering）
 - DONE：桌面、手機、獨立 React 匯出驗證（匯出專案含 compositionPlan，npm 建置通過）
 - BLOCKED：
   - 部署到 Cloudflare Production、真實 OpenAI 生成
   - 原因：開發容器連不到 Production，也沒有 Cloudflare 或 OpenAI 金鑰；AI 需要擁有者登入
   - 操作步驟見 docs/PRODUCTION_RUN_20261128.md
   - 本輪付費呼叫 0 次
-- NOT STARTED：偏好寫進 AI 摘要、撤銷時收回偏好訊號、AI 動畫推薦（A8）
+- DONE：偏好寫進 AI 摘要
+- NOT STARTED：撤銷時收回偏好訊號、AI 動畫推薦（A8）
 
 ## 動畫素材庫重新規劃（2026-11-27 使用者需求；排在目前功能清單之後）
 參考圖只參考「多維度篩選」的操作概念，不照搬分類、名稱、順序、配色或版面。

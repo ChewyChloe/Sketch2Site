@@ -100,3 +100,20 @@ npx tsx scripts/draft-hash.ts draft.json
 - OpenAI 用量頁面該次的 input、output tokens 與費用
 
 收到這些資料後，才能說「真實生成通過」。沒有這些資料之前，本輪的 AI 生成只用 Mock 驗證過。
+
+## 6. 讓我直接部署（可選）
+
+如果希望由開發環境部署，請在 claude.ai 這個雲端環境的設定裡，替 `api.cloudflare.com` 加一個網路密鑰：
+
+1. Cloudflare Dashboard → **My Profile → API Tokens → Create Token**，權限只給 **Account → Cloudflare Pages → Edit**。
+2. 在雲端環境設定 → **Network secrets** 加入：主機 `api.cloudflare.com`，標頭 `Authorization`，值 `Bearer <權杖>`。
+3. 回到對話說「已加好」。我只會執行第 1 節的 `wrangler pages deploy`，不會改其他設定或 D1。
+
+## 7. 正式站的網路靈感截圖（下一輪）
+
+Pages 沒有瀏覽器，正式站截圖要用 Cloudflare Browser Rendering。等正式站端點完成後才需要：
+
+- `CF_ACCOUNT_ID`：帳號 ID
+- `CF_BROWSER_TOKEN`：只有 **Browser Rendering → Edit** 權限的權杖，存成 Secret
+
+目前網路靈感只能在本機開發伺服器使用。

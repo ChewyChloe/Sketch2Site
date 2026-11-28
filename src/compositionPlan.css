@@ -2,107 +2,149 @@
    gallery and the feature list. Desktop only; on a phone everything is one column in reading
    order (the DOM order is never changed). Sections whose layout is locked keep their own. */
 
+/* Every composition keeps the opening's text off the page edge, on phones too
+   (some concepts set the opening container's padding to zero for an edge-to-edge picture). */
+.rendered-page.rendered-page[data-hero] .role-hero:not([data-locked~="layout"]) > .page-container {
+  padding-inline: clamp(20px, 3.2cqi, 56px) !important;
+}
+
 @container (min-width: 801px) {
   /* ---------- Opening section ---------- */
-  .rendered-page[data-plan] .role-hero:not([data-locked~="layout"]) > .page-container {
+  .rendered-page.rendered-page[data-hero] .role-hero:not([data-locked~="layout"]) > .page-container {
     max-width: none !important;
+  }
+  /* A composition decides the opening on its own: concepts and the editorial arrangement
+     place the hero's two parts differently, so their placement is reset first. */
+  .rendered-page.rendered-page[data-hero] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > *,
+  .rendered-page.rendered-page[data-hero] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > * {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    order: 0 !important;
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+  .rendered-page.rendered-page[data-hero] .role-hero:not([data-locked~="layout"]) .page-image,
+  .rendered-page.rendered-page[data-hero] .role-hero:not([data-locked~="layout"]) .page-image img {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    position: relative !important;
+    inset: auto !important;
+  }
+
+  /* Text in the opening starts on the reading edge (concepts may centre it). */
+  .rendered-page.rendered-page[data-hero]:not([data-hero="stack-center"]) .role-hero:not([data-locked~="layout"]) :is(.page-heading, .page-paragraph) {
+    margin-inline: 0 !important;
   }
 
   /* 主圖焦點: text narrow on the left (5 of 12), a large picture on the right (7 of 12). */
-  .rendered-page[data-plan="focus"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid {
+  .rendered-page.rendered-page[data-hero="focus"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid,
+  .rendered-page.rendered-page[data-hero="focus"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) {
     display: grid !important;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr) !important;
     gap: clamp(24px, 4cqi, 72px) !important;
     align-items: center !important;
   }
-  .rendered-page[data-plan="focus"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child .page-image img {
-    aspect-ratio: 4 / 5;
+  .rendered-page.rendered-page[data-hero="focus"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child img,
+  .rendered-page.rendered-page[data-hero="focus"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :last-child img {
+    aspect-ratio: 4 / 5 !important;
     width: 100%;
     max-height: min(78svh, 760px);
     object-fit: cover;
   }
-  .rendered-page[data-plan="focus"] .role-hero:not([data-locked~="layout"]) .page-heading {
+  .rendered-page.rendered-page[data-hero="focus"] .role-hero:not([data-locked~="layout"]) .page-heading {
     font-size: clamp(32px, 4.6cqi, 68px) !important;
     line-height: 1.12 !important;
     max-width: 14ch;
   }
 
   /* 大字導讀: one column; the headline spans the page, the picture runs full width below it. */
-  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid {
+  .rendered-page.rendered-page[data-hero="headline"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid,
+  .rendered-page.rendered-page[data-hero="headline"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
     gap: clamp(24px, 4cqi, 64px) !important;
   }
-  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) .page-heading {
+  .rendered-page.rendered-page[data-hero="headline"] .role-hero:not([data-locked~="layout"]) .page-heading {
     font-size: clamp(40px, 8.4cqi, 128px) !important;
     line-height: 1.02 !important;
     letter-spacing: -0.02em;
     max-width: 16ch;
   }
-  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) .page-paragraph {
+  .rendered-page.rendered-page[data-hero="headline"] .role-hero:not([data-locked~="layout"]) .page-paragraph {
     max-width: 38ic;
     font-size: clamp(16px, 1.5cqi, 21px) !important;
   }
-  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child .page-image img {
-    aspect-ratio: 21 / 9;
+  .rendered-page.rendered-page[data-hero="headline"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child img,
+  .rendered-page.rendered-page[data-hero="headline"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :last-child img {
+    aspect-ratio: 21 / 9 !important;
     width: 100%;
     object-fit: cover;
   }
 
   /* 窄文接寬圖: a narrow reading column; the picture starts beside it and steps down past it. */
-  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid {
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid,
+  /* 窄文接寬圖: a narrow reading column; the picture starts beside it and steps down past it. */
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) {
     display: grid !important;
     grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
     gap: 0 !important;
     align-items: start !important;
   }
-  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :first-child {
-    grid-column: 1 / 6;
-    grid-row: 1;
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :first-child,
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :first-child {
+    grid-column: 1 / 6 !important;
+    grid-row: 1 !important;
     position: relative;
     z-index: 1;
     padding: clamp(16px, 2.4cqi, 36px) clamp(16px, 2.4cqi, 36px) clamp(16px, 2.4cqi, 36px) 0;
     background: var(--pg-page, var(--surface, #fff));
     align-self: start;
   }
-  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child {
-    grid-column: 5 / 13;
-    grid-row: 1;
-    margin-top: clamp(48px, 9cqi, 160px);
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child,
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :last-child {
+    grid-column: 5 / 13 !important;
+    grid-row: 1 !important;
+    margin-top: clamp(48px, 9cqi, 160px) !important;
   }
-  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) .page-heading {
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) .page-heading {
     font-size: clamp(28px, 3.6cqi, 52px) !important;
     line-height: 1.18 !important;
   }
-  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) .page-paragraph {
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) .page-paragraph {
     max-width: 24ic;
   }
-  .rendered-page[data-plan="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child .page-image img {
-    aspect-ratio: 3 / 2;
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child img,
+  .rendered-page.rendered-page[data-hero="column"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :last-child img {
+    aspect-ratio: 3 / 2 !important;
     width: 100%;
     object-fit: cover;
   }
 
   /* ---------- Gallery ---------- */
   /* 主圖焦點: one lead picture, the rest smaller beside it (lead first, then compare). */
-  .rendered-page[data-plan="focus"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
+  .rendered-page.rendered-page[data-gallery="lead"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     grid-auto-rows: minmax(0, auto);
     gap: clamp(12px, 1.6cqi, 24px) !important;
   }
-  .rendered-page[data-plan="focus"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :first-child {
+  .rendered-page.rendered-page[data-gallery="lead"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :first-child {
     grid-column: span 2;
     grid-row: span 2;
   }
-  .rendered-page[data-plan="focus"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
+  .rendered-page.rendered-page[data-gallery="lead"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
   /* 大字導讀: one even strip of tall pictures with a shared baseline. */
-  .rendered-page[data-plan="headline"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
+  .rendered-page.rendered-page[data-gallery="strip"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
     display: grid !important;
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
@@ -110,35 +152,35 @@
     gap: clamp(8px, 1cqi, 16px) !important;
     align-items: end;
   }
-  .rendered-page[data-plan="headline"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
+  .rendered-page.rendered-page[data-gallery="strip"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
     aspect-ratio: 3 / 4;
     width: 100%;
     object-fit: cover;
   }
-  .rendered-page[data-plan="headline"] .role-gallery:not([data-locked~="layout"]) .page-heading,
-  .rendered-page[data-plan="headline"] .role-features:not([data-locked~="layout"]) .page-heading {
+  .rendered-page.rendered-page[data-hero="headline"] .role-gallery:not([data-locked~="layout"]) .page-heading,
+  .rendered-page.rendered-page[data-hero="headline"] .role-features:not([data-locked~="layout"]) .page-heading {
     font-size: clamp(30px, 4.4cqi, 64px) !important;
     line-height: 1.08 !important;
   }
 
   /* 窄文接寬圖: wide and narrow pictures alternate, so the eye moves across and down. */
-  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
+  .rendered-page.rendered-page[data-gallery="mosaic"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
     display: grid !important;
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
     gap: clamp(12px, 1.6cqi, 24px) !important;
   }
-  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 1),
-  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 4) {
+  .rendered-page.rendered-page[data-gallery="mosaic"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 1),
+  .rendered-page.rendered-page[data-gallery="mosaic"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 4) {
     grid-column: span 4;
   }
-  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 2),
-  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 3) {
+  .rendered-page.rendered-page[data-gallery="mosaic"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 2),
+  .rendered-page.rendered-page[data-gallery="mosaic"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(4n + 3) {
     grid-column: span 2;
   }
-  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child:nth-child(odd) {
+  .rendered-page.rendered-page[data-gallery="mosaic"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child:nth-child(odd) {
     grid-column: span 6;
   }
-  .rendered-page[data-plan="column"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
+  .rendered-page.rendered-page[data-gallery="mosaic"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img {
     width: 100%;
     height: 100%;
     max-height: 520px;
@@ -147,12 +189,12 @@
 
   /* ---------- Feature list ---------- */
   /* 大字導讀: rows with a rule between them, read like a numbered list. */
-  .rendered-page[data-plan="headline"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid {
+  .rendered-page.rendered-page[data-features="rows"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 0 !important;
   }
-  .rendered-page[data-plan="headline"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > .page-card {
+  .rendered-page.rendered-page[data-features="rows"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > .page-card {
     display: grid !important;
     grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
     gap: clamp(12px, 2cqi, 32px);
@@ -164,21 +206,61 @@
     box-shadow: none !important;
   }
   /* 窄文接寬圖: cards step down one after another. */
-  .rendered-page[data-plan="column"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(3n + 2) {
+  .rendered-page.rendered-page[data-features="stagger"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(3n + 2) {
     margin-top: clamp(24px, 4cqi, 64px);
   }
-  .rendered-page[data-plan="column"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(3n + 3) {
+  .rendered-page.rendered-page[data-features="stagger"] .role-features:not([data-locked~="layout"]) > .page-container > .page-grid > :nth-child(3n + 3) {
     margin-top: clamp(48px, 8cqi, 128px);
   }
 }
 
 /* Phones: the headline plan keeps a large headline; every plan stays one readable column. */
 @container (max-width: 800px) {
-  .rendered-page[data-plan="headline"] .role-hero:not([data-locked~="layout"]) .page-heading {
+  .rendered-page.rendered-page[data-hero="headline"] .role-hero:not([data-locked~="layout"]) .page-heading {
     font-size: clamp(32px, 11cqi, 56px) !important;
     line-height: 1.06 !important;
   }
-  .rendered-page[data-plan] .role-hero:not([data-locked~="layout"]) .page-paragraph {
+  .rendered-page.rendered-page[data-hero] .role-hero:not([data-locked~="layout"]) .page-paragraph {
     max-width: none;
   }
+}
+
+@container (min-width: 801px) {
+  /* 主圖在左: the picture takes the left 7 of 12, text on the right (reading order unchanged). */
+  .rendered-page.rendered-page[data-hero="split-left"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid,
+  .rendered-page.rendered-page[data-hero="split-left"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr) !important;
+    grid-template-areas: "media copy";
+    gap: clamp(24px, 4cqi, 72px) !important;
+    align-items: center !important;
+  }
+  .rendered-page.rendered-page[data-hero="split-left"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :first-child,
+  .rendered-page.rendered-page[data-hero="split-left"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :first-child { grid-area: copy !important; }
+  .rendered-page.rendered-page[data-hero="split-left"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child,
+  .rendered-page.rendered-page[data-hero="split-left"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :last-child { grid-area: media !important; }
+  .rendered-page.rendered-page[data-hero="split-left"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child img,
+  .rendered-page.rendered-page[data-hero="split-left"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :last-child img { aspect-ratio: 4 / 3 !important; width: 100%; object-fit: cover; }
+  /* 置中堆疊: centred text, the picture below at four fifths of the width. */
+  .rendered-page.rendered-page[data-hero="stack-center"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid,
+  .rendered-page.rendered-page[data-hero="stack-center"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: center;
+    text-align: center;
+    gap: clamp(24px, 4cqi, 56px) !important;
+  }
+  .rendered-page.rendered-page[data-hero="stack-center"] .role-hero:not([data-locked~="layout"]) .page-heading { max-width: 18ch; margin-inline: auto !important; }
+  .rendered-page.rendered-page[data-hero="stack-center"] .role-hero:not([data-locked~="layout"]) .page-paragraph { max-width: 34ic; margin-inline: auto !important; }
+  .rendered-page.rendered-page[data-hero="stack-center"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child,
+  .rendered-page.rendered-page[data-hero="stack-center"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :last-child { width: 80% !important; }
+  .rendered-page.rendered-page[data-hero="stack-center"] .role-hero:not([data-locked~="layout"]) > .page-container > .page-grid > :last-child img,
+  .rendered-page.rendered-page[data-hero="stack-center"] .role-hero:not([data-locked~="layout"]) > .page-container:not(:has(> .page-grid)) > :last-child img { aspect-ratio: 16 / 9 !important; width: 100%; object-fit: cover; }
+  /* 整齊方格: three even columns of 4:3 pictures. */
+  .rendered-page.rendered-page[data-gallery="grid"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: clamp(12px, 1.6cqi, 24px) !important;
+  }
+  .rendered-page.rendered-page[data-gallery="grid"] .role-gallery:not([data-locked~="layout"]) > .page-container > .page-grid img { aspect-ratio: 4 / 3 !important; width: 100%; object-fit: cover; }
 }

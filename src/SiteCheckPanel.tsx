@@ -13,6 +13,8 @@ export function SiteCheckPanel({
   critic,
   onFixCritic,
   criticApplied,
+  onAskAi,
+  ai,
 }: {
   issues: readonly SiteIssue[];
   /** Shown before an export: offers 「仍要匯出」. */
@@ -24,6 +26,9 @@ export function SiteCheckPanel({
   critic?: CriticResult;
   onFixCritic?(): void;
   criticApplied?: boolean;
+  /** AI art director: looks at a picture of the page as drawn (one paid call). */
+  onAskAi?(): void;
+  ai?: { state: "idle" | "busy" | "done" | "error"; overall?: string; message?: string };
 }) {
   const close = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -82,6 +87,15 @@ export function SiteCheckPanel({
                 {criticApplied ? "已一次修正，可用「撤銷修改」復原" : `一次修正 ${critic.patches.length} 處`}
               </button>
             )}
+          </section>
+        )}
+        {onAskAi && (
+          <section className="check-group critic-ai" aria-label="AI 看畫面">
+            {ai?.overall && <p className="critic-overall">{ai.overall}</p>}
+            {ai?.message && <p role="alert">{ai.message}</p>}
+            <button type="button" onClick={onAskAi} disabled={ai?.state === "busy" || ai?.state === "done"}>
+              {ai?.state === "busy" ? "AI 正在看…" : ai?.state === "done" ? "AI 已看過這一版" : "請 AI 看一眼畫面"}
+            </button>
           </section>
         )}
         {exporting && (

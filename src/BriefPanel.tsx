@@ -1,4 +1,7 @@
 import { designCases } from "./designCases";
+import { describeTaste } from "./preferences";
+/** Learned taste (this device) goes into the generation summary, not only the candidate order. */
+const withTaste = <T extends object>(b: T): T => { const taste = describeTaste().slice(0, 4); return taste.length ? { ...b, taste } : b; };
 const likeLabels = { layout: "構圖", type: "字體", color: "配色", space: "留白", photo: "照片處理", motion: "動態" } as const;
 import { retrieveDesignCases, searchDesignCases } from "./designRetrieval";
 import { GenerationReview } from "./GenerationReview";
@@ -148,7 +151,7 @@ export function BriefPanel({
       try {
         const style = await requestReferenceStyle(references.map(r => r.jpeg), undefined,
           references.every(r => r.purposes.includes("overall")) ? undefined : references.map(r => r.purposes));
-        onGenerate({ ...brief, style });
+        onGenerate(withTaste({ ...brief, style }));
         return;
       } catch {
         setRefNote("AI 這次沒看到參考圖，先用你電腦上讀出的風格");
@@ -156,7 +159,7 @@ export function BriefPanel({
         setRefBusy("");
       }
     }
-    onGenerate(brief);
+    onGenerate(withTaste(brief));
   };
   const scopedStyle = brief.style && {
     ...brief.style, principles: referenceHints(brief.style, brief.referencePurposes)?.principles ?? [],

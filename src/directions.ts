@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { assignPlans, planIds, planText, type PlanId } from "./compositionPlan";
+import { assignPlans, ComposeSchema, distinctCompositions, planIds, planText, type PlanId } from "./compositionPlan";
+import { ArtDirectionSchema } from "./artDirectionSchema";
+import { applyArt } from "./artDirection";
 import { preferredPlans } from "./preferences";
 import { allSections, conceptIds, conceptText, pickableThemes, themeLabels, type Brand, type ConceptId, type PageSpec, type ThemeId } from "./pageSpec";
 
@@ -47,6 +49,9 @@ export const DirectionSchema = z
     composition: z.enum(compositionIds),
     // Its own geometry (compositionPlan.ts); filled in by trusted code when missing.
     plan: z.enum(planIds).nullable().optional(),
+    // The AI's own combination per area and its art direction; checked, with presets as fallback.
+    compose: ComposeSchema.nullable().optional(),
+    art: ArtDirectionSchema.nullable().optional(),
   })
   .strict();
 export type Direction = z.infer<typeof DirectionSchema>;
@@ -83,7 +88,9 @@ const whyFor = (c: Combo) =>
 /** Gives every direction its own composition plan: three different geometries, never one shared. */
 export function withPlans(ds: Direction[], pictures: number): Direction[] {
   const plans = assignPlans(ds.map((d) => d.plan ?? undefined), pictures, (o) => preferredPlans(o));
-  return ds.map((d, i) => ({ ...d, plan: plans[i] }));
+  // The AI may combine parts freely; if two candidates would look alike, the presets are used.
+  const composes = distinctCompositions(ds.map((d) => d.compose ?? undefined), plans);
+  return ds.map((d, i) => ({ ...d, plan: plans[i], compose: composes[i] }));
 }
 const imagesIn = (page: PageSpec) => allSections(page).reduce((n, s) => n + JSON.stringify(s).split('"type":"image"').length - 1, 0);
 
@@ -132,13 +139,14 @@ export function applyDirection(page: PageSpec, d: Direction, v: Variant | undefi
   const own = page.brand ?? { colors: [] };
   const extra = Object.fromEntries(Object.entries(v?.brand ?? {}).filter(([k]) => own[k as keyof Brand] === undefined));
   const brand = Object.keys(extra).length ? { ...own, ...extra } : page.brand;
-  const { concept: _c, composition: _m, plan: _p, ...rest } = page;
+  const { concept: _c, composition: _m, plan: _p, compose: _k, ...rest } = applyArt(page, d.art ?? undefined);
   return {
     ...rest,
     theme: d.theme,
     ...(d.concept !== "none" ? { concept: d.concept } : {}),
     ...(d.composition === "editorial" ? { composition: "editorial" as const } : {}),
     ...(d.plan ? { plan: d.plan } : {}),
+    ...(d.compose ? { compose: d.compose } : {}),
     ...(brand ? { brand } : {}),
   };
 }

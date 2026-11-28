@@ -2,6 +2,9 @@ import SectionLayoutPicker from "./SectionLayoutPicker";
 import { checkRendered, checkSite, type SiteIssue } from "./siteCheck";
 import { SiteCheckPanel } from "./SiteCheckPanel";
 import { critique, type CriticResult } from "./visualCritic";
+import { pageSnapshot } from "./pageSnapshot";
+import { aiPost } from "./aiRequest";
+import { GenerationError } from "./generation";
 import { recordTaste } from "./preferences";
 import { copyStyle, dropPlacement, movePatch, nudge, pastePatches, sameKind, type CopiedStyle } from "./siteMove";
 import { VersionTimeline } from "./VersionTimeline";
@@ -541,7 +544,22 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
     setNotice(direction === "undo" ? "已撤銷修改" : "已重做修改");
   }
 
-  const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean; critic?: CriticResult; applied?: boolean } | null>(null);
+  const [check, setCheck] = useState<{ issues: SiteIssue[]; exporting: boolean; critic?: CriticResult; applied?: boolean; ai?: { state: "idle" | "busy" | "done" | "error"; overall?: string; message?: string } } | null>(null);
+  const askAiCritic = async () => {
+    const root = frameRef.current;
+    if (!root || !check || check.ai?.state === "busy") return;
+    setCheck({ ...check, ai: { state: "busy" } });
+    const image = await pageSnapshot(root);
+    if (!image) { setCheck({ ...check, ai: { state: "error", message: "這個瀏覽器畫不出頁面，請改用本機檢查" } }); return; }
+    try {
+      const r = await aiPost<{ overall: string; critic: CriticResult }>("/api/generation/critic", { requestId: crypto.randomUUID(), image, page: current.current.history.present });
+      // The AI's findings replace the local ones; its fixes still go through the same one-step apply.
+      setCheck({ ...check, critic: r.critic, applied: false, ai: { state: "done", overall: r.overall } });
+    } catch (e) {
+      const code = e instanceof GenerationError ? e.code : "UNAVAILABLE";
+      setCheck({ ...check, ai: { state: "error", message: code === "NOT_CONFIGURED" ? "AI 尚未設定，請先登入擁有者帳號" : code === "LIMIT" ? "本輪 AI 次數或預算已用完" : "AI 暫時沒有回應，請稍後再試" } });
+    }
+  };
   const runCritic = () => (frameRef.current ? critique(frameRef.current, current.current.history.present) : undefined);
   const [timeline, setTimeline] = useState(false);
   // Trying a motion on the real element before applying it (A7): shown, never saved.
@@ -763,13 +781,15 @@ export default function Preview({ ref, brief, onSiteChange, device: deviceProp, 
           onExportAnyway={() => { setCheck(null); void exportNow(); }}
           critic={check.critic}
           criticApplied={check.applied}
+          onAskAi={() => void askAiCritic()}
+          ai={check.ai}
           onFixCritic={() => {
             const c = check.critic;
             if (!c?.patches.length || check.applied) return;
             // One batch, one undo step; applied once per check.
             if (patch(c.patches, c.patches.map((x) => x.targetId))) {
               // Keeping the critic's fixes is a weak taste signal (preferences.ts).
-              for (const f of c.findings.filter((x) => x.fixed)) recordTaste(f.id.startsWith("measure") ? "measure" : f.id.startsWith("rhythm") ? "rhythm" : "space", 1, "critic");
+              for (const f of c.findings.filter((x) => x.fixed)) recordTaste(/^(measure|ai:line-too-long)/.test(f.id) ? "measure" : /^(rhythm|ai:flat-rhythm)/.test(f.id) ? "rhythm" : "space", 1, "critic");
               setCheck({ ...check, applied: true }); setNotice(`已依畫面建議修正 ${c.patches.length} 處，按「撤銷修改」可以復原`); }
           }}
         />

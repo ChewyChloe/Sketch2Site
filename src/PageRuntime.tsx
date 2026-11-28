@@ -44,6 +44,8 @@ import {
 import "./pageRuntime.css";
 import "./artPlan.css";
 import "./compositionPlan.css";
+import "./artDirection.css";
+import { composeOf } from "./compositionPlan";
 type Effect = PageNode["effects"][number];
 export const animationRegistry = Object.fromEntries(motionIds.filter(id=>motionCatalog[id].status==="DONE").map(id=>[id,{entrance:["fade-in","slide-up","scale-in"].includes(id),hover:["hover-lift","hover-glow"].includes(id),stagger:id==="stagger-reveal"}])) as Record<typeof motionIds[number],{entrance?:boolean;hover?:boolean;stagger?:boolean}>;
 const easingValues:Record<string,string>={smooth:"cubic-bezier(.2,.7,.3,1)",linear:"linear","ease-out":"ease-out"};
@@ -929,6 +931,13 @@ export function PageRuntime({
           data-theme={page.theme}
           data-art={page.art?.principles.join(" ") || undefined}
           data-plan={page.plan}
+          data-hero={composeOf(page)?.hero}
+          data-gallery={composeOf(page)?.gallery}
+          data-features={composeOf(page)?.features}
+          data-ad-space={page.artDirection?.space}
+          data-ad-imagery={page.artDirection?.imagery}
+          data-ad-signature={page.artDirection?.signature}
+          data-ad-accent={page.artDirection?.accent}
           data-concept={page.concept}
           data-layout-theme={page.designControl?.layoutTheme === undefined ? page.theme : page.designControl.layoutTheme ?? undefined}
           data-layout-concept={page.designControl?.composition ? undefined : page.designControl?.layoutConcept === undefined ? page.concept : page.designControl.layoutConcept ?? undefined}

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { imageSource } from "./assetRef";
 import { MotionSchema, bindMotionInput, compatibleMotion, combinationReason, withinMotionBudget } from "./motion";
 import { EvidenceSchema, ReferencePurposesSchema, ReferenceStyleSchema } from "./referenceStyle";
+import { InspirationHintsSchema } from "./inspiration";
 import { href, localAssets, ImageLookSchema, TextStyleSchema, BrandSchema, NavSettingsSchema, MediaSchema, defaultMedia, mediaKindLabels, type MediaKind } from "./pageSpec";
 import { SiteOverridesSchema } from "./siteOverrides";
 export const Effect = z.enum([
@@ -83,6 +84,10 @@ export const CanvasSchema = z
           referencePurposes: ReferencePurposesSchema.optional(),
           // What each picture taught, kept per picture with its source number and confidence.
           referenceEvidence: z.array(EvidenceSchema).max(25).optional(),
+          // What real websites found on the web taught (inspiration.ts): analysed from screenshots.
+          inspiration: InspirationHintsSchema.optional(),
+          // Learned personal taste in plain words (preferences.ts), from this device only.
+          taste: z.array(z.string().trim().max(40)).max(4).optional(),
           // Answers asked before generating: references, what to avoid, lightness, the opening.
           ask: AskSchema.optional(),
         }).strict().optional(),
