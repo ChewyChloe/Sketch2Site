@@ -45,7 +45,10 @@ test("reference picture with AI: one small JPEG to the AI, only style choices in
   page.on("request", (r) => { if (r.method() === "POST" && /\/api\/generation$/.test(r.url())) layoutBodies.push(r.postData() ?? ""); });
   const panel = await openBrief(page);
   await panel.getByLabel("選參考圖").setInputFiles("public/assets/samples/cafe.jpg");
-  await expect(panel.getByRole("region", { name: "參考圖片" })).toContainText("不會保存");
+  const reference = panel.getByRole("region", { name: "參考圖片" });
+  await expect(reference.getByRole("img", { name: "參考圖片縮圖 1" })).toBeVisible();
+  await expect(reference).not.toContainText("不會保存");
+  await expect(reference).not.toContainText("學它們為什麼好看");
   await panel.getByRole("button", { name: "查看生成計畫" }).click();
   await panel.getByRole("button", { name: "確認生成" }).click();
   await expect.poll(() => sent.length).toBe(1);
@@ -74,7 +77,7 @@ test("AI build sends a small drawing of the draft only to a back end that asks f
   await expect(page.getByRole("status")).toContainText("草稿已就緒");
   await page.getByRole("button", { name: "描述網站" }).click();
   const panel = page.getByRole("dialog", { name: "描述你的網站" });
-  await expect(panel).toContainText("縮小的草稿圖");
+  await expect(panel).not.toContainText("縮小的草稿圖");
   await panel.getByRole("button", { name: "查看生成計畫" }).click();
   await panel.getByRole("button", { name: "確認生成" }).click();
   await expect.poll(() => bodies.length).toBe(1);

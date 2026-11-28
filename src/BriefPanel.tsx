@@ -257,7 +257,6 @@ export function BriefPanel({
       <section className="brief-reference" aria-label="參考圖片">
         <div className="brief-reference-head">
           <strong>參考圖片（選填）</strong>
-          <small>最多 5 張，學它們為什麼好看，不照抄內容或排版</small>
         </div>
         {references.length > 0 && (
           <ul className="brief-reference-thumbs" aria-label="已選的參考圖">
@@ -299,9 +298,7 @@ export function BriefPanel({
             {refBusy === "reading" ? "讀取中…" : references.length ? `＋ 再加一張（${references.length}/${maxReferences}）` : `＋ 上傳參考圖（最多 ${maxReferences} 張）`}
           </button>
         )}
-        <small className="brief-reference-privacy">
-          {aiReady ? "上面是電腦先看出的手法；生成時 AI 會再看一次縮小的圖，找出它們的共同點，補上字體、構圖這些，圖片不會保存，也不會用到圖裡的文字或標誌" : "這些手法是在你的電腦上讀出的，圖片不會上傳；字體、構圖要開啟 AI 才看得出來"}
-        </small>
+        {!aiReady && <small className="brief-reference-privacy">這些手法是在你的電腦上讀出的，圖片不會上傳；字體、構圖要開啟 AI 才看得出來</small>}
         {refNote && <p className="brief-reference-msg" role="status">{refNote}</p>}
         <input
           ref={pictureInput}
@@ -325,11 +322,7 @@ export function BriefPanel({
           }}
         />
       </section>
-      <p className="brief-note">
-        {aiReady
-          ? "AI 會照這些描述，並看一張縮小的草稿圖來排版；草稿圖不會保存，你寫的字一個都不會改"
-          : "選的感覺會換成搭配的顏色，想被注意的區塊會放前面"}
-      </p>
+      {!aiReady && <p className="brief-note">選的感覺會換成搭配的顏色，想被注意的區塊會放前面</p>}
       <div className="brief-actions">
         <button type="button" className="brief-reset" onClick={() => { setBrief(emptyBrief); setReferences([]); setRefNote(""); setActive("audience"); }}>全部清除</button>
         <button type="button" className="primary" disabled={refBusy !== ""} onClick={() => setReview(true)}>查看生成計畫</button>

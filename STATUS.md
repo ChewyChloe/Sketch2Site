@@ -951,3 +951,5 @@ Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38�
 - Pages AI 額度支援可設定上限。新增次數與累計預扣檢查沿用原 D1 表，無遷移。舊部署設定未變更；更新步驟見 [Cloudflare Pages AI 開通](docs/CLOUDFLARE_PAGES_AI_SETUP.md)。
 
 - 已檢查桌面與 375px 手機的登入後帳號按鈕畫面，登入與登出測試 PASS。
+
+- 需求面板的參考圖與 AI 生成說明已精簡。參考圖、草稿縮圖與生成流程的 Chromium 驗證 PASS。
