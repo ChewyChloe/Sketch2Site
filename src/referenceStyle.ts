@@ -285,3 +285,38 @@ export function mergeReferencePurposes(references: readonly { style: ReferenceSt
     referencePurposes: [...referencePurposes],
   };
 }
+
+/**
+ * What one picture taught, line by line, kept per picture (source n) instead of only merged.
+ * Read from pixels: colour, contrast and space are measured (high / medium confidence); the kind
+ * of type cannot be seen reliably in a photo, so type lines are low confidence and say so.
+ */
+export const EvidenceSchema = z.object({
+  n: z.number().int().min(1).max(maxReferences),
+  purpose: z.enum(referencePurposeIds),
+  field: z.enum(["colorMode", "temperature", "lightness", "contrast", "typeFamily", "typeScale", "space", "imagery", "mood"]),
+  value: z.string().max(20),
+  confidence: z.enum(["high", "medium", "low"]),
+}).strict();
+export type Evidence = z.infer<typeof EvidenceSchema>;
+const evidenceFields: Record<ReferencePurpose, readonly Evidence["field"][]> = {
+  overall: ["mood", "lightness", "colorMode", "space", "imagery"],
+  layout: ["imagery", "space"],
+  color: ["colorMode", "temperature", "lightness", "contrast"],
+  type: ["typeScale", "typeFamily"],
+  spacing: ["space"],
+  components: ["contrast"],
+};
+const confidenceOf = (field: Evidence["field"]): Evidence["confidence"] =>
+  ["lightness", "contrast", "temperature", "colorMode"].includes(field) ? "high" : ["space", "imagery", "mood"].includes(field) ? "medium" : "low";
+export function evidenceOf(style: ReferenceStyle, purposes: readonly ReferencePurpose[], n: number): Evidence[] {
+  const fields = [...new Set(purposes.flatMap((p) => evidenceFields[p]))];
+  return fields.map((field) => ({ n, purpose: purposes.find((p) => evidenceFields[p].includes(field))!, field, value: String(style[field as keyof ReferenceStyle]), confidence: confidenceOf(field) }));
+}
+export const confidenceLabels = { high: "可信度高", medium: "可信度中", low: "可信度低（照片看不太出字體）" } as const;
+/** One line in words, e.g. 「配色：暖色（可信度高）」. */
+export function evidenceText(e: Evidence) {
+  const labels = styleLabels as unknown as Record<string, Record<string, string>>;
+  const name = { colorMode: "色彩數量", temperature: "色溫", lightness: "明暗", contrast: "對比", typeFamily: "字體", typeScale: "字級", space: "留白", imagery: "照片處理", mood: "感覺" }[e.field];
+  return `${name}：${labels[e.field]?.[e.value] ?? e.value}`;
+}

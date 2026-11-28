@@ -5,7 +5,7 @@ import { GenerationReview } from "./GenerationReview";
 import type { CanvasSpec } from "./spec";
 import { withGenerationBrief } from "./brief";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { describeStyle, maxReferences, mergeReferencePurposes, prepareReference, referenceHints, referencePurposeIds, referencePurposeLabels, type ReferencePurpose, type ReferenceStyle } from "./referenceStyle";
+import { confidenceLabels, describeStyle, evidenceOf, evidenceText, maxReferences, mergeReferencePurposes, prepareReference, referenceHints, referencePurposeIds, referencePurposeLabels, type ReferencePurpose, type ReferenceStyle } from "./referenceStyle";
 import { requestReferenceStyle } from "./referenceRequest";
 import { useEscapeToClose } from "./useEscape";
 import { briefOptions, emptyBrief, suggestion, type Brief, type BriefField } from "./brief";
@@ -138,7 +138,9 @@ export function BriefPanel({
   const pictureInput = useRef<HTMLInputElement>(null);
   const keepReferences = (next: typeof references) => {
     setReferences(next);
-    setBrief(b => ({ ...b, ...mergeReferencePurposes(next) }));
+    // Kept per picture as well as merged: what each one taught, with its source number.
+    const referenceEvidence = next.flatMap((r, i) => evidenceOf(r.style, r.purposes, i + 1));
+    setBrief(b => ({ ...b, ...mergeReferencePurposes(next), referenceEvidence: referenceEvidence.length ? referenceEvidence.slice(0, 25) : undefined }));
   };
   const generate = async () => {
     if (references.length && aiReady) {
@@ -291,6 +293,9 @@ export function BriefPanel({
                     </label>)}
                   </fieldset>
                 </details>
+                <ul className="reference-evidence" aria-label={`第 ${i + 1} 張教了什麼`}>
+                  {evidenceOf(r.style, r.purposes, i + 1).map((e) => <li key={e.field} data-confidence={e.confidence} title={confidenceLabels[e.confidence]}>{evidenceText(e)}<small>{e.confidence === "high" ? "高" : e.confidence === "medium" ? "中" : "低"}</small></li>)}
+                </ul>
                 <button type="button" className="brief-clear" aria-label={`移除第 ${i + 1} 張參考圖`} onClick={() => { keepReferences(references.filter((_, k) => k !== i)); setRefNote(""); }}>×</button>
               </li>
             ))}

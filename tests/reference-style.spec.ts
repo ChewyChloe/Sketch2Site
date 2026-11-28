@@ -129,17 +129,17 @@ test("up to five reference pictures: thumbnails, remove one, and all five in one
   const photos = ["cafe", "camera", "coffee-flatwhite", "coffee-pourover", "coffee-tonic", "coffee-coldbrew"].map((n) => `public/assets/samples/${n}.jpg`);
   // Six chosen at once: five are kept and the note says why.
   await panel.getByLabel("選參考圖").setInputFiles(photos);
-  await expect(ref.getByRole("list", { name: "已選的參考圖" }).getByRole("listitem")).toHaveCount(5);
+  await expect(ref.getByRole("list", { name: "已選的參考圖" }).locator(":scope > li")).toHaveCount(5);
   await expect(ref).toContainText("最多 5 張");
   await expect(ref.getByRole("button", { name: /再加一張/ })).toHaveCount(0);
   await expect(ref.getByRole("list", { name: "看到的設計手法" })).toBeVisible();
   await ref.scrollIntoViewIfNeeded();
   await ref.screenshot({ path: "test-results/reference-five.png" });
   await ref.getByRole("button", { name: "移除第 2 張參考圖" }).click();
-  await expect(ref.getByRole("list", { name: "已選的參考圖" }).getByRole("listitem")).toHaveCount(4);
+  await expect(ref.getByRole("list", { name: "已選的參考圖" }).locator(":scope > li")).toHaveCount(4);
   await expect(ref.getByRole("button", { name: "＋ 再加一張（4/5）" })).toBeVisible();
   await panel.getByLabel("選參考圖").setInputFiles(photos[5]);
-  await expect(ref.getByRole("list", { name: "已選的參考圖" }).getByRole("listitem")).toHaveCount(5);
+  await expect(ref.getByRole("list", { name: "已選的參考圖" }).locator(":scope > li")).toHaveCount(5);
   await ref.getByText("用途：整體風格", { exact: true }).first().click();
   const firstScope = ref.getByRole("group", { name: "第 1 張參考圖用途" });
   await firstScope.getByRole("checkbox", { name: "配色", exact: true }).check();
@@ -152,4 +152,21 @@ test("up to five reference pictures: thumbnails, remove one, and all five in one
   expect(sent[0].purposes).toEqual([["color", "spacing"], ["overall"], ["overall"], ["overall"], ["overall"]]);
   for (const image of sent[0].images!) expect(Buffer.from(image.split(",")[1], "base64").subarray(0, 2).toString("hex")).toBe("ffd8");
   expect(JSON.stringify(sent[0]).length).toBeLessThan(1200000);
+});
+
+test("each picture keeps what it taught, by purpose and with confidence, and the layout request carries it per picture", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/\/api\/generation\/(status|ready)$/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ configured: false }) }));
+  const panel = await openBrief(page);
+  const ref = panel.getByRole("region", { name: "參考圖片" });
+  await panel.getByLabel("選參考圖").setInputFiles(["public/assets/samples/cafe.jpg", "public/assets/samples/coffee-tonic.jpg"]);
+  const first = ref.getByRole("list", { name: "第 1 張教了什麼" }), second = ref.getByRole("list", { name: "第 2 張教了什麼" });
+  await expect(first.getByRole("listitem").first()).toBeVisible();
+  // Picture 2 is only for colour: its lines are colour lines, measured from pixels (high confidence).
+  await ref.getByText("用途：整體風格").nth(1).click();
+  await ref.getByRole("group", { name: "第 2 張參考圖用途" }).getByLabel("配色").check();
+  await expect(second).toContainText("明暗");
+  await expect(second).not.toContainText("留白");
+  await expect(second.locator('li[data-confidence="high"]').first()).toBeVisible();
+  await ref.screenshot({ path: "test-results/reference-evidence.png" });
 });

@@ -3,7 +3,7 @@ import { commitHistory, undoHistory, redoHistory } from "./history";
 import { z } from "zod";
 import { imageSource } from "./assetRef";
 import { MotionSchema, bindMotionInput, compatibleMotion, combinationReason, withinMotionBudget } from "./motion";
-import { ReferencePurposesSchema, ReferenceStyleSchema } from "./referenceStyle";
+import { EvidenceSchema, ReferencePurposesSchema, ReferenceStyleSchema } from "./referenceStyle";
 import { href, localAssets, ImageLookSchema, TextStyleSchema, BrandSchema, NavSettingsSchema, MediaSchema, defaultMedia, mediaKindLabels, type MediaKind } from "./pageSpec";
 import { SiteOverridesSchema } from "./siteOverrides";
 export const Effect = z.enum([
@@ -81,6 +81,8 @@ export const CanvasSchema = z
             likes: z.array(z.enum(["layout", "type", "color", "space", "photo", "motion"])).max(6),
           }).strict()).max(8).optional(),
           referencePurposes: ReferencePurposesSchema.optional(),
+          // What each picture taught, kept per picture with its source number and confidence.
+          referenceEvidence: z.array(EvidenceSchema).max(25).optional(),
           // Answers asked before generating: references, what to avoid, lightness, the opening.
           ask: AskSchema.optional(),
         }).strict().optional(),
