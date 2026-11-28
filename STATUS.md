@@ -939,3 +939,7 @@ Hallmark static+Chromium render成功：0 FAIL／0未處理Reflex／0 WARN，38�
 
 ## 2026-11-18：第三批20種動畫 DONE（本機）
 保留原40種，新增20種，共60種。素材庫即時示範／Replay／參數、Canvas持久化、Mock生成、Patch保留、共用Renderer與獨立React匯出完成。472單元PASS；Chromium147個不同案例分批驗證並重跑失敗修正，最後5個Replay／三尺寸／獨立匯出PASS，快捷鍵與重載15次重複PASS；Build及安全邊界檢查PASS。完整名稱、觸發、目標、限制及驗證見docs/THIRD_BATCH_MOTIONS.md。付費呼叫0，未改AI安全配置／D1，未Push／Merge／部署。線上仍是先前40種版本；本批本地提交SHA以git log -1為準。實機／其他瀏覽器／付費生成品質NOT TESTED。
+
+## Cloudflare Pages 生成 API（2026-11-28）
+- Pages Functions 使用 `context.env` 的 `OPENAI_API_KEY`（Secret）和 `SKETCH_AI_ENABLED`（字串 `true`）。前端只讀同源 `/api/generation/ready` 的布林狀態，生成另走 `status`、`check` 及 `POST /api/generation`。
+- 啟用另需 `SKETCH_SITE_ORIGIN`、`SKETCH_AI_OWNER_EMAIL`、`SESSION_SECRET` 與已設定的 Google 或 GitHub 登入、含既有額度紀錄的 `DB` D1 綁定，以及既有模型／定價／計費／草稿／期限審批。離線排版可在 AI 未開通時使用。

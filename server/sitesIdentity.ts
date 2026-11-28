@@ -5,6 +5,10 @@ export type SitesEnv=Record<string,unknown>&{DB?:D1};
 export async function authenticatedOwner(request:Request,env:SitesEnv):Promise<string|null>{
  const subject=request.headers.get('oai-authenticated-user-id');
  const email=request.headers.get('oai-authenticated-user-email')?.trim().toLowerCase();
+ return bindVerifiedOwner(env, subject, email);
+}
+
+export async function bindVerifiedOwner(env:SitesEnv, subject:string|null, email:string|undefined):Promise<string|null>{
  const expected=typeof env.SKETCH_AI_OWNER_EMAIL==='string'?env.SKETCH_AI_OWNER_EMAIL.trim().toLowerCase():'';
  if(!subject||subject.length>200||!expected||!env.DB)return null;
  try {

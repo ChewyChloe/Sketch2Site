@@ -305,3 +305,35 @@ describe('Google sign-in on Sites', () => {
   expect(await off.json()).toEqual({ providers: [], user: null });
  });
 });
+
+describe('Cloudflare Pages runtime bindings', () => {
+ const secret = 'test-only-signing-key-with-32-characters';
+ const email = 'owner@sites.test';
+ async function signedSession(email: string, expires: number) {
+  const body = Buffer.from(JSON.stringify({ sub: 'github:123', email, name: 'Owner', exp: expires })).toString('base64url');
+  const { createHmac } = await import('node:crypto');
+  const signature = createHmac('sha256', secret).update('session:' + body).digest('base64url');
+  return 's2_session=' + body + '.' + signature;
+ }
+ it('requires a signed owner session and reads the real runtime flag and key without leaking them', async () => {
+  const { onRequest } = await import('../functions/api/[[path]]');
+  const s = await setup();
+  const env = { ...s.env, DB: db(), SESSION_SECRET: secret, GOOGLE_CLIENT_ID: '123-example.apps.googleusercontent.com' };
+  const expiry = Math.floor(Date.now() / 1000) + 60;
+  const cookie = await signedSession(email, expiry);
+  const request = (headers: HeadersInit = {}, path = '/api/generation/ready', bindings = env) =>
+   onRequest({ request: new Request(origin + path, { headers }), env: bindings });
+  expect((await request({ 'oai-authenticated-user-id': user, 'oai-authenticated-user-email': email })).status).toBe(403);
+  expect((await request({ cookie: await signedSession('visitor@sites.test', expiry) })).status).toBe(403);
+  expect((await request({ cookie: await signedSession(email, expiry - 180) })).status).toBe(403);
+  expect((await request({ cookie: cookie + 'x' })).status).toBe(403);
+  expect((await request({ cookie, origin: 'https://other.example' })).status).toBe(403);
+  expect(await (await request({ cookie }, undefined, { ...env, SKETCH_AI_ENABLED: 'false' })).json()).toEqual({ configured: false });
+  expect(await (await request({ cookie }, undefined, { ...env, OPENAI_API_KEY: '' })).json()).toEqual({ configured: false });
+  expect(await (await request({ cookie })).json()).toEqual({ configured: true });
+  const status = await request({ cookie }, '/api/generation/status');
+  const data = await status.json();
+  expect(data).toEqual({ configured: true, remainingCalls: 1, busy: false, csrfToken: expect.stringMatching(/^[a-f0-9]{64}$/) });
+  expect(status.headers.get('cache-control')).toBe('no-store');
+ });
+});

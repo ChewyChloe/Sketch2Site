@@ -1,4 +1,3 @@
-import { Buffer } from "node:buffer";
 import { LUNA_MODEL,LUNA_MAX_OUTPUT_TOKENS,LUNA_MAX_REQUEST_BYTES,LUNA_MAX_INPUT_TOKENS } from "./lunaPolicy";
 import OpenAI from "openai";
 import {
@@ -32,6 +31,9 @@ export class ProviderFailure extends GenerationError {
     super(code);
   }
 }
+const utf8 = new TextEncoder();
+const utf8Length = (text: string) => utf8.encode(text).byteLength;
+
 export function validUsage(usage: ProviderUsage) {
   const integer = (n: number) => Number.isSafeInteger(n) && n >= 0;
   return (
@@ -124,7 +126,7 @@ export function buildRewriteRequest(input: RewriteInput) {
     // The answer is a tree; it is parsed and checked by trusted code (sectionRewrite.ts).
     text: { format: { type: "json_object" as const } },
   };
-  if (Buffer.byteLength(JSON.stringify(request)) > 80000) throw new GenerationError("LIMIT");
+  if (utf8Length(JSON.stringify(request)) > 80000) throw new GenerationError("LIMIT");
   return request;
 }
 export function buildCopyRequest(input: CopyRequest) {
@@ -139,7 +141,7 @@ export function buildCopyRequest(input: CopyRequest) {
     ],
     text: { format: { type: "json_schema" as const, name: "sketch_copy", strict: true, schema: copyJSONSchema } },
   };
-  if (Buffer.byteLength(JSON.stringify(request)) > 8192) throw new GenerationError("LIMIT");
+  if (utf8Length(JSON.stringify(request)) > 8192) throw new GenerationError("LIMIT");
   return request;
 }
 export function providerInput(intent: Intent) {
@@ -150,7 +152,7 @@ export function providerInput(intent: Intent) {
 export function inputTokenBound(intent: Intent, withSnapshot = false) {
   // A low-detail picture is billed as a small fixed block of tokens; reserve generously.
   return (withSnapshot ? 3000 : 0) + (
-    Buffer.byteLength(
+    utf8Length(
       systemRules +
         JSON.stringify(providerInput(intent)) +
         JSON.stringify(refineJSONSchema),
@@ -172,7 +174,7 @@ export function buildLunaRequest(intent:Intent, snapshot?: string) {
     : {role:"user" as const,content:outline}],
   text:{format:{type:"json_schema" as const,name:"sketch_refine",strict:true,schema:refineJSONSchema}},
  };
- if(Buffer.byteLength(JSON.stringify(request))-(snapshot?.length??0)>LUNA_MAX_REQUEST_BYTES)throw new GenerationError("LIMIT");
+ if(utf8Length(JSON.stringify(request))-(snapshot?.length??0)>LUNA_MAX_REQUEST_BYTES)throw new GenerationError("LIMIT");
  return request;
 }
 export function openAIProvider(

@@ -68,7 +68,7 @@ async function readBody(request: Request) {
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
   return schema.parse(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)));
 }
-export function createSitesAPI(providerFactory: (key: string, model: string) => LayoutProvider = openAIProvider, timeoutMs = 30000) {
+export function createSitesAPI(providerFactory: (key: string, model: string) => LayoutProvider = openAIProvider, timeoutMs = 30000, authenticate = authenticatedOwner) {
   return async function handle(request: Request, env: SitesEnv): Promise<Response> {
     const url = new URL(request.url), now = Date.now();
     // Google sign-in is open to every visitor (not only the owner); POSTs must come from this site.
@@ -77,17 +77,19 @@ export function createSitesAPI(providerFactory: (key: string, model: string) => 
       return (await handleAuth(request, authConfigFrom(env), { sameOrigin, clientKey: request.headers.get('cf-connecting-ip') ?? 'anon' }))!;
     }
     // Dispatch authenticates these headers. Never trust them on an independently public Worker URL.
-    const user = await authenticatedOwner(request,env);
+    const user = await authenticate(request,env);
     if (!user) return fail('OWNER_REQUIRED');
     if (url.origin !== env.SKETCH_SITE_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site') return fail('ORIGIN_INVALID');
     if (request.headers.has('origin') && request.headers.get('origin') !== url.origin) return fail('ORIGIN_INVALID');
     const c = config(env, now);
     let slot=paidSlot(env);
     const day = Math.floor(now / 86400000);
-    if (request.method === 'GET' && url.pathname === '/api/generation/status') {
+    const readinessOnly = url.pathname === '/api/generation/ready';
+    if (request.method === 'GET' && (readinessOnly || url.pathname === '/api/generation/status')) {
       if (!c.ready) return json({ configured: false });
       try {
         const q=await quotaState(env);const available=!!q.available&&!q.active;
+        if (readinessOnly) return json({ configured: available });
         return json({configured:available,remainingCalls:q.remaining,busy:q.active,csrfToken:available?await csrf(c.apiKey!,user,url.origin,day):undefined});
       } catch { return fail('NOT_CONFIGURED', 503); }
     }
