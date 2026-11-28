@@ -1,3 +1,19 @@
+## 生成美感（2026-11-28，接續 Codex 的 ArtPlan 與 32 案例檢索）
+- DONE：三個候選方案的獨立構圖（compositionPlan）：主圖焦點、大字導讀、窄文接寬圖。三者在焦點、主圖大小、閱讀軸兩兩至少差兩項；1440、768、390 實測幾何
+- DONE：逐圖參考分析：每張圖照用途列出教了什麼，標可信度，逐張送 AI
+- DONE：完整靈感板：搜尋 32 案例、偏好與避開、自訂靈感網址（只存不抓，AI 只看說明）
+- DONE：個人審美偏好學習：只存在本機；選過的構圖排前面；可以看到並重設
+- PARTIAL：Visual Critic：
+  - 已完成：本機量測畫面，提出建議並一次修正，可撤銷
+  - 尚未完成：用 AI 看截圖的版本（需付費呼叫，並要接 D1 預扣）
+- DONE：桌面、手機、獨立 React 匯出驗證（匯出專案含 compositionPlan，npm 建置通過）
+- BLOCKED：
+  - 部署到 Cloudflare Production、真實 OpenAI 生成
+  - 原因：開發容器連不到 Production，也沒有 Cloudflare 或 OpenAI 金鑰；AI 需要擁有者登入
+  - 操作步驟見 docs/PRODUCTION_RUN_20261128.md
+  - 本輪付費呼叫 0 次
+- NOT STARTED：偏好寫進 AI 摘要、撤銷時收回偏好訊號、AI 動畫推薦（A8）
+
 ## 動畫素材庫重新規劃（2026-11-27 使用者需求；排在目前功能清單之後）
 參考圖只參考「多維度篩選」的操作概念，不照搬分類、名稱、順序、配色或版面。
 - NOT STARTED A1 盤點：列出現有 68 種動畫的 registry、schema、runtime、編輯器與匯出流程，記錄每個動畫目前的分類與參數（docs/MOTION_INVENTORY.md）
