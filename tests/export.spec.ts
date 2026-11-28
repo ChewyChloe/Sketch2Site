@@ -124,6 +124,8 @@ test("downloaded React project installs and builds independently; runtime stays 
   input.sections.push(interactiveBento, ...tabsFixture().sections, textSection);
   input.metadata.title =
     "作品 </title><script>window.exportPwned=true</script>";
+  // The chosen candidate's composition plan ships with the export (compositionPlan.css).
+  (input as { plan?: string }).plan = "column";
   await page.getByLabel("載入頁面檔案").setInputFiles({
     name: "export.json",
     mimeType: "application/json",
