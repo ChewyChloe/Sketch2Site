@@ -1,3 +1,5 @@
+import { motionNumber, type MotionInstance } from "./motion";
+import { useReducedMotion } from "./MotionRuntime";
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { videoEmbedUrl, type Media } from "./pageSpec";
 
@@ -6,10 +8,10 @@ import { videoEmbedUrl, type Media } from "./pageSpec";
 type Resolve = (ref: string) => string;
 const reducedMotion = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function MediaView({ media, caption, resolve, still = false }: { media: Media; caption: string; resolve: Resolve; still?: boolean }) {
+export function MediaView({ media, caption, resolve, still = false, carouselEffect }: { carouselEffect?: MotionInstance; media: Media; caption: string; resolve: Resolve; still?: boolean }) {
   switch (media.kind) {
     case "video": return <VideoEmbed m={media} caption={caption} still={still} />;
-    case "carousel": return <Carousel m={media} caption={caption} resolve={resolve} still={still} />;
+    case "carousel": return <Carousel m={media} caption={caption} resolve={resolve} still={still} effect={carouselEffect} />;
     case "flipbook": return <Flipbook m={media} caption={caption} resolve={resolve} />;
     case "character": return <Character m={media} caption={caption} still={still} />;
     case "object3d": return <Object3D m={media} caption={caption} resolve={resolve} still={still} />;
@@ -144,40 +146,71 @@ function VideoEmbed({ m, caption, still }: { m: Extract<Media, { kind: "video" }
 }
 
 /* ---------- Carousel: slides with arrows, dots, swipe and optional autoplay ---------- */
-function Carousel({ m, caption, resolve, still }: { m: Extract<Media, { kind: "carousel" }>; caption: string; resolve: Resolve; still: boolean }) {
+function Carousel({ m, caption, resolve, still, effect }: { effect?: MotionInstance; m: Extract<Media, { kind: "carousel" }>; caption: string; resolve: Resolve; still: boolean }) {
   const n = m.images.length;
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
   const start = useRef<number | null>(null);
-  const go = (k: number) => setI(((k % n) + n) % n);
+  const root = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+  const mode = effect?.presetId;
+  const modern = !!mode && !reduced;
+  const orbit = modern && mode === "orbit-exhibit";
+  const [turn, setTurn] = useState(0);
+  const [drag, setDrag] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const angle = 360 / n;
+  const duration = effect ? motionNumber(effect, "durationMs", 500) : 500;
+  const strength = effect ? motionNumber(effect, "strength", .72) : .72;
+  const go = (k: number) => { setI(((k % n) + n) % n); setTurn(value => value + k - i); };
   useEffect(() => {
-    if (!m.autoplay || still || paused || n < 2 || reducedMotion()) return;
-    const t = setInterval(() => setI((v) => (v + 1) % n), m.seconds * 1000);
+    if (!mode || !root.current) return;
+    const observer = new IntersectionObserver(entries => setVisible(entries.some(entry => entry.isIntersecting)));
+    observer.observe(root.current);
+    return () => observer.disconnect();
+  }, [mode]);
+  useEffect(() => {
+    if ((!m.autoplay && !orbit) || still || paused || n < 2 || reduced || (mode && !visible)) return;
+    const tick = () => {
+      if (document.hidden) return;
+      setI(value => (value + 1) % n);
+      setTurn(value => value + 1);
+    };
+    const t = setInterval(tick, orbit ? Math.max(1100, duration) : m.seconds * 1000);
     return () => clearInterval(t);
-  }, [m.autoplay, m.seconds, still, paused, n]);
+  }, [m.autoplay, m.seconds, still, paused, n, reduced, mode, orbit, visible, duration]);
   useEffect(() => { if (i >= n) setI(0); }, [n, i]);
   return (
     <div
-      className="media-carousel"
+      ref={root}
+      className={"media-carousel" + (modern ? " hundred-carousel" : "")}
+      data-carousel-effect={modern ? mode : undefined}
+      data-dragging={drag ? "" : undefined}
+      style={{ "--hundred-carousel-duration": orbit && !paused ? Math.max(1100, duration) + "ms" : Math.min(duration, 900) + "ms" } as CSSProperties}
       role="region"
       aria-roledescription="輪播"
       aria-label={caption || "輪播圖片"}
       onPointerEnter={() => setPaused(true)}
-      onPointerLeave={() => setPaused(false)}
+      onPointerLeave={() => { setPaused(false); start.current = null; setDrag(0); }}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
       onPointerDown={(e) => { start.current = e.clientX; }}
-      onPointerUp={(e) => { if (start.current === null) return; const dx = e.clientX - start.current; start.current = null; if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1)); }}
+      onPointerMove={(e) => { if (orbit && start.current !== null) setDrag((e.clientX - start.current) * .32); }}
+      onPointerCancel={() => { start.current = null; setDrag(0); }}
+      onPointerUp={(e) => { if (start.current === null) return; const dx = e.clientX - start.current; start.current = null; setDrag(0); if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1)); }}
       onKeyDown={(e) => { if (e.key === "ArrowRight") go(i + 1); else if (e.key === "ArrowLeft") go(i - 1); }}
     >
-      <div className="mc-track" style={{ transform: `translateX(${-i * 100}%)` }}>
-        {m.images.map((src, k) => (
-          <div className="mc-slide" key={k} aria-hidden={k !== i}>
+      <div className="mc-track" style={{ transform: orbit ? `rotateY(${-turn * angle + drag}deg)` : modern ? undefined : `translateX(${-i * 100}%)` }}>
+        {m.images.map((src, k) => {
+          const offset = ((k - i + Math.floor(n / 2) + n) % n) - Math.floor(n / 2);
+          const style: CSSProperties | undefined = orbit ? { transform: `rotateY(${k * angle}deg) translateZ(${strength}px)` } : modern
+            ? { transform: `translateX(${offset * 37}%) scale(${offset ? strength : 1})`, zIndex: offset ? 0 : 1, opacity: offset ? Math.abs(offset) > 1 ? 0 : .36 : 1 } : undefined;
+          return <div className="mc-slide" key={k} aria-hidden={k !== i} style={style}>
             <img src={resolve(src)} alt={`${caption || "圖片"}（${k + 1} / ${n}）`} loading="lazy" decoding="async" draggable={false} referrerPolicy="no-referrer" />
-          </div>
-        ))}
+          </div>;
+        })}
       </div>
-      {m.arrows && n > 1 && (
+      {(m.arrows || mode) && n > 1 && (
         <>
           <button type="button" className="mc-arrow mc-prev" aria-label="上一張" onClick={() => go(i - 1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg></button>
           <button type="button" className="mc-arrow mc-next" aria-label="下一張" onClick={() => go(i + 1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>

@@ -8,18 +8,18 @@
 
 | 分類 | 筆數 |
 |---|---|
-| 已有同等功能 | 58 |
-| 既有功能可擴充 | 114 |
-| 需要新增動畫 | 92 |
+| 已有同等功能 | 57 |
+| 既有功能可擴充 | 110 |
+| 需要新增動畫 | 97 |
 | 需要新增複合互動元件 | 9 |
 | 不適合目前架構或需要額外授權 | 74 |
 | 合計 | 347 |
 
-交付狀態：58 筆已有同等、74 筆排除、65 筆已驗證對應、150 筆待實作。
+交付狀態：57 筆已有同等、74 筆排除、75 筆已驗證對應、141 筆待實作。
 
 優先序用於排程。P1 與明列已驗證批次的資料有正式 Runtime；其他預計新增項目仍待實作。
 
-## 已完成的來源對應（22 個新動畫，對應 26 筆來源）
+## 已完成的來源對應（32 個新動畫，對應 36 筆來源）
 
 | Sketch2Site ID | 對應來源編號 |
 |---|---|
@@ -39,12 +39,22 @@
 | `word-shelf` | 45 |
 | `crosswind-ribbons` | 50 |
 | `hollow-fill-sweep` | 69, 163 |
+| `aurora-pools` | 106 |
+| `relay-connections` | 137 |
 | `scroll-ink-words` | 152 |
+| `waypoint-pill` | 167 |
+| `petal-eddies` | 174 |
+| `glyph-embers` | 177 |
 | `chart-build` | 197, 198, 199 |
+| `feature-deck` | 212 |
+| `grain-tide` | 222 |
 | `vanishing-lattice` | 223 |
+| `lantern-rise` | 224 |
 | `dolly-frame` | 260 |
 | `color-wake` | 262 |
 | `letter-windows` | 293 |
+| `orbit-exhibit` | 302 |
+| `corner-reprint` | 330 |
 
 ## 已驗證的複合元件擴充
 
@@ -154,7 +164,6 @@
 | 232 | button | ['hover'] | CSS | jelly-press | — |  |
 | 233 | button | ['hover'] | CSS | radial-ink-ripple | — |  |
 | 268 | media | ['switch'] | GSAP | card-stack-shuffle | — |  |
-| 302 | card | ['loop', 'drag'] | GSAP | 3D 物件元件（既有） | — |  |
 | 305 | card | ['switch'] | GSAP | 翻頁書元件（既有） | — |  |
 | 328 | text | ['enter', 'drag'] | Canvas | physics-tag-field | — |  |
 
@@ -216,11 +225,9 @@
 | 157 | shape | ['scroll'] | GSAP | svg-path-drawing | P3 | 捲動驅動 |
 | 159 | text | ['scroll'] | GSAP | marquee-text | P3 | 捲動驅動 |
 | 161 | layout | ['scroll', 'switch'] | GSAP | circular-mask-expansion | P3 | 捲動驅動 |
-| 167 | layout | ['hover'] | CSS | 導覽列樣式 | P3 | 滑動底色 |
 | 170 | text | ['hover'] | CSS | elastic-word-bounce | P3 | 滑過觸發 |
 | 171 | button | ['hover'] | CSS | border-light-trace | P2 | 滑過描邊 |
 | 176 | bg | ['loop', 'hover'] | Canvas | gooey-blob-merge | P4 | 漂流融合模式，保留舊版點擊聚合 |
-| 177 | text | ['hover', 'enter'] | Canvas | particle-constellation | P4 | 粒子組字 |
 | 179 | bg | ['hover'] | Canvas | liquid-distortion-reveal | P4 | 滑過漣漪 |
 | 181 | bg | ['hover', 'loop'] | Canvas | confetti-burst | P4 | 煙火 |
 | 182 | text | ['loop'] | CSS | float-idle | P3 | 縮放呼吸模式 |
@@ -236,7 +243,6 @@
 | 209 | layout | ['hover'] | CSS | Bento 格局 | P3 | 可選的格子放大與同層補位 |
 | 210 | layout | ['scroll'] | GSAP | pinned-story-panels | P4 | 可切換為固定影像，旁側文案自然捲動 |
 | 211 | layout | ['scroll', 'hover'] | GSAP | scroll-progress | P3 | 回到頂部按鈕 |
-| 212 | card | ['switch', 'loop'] | CSS | 輪播元件 | P2 | 中央放大樣式 |
 | 213 | card | ['drag', 'exit'] | GSAP | card-stack-shuffle | P3 | 拖曳甩出 |
 | 217 | card | ['loop', 'hover'] | CSS | 標誌牆（既有） | P3 | 卡片雙向輪播 |
 | 218 | card | ['switch', 'loop'] | GSAP | 輪播元件 | P3 | 推薦語輪播 |
@@ -270,7 +276,6 @@
 | 306 | card | ['switch'] | GSAP | 相簿版型切換 | P3 | 疊放與網格 |
 | 307 | card | ['switch'] | GSAP | fold-reveal | P3 | 封面開啟 |
 | 322 | shape | ['loop'] | CSS | gooey-blob-merge | P3 | 單顆變形 |
-| 330 | card | ['hover', 'loop'] | GSAP | fold-reveal | P4 | 撕貼紙角 |
 | 332 | card | ['hover', 'switch'] | GSAP | flip-card | P3 | 依方向翻面 |
 | 339 | button | ['switch', 'hover'] | CSS | 導覽列樣式 | P3 | 漢堡變形 |
 | 340 | layout | ['switch'] | GSAP | 導覽列樣式 | P4 | 分幕選單，支援反向收幕 |
@@ -315,8 +320,8 @@
 | 80 | text | ['enter'] | GSAP | — | P3 | 逐字 3D 翻轉 |
 | 85 | text | ['hover'] | GSAP | — | P3 | 文字被游標推開 |
 | 90 | shape | ['loop'] | GSAP | — | P4 | 沿曲線飛行 |
-| 106 | bg | ['loop'] | CSS | — | P3 | 區塊背景光暈 |
-| 137 | shape | ['loop'] | CSS | — | P4 | 流動連接線 |
+| 106 | bg | ['loop'] | CSS | aurora-pools | P3 | 批次 20 原創動效 |
+| 137 | shape | ['loop'] | CSS | relay-connections | P3 | 批次 20 原創動效 |
 | 138 | shape | ['loop'] | CSS | — | P3 | 區塊波浪分隔 |
 | 152 | text | ['scroll'] | GSAP | scroll-ink-words | P1 | 批次一完成 |
 | 153 | media | ['scroll'] | GSAP | grow-to-stage | P2 | 規劃於批次二 |
@@ -325,11 +330,13 @@
 | 163 | text | ['hover'] | CSS | hollow-fill-sweep | P1 | 批次一完成 |
 | 165 | media | ['hover'] | CSS | — | P3 | 圓形縮圖展開 |
 | 166 | button | ['hover'] | CSS | — | P4 | 圖示列放大 |
+| 167 | layout | ['hover'] | CSS | waypoint-pill | P3 | 批次 20 原創動效 |
 | 169 | control | ['hover'] | CSS | — | P4 | 網站內容提示框 |
 | 172 | bg | ['loop', 'hover'] | Canvas | — | P4 | Canvas 星際背景 |
 | 173 | bg | ['loop', 'hover'] | Canvas | — | P4 | Canvas 流場 |
-| 174 | bg | ['loop', 'hover'] | Canvas | — | P4 | 花瓣飄落 |
+| 174 | bg | ['loop', 'hover'] | Canvas | petal-eddies | P3 | 批次 20 原創動效 |
 | 175 | bg | ['loop'] | Canvas | — | P4 | 字元雨 |
+| 177 | text | ['hover', 'enter'] | Canvas | glyph-embers | P3 | 批次 20 原創動效 |
 | 178 | bg | ['hover'] | Canvas | — | P4 | 圓點網格背景 |
 | 186 | text | ['loop', 'enter'] | CSS | neon-ignite | P4 | 規劃於批次四 |
 | 188 | text | ['enter'] | CSS | — | P4 | 上下半合成 |
@@ -340,9 +347,10 @@
 | 197 | shape | ['enter', 'scroll'] | GSAP | chart-build | P1 | 批次一完成（折線） |
 | 198 | shape | ['enter', 'scroll'] | GSAP | chart-build | P1 | 批次一完成（長條） |
 | 199 | shape | ['enter', 'scroll'] | GSAP | chart-build | P1 | 批次一完成（圓餅） |
-| 222 | bg | ['loop'] | CSS | — | P3 | 顆粒漸層背景 |
+| 212 | card | ['switch', 'loop'] | CSS | feature-deck | P3 | 批次 20 原創動效 |
+| 222 | bg | ['loop'] | CSS | grain-tide | P3 | 批次 20 原創動效 |
 | 223 | bg | ['loop'] | CSS | vanishing-lattice | P2 | 主題色透視格線推進 |
-| 224 | bg | ['loop'] | CSS | — | P4 | 柔焦光點 |
+| 224 | bg | ['loop'] | CSS | lantern-rise | P3 | 批次 20 原創動效 |
 | 225 | bg | ['loop'] | CSS | — | P3 | 脈衝圓環 |
 | 226 | bg | ['loop'] | CSS | — | P4 | 放射光芒 |
 | 227 | bg | ['loop', 'hover'] | Canvas | — | P4 | 星空 |
@@ -365,12 +373,14 @@
 | 293 | text | ['loop'] | CSS | letter-windows | P1 | 批次一完成 |
 | 295 | text | ['switch'] | GSAP | — | P3 | 劃掉重寫 |
 | 297 | text | ['loop'] | CSS | echo-layers | P4 | 規劃於批次四 |
+| 302 | card | ['loop', 'drag'] | GSAP | orbit-exhibit | P3 | 批次 20 原創動效 |
 | 319 | shape | ['loop'] | CSS | — | P4 | 指針時鐘 |
 | 323 | shape | ['enter'] | GSAP | — | P4 | 徽章解鎖 |
 | 324 | shape | ['loop'] | GSAP | — | P4 | 心電圖 |
 | 325 | shape | ['enter'] | GSAP | — | P4 | 植物生長 |
 | 326 | shape | ['loop'] | GSAP | — | P4 | 齒輪 |
 | 329 | card | ['enter', 'drag'] | Canvas | — | P4 | 吊繩識別證（物理） |
+| 330 | card | ['hover', 'loop'] | GSAP | corner-reprint | P3 | 批次 20 原創動效 |
 | 335 | button | ['hover', 'loop'] | GSAP | — | P4 | 按鈕內眼睛 |
 | 338 | media | ['switch', 'loop'] | GSAP | — | P4 | 唱盤播放 |
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CopyResponseSchema, type CopyKind } from "./copySuggest";
+import { CopyResponseSchema, type CopyKind } from "./copySuggest.ts";
 import { GenerationError, generationCodes } from "./generation";
 import type { Brief } from "./brief";
 

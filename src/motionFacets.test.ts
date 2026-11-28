@@ -12,7 +12,7 @@ describe("motion facets (one source for filters, search and recommendations)", (
     }
   });
   it("keeps the stable ids and the catalog untouched", () => {
-    expect(motionIds).toHaveLength(90);
+    expect(motionIds).toHaveLength(100);
     expect(motionIds.slice(0, 3)).toEqual(["fade-in", "slide-up", "scale-in"]);
     for (const id of motionIds) expect(motionCatalog[id].id).toBe(id);
   });
@@ -22,7 +22,7 @@ describe("motion facets (one source for filters, search and recommendations)", (
     const both = motionIds.filter((id) => matchesFilter(id, { target: ["image"], trigger: ["hover"] }));
     expect(both).toContain("dolly-frame");
     expect(both).not.toContain("image-reveal");
-    expect(motionIds.filter((id) => matchesFilter(id, {}))).toHaveLength(90);
+    expect(motionIds.filter((id) => matchesFilter(id, {}))).toHaveLength(100);
   });
   it("search finds Chinese and English names, descriptions and facet words", () => {
     expect(searchMotions(motionIds, "打字")).toContain("typewriter");

@@ -56,11 +56,17 @@ function EffectSample({ id, active, text, controls: tuned }: { id: EffectId; act
     if((referenceMotionIds as readonly string[]).includes(id)){
       const on=active||id!=="chart-build";
       const effect=on?[sampleMotion(id,ids[1],tuned,{})]:[];
-      const child=id==="dolly-frame"||id==="color-wake"?{id:ids[1],type:"image",src:id==="dolly-frame"?"/assets/samples/coffee-pourover.jpg":"/assets/samples/coffee-tonic.jpg",alt:"手沖咖啡，慢慢萃取",style:{padding:"none",gap:"none"},effects:effect}
+      const carousel = id === "feature-deck" || id === "orbit-exhibit";
+      const ambient = ["aurora-pools", "petal-eddies", "relay-connections", "corner-reprint", "waypoint-pill", "grain-tide", "lantern-rise"].includes(id);
+      const child=carousel?{id:ids[1],type:"media",content:"日常風景",media:{kind:"carousel",images:["/assets/samples/cafe.jpg","/assets/samples/camera.jpg","/assets/samples/coffee-flatwhite.jpg"],autoplay:false,seconds:4,arrows:true,dots:true},effects:effect}
+        :ambient?{id:ids[1],type:"card",style:{padding:"medium"},children:[paragraph(2, "生活的光與風景")],effects:effect}
+        :id==="dolly-frame"||id==="color-wake"?{id:ids[1],type:"image",src:id==="dolly-frame"?"/assets/samples/coffee-pourover.jpg":"/assets/samples/coffee-tonic.jpg",alt:"手沖咖啡，慢慢萃取",style:{padding:"none",gap:"none"},effects:effect}
         :id==="vanishing-lattice"?{id:ids[1],type:"card",style:{padding:"medium",gap:"small"},children:[paragraph(2,"在遠方找到方向")],effects:effect}
         :id==="chart-build"?{id:ids[1],type:"media",content:"本月來客",media:{kind:"chart",chart:"bar",points:[{label:"一",value:32},{label:"二",value:48},{label:"三",value:41},{label:"四",value:66}],unit:""},style:{padding:"none",gap:"none"},effects:effect}
         :{id:ids[1],type:"heading",level:2,content:text?text:id==="scroll-ink-words"?"每一杯咖啡，都從一顆豆子的旅程開始。慢慢讀，字會跟著亮起來。":id==="letter-windows"?"COFFEE 咖啡":id==="hollow-fill-sweep"?"滑過填滿":id==="crosswind-ribbons"?"穿過微風":id==="imprint-beats"?"寫下 創作 完成":id==="drift-letterfall"?"日常落下微光":id==="turning-letter-mosaic"?"格子裡的故事":"粗體接力中",style:{padding:"none",gap:"none"},effects:effect};
-      return PageSchema.parse({schemaVersion:2,metadata:{title:"動畫素材示意",language:"zh-Hant"},typography:"sans",styles:"neutral",responsive:{mobileColumns:1,desktopColumns:1},sections:[{id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:[child]}]});
+      return PageSchema.parse({schemaVersion:2,metadata:{title:"動畫素材示意",language:"zh-Hant"},typography:"sans",styles:"neutral",responsive:{mobileColumns:1,desktopColumns:1},...(id==="waypoint-pill"?{chrome:{nav:true,footer:false}}:{}),
+        sections:[{id:ids[0],type:"section",style:{padding:"none",gap:"none"},children:id==="waypoint-pill"?[{id:ids[3],type:"heading",level:2,content:"首頁"},child]:[child]},
+        ...(id==="waypoint-pill"?[{id:ids[4],type:"section",children:[{id:ids[5],type:"heading",level:2,content:"作品"}]}]:[])]});
     }
     const persistent=advancedMotionIds.includes(id as typeof advancedMotionIds[number])||id in signatureFamily||["breathing-glow","curved-path-text","count-up","flip-card","fold-reveal","physics-tag-field","magnetic-control","press-feedback","focus-transfer","scroll-progress","disclosure-panel"].includes(id);
     const controls=id==="count-up"?{endValue:128,durationMs:1200}:id==="curved-path-text"?{curvature:"medium"}:id==="flip-card"?{backText:"把細節，說清楚"}:id==="fold-reveal"?{underText:"下一層，藏著新想法"}:id==="physics-tag-field"?{labels:["設計","工程","研究"]}:{};
@@ -281,6 +287,11 @@ export function AnimationLibrary({
                   setActive(id);setReplay(values=>({...values,[id]:(values[id]??0)+1}));
                   if (id === "disclosure-panel" && tuned[id]?.presentation === "tabs") requestAnimationFrame(() => {
                     asset?.querySelectorAll<HTMLButtonElement>(".asset-preview [role=tab]")[1]?.click();
+                  });
+                  if (["feature-deck", "orbit-exhibit", "corner-reprint", "waypoint-pill"].includes(id)) requestAnimationFrame(() => {
+                    const preview = asset?.querySelector(".asset-preview");
+                    if (id === "waypoint-pill") preview?.querySelectorAll<HTMLElement>("nav a")[1]?.focus({ preventScroll: true });
+                    else preview?.querySelector<HTMLButtonElement>(id === "corner-reprint" ? ".hundred-peel-action" : ".mc-next")?.click();
                   });
                   if(["hover-lift","hover-glow"].includes(id))requestAnimationFrame(()=>{
                     if(asset?.isConnected)asset.querySelector<HTMLElement>(".effect-lift,.effect-glow")?.focus({preventScroll:true});

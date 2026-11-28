@@ -9,7 +9,7 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import { handleAuth, type AuthConfig } from "./auth";
 import { z } from "zod";
 import { CanvasSchema } from "../src/spec";
-import { CopyRequestSchema, cleanOptions, type CopyRequest } from "../src/copySuggest";
+import { CopyRequestSchema, cleanOptions, type CopyRequest } from "../src/copySuggest.ts";
 import { compactSite, fromCompact, RewriteError, RewriteOutputSchema, RewriteRequestSchema, sectionOf, type RewriteRequest } from "../src/sectionRewrite";
 import { PageSchema, type PageNode, type PageSpec } from "../src/pageSpec";
 import { snapshotLimits, SnapshotSchemaPattern } from "../src/draftSnapshotRules";

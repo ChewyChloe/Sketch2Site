@@ -578,7 +578,7 @@ export const RenderNode = memo(function NodeView({ node, layout }: { node: PageN
           }
         : {})}
     >
-      {node.type==="form"?<SiteForm node={node}/>:node.type==="media"&&node.media?<MediaView media={node.media} caption={node.content??""} resolve={(r)=>motionUrls[r]||import.meta.env.BASE_URL+r.slice(1)}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
+      {node.type==="form"?<SiteForm node={node}/>:node.type==="media"&&node.media?<MediaView media={node.media} carouselEffect={node.effects.find(e => e.presetId === "feature-deck" || e.presetId === "orbit-exhibit")} caption={node.content??""} resolve={(r)=>motionUrls[r]||import.meta.env.BASE_URL+r.slice(1)}/>:sequence?<FrameSequence effect={sequence} original={node.src!} alt={node.alt!} urls={motionUrls}/>:node.type === "image" ? (
         node.look?.depth ? <Depth3D mode={node.look.depth}><FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox></Depth3D> : <FrameBox look={node.look}><SafeImage key={node.src} node={node} /></FrameBox>
       ) : cinematicText ? <CinematicText effect={cinematicText} text={node.content!}/>:story?<StoryGroup effect={story} demo={motionPreview} media={storyMedia?.length === node.children?.length ? storyMedia : undefined}>{children}</StoryGroup>:shuffle?<CardShuffle effect={shuffle}>{children}</CardShuffle>:advancedText ? <AdvancedText text={node.content!} effect={advancedText}/> : disclosure?.validatedControls.presentation === "tabs" ? <TabbedPanels effect={disclosure} labels={node.children?.map(tabPanelName) ?? []}>{children}</TabbedPanels> : disclosure ? <DisclosurePanel effect={disclosure}>{children}</DisclosurePanel> : assembly ? <LetterAssembly effect={assembly} text={node.content!}/> : accent ? <AccentStroke effect={accent} text={node.content!}/> : physics ? <>{children}<PhysicsTags effect={physics}/></> : fold ? <FoldReveal effect={fold}>{children}</FoldReveal> : flip ? <FlipCard effect={flip}>{children}</FlipCard> : count ? <CountUp effect={count} original={node.content!}/> : curve ? <CurvedText effect={curve} text={node.content!}/> : node.children ? children : node.text?.highlight ? <span className="text-mark">{node.content}</span> : node.type === "paragraph" && cardLineKind(node.content) === "tags" ? node.content!.trim().split(/\s+/).map((t, i) => <span key={i} className="line-tag">{t.replace(/^#/, "")}</span>) : node.content}
     </Tag>
@@ -696,10 +696,51 @@ function PageNav({ page, view, sections, placed }: { page: PageSpec; view: strin
     root.addEventListener("scroll", onScroll, { passive: true });
     return () => root.removeEventListener("scroll", onScroll);
   }, [style, side, isPages, links.map((l) => l.target).join()]);
+  function findPill(nodes: PageNode[]): Effect | undefined {
+    for (const node of nodes) {
+      const effect = node.effects.find(item => item.presetId === "waypoint-pill") ?? findPill(node.children ?? []);
+      if (effect) return effect;
+    }
+  }
+  const pill = findPill(placed ?? sections);
+  const pillRef = useRef<HTMLSpanElement>(null);
+  const demoPill = useContext(MotionPreview);
+  useEffect(() => {
+    const marker = pillRef.current, list = marker?.parentElement;
+    if (!marker || !list) return;
+    const current = () => list.querySelector<HTMLAnchorElement>('a[aria-current]') ?? list.querySelector<HTMLAnchorElement>('a');
+    function move(anchor: HTMLAnchorElement | null) {
+      if (!marker || !anchor || !anchor.offsetWidth) return;
+      marker.style.translate = anchor.offsetLeft + "px " + anchor.offsetTop + "px";
+      marker.style.width = anchor.offsetWidth + "px";
+      marker.style.height = anchor.offsetHeight + "px";
+      marker.style.opacity = "1";
+    }
+    const follow = (event: Event) => { if (event.target instanceof Element) move(event.target.closest("a")); };
+    const reset = () => move(current());
+    list.addEventListener("pointerover", follow);
+    list.addEventListener("focusin", follow);
+    list.addEventListener("pointerleave", reset);
+    list.addEventListener("focusout", reset);
+    const observer = new ResizeObserver(reset);
+    observer.observe(list);
+    reset();
+    return () => {
+      observer.disconnect();
+      list.removeEventListener("pointerover", follow);
+      list.removeEventListener("focusin", follow);
+      list.removeEventListener("pointerleave", reset);
+      list.removeEventListener("focusout", reset);
+    };
+  }, [pill, style, currentPage, active, links.length, open]);
   if (style === "none") return null;
   const brand = <a className="page-brand" href={"#page-" + (page.home?.id ?? sections[0]?.id ?? placed?.[0]?.id)}>{page.brand?.logo && <BrandLogo src={page.brand.logo} />}<span>{page.metadata.title}</span></a>;
   const list = links.length > 0 && (
-    <nav aria-label={isPages ? "網站頁面" : "頁面導覽"} id={menuId} data-menu-motion={menuMotion} data-menu-open={open ? "" : undefined}>
+    <nav aria-label={isPages ? "網站頁面" : "頁面導覽"} id={menuId} data-menu-motion={menuMotion} data-menu-open={open ? "" : undefined} data-pill-sample={pill && demoPill ? "" : undefined}>
+      {pill && <span className="hundred-nav-pill" ref={pillRef} aria-hidden="true" style={{
+        "--pill-opacity": motionNumber(pill, "strength", .19) * 100 + "%",
+        "--pill-duration": motionNumber(pill, "durationMs", 400) + "ms",
+      } as CSSProperties} />}
       {menuMotion === "strips" && <span className="page-nav-strips" aria-hidden="true">
         {Array.from({ length: 5 }, (_, i) => <span key={i} />)}
       </span>}

@@ -7,17 +7,17 @@
   "items": 347
  },
  "categories": {
-  "需要新增動畫": 92,
+  "需要新增動畫": 97,
   "不適合目前架構或需要額外授權": 74,
-  "既有功能可擴充": 114,
-  "已有同等功能": 58,
+  "既有功能可擴充": 110,
+  "已有同等功能": 57,
   "需要新增複合互動元件": 9
  },
  "delivery": {
-  "duplicate": 58,
+  "duplicate": 57,
   "excluded": 74,
-  "verifiedMappings": 65,
-  "pending": 150
+  "verifiedMappings": 75,
+  "pending": 141
  },
  "rows": [
   {
@@ -2365,15 +2365,16 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "aurora-pools",
    "priority": "P3",
-   "note": "區塊背景光暈",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -2973,15 +2974,16 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
-   "priority": "P4",
-   "note": "流動連接線",
+   "sketch2site": "relay-connections",
+   "priority": "P3",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -3554,16 +3556,17 @@
     "hover"
    ],
    "technique": "CSS",
-   "category": "既有功能可擴充",
-   "sketch2site": "導覽列樣式",
+   "category": "需要新增動畫",
+   "sketch2site": "waypoint-pill",
    "priority": "P3",
-   "note": "滑動底色",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -3691,15 +3694,16 @@
    ],
    "technique": "Canvas",
    "category": "需要新增動畫",
-   "sketch2site": null,
-   "priority": "P4",
-   "note": "花瓣飄落",
+   "sketch2site": "petal-eddies",
+   "priority": "P3",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -3750,16 +3754,17 @@
     "enter"
    ],
    "technique": "Canvas",
-   "category": "既有功能可擴充",
-   "sketch2site": "particle-constellation",
-   "priority": "P4",
-   "note": "粒子組字",
+   "category": "需要新增動畫",
+   "sketch2site": "glyph-embers",
+   "priority": "P3",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -4433,16 +4438,17 @@
     "loop"
    ],
    "technique": "CSS",
-   "category": "既有功能可擴充",
-   "sketch2site": "輪播元件",
-   "priority": "P2",
-   "note": "中央放大樣式",
+   "category": "需要新增動畫",
+   "sketch2site": "feature-deck",
+   "priority": "P3",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -4627,15 +4633,16 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
+   "sketch2site": "grain-tide",
    "priority": "P3",
-   "note": "顆粒漸層背景",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -4666,15 +4673,16 @@
    ],
    "technique": "CSS",
    "category": "需要新增動畫",
-   "sketch2site": null,
-   "priority": "P4",
-   "note": "柔焦光點",
+   "sketch2site": "lantern-rise",
+   "priority": "P3",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -6162,16 +6170,17 @@
     "drag"
    ],
    "technique": "GSAP",
-   "category": "已有同等功能",
-   "sketch2site": "3D 物件元件（既有）",
-   "priority": null,
-   "note": null,
+   "category": "需要新增動畫",
+   "sketch2site": "orbit-exhibit",
+   "priority": "P3",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
      "url": "https://kittenjam-motion-library.vercel.app/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製"
   },
   {
@@ -6709,10 +6718,10 @@
     "loop"
    ],
    "technique": "GSAP",
-   "category": "既有功能可擴充",
-   "sketch2site": "fold-reveal",
-   "priority": "P4",
-   "note": "撕貼紙角",
+   "category": "需要新增動畫",
+   "sketch2site": "corner-reprint",
+   "priority": "P3",
+   "note": "批次 20 原創動效",
    "credit": [
     {
      "name": "Hannah’s Motion Library",
@@ -6723,6 +6732,7 @@
      "url": "https://www.framer.com/marketplace/components/"
     }
    ],
+   "verifiedBatch": 20,
    "license": "僅參考效果機制；未取得程式、素材或文字授權，不複製；第三方付費元件"
   },
   {

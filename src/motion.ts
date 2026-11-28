@@ -87,6 +87,8 @@ export function targetReason(target: MotionTarget, id: MotionId, version: 0 | 1 
         if(count<(id==='card-stack-shuffle'?3:2)||count>5||items?.some(n=>!n||typeof n!=='object'||!('type' in n)||n.type!=='card')||!items&&lines.some(line=>!line.trim()))return '需要'+(id==='card-stack-shuffle'?'3':'2')+'至5張真實子卡片；草稿卡片每行代表一張卡片';
     }
     if (id === 'numeric-gauge-sweep' && (!/^\s*(?:\d{1,3})(?:\.\d{1,4})?\s*[%％]?\s*$/.test(target.content ?? '') || !numericContent(target.content ?? '') || numericContent(target.content ?? '')!.endValue > 100)) return '儀表需使用0到100的真實數字或百分比';
+    if ((id === "feature-deck" || id === "orbit-exhibit") && target.media?.kind !== "carousel")
+        return "請將此效果套用到圖片輪播";
     if (id === 'chart-build' && target.media?.kind !== 'chart')
         return '圖表動畫只適用於圖表';
     if (id === 'count-up' && !numericContent(target.content ?? ''))
@@ -127,6 +129,7 @@ export function compatibleMotion(target: MotionTarget, e: MotionInstance): boole
 }
 export function combinationReason(effects: readonly Pick<MotionInstance, "presetId">[]): string | null {
     const ids = new Set(effects.map(e => e.presetId));
+    if (ids.has("feature-deck") && ids.has("orbit-exhibit")) return "輪播一次只能使用一種排列";
     if (ids.has('hover-glow') && ids.has('breathing-glow'))
         return '光暈效果不可重複套用';
     if (ids.has('count-up') && ids.has('curved-path-text'))

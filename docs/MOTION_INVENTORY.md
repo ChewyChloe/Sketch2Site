@@ -8,7 +8,7 @@
 - 編輯器：AnimationLibrary.tsx（素材庫）、MotionControls.tsx（參數）
 - 匯出：exportProject.ts 把 runtime 原始碼一起放進 React 專案
 
-共 90 種。
+共 100 種。
 
 | ID | 名稱 | 用在 | 什麼時候動 | 樣子 | 想達成 | 程度 | 參數 | 鍵盤 | Runtime |
 |---|---|---|---|---|---|---|---|---|---|
@@ -102,3 +102,13 @@
 | `type-casts` | 字型留光 / Type Casts | 文字 | 一直動 | 文字逐字 | 營造氣氛 | 適中 | durationMs | — | ReferenceMotion.tsx |
 | `word-shelf` | 疊句收集 / Word Shelf | 文字 | 出現時 | 文字逐字 | 引導閱讀 | 適中 | durationMs, maxWords | — | ReferenceMotion.tsx |
 | `reading-hop` | 讀字跳點 / Reading Hop | 文字 | 出現時 | 線條圖形 | 引導閱讀 | 適中 | durationMs | — | ReferenceMotion.tsx |
+| `aurora-pools` | 極晝光池 / Aurora Pools | 卡片與區塊 | 一直動 | 光影色彩 | 營造氣氛 | 適中 | durationMs, strength | — | ReferenceMotion.tsx |
+| `feature-deck` | 聚焦展列 / Feature Deck | 圖表與媒體 | 點擊時 | 放大縮小 | 互動回饋 | 適中 | durationMs, strength | 可 | ReferenceMotion.tsx |
+| `orbit-exhibit` | 旋軌畫廊 / Orbit Exhibit | 圖表與媒體 | 一直動、點擊時、拖曳 | 立體 | 互動回饋、營造氣氛 | 適中 | durationMs, strength | 可 | ReferenceMotion.tsx |
+| `petal-eddies` | 花徑回風 / Petal Eddies | 卡片與區塊 | 一直動、滑過時 | 線條圖形 | 互動回饋、營造氣氛 | 適中 | durationMs, strength | — | ReferenceMotion.tsx |
+| `relay-connections` | 流點連橋 / Relay Connections | 卡片與區塊 | 一直動 | 線條圖形 | 營造氣氛 | 適中 | durationMs, strength | — | ReferenceMotion.tsx |
+| `corner-reprint` | 翻角重貼 / Corner Reprint | 卡片與區塊、圖片 | 滑過時、點擊時 | 立體 | 互動回饋 | 適中 | durationMs, strength | 可 | ReferenceMotion.tsx |
+| `glyph-embers` | 字形散光 / Glyph Embers | 文字 | 滑過時 | 文字逐字 | 互動回饋 | 適中 | durationMs, strength | — | ReferenceMotion.tsx |
+| `waypoint-pill` | 導航滑標 / Waypoint Pill | 卡片與區塊 | 滑過時 | 位移滑動 | 互動回饋 | 適中 | durationMs, strength | 可 | ReferenceMotion.tsx |
+| `grain-tide` | 砂紋潮汐 / Grain Tide | 卡片與區塊 | 一直動 | 光影色彩 | 營造氣氛 | 適中 | durationMs, strength | — | ReferenceMotion.tsx |
+| `lantern-rise` | 微燈升息 / Lantern Rise | 卡片與區塊 | 一直動 | 光影色彩 | 營造氣氛 | 適中 | durationMs, strength | — | ReferenceMotion.tsx |

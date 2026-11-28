@@ -7,7 +7,7 @@ import {
 } from "../src/generation";
 import { applyRefine, outlineOf, refineJSONSchema, RefineSchema } from "../src/outline";
 import { smartLayout } from "../src/smartLayout";
-import { copyJSONSchema, copyLimits, type CopyRequest } from "../src/copySuggest";
+import { copyJSONSchema, copyLimits, type CopyRequest } from "../src/copySuggest.ts";
 import { rewriteMotions } from "../src/sectionRewrite";
 import { referenceJSONSchema, type ReferenceRequest } from "../src/referenceStyle";
 export type Intent = ReturnType<typeof prepareIntent>;

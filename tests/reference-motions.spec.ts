@@ -28,7 +28,7 @@ test('library previews are live: hover, scroll and replay show the real effect',
     await page.goto('/?draft');
     await expect(page.getByRole('status')).toContainText('草稿已就緒');
     await page.getByRole('button', { name: '動畫素材庫', exact: true }).click();
-    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(90);
+    await expect(page.locator('.sidebar [data-effect-id]')).toHaveCount(100);
     const card = (id: string) => page.locator(`.sidebar [data-effect-id="${id}"]`);
     for (const id of referenceMotionIds) {
         await card(id).scrollIntoViewIfNeeded();

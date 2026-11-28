@@ -1,3 +1,4 @@
+import referenceHundredSource from "./ReferenceHundred.ts?raw";
 import cinematicMotionSource from "./CinematicMotion.tsx?raw";
 import mediaRuntimeSource from "./MediaRuntime.tsx?raw";
 import depthSource from "./Depth3D.tsx?raw";
@@ -98,6 +99,7 @@ export async function exportProjectFiles(
     { path: "src/ExtendedMotion.tsx", content: extendedMotionSource },
     { path: "src/AdvancedMotion.tsx", content: advancedMotionSource },
     { path: "src/SignatureMotion.tsx", content: signatureMotionSource },
+    { path: "src/ReferenceHundred.ts", content: referenceHundredSource },
     { path: "src/ReferenceMotion.tsx", content: referenceMotionSource },
     { path: "src/ReferenceTypography.ts", content: referenceTypographySource },
     { path: "src/referenceMotions.ts", content: referenceMetaSource },

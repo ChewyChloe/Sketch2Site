@@ -1,3 +1,4 @@
+import { ambientHundred, runHundred } from "./ReferenceHundred";
 import { useEffect, type RefObject } from 'react';
 import type { PageNode } from './pageSpec';
 import { motionNumber, type MotionInstance } from './motion';
@@ -383,6 +384,12 @@ export function useReferenceMotion(node: PageNode, ref: RefObject<HTMLElement | 
             if (!effect) continue;
             addClass("ref-typography-host");
             playReferenceTypography(host, effect, text, r, reduced);
+        }
+        for (const id of ambientHundred) {
+            const effect = find(id);
+            if (!effect) continue;
+            const clean = runHundred(host, effect, r, reduced, text);
+            if (clean) cleanups.push(clean);
         }
         return () => { r.dispose(); cleanups.reverse().forEach(f => f()); };
     }, [node, ref, reduced, assetKey, preview]); // eslint-disable-line react-hooks/exhaustive-deps

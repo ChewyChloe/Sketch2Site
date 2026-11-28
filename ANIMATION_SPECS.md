@@ -80,6 +80,16 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 | word-shelf | 疊句收集 | DONE | 進場 | medium |
 | reading-hop | 讀字跳點 | DONE | 進場 | medium |
 | letter-windows | 字窗風景 | DONE | 內容 | medium |
+| aurora-pools | 極晝光池 | DONE | 內容 | medium |
+| feature-deck | 聚焦展列 | DONE | 互動 | medium |
+| orbit-exhibit | 旋軌畫廊 | DONE | 內容 | medium |
+| petal-eddies | 花徑回風 | DONE | 內容 | medium |
+| relay-connections | 流點連橋 | DONE | 內容 | medium |
+| corner-reprint | 翻角重貼 | DONE | 互動 | medium |
+| glyph-embers | 字形散光 | DONE | 互動 | medium |
+| waypoint-pill | 導航滑標 | DONE | 互動 | medium |
+| grain-tide | 砂紋潮汐 | DONE | 內容 | medium |
+| lantern-rise | 微燈升息 | DONE | 內容 | medium |
 
 ## 淡入 / Fade In
 
@@ -2265,3 +2275,293 @@ PageSpec與CanvasSpec的舊效果需經版本化相容層；新效果僅在Rende
 **constraints**：照片載入失敗時顯示原文字色；只適合粗的大字
 
 **reducedMotionFallback**：照片靜止填色
+
+## 極晝光池 / Aurora Pools
+
+- Preset: `aurora-pools` / version 1
+- 狀態：DONE
+- 說明：數團柔焦光在區塊底下慢慢交融。
+- 適用：極晝光池
+- targetType：card、container、section
+- interactionType：idle-loop
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：aurora-pools
+- tags：內容、極晝光池
+- rendererMapping：aurora-pools
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 6000 | 180–20000; step 1 |
+| strength | 亮度 | number | 0.24 | 0.08–0.4; step 0.01 |
+
+**designIntent**：維持作者選定的 aurora-pools 設定。
+
+**implementationBrief**：驗證 aurora-pools 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 聚焦展列 / Feature Deck
+
+- Preset: `feature-deck` / version 1
+- 狀態：DONE
+- 說明：主圖保持清楚，兩側圖片退到陪襯位置。
+- 適用：聚焦展列
+- targetType：media
+- interactionType：click、keyboard
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：feature-deck
+- tags：互動、聚焦展列
+- rendererMapping：feature-deck
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 400 | 180–20000; step 1 |
+| strength | 側圖縮放 | number | 0.72 | 0.5–0.9; step 0.01 |
+
+**designIntent**：維持作者選定的 feature-deck 設定。
+
+**implementationBrief**：驗證 feature-deck 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 旋軌畫廊 / Orbit Exhibit
+
+- Preset: `orbit-exhibit` / version 1
+- 狀態：DONE
+- 說明：圖片圍繞立體展台旋轉，可拖曳或用方向鍵切換。
+- 適用：旋軌畫廊
+- targetType：media
+- interactionType：idle-loop、click、keyboard、drag
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：orbit-exhibit
+- tags：內容、旋軌畫廊
+- rendererMapping：orbit-exhibit
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 6000 | 180–20000; step 1 |
+| strength | 環繞深度 | number | 160 | 85–260; step 1 |
+
+**designIntent**：維持作者選定的 orbit-exhibit 設定。
+
+**implementationBrief**：驗證 orbit-exhibit 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 花徑回風 / Petal Eddies
+
+- Preset: `petal-eddies` / version 1
+- 狀態：DONE
+- 說明：花瓣散落，滑過時局部向兩側飄散。
+- 適用：花徑回風
+- targetType：card、container、section
+- interactionType：idle-loop、pointer-move
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：petal-eddies
+- tags：內容、花徑回風
+- rendererMapping：petal-eddies
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 6000 | 180–20000; step 1 |
+| strength | 花瓣數量 | number | 12 | 6–24; step 1 |
+
+**designIntent**：維持作者選定的 petal-eddies 設定。
+
+**implementationBrief**：驗證 petal-eddies 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 流點連橋 / Relay Connections
+
+- Preset: `relay-connections` / version 1
+- 狀態：DONE
+- 說明：亮點沿節點之間的虛線傳遞。
+- 適用：流點連橋
+- targetType：card、container、section
+- interactionType：idle-loop
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：relay-connections
+- tags：內容、流點連橋
+- rendererMapping：relay-connections
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 6000 | 180–20000; step 1 |
+| strength | 傳遞線數 | number | 3 | 2–5; step 1 |
+
+**designIntent**：維持作者選定的 relay-connections 設定。
+
+**implementationBrief**：驗證 relay-connections 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 翻角重貼 / Corner Reprint
+
+- Preset: `corner-reprint` / version 1
+- 狀態：DONE
+- 說明：靠近哪個角就掀起哪個角，可以撕開再貼回。
+- 適用：翻角重貼
+- targetType：card、image
+- interactionType：pointer-move、click、keyboard
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：corner-reprint
+- tags：互動、翻角重貼
+- rendererMapping：corner-reprint
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 400 | 180–20000; step 1 |
+| strength | 卷角比例 | number | 0.34 | 0.18–0.5; step 0.01 |
+
+**designIntent**：維持作者選定的 corner-reprint 設定。
+
+**implementationBrief**：驗證 corner-reprint 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 字形散光 / Glyph Embers
+
+- Preset: `glyph-embers` / version 1
+- 狀態：DONE
+- 說明：光點排列成原文，靠近時散開，離開後聚回。
+- 適用：字形散光
+- targetType：text、heading、paragraph
+- interactionType：pointer-move
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：glyph-embers
+- tags：互動、字形散光
+- rendererMapping：glyph-embers
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 400 | 180–20000; step 1 |
+| strength | 粒子間距 | number | 5 | 3–8; step 1 |
+
+**designIntent**：維持作者選定的 glyph-embers 設定。
+
+**implementationBrief**：驗證 glyph-embers 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 導航滑標 / Waypoint Pill
+
+- Preset: `waypoint-pill` / version 1
+- 狀態：DONE
+- 說明：導覽底色沿連結滑動，指示游標或鍵盤所在。
+- 適用：導航滑標
+- targetType：card、container、section
+- interactionType：hover、focus
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：waypoint-pill
+- tags：互動、導航滑標
+- rendererMapping：waypoint-pill
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 400 | 180–20000; step 1 |
+| strength | 底色濃度 | number | 0.19 | 0.08–0.35; step 0.01 |
+
+**designIntent**：維持作者選定的 waypoint-pill 設定。
+
+**implementationBrief**：驗證 waypoint-pill 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 砂紋潮汐 / Grain Tide
+
+- Preset: `grain-tide` / version 1
+- 狀態：DONE
+- 說明：緩移漸層上有細密顆粒跳動。
+- 適用：砂紋潮汐
+- targetType：card、container、section
+- interactionType：idle-loop
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：grain-tide
+- tags：內容、砂紋潮汐
+- rendererMapping：grain-tide
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 6000 | 180–20000; step 1 |
+| strength | 顆粒濃度 | number | 0.2 | 0.05–0.35; step 0.01 |
+
+**designIntent**：維持作者選定的 grain-tide 設定。
+
+**implementationBrief**：驗證 grain-tide 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
+
+## 微燈升息 / Lantern Rise
+
+- Preset: `lantern-rise` / version 1
+- 狀態：DONE
+- 說明：大小不一的柔焦光點從底部升起再淡出。
+- 適用：微燈升息
+- targetType：card、container、section
+- interactionType：idle-loop
+- techBase：Web Animations / CSS / Pointer Events
+- previewMapping：lantern-rise
+- tags：內容、微燈升息
+- rendererMapping：lantern-rise
+- exportMapping：shared PageRuntime + MotionRuntime + ExtendedMotion + motion CSS
+
+| 參數 | UI | 型別 | 預設 | 合法範圍／選項 |
+| --- | --- | --- | --- | --- |
+| durationMs | 循環或轉場時長（毫秒） | number | 6000 | 180–20000; step 1 |
+| strength | 光點數量 | number | 9 | 5–18; step 1 |
+
+**designIntent**：維持作者選定的 lantern-rise 設定。
+
+**implementationBrief**：驗證 lantern-rise 的元件類型與參數，僅映射已存在的頁面節點。
+
+**compatibilityRules**：僅用於相容元件
+
+**constraints**：保留原始內容；有界動態
+
+**reducedMotionFallback**：靜態內容或直接切換
